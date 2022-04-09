@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  rene-cpython:
+    build:
+      context: .
+      args:
+        - IMAGE_NAME=${CPYTHON_IMAGE_NAME}
+        - IMAGE_VERSION=${CPYTHON_IMAGE_VERSION}
+    image: lycantropos/rene-cpython:0.0.0
+    volumes:
+      - ./Cargo.toml:/opt/rene/Cargo.toml
+      - ./pytest.ini:/opt/rene/pytest.ini
+      - ./README.md:/opt/rene/README.md
+      - ./rene:/opt/rene/rene
+      - ./requirements-setup.txt:/opt/rene/requirements-setup.txt
+      - ./requirements-tests.txt:/opt/rene/requirements-tests.txt
+      - ./rust-toolchain.toml:/opt/rene/rust-toolchain.toml
+      - ./setup.py:/opt/rene/setup.py
+      - ./src:/opt/rene/src
+      - ./tests:/opt/rene/tests
+    entrypoint: pytest

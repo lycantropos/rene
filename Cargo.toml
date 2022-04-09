@@ -1,0 +1,18 @@
+[package]
+name = "rene"
+description = "Computational geometry."
+license = "MIT"
+license-file = "LICENSE"
+version = "0.0.0"
+edition = "2018"
+
+[lib]
+name = "rene"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies.pyo3]
+version = "^0.16"
+features = ["extension-module"]
+
+[build-dependencies]
+pyo3-build-config = "^0.16"
