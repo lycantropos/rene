@@ -31,4 +31,5 @@ except ImportError:
                     else NotImplemented)
 
         def __repr__(self):
-            return f'rene.{type(self).__qualname__}({self.x!r}, {self.y!r})'
+            return (f'{__name__}.{type(self).__qualname__}'
+                    f'({self.x!r}, {self.y!r})')
