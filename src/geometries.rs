@@ -29,6 +29,8 @@ impl<Scalar: PartialEq> PartialEq for Point<Scalar> {
     }
 }
 
+impl<Scalar: Eq> Eq for Point<Scalar> {}
+
 #[derive(Clone)]
 struct Segment<Scalar>(Point<Scalar>, Point<Scalar>);
 
