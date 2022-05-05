@@ -154,13 +154,6 @@ fn try_scalar_to_fraction(value: &PyAny) -> PyResult<Fraction> {
 }
 
 #[pymodule]
-fn _rene(py: Python, module: &PyModule) -> PyResult<()> {
-    module.setattr(intern!(py, "__version__"), env!("CARGO_PKG_VERSION"))?;
-    module.setattr(intern!(py, "__doc__"), env!("CARGO_PKG_DESCRIPTION"))?;
-    Ok(())
-}
-
-#[pymodule]
 fn _exact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactPoint>()?;
     Ok(())
