@@ -4,7 +4,7 @@ from pathlib import Path
 from setuptools import (find_packages,
                         setup)
 
-import rene.exact
+import rene
 
 project_base_url = 'https://github.com/lycantropos/rene/'
 
@@ -50,8 +50,7 @@ if platform.python_implementation() == 'CPython':
         def __iter__(self) -> Iterator['RustExtension']:
             from setuptools_rust import RustExtension
             yield RustExtension(rene.__name__ + '._' + rene.__name__)
-            yield RustExtension(rene.__name__ + '._'
-                                + rene.exact.__name__.replace('.', '_'))
+            yield RustExtension(rene.__name__ + '._rene_exact')
 
         def __len__(self) -> int:
             return 2
