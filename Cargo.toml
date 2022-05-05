@@ -10,7 +10,14 @@ edition = "2018"
 name = "rene"
 crate-type = ["cdylib", "rlib"]
 
+[dependencies]
+rithm= "^6.0.0"
+
 [dependencies.pyo3]
+version = "^0.16.4"
+features = ["extension-module"]
+
+[dependencies.pyo3-ffi]
 version = "^0.16.4"
 features = ["extension-module"]
 

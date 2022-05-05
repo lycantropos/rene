@@ -1,4 +1,5 @@
 include Cargo.toml
 include LICENSE
+include requirements.txt
 include requirements-setup.txt
 recursive-include src *.rs
