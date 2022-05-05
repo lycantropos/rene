@@ -25,5 +25,10 @@ except ImportError:
                                 else _Fraction(y.numerator, y.denominator))
             return self
 
+        def __eq__(self, other):
+            return (self.x == other.x and self.y == other.y
+                    if isinstance(other, Point)
+                    else NotImplemented)
+
         def __repr__(self):
             return f'rene.{type(self).__qualname__}({self.x!r}, {self.y!r})'

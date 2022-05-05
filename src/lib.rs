@@ -3,11 +3,12 @@ use std::cmp::Ordering;
 use pyo3::exceptions::{PyOverflowError, PyTypeError, PyValueError, PyZeroDivisionError};
 use pyo3::prelude::{pyclass, pymethods, pymodule, PyModule, PyResult, Python};
 use pyo3::types::{PyFloat, PyLong};
-use pyo3::{ffi, intern, AsPyPointer, Py, PyAny, PyErr, PyObject};
+use pyo3::{ffi, intern, AsPyPointer, IntoPy, Py, PyAny, PyErr, PyObject};
 use rithm::traits::{Endianness, FromBytes, OppositionOf, ToBytes, Zeroable};
 use rithm::{big_int, fraction};
 
 use crate::traits::Point;
+use pyo3::basic::CompareOp;
 use pyo3::type_object::PyTypeObject;
 use std::convert::TryFrom;
 
@@ -56,6 +57,18 @@ impl PyExactPoint {
             self.x(py)?.repr()?.extract::<String>()?,
             self.y(py)?.repr()?.extract::<String>()?,
         ))
+    }
+
+    fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactPoint::type_object(py))? {
+            match op {
+                CompareOp::Eq => Ok((self.0 == other.extract::<PyExactPoint>()?.0).into_py(py)),
+                _ => Ok(py.NotImplemented()),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
     }
 }
 
