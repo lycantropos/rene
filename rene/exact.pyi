@@ -16,3 +16,6 @@ class Point:
     def __new__(cls, x: _Union[_Rational, float], y: _Union[_Rational, float]
                 ) -> 'Point':
         ...
+
+    def __repr__(self) -> str:
+        ...

@@ -24,3 +24,6 @@ except ImportError:
                                 if isinstance(y, float)
                                 else _Fraction(y.numerator, y.denominator))
             return self
+
+        def __repr__(self):
+            return f'rene.{type(self).__qualname__}({self.x!r}, {self.y!r})'
