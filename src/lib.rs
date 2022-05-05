@@ -62,8 +62,10 @@ impl PyExactPoint {
     fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactPoint::type_object(py))? {
+            let other = other.extract::<PyExactPoint>()?;
             match op {
-                CompareOp::Eq => Ok((self.0 == other.extract::<PyExactPoint>()?.0).into_py(py)),
+                CompareOp::Eq => Ok((self.0 == other.0).into_py(py)),
+                CompareOp::Ne => Ok((self.0 != other.0).into_py(py)),
                 _ => Ok(py.NotImplemented()),
             }
         } else {
