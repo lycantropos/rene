@@ -1,5 +1,6 @@
 use pyo3::prelude::{pymodule, PyModule, PyResult, Python};
 
+pub mod geometries;
 pub mod traits;
 
 #[pymodule]
