@@ -161,7 +161,7 @@ fn _rene(py: Python, module: &PyModule) -> PyResult<()> {
 }
 
 #[pymodule]
-fn _rene_exact(_py: Python, module: &PyModule) -> PyResult<()> {
+fn _exact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactPoint>()?;
     Ok(())
 }
