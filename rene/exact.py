@@ -5,6 +5,14 @@ except ImportError:
 
 
     class Point:
+        @property
+        def x(self):
+            return self._x
+
+        @property
+        def y(self):
+            return self._y
+
         __slots__ = '_x', '_y'
 
         def __new__(cls, x, y):
@@ -16,11 +24,3 @@ except ImportError:
                                 if isinstance(y, float)
                                 else _Fraction(y.numerator, y.denominator))
             return self
-
-        @property
-        def x(self):
-            return self._x
-
-        @property
-        def y(self):
-            return self._y
