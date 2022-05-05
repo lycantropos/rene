@@ -1,5 +1,5 @@
 try:
-    from _rene.exact import Point
+    from _rene_exact import Point
 except ImportError:
     from rithm import Fraction as _Fraction
 

@@ -157,8 +157,11 @@ fn try_scalar_to_fraction(value: &PyAny) -> PyResult<Fraction> {
 fn _rene(py: Python, module: &PyModule) -> PyResult<()> {
     module.setattr(intern!(py, "__version__"), env!("CARGO_PKG_VERSION"))?;
     module.setattr(intern!(py, "__doc__"), env!("CARGO_PKG_DESCRIPTION"))?;
-    let exact_module = PyModule::new(py, "exact")?;
-    exact_module.add_class::<PyExactPoint>()?;
-    module.add_submodule(exact_module)?;
+    Ok(())
+}
+
+#[pymodule]
+fn _rene_exact(_py: Python, module: &PyModule) -> PyResult<()> {
+    module.add_class::<PyExactPoint>()?;
     Ok(())
 }
