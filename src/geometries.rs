@@ -32,7 +32,13 @@ impl<Scalar: PartialEq> PartialEq for Point<Scalar> {
 impl<Scalar: Eq> Eq for Point<Scalar> {}
 
 #[derive(Clone)]
-struct Segment<Scalar>(Point<Scalar>, Point<Scalar>);
+pub struct Segment<Scalar>(Point<Scalar>, Point<Scalar>);
+
+impl<Scalar> Segment<Scalar> {
+    pub fn new(start: Point<Scalar>, end: Point<Scalar>) -> Self {
+        Self(start, end)
+    }
+}
 
 impl<Scalar: Clone> traits::Segment<Scalar> for Segment<Scalar> {
     type Point = self::Point<Scalar>;
@@ -45,6 +51,18 @@ impl<Scalar: Clone> traits::Segment<Scalar> for Segment<Scalar> {
         self.1.clone()
     }
 }
+
+impl<Scalar: PartialEq> PartialEq for Segment<Scalar> {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0 && self.1 == other.1
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        self.0 != other.0 || self.1 != other.1
+    }
+}
+
+impl<Scalar: Eq> Eq for Segment<Scalar> {}
 
 #[derive(Clone)]
 struct Contour<Scalar>(Vec<Point<Scalar>>);

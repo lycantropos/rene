@@ -7,7 +7,7 @@ use pyo3::{ffi, intern, AsPyPointer, IntoPy, Py, PyAny, PyErr, PyObject};
 use rithm::traits::{Endianness, FromBytes, ToBytes, Zeroable};
 use rithm::{big_int, fraction};
 
-use crate::traits::Point;
+use crate::traits::{Point, Segment};
 use pyo3::basic::CompareOp;
 use pyo3::type_object::PyTypeObject;
 use std::convert::TryFrom;
@@ -25,11 +25,17 @@ const BINARY_SHIFT: usize = (Digit::BITS - 1) as usize;
 type BigInt = big_int::BigInt<Digit, '_', BINARY_SHIFT>;
 type Fraction = fraction::Fraction<BigInt>;
 type ExactPoint = geometries::Point<Fraction>;
+type ExactSegment = geometries::Segment<Fraction>;
 
 #[pyclass(name = "Point", module = "rene", subclass)]
 #[pyo3(text_signature = "(x, y, /)")]
 #[derive(Clone)]
 struct PyExactPoint(ExactPoint);
+
+#[pyclass(name = "Segment", module = "rene", subclass)]
+#[pyo3(text_signature = "(start, end, /)")]
+#[derive(Clone)]
+struct PyExactSegment(ExactSegment);
 
 #[pymethods]
 impl PyExactPoint {
@@ -63,6 +69,49 @@ impl PyExactPoint {
         let py = other.py();
         if other.is_instance(PyExactPoint::type_object(py))? {
             let other = other.extract::<PyExactPoint>()?;
+            match op {
+                CompareOp::Eq => Ok((self.0 == other.0).into_py(py)),
+                CompareOp::Ne => Ok((self.0 != other.0).into_py(py)),
+                _ => Ok(py.NotImplemented()),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
+}
+
+#[pymethods]
+impl PyExactSegment {
+    #[new]
+    fn new(start: &PyExactPoint, end: &PyExactPoint) -> PyResult<Self> {
+        Ok(PyExactSegment(ExactSegment::new(
+            start.0.clone(),
+            end.0.clone(),
+        )))
+    }
+
+    #[getter]
+    fn start(&self) -> PyExactPoint {
+        PyExactPoint(self.0.start())
+    }
+
+    #[getter]
+    fn end(&self) -> PyExactPoint {
+        PyExactPoint(self.0.end())
+    }
+
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        Ok(format!(
+            "rene.exact.Segment({}, {})",
+            self.start().__repr__(py)?,
+            self.end().__repr__(py)?,
+        ))
+    }
+
+    fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactSegment::type_object(py))? {
+            let other = other.extract::<PyExactSegment>()?;
             match op {
                 CompareOp::Eq => Ok((self.0 == other.0).into_py(py)),
                 CompareOp::Ne => Ok((self.0 != other.0).into_py(py)),
@@ -171,5 +220,6 @@ fn try_scalar_to_fraction(value: &PyAny) -> PyResult<Fraction> {
 #[pymodule]
 fn _exact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactPoint>()?;
+    module.add_class::<PyExactSegment>()?;
     Ok(())
 }

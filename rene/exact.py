@@ -1,5 +1,6 @@
 try:
-    from ._exact import Point
+    from ._exact import (Point,
+                         Segment)
 except ImportError:
     from rithm import Fraction as _Fraction
 
@@ -33,3 +34,29 @@ except ImportError:
         def __repr__(self):
             return (f'{__name__}.{type(self).__qualname__}'
                     f'({self.x!r}, {self.y!r})')
+
+
+    class Segment:
+        @property
+        def end(self):
+            return self._end
+
+        @property
+        def start(self):
+            return self._start
+
+        __slots__ = '_end', '_start'
+
+        def __new__(cls, start, end):
+            self = super().__new__(cls)
+            self._end, self._start = Point(end), Point(start)
+            return self
+
+        def __eq__(self, other):
+            return (self.start == other.start and self.end == other.end
+                    if isinstance(other, Segment)
+                    else NotImplemented)
+
+        def __repr__(self):
+            return (f'{__name__}.{type(self).__qualname__}'
+                    f'({self.start!r}, {self.end!r})')

@@ -29,3 +29,27 @@ class Point:
 
     def __repr__(self) -> str:
         ...
+
+
+class Segment:
+    @property
+    def end(self) -> Point:
+        ...
+
+    @property
+    def start(self) -> Point:
+        ...
+
+    def __new__(cls, start: Point, end: Point) -> 'Segment':
+        ...
+
+    @_overload
+    def __eq__(self, other: 'Segment') -> bool:
+        ...
+
+    @_overload
+    def __eq__(self, other: _Any) -> _Any:
+        ...
+
+    def __repr__(self) -> str:
+        ...
