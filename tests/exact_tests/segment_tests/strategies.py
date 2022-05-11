@@ -1,4 +1,4 @@
-from operator import ne
+from operator import attrgetter
 
 from hypothesis import strategies
 from rithm import Fraction
@@ -14,5 +14,8 @@ scalars = (integers | strategies.fractions()
            | strategies.floats(allow_infinity=False,
                                allow_nan=False))
 points = strategies.builds(Point, scalars, scalars)
-segments_endpoints = strategies.tuples(points, points).filter(pack(ne))
+segments_endpoints = strategies.lists(points,
+                                      min_size=2,
+                                      max_size=2,
+                                      unique_by=attrgetter('x', 'y'))
 segments = segments_endpoints.map(pack(Segment))
