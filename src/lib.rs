@@ -82,6 +82,14 @@ impl PyExactPoint {
             Ok(py.NotImplemented())
         }
     }
+
+    fn __str__(&self, py: Python) -> PyResult<String> {
+        Ok(format!(
+            "Point({}, {})",
+            self.x(py)?.str()?.extract::<String>()?,
+            self.y(py)?.str()?.extract::<String>()?,
+        ))
+    }
 }
 
 #[pymethods]

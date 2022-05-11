@@ -38,6 +38,9 @@ except ImportError:
             return (f'{__name__}.{type(self).__qualname__}'
                     f'({self.x!r}, {self.y!r})')
 
+        def __str__(self):
+            return f'{type(self).__qualname__}({self.x}, {self.y})'
+
 
     class Segment:
         @property
