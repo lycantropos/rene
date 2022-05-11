@@ -1,5 +1,3 @@
-from operator import attrgetter
-
 from hypothesis import strategies
 from rithm import Fraction
 
@@ -17,5 +15,5 @@ points = strategies.builds(Point, scalars, scalars)
 segments_endpoints = strategies.lists(points,
                                       min_size=2,
                                       max_size=2,
-                                      unique_by=attrgetter('x', 'y'))
+                                      unique=True)
 segments = segments_endpoints.map(pack(Segment))
