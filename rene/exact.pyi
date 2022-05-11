@@ -59,3 +59,6 @@ class Segment:
 
     def __repr__(self) -> str:
         ...
+
+    def __str__(self) -> str:
+        ...

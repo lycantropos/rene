@@ -67,3 +67,6 @@ except ImportError:
         def __repr__(self):
             return (f'{__name__}.{type(self).__qualname__}'
                     f'({self.start!r}, {self.end!r})')
+
+        def __str__(self):
+            return f'{type(self).__qualname__}({self.start}, {self.end})'

@@ -133,6 +133,14 @@ impl PyExactSegment {
             Ok(py.NotImplemented())
         }
     }
+
+    fn __str__(&self, py: Python) -> PyResult<String> {
+        Ok(format!(
+            "rene.exact.Segment({}, {})",
+            self.start().__str__(py)?,
+            self.end().__str__(py)?,
+        ))
+    }
 }
 
 fn try_fraction_to_py_fraction(value: Fraction, py: Python) -> PyResult<&PyAny> {
