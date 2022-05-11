@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 use pyo3::exceptions::{PyOverflowError, PyTypeError, PyValueError, PyZeroDivisionError};
 use pyo3::prelude::{pyclass, pymethods, pymodule, PyModule, PyResult, Python};
-use pyo3::types::{PyFloat, PyLong};
+use pyo3::types::{PyFloat, PyLong, PyTuple};
 use pyo3::{ffi, intern, AsPyPointer, IntoPy, Py, PyAny, PyErr, PyObject};
 use rithm::traits::{Endianness, FromBytes, ToBytes, Zeroable};
 use rithm::{big_int, fraction};
@@ -55,6 +55,10 @@ impl PyExactPoint {
     #[getter]
     fn y<'a>(&self, py: Python<'a>) -> PyResult<&'a PyAny> {
         try_fraction_to_py_fraction(self.0.y(), py)
+    }
+
+    fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
+        PyTuple::new(py, [self.x(py)?, self.y(py)?]).hash()
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {

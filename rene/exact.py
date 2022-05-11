@@ -31,6 +31,9 @@ except ImportError:
                     if isinstance(other, Point)
                     else NotImplemented)
 
+        def __hash__(self):
+            return hash((self.x, self.y))
+
         def __repr__(self):
             return (f'{__name__}.{type(self).__qualname__}'
                     f'({self.x!r}, {self.y!r})')
