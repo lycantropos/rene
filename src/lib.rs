@@ -4,7 +4,7 @@ use pyo3::exceptions::{PyOverflowError, PyTypeError, PyValueError, PyZeroDivisio
 use pyo3::prelude::{pyclass, pymethods, pymodule, PyModule, PyResult, Python};
 use pyo3::types::{PyFloat, PyLong};
 use pyo3::{ffi, intern, AsPyPointer, IntoPy, Py, PyAny, PyErr, PyObject};
-use rithm::traits::{Endianness, FromBytes, OppositionOf, ToBytes, Zeroable};
+use rithm::traits::{Endianness, FromBytes, ToBytes, Zeroable};
 use rithm::{big_int, fraction};
 
 use crate::traits::Point;
@@ -20,7 +20,7 @@ type Digit = u16;
 #[cfg(not(target_arch = "x86"))]
 type Digit = u32;
 
-const BINARY_SHIFT: usize = (OppositionOf::<Digit>::BITS - 2) as usize;
+const BINARY_SHIFT: usize = (Digit::BITS - 1) as usize;
 
 type BigInt = big_int::BigInt<Digit, '_', BINARY_SHIFT>;
 type Fraction = fraction::Fraction<BigInt>;
