@@ -49,7 +49,7 @@ except ImportError:
 
         def __new__(cls, start, end):
             self = super().__new__(cls)
-            self._end, self._start = Point(end), Point(start)
+            self._end, self._start = end, start
             return self
 
         def __eq__(self, other):
