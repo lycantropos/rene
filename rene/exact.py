@@ -54,6 +54,7 @@ except ImportError:
 
         def __eq__(self, other):
             return (self.start == other.start and self.end == other.end
+                    or self.end == other.start and self.start == other.end
                     if isinstance(other, Segment)
                     else NotImplemented)
 
