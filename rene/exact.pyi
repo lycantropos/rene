@@ -1,9 +1,33 @@
 from numbers import Rational as _Rational
 from typing import (Any as _Any,
+                    Sequence as _Sequence,
                     Union as _Union,
                     overload as _overload)
 
 from rithm import Fraction as _Fraction
+
+
+class Contour:
+    @property
+    def vertices(self) -> _Sequence[Point]:
+        ...
+
+    def __new__(cls, vertices: _Sequence[Point]) -> 'Contour':
+        ...
+
+    @_overload
+    def __eq__(self, other: 'Contour') -> bool:
+        ...
+
+    @_overload
+    def __eq__(self, other: _Any) -> _Any:
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+    def __str__(self) -> str:
+        ...
 
 
 class Point:

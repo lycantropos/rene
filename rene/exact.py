@@ -1,8 +1,56 @@
 try:
-    from ._exact import (Point,
+    from ._exact import (Contour,
+                         Point,
                          Segment)
 except ImportError:
+    from typing import (Any as _Any,
+                        Sequence as _Sequence)
+
     from rithm import Fraction as _Fraction
+
+
+    class Contour:
+        @property
+        def vertices(self):
+            return self._vertices[:]
+
+        __slots__ = '_vertices',
+
+        def __new__(cls, vertices):
+            self = super().__new__(cls)
+            self._vertices = list(vertices)
+            return self
+
+        def __eq__(self, other):
+            return (_are_non_empty_unique_sequences_rotationally_equivalent(
+                    self.vertices, other.vertices)
+                    if isinstance(other, Contour)
+                    else NotImplemented)
+
+        def __repr__(self):
+            return f'{__name__}.{type(self).__qualname__}({self.vertices!r})'
+
+        def __str__(self):
+            return (f'{type(self).__qualname__}([{{}}])'
+                    .format(', '.join(map(str, self.vertices))))
+
+
+    def _are_non_empty_unique_sequences_rotationally_equivalent(
+            left: _Sequence[_Any], right: _Sequence[_Any]
+    ) -> bool:
+        assert left and right
+        if len(left) != len(right):
+            return False
+        first_left_element = left[0]
+        try:
+            index = right.index(first_left_element)
+        except ValueError:
+            return False
+        else:
+            return ((left[1:-index] == right[index + 1:]
+                     and left[-index:] == right[:index])
+                    or (left[-index - 1:0:-1] == right[:index]
+                        and left[:-index - 1:-1] == right[index + 1:]))
 
 
     class Point:

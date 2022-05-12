@@ -1,16 +1,16 @@
 use std::cmp::Ordering;
+use std::convert::TryFrom;
 
+use pyo3::basic::CompareOp;
 use pyo3::exceptions::{PyOverflowError, PyTypeError, PyValueError, PyZeroDivisionError};
 use pyo3::prelude::{pyclass, pymethods, pymodule, PyModule, PyResult, Python};
-use pyo3::types::{PyFloat, PyLong, PyTuple};
+use pyo3::type_object::PyTypeObject;
+use pyo3::types::{PyFloat, PyLong, PySequence, PyTuple};
 use pyo3::{ffi, intern, AsPyPointer, IntoPy, Py, PyAny, PyErr, PyObject};
 use rithm::traits::{Endianness, FromBytes, ToBytes, Zeroable};
 use rithm::{big_int, fraction};
 
-use crate::traits::{Point, Segment};
-use pyo3::basic::CompareOp;
-use pyo3::type_object::PyTypeObject;
-use std::convert::TryFrom;
+use crate::traits::{Contour, Point, Segment};
 
 pub mod geometries;
 pub mod traits;
@@ -24,6 +24,7 @@ const BINARY_SHIFT: usize = (Digit::BITS - 1) as usize;
 
 type BigInt = big_int::BigInt<Digit, '_', BINARY_SHIFT>;
 type Fraction = fraction::Fraction<BigInt>;
+type ExactContour = geometries::Contour<Fraction>;
 type ExactPoint = geometries::Point<Fraction>;
 type ExactSegment = geometries::Segment<Fraction>;
 
@@ -32,6 +33,11 @@ impl IntoPy<PyObject> for ExactPoint {
         PyExactPoint(self).into_py(py)
     }
 }
+
+#[pyclass(name = "Contour", module = "rene", subclass)]
+#[pyo3(text_signature = "(vertices, /)")]
+#[derive(Clone)]
+struct PyExactContour(ExactContour);
 
 #[pyclass(name = "Point", module = "rene", subclass)]
 #[pyo3(text_signature = "(x, y, /)")]
@@ -42,6 +48,59 @@ struct PyExactPoint(ExactPoint);
 #[pyo3(text_signature = "(start, end, /)")]
 #[derive(Clone)]
 struct PyExactSegment(ExactSegment);
+
+#[pymethods]
+impl PyExactContour {
+    #[new]
+    fn new(vertices: &PySequence) -> PyResult<Self> {
+        let mut result_vertices = Vec::<ExactPoint>::with_capacity(vertices.len()?);
+        for vertex in vertices.iter()? {
+            result_vertices.push(vertex?.extract::<PyExactPoint>()?.0);
+        }
+        Ok(PyExactContour(ExactContour::new(result_vertices)))
+    }
+
+    #[getter]
+    fn vertices(&self) -> Vec<ExactPoint> {
+        self.0.vertices()
+    }
+
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        Ok(format!(
+            "rene.exact.Contour({})",
+            self.vertices()
+                .into_py(py)
+                .as_ref(py)
+                .repr()?
+                .extract::<String>()?
+        ))
+    }
+
+    fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactContour::type_object(py))? {
+            let other = other.extract::<PyExactContour>()?;
+            match op {
+                CompareOp::Eq => Ok((self.0 == other.0).into_py(py)),
+                CompareOp::Ne => Ok((self.0 != other.0).into_py(py)),
+                _ => Ok(py.NotImplemented()),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
+
+    fn __str__(&self, py: Python) -> PyResult<String> {
+        Ok(format!(
+            "Contour([{}])",
+            self.vertices()
+                .iter()
+                .flat_map(|vertex| PyExactPoint(vertex.clone()).__str__(py))
+                .collect::<Vec<String>>()
+                .join(", ")
+        ))
+    }
+}
 
 #[pymethods]
 impl PyExactPoint {
@@ -245,6 +304,7 @@ fn try_scalar_to_fraction(value: &PyAny) -> PyResult<Fraction> {
 
 #[pymodule]
 fn _exact(_py: Python, module: &PyModule) -> PyResult<()> {
+    module.add_class::<PyExactContour>()?;
     module.add_class::<PyExactPoint>()?;
     module.add_class::<PyExactSegment>()?;
     Ok(())
