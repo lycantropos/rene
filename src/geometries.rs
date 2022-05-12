@@ -10,6 +10,12 @@ impl<Scalar> Point<Scalar> {
     }
 }
 
+impl<Scalar: fmt::Display> fmt::Display for Point<Scalar> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_fmt(format_args!("Point({}, {})", self.0, self.1))
+    }
+}
+
 impl<Scalar: Clone> traits::Point<Scalar> for Point<Scalar> {
     fn x(&self) -> Scalar {
         self.0.clone()
@@ -17,12 +23,6 @@ impl<Scalar: Clone> traits::Point<Scalar> for Point<Scalar> {
 
     fn y(&self) -> Scalar {
         self.1.clone()
-    }
-}
-
-impl<Scalar: fmt::Display> fmt::Display for Point<Scalar> {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_fmt(format_args!("Point({}, {})", self.0, self.1))
     }
 }
 
