@@ -72,7 +72,13 @@ impl<Scalar: PartialEq> PartialEq for Segment<Scalar> {
 impl<Scalar: Eq> Eq for Segment<Scalar> {}
 
 #[derive(Clone)]
-struct Contour<Scalar>(Vec<Point<Scalar>>);
+pub struct Contour<Scalar>(Vec<Point<Scalar>>);
+
+impl<Scalar: Clone> Contour<Scalar> {
+    pub fn new(vertices: Vec<Point<Scalar>>) -> Self {
+        Self(vertices)
+    }
+}
 
 impl<Scalar: Clone> traits::Contour<Scalar> for Contour<Scalar> {
     type Point = self::Point<Scalar>;
