@@ -80,6 +80,38 @@ impl<Scalar: Clone> Contour<Scalar> {
     }
 }
 
+impl<Scalar: PartialEq> PartialEq for Contour<Scalar> {
+    fn eq(&self, other: &Self) -> bool {
+        are_non_empty_unique_sequences_rotationally_equivalent(&self.0, &other.0)
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        !are_non_empty_unique_sequences_rotationally_equivalent(&self.0, &other.0)
+    }
+}
+
+fn are_non_empty_unique_sequences_rotationally_equivalent<T: PartialEq>(
+    left: &[T],
+    right: &[T],
+) -> bool {
+    debug_assert!(!left.is_empty() && !right.is_empty());
+    if left.len() != right.len() {
+        false
+    } else {
+        let left_first_element = &left[0];
+        right
+            .iter()
+            .position(|value| value == left_first_element)
+            .map(|index| {
+                (left[1..left.len() - index] == right[index + 1..]
+                    && left[left.len() - index..] == right[..index])
+                    || (left[left.len() - index..].iter().rev().eq(right[..index].iter())
+                        && left[1..left.len() - index].iter().rev().eq(right[index + 1..].iter()))
+            })
+            .unwrap_or(false)
+    }
+}
+
 impl<Scalar: Clone> traits::Contour<Scalar> for Contour<Scalar> {
     type Point = self::Point<Scalar>;
     type Segment = self::Segment<Scalar>;
