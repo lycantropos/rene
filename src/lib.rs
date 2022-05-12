@@ -27,6 +27,12 @@ type Fraction = fraction::Fraction<BigInt>;
 type ExactPoint = geometries::Point<Fraction>;
 type ExactSegment = geometries::Segment<Fraction>;
 
+impl IntoPy<PyObject> for ExactPoint {
+    fn into_py(self, py: Python<'_>) -> PyObject {
+        PyExactPoint(self).into_py(py)
+    }
+}
+
 #[pyclass(name = "Point", module = "rene", subclass)]
 #[pyo3(text_signature = "(x, y, /)")]
 #[derive(Clone)]
