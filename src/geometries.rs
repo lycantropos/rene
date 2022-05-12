@@ -105,8 +105,14 @@ fn are_non_empty_unique_sequences_rotationally_equivalent<T: PartialEq>(
             .map(|index| {
                 (left[1..left.len() - index] == right[index + 1..]
                     && left[left.len() - index..] == right[..index])
-                    || (left[left.len() - index..].iter().rev().eq(right[..index].iter())
-                        && left[1..left.len() - index].iter().rev().eq(right[index + 1..].iter()))
+                    || (left[left.len() - index..]
+                        .iter()
+                        .rev()
+                        .eq(right[..index].iter())
+                        && left[1..left.len() - index]
+                            .iter()
+                            .rev()
+                            .eq(right[index + 1..].iter()))
             })
             .unwrap_or(false)
     }
