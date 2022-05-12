@@ -49,9 +49,9 @@ except ImportError:
         else:
             return ((left[1:len(left) - index] == right[index + 1:]
                      and left[len(left) - index:] == right[:index])
-                    or
-                    (left[len(left) - index - 1:0:-1] == right[:index]
-                     and left[:len(left) - index - 1:-1] == right[index + 1:]))
+                    or (left[:len(left) - index - 1:-1] == right[:index]
+                        and (left[len(left) - index - 1:0:-1]
+                             == right[index + 1:])))
 
 
     class Point:
