@@ -17,20 +17,12 @@ impl<Scalar: fmt::Display> fmt::Display for Point<Scalar> {
     }
 }
 
+impl<Scalar: Eq> Eq for Point<Scalar> {}
+
 impl<Scalar: Hash> Hash for Point<Scalar> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.0.hash(state);
         self.1.hash(state);
-    }
-}
-
-impl<Scalar: Clone> traits::Point<Scalar> for Point<Scalar> {
-    fn x(&self) -> Scalar {
-        self.0.clone()
-    }
-
-    fn y(&self) -> Scalar {
-        self.1.clone()
     }
 }
 
@@ -44,7 +36,15 @@ impl<Scalar: PartialEq> PartialEq for Point<Scalar> {
     }
 }
 
-impl<Scalar: Eq> Eq for Point<Scalar> {}
+impl<Scalar: Clone> traits::Point<Scalar> for Point<Scalar> {
+    fn x(&self) -> Scalar {
+        self.0.clone()
+    }
+
+    fn y(&self) -> Scalar {
+        self.1.clone()
+    }
+}
 
 #[derive(Clone)]
 pub struct Segment<Scalar>(Point<Scalar>, Point<Scalar>);
