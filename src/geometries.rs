@@ -27,6 +27,18 @@ impl<Scalar: Hash> Hash for Point<Scalar> {
     }
 }
 
+impl<Scalar: Ord> Ord for Point<Scalar> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        if self.lt(other) {
+            Ordering::Less
+        } else if self.gt(other) {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
 impl<Scalar: PartialEq> PartialEq for Point<Scalar> {
     fn eq(&self, other: &Self) -> bool {
         self.0 == other.0 && self.1 == other.1
