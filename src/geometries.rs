@@ -96,6 +96,18 @@ impl<Scalar> Segment<Scalar> {
     }
 }
 
+impl<Scalar: PartialOrd + Hash> Hash for Segment<Scalar> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        if self.0.lt(&self.1) {
+            self.0.hash(state);
+            self.1.hash(state);
+        } else {
+            self.1.hash(state);
+            self.0.hash(state);
+        }
+    }
+}
+
 impl<Scalar: Clone> traits::Segment<Scalar> for Segment<Scalar> {
     type Point = self::Point<Scalar>;
 
