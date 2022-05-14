@@ -1,5 +1,6 @@
 use super::traits;
 use std::fmt;
+use std::hash::{Hash, Hasher};
 
 #[derive(Clone, fmt::Debug)]
 pub struct Point<Scalar>(Scalar, Scalar);
@@ -13,6 +14,13 @@ impl<Scalar> Point<Scalar> {
 impl<Scalar: fmt::Display> fmt::Display for Point<Scalar> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_fmt(format_args!("Point({}, {})", self.0, self.1))
+    }
+}
+
+impl<Scalar: Hash> Hash for Point<Scalar> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.0.hash(state);
+        self.1.hash(state);
     }
 }
 
