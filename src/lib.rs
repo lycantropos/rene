@@ -44,10 +44,21 @@ struct PyOrientation(Orientation);
 impl PyOrientation {
     #[classattr]
     const CLOCKWISE: PyOrientation = PyOrientation(Orientation::Clockwise);
+
     #[classattr]
     const COLLINEAR: PyOrientation = PyOrientation(Orientation::Collinear);
+
     #[classattr]
     const COUNTERCLOCKWISE: PyOrientation = PyOrientation(Orientation::Counterclockwise);
+
+    #[getter]
+    fn value(&self) -> i8 {
+        match self.0 {
+            Orientation::Clockwise => -1,
+            Orientation::Collinear => 0,
+            Orientation::Counterclockwise => 1,
+        }
+    }
 
     #[new]
     fn __new__(value: &PyAny) -> PyResult<PyOrientation> {
