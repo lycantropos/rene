@@ -50,9 +50,10 @@ if platform.python_implementation() == 'CPython':
         def __iter__(self) -> Iterator['RustExtension']:
             from setuptools_rust import RustExtension
             yield RustExtension(rene.__name__ + '._exact')
+            yield RustExtension(rene.__name__ + '._rene')
 
         def __len__(self) -> int:
-            return 1
+            return 2
 
 
     parameters.update(rust_extensions=LazyRustExtensions(),

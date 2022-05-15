@@ -10,6 +10,7 @@ use pyo3::{ffi, intern, AsPyPointer, IntoPy, Py, PyAny, PyErr, PyObject};
 use rithm::traits::{Endianness, FromBytes, ToBytes, Zeroable};
 use rithm::{big_int, fraction};
 
+use crate::oriented::{Orientation, Oriented};
 use crate::traits::{Contour, Point, Segment};
 
 pub mod geometries;
@@ -32,6 +33,31 @@ type ExactSegment = geometries::Segment<Fraction>;
 impl IntoPy<PyObject> for ExactPoint {
     fn into_py(self, py: Python<'_>) -> PyObject {
         PyExactPoint(self).into_py(py)
+    }
+}
+
+#[pyclass(name = "Orientation", module = "rene")]
+#[derive(Clone)]
+struct PyOrientation(Orientation);
+
+#[pymethods]
+impl PyOrientation {
+    #[classattr]
+    const CLOCKWISE: PyOrientation = PyOrientation(Orientation::Clockwise);
+    #[classattr]
+    const COLLINEAR: PyOrientation = PyOrientation(Orientation::Collinear);
+    #[classattr]
+    const COUNTERCLOCKWISE: PyOrientation = PyOrientation(Orientation::Counterclockwise);
+
+    fn __repr__(&self) -> String {
+        format!(
+            "rene.Orientation.{}",
+            match self.0 {
+                Orientation::Clockwise => "CLOCKWISE",
+                Orientation::Collinear => "COLLINEAR",
+                Orientation::Counterclockwise => "COUNTERCLOCKWISE",
+            }
+        )
     }
 }
 
@@ -308,5 +334,11 @@ fn _exact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactContour>()?;
     module.add_class::<PyExactPoint>()?;
     module.add_class::<PyExactSegment>()?;
+    Ok(())
+}
+
+#[pymodule]
+fn _rene(_py: Python, module: &PyModule) -> PyResult<()> {
+    module.add_class::<PyOrientation>()?;
     Ok(())
 }
