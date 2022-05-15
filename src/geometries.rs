@@ -141,6 +141,8 @@ impl<Scalar: Clone> Contour<Scalar> {
     }
 }
 
+impl<Scalar: Eq> Eq for Contour<Scalar> {}
+
 impl<Scalar: PartialEq> PartialEq for Contour<Scalar> {
     fn eq(&self, other: &Self) -> bool {
         are_non_empty_unique_sequences_rotationally_equivalent(&self.0, &other.0)
