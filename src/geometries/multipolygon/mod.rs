@@ -2,7 +2,9 @@ use crate::geometries::{Contour, Point, Polygon, Segment};
 use crate::traits;
 
 #[derive(Clone)]
-struct Multipolygon<Scalar>(Vec<Polygon<Scalar>>);
+struct Multipolygon<Scalar> {
+    polygons: Vec<Polygon<Scalar>>,
+}
 
 impl<Scalar: Clone> traits::Multipolygon<Scalar> for Multipolygon<Scalar> {
     type Point = self::Point<Scalar>;
@@ -11,6 +13,6 @@ impl<Scalar: Clone> traits::Multipolygon<Scalar> for Multipolygon<Scalar> {
     type Polygon = self::Polygon<Scalar>;
 
     fn polygons(&self) -> Vec<Self::Polygon> {
-        self.0.clone()
+        self.polygons.clone()
     }
 }
