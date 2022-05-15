@@ -167,8 +167,11 @@ impl PyExactPoint {
             let other = other.extract::<PyExactPoint>()?;
             match op {
                 CompareOp::Eq => Ok((self.0 == other.0).into_py(py)),
+                CompareOp::Ge => Ok((self.0 >= other.0).into_py(py)),
+                CompareOp::Gt => Ok((self.0 > other.0).into_py(py)),
+                CompareOp::Le => Ok((self.0 <= other.0).into_py(py)),
+                CompareOp::Lt => Ok((self.0 < other.0).into_py(py)),
                 CompareOp::Ne => Ok((self.0 != other.0).into_py(py)),
-                _ => Ok(py.NotImplemented()),
             }
         } else {
             Ok(py.NotImplemented())

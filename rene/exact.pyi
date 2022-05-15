@@ -51,7 +51,19 @@ class Point:
     def __eq__(self, other: _Any) -> _Any:
         ...
 
+    def __ge__(self, other: 'Point') -> bool:
+        ...
+
+    def __gt__(self, other: 'Point') -> bool:
+        ...
+
     def __hash__(self) -> int:
+        ...
+
+    def __le__(self, other: 'Point') -> bool:
+        ...
+
+    def __lt__(self, other: 'Point') -> bool:
         ...
 
     def __repr__(self) -> str:

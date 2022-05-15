@@ -80,8 +80,28 @@ except ImportError:
                     if isinstance(other, Point)
                     else NotImplemented)
 
+        def __ge__(self, other):
+            return (self.x > other.x or self.x == other.x and self.y >= other.y
+                    if isinstance(other, Point)
+                    else NotImplemented)
+
+        def __gt__(self, other):
+            return (self.x > other.x or self.x == other.x and self.y > other.y
+                    if isinstance(other, Point)
+                    else NotImplemented)
+
         def __hash__(self):
             return hash((self.x, self.y))
+
+        def __le__(self, other):
+            return (self.x < other.x or self.x == other.x and self.y <= other.y
+                    if isinstance(other, Point)
+                    else NotImplemented)
+
+        def __lt__(self, other):
+            return (self.x < other.x or self.x == other.x and self.y < other.y
+                    if isinstance(other, Point)
+                    else NotImplemented)
 
         def __repr__(self):
             return (f'{__name__}.{type(self).__qualname__}'
