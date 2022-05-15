@@ -269,7 +269,7 @@ impl<Scalar: Clone> traits::Contour<Scalar> for Contour<Scalar> {
 }
 
 #[derive(Clone)]
-struct Polygon<Scalar>(Contour<Scalar>, Vec<Contour<Scalar>>);
+pub struct Polygon<Scalar>(Contour<Scalar>, Vec<Contour<Scalar>>);
 
 impl<Scalar: Clone> traits::Polygon<Scalar> for Polygon<Scalar> {
     type Point = self::Point<Scalar>;
