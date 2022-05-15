@@ -8,6 +8,6 @@ pub(super) fn cross_multiply<Scalar: AdditiveGroup + MultiplicativeMonoid>(
     second_start: Point<Scalar>,
     second_end: Point<Scalar>,
 ) -> Scalar {
-    (first_end.0 - first_start.0) * (second_end.1 - second_start.1)
-        - (first_end.1 - first_start.1) * (second_end.0 - second_start.0)
+    (first_end.x - first_start.x) * (second_end.y - second_start.y)
+        - (first_end.y - first_start.y) * (second_end.x - second_start.x)
 }

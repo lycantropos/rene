@@ -3,23 +3,23 @@ use std::fmt;
 use crate::traits;
 
 #[derive(Clone, fmt::Debug)]
-pub struct Point<Scalar>(
-    pub(in crate::geometries) Scalar,
-    pub(in crate::geometries) Scalar,
-);
+pub struct Point<Scalar> {
+    pub(in crate::geometries) x: Scalar,
+    pub(in crate::geometries) y: Scalar,
+}
 
 impl<Scalar: Clone> traits::Point<Scalar> for Point<Scalar> {
     fn x(&self) -> Scalar {
-        self.0.clone()
+        self.x.clone()
     }
 
     fn y(&self) -> Scalar {
-        self.1.clone()
+        self.y.clone()
     }
 }
 
 impl<Scalar> Point<Scalar> {
     pub fn new(x: Scalar, y: Scalar) -> Self {
-        Self(x, y)
+        Self { x, y }
     }
 }
