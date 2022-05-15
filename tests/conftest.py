@@ -16,7 +16,7 @@ def pytest_collection_modifyitems(session: pytest.Session,
     settings.register_profile('default',
                               deadline=((timedelta(hours=1)
                                          / (max_examples * len(items)))
-                                        if on_ci
+                                        if items and on_ci
                                         else None),
                               max_examples=max_examples,
                               suppress_health_check=[HealthCheck.too_slow])
