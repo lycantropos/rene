@@ -8,11 +8,16 @@ from hypothesis import (HealthCheck,
 on_ci = bool(os.getenv('CI', False))
 max_examples = settings.default.max_examples
 settings.register_profile('default',
-                          deadline=(timedelta(hours=1) / max_examples
-                                    if on_ci
-                                    else None),
                           max_examples=max_examples,
                           suppress_health_check=[HealthCheck.too_slow])
+
+if on_ci:
+    @pytest.hookimpl(tryfirst=True)
+    def pytest_runtest_call(item: pytest.Item) -> None:
+        set_deadline = settings(deadline=((timedelta(hours=1)
+                                           / (max_examples
+                                              * len(item.session.items)))))
+        item.obj = set_deadline(item.obj)
 
 
 @pytest.hookimpl(trylast=True)
