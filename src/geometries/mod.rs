@@ -1,7 +1,12 @@
-use super::traits;
-use std::cmp::{max, Ordering};
+use std::cmp::Ordering;
 use std::fmt;
 use std::hash::{Hash, Hasher};
+
+use rithm::traits::{AdditiveGroup, MultiplicativeMonoid, Sign, Signed};
+
+use crate::oriented::{Orientation, Oriented};
+
+use super::traits;
 
 #[derive(Clone, fmt::Debug)]
 pub struct Point<Scalar>(Scalar, Scalar);
@@ -142,6 +147,43 @@ impl<Scalar: Clone> Contour<Scalar> {
 }
 
 impl<Scalar: Eq> Eq for Contour<Scalar> {}
+
+fn cross_multiply<Scalar: AdditiveGroup + MultiplicativeMonoid>(
+    first_start: Point<Scalar>,
+    first_end: Point<Scalar>,
+    second_start: Point<Scalar>,
+    second_end: Point<Scalar>,
+) -> Scalar {
+    (first_end.0 - first_start.0) * (second_end.1 - second_start.1)
+        - (first_end.1 - first_start.1) * (second_end.0 - second_start.0)
+}
+
+impl<Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Ord + Signed> Oriented
+    for Contour<Scalar>
+{
+    fn orientation(&self) -> Orientation {
+        let min_vertex_index = self.to_min_vertex_index();
+        let previous_to_min_vertex_index = if min_vertex_index.is_zero() {
+            self.0.len() - 1
+        } else {
+            min_vertex_index - 1
+        };
+        let next_to_min_vertex_index = unsafe {
+            (min_vertex_index + 1)
+                .checked_rem_euclid(self.0.len())
+                .unwrap_unchecked()
+        };
+        sign_to_orientation(
+            cross_multiply(
+                self.0[previous_to_min_vertex_index].clone(),
+                self.0[min_vertex_index].clone(),
+                self.0[previous_to_min_vertex_index].clone(),
+                self.0[next_to_min_vertex_index].clone(),
+            )
+            .sign(),
+        )
+    }
+}
 
 impl<Scalar: PartialEq> PartialEq for Contour<Scalar> {
     fn eq(&self, other: &Self) -> bool {
