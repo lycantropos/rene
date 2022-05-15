@@ -8,8 +8,8 @@ from hypothesis import (HealthCheck,
 
 
 @pytest.hookimpl(trylast=True)
-def pytest_collection_modifyitems(_session: pytest.Session,
-                                  _config: pytest.Config,
+def pytest_collection_modifyitems(session: pytest.Session,
+                                  config: pytest.Config,
                                   items: List[pytest.Item]) -> None:
     on_ci = bool(os.getenv('CI', False))
     max_examples = settings.default.max_examples
