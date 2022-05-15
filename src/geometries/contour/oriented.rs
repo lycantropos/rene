@@ -11,20 +11,20 @@ impl<Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Ord + Signed> Orient
     fn orientation(&self) -> Orientation {
         let min_vertex_index = self.to_min_vertex_index();
         let previous_to_min_vertex_index = if min_vertex_index.is_zero() {
-            self.0.len() - 1
+            self.vertices.len() - 1
         } else {
             min_vertex_index - 1
         };
         let next_to_min_vertex_index = unsafe {
             (min_vertex_index + 1)
-                .checked_rem_euclid(self.0.len())
+                .checked_rem_euclid(self.vertices.len())
                 .unwrap_unchecked()
         };
         match operations::cross_multiply(
-            self.0[previous_to_min_vertex_index].clone(),
-            self.0[min_vertex_index].clone(),
-            self.0[previous_to_min_vertex_index].clone(),
-            self.0[next_to_min_vertex_index].clone(),
+            self.vertices[previous_to_min_vertex_index].clone(),
+            self.vertices[min_vertex_index].clone(),
+            self.vertices[previous_to_min_vertex_index].clone(),
+            self.vertices[next_to_min_vertex_index].clone(),
         )
         .sign()
         {
