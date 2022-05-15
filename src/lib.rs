@@ -13,6 +13,7 @@ use rithm::{big_int, fraction};
 use crate::traits::{Contour, Point, Segment};
 
 pub mod geometries;
+pub mod oriented;
 pub mod traits;
 
 #[cfg(target_arch = "x86")]
