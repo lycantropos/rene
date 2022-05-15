@@ -6,8 +6,14 @@ from typing import (Any as _Any,
 
 from rithm import Fraction as _Fraction
 
+from rene import Orientation as _Orientation
+
 
 class Contour:
+    @property
+    def orientation(self) -> _Orientation:
+        ...
+
     @property
     def vertices(self) -> _Sequence[Point]:
         ...

@@ -92,6 +92,20 @@ impl PyExactContour {
         self.0.vertices()
     }
 
+    #[getter]
+    fn orientation(&self, py: Python) -> PyResult<&PyAny> {
+        let orientation = self.0.orientation();
+        let orientation_cls =
+            unsafe { ROOT_MODULE.unwrap_unchecked() }.getattr(intern!(py, "Orientation"))?;
+        match orientation {
+            Orientation::Clockwise => orientation_cls.getattr(intern!(py, "CLOCKWISE")),
+            Orientation::Collinear => orientation_cls.getattr(intern!(py, "COLLINEAR")),
+            Orientation::Counterclockwise => {
+                orientation_cls.getattr(intern!(py, "COUNTERCLOCKWISE"))
+            }
+        }
+    }
+
     fn __repr__(&self, py: Python) -> PyResult<String> {
         Ok(format!(
             "rene.exact.Contour({})",
@@ -332,11 +346,17 @@ fn try_scalar_to_fraction(value: &PyAny) -> PyResult<Fraction> {
     }
 }
 
+static mut ROOT_MODULE: Option<&PyModule> = None;
+
 #[pymodule]
 fn _exact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactContour>()?;
     module.add_class::<PyExactPoint>()?;
     module.add_class::<PyExactSegment>()?;
+    unsafe {
+        let py = Python::assume_gil_acquired();
+        ROOT_MODULE = Some(py.import("rene")?);
+    }
     Ok(())
 }
 

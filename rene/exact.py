@@ -8,8 +8,21 @@ except ImportError:
 
     from rithm import Fraction as _Fraction
 
+    from . import Orientation as _Orientation
+
 
     class Contour:
+        @property
+        def orientation(self):
+            vertices = self.vertices
+            min_vertex_index = min(range(len(vertices)),
+                                   key=vertices.__getitem__)
+            return _Orientation(_to_sign(_cross_multiply(
+                    vertices[min_vertex_index - 1], vertices[min_vertex_index],
+                    vertices[min_vertex_index - 1],
+                    vertices[(min_vertex_index + 1) % len(vertices)],
+            )))
+
         @property
         def vertices(self):
             return self._vertices[:]
@@ -139,3 +152,16 @@ except ImportError:
 
         def __str__(self):
             return f'{type(self).__qualname__}({self.start}, {self.end})'
+
+
+    def _cross_multiply(first_start: Point,
+                        first_end: Point,
+                        second_start: Point,
+                        second_end: Point) -> _Fraction:
+        return ((first_end.x - first_start.x) * (second_end.y - second_start.y)
+                - ((first_end.y - first_start.y)
+                   * (second_end.x - second_start.x)))
+
+
+    def _to_sign(value: _Fraction) -> int:
+        return (1 if value > 0 else -1) if value else 0
