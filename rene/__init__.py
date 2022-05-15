@@ -12,3 +12,6 @@ except ImportError:
         CLOCKWISE = -1
         COLLINEAR = 0
         COUNTERCLOCKWISE = 1
+
+        def __repr__(self):
+            return f'{__name__}.{type(self).__qualname__}.{self.name}'
