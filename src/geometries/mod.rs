@@ -298,3 +298,22 @@ impl<Scalar: Clone> traits::Multipolygon<Scalar> for Multipolygon<Scalar> {
         self.0.clone()
     }
 }
+
+#[inline(always)]
+fn sign_to_orientation(sign: Sign) -> Orientation {
+    match sign {
+        Sign::Negative => Orientation::Clockwise,
+        Sign::Positive => Orientation::Counterclockwise,
+        Sign::Zero => Orientation::Collinear,
+    }
+}
+
+impl<Scalar: Ord> Contour<Scalar> {
+    fn to_min_vertex_index(&self) -> usize {
+        unsafe {
+            (0..self.0.len())
+                .min_by_key(|index| &self.0[*index])
+                .unwrap_unchecked()
+        }
+    }
+}
