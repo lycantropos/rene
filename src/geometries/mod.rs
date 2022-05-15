@@ -203,15 +203,18 @@ impl<Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Ord + Signed> Orient
                 .checked_rem_euclid(self.0.len())
                 .unwrap_unchecked()
         };
-        sign_to_orientation(
-            cross_multiply(
-                self.0[previous_to_min_vertex_index].clone(),
-                self.0[min_vertex_index].clone(),
-                self.0[previous_to_min_vertex_index].clone(),
-                self.0[next_to_min_vertex_index].clone(),
-            )
-            .sign(),
+        match cross_multiply(
+            self.0[previous_to_min_vertex_index].clone(),
+            self.0[min_vertex_index].clone(),
+            self.0[previous_to_min_vertex_index].clone(),
+            self.0[next_to_min_vertex_index].clone(),
         )
+        .sign()
+        {
+            Sign::Negative => Orientation::Clockwise,
+            Sign::Positive => Orientation::Counterclockwise,
+            Sign::Zero => Orientation::Collinear,
+        }
     }
 }
 
@@ -330,15 +333,6 @@ impl<Scalar: Clone> traits::Multipolygon<Scalar> for Multipolygon<Scalar> {
 
     fn polygons(&self) -> Vec<Self::Polygon> {
         self.0.clone()
-    }
-}
-
-#[inline(always)]
-fn sign_to_orientation(sign: Sign) -> Orientation {
-    match sign {
-        Sign::Negative => Orientation::Clockwise,
-        Sign::Positive => Orientation::Counterclockwise,
-        Sign::Zero => Orientation::Collinear,
     }
 }
 
