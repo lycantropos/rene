@@ -1,3 +1,6 @@
+__version__: str
+
+
 class Orientation:
     CLOCKWISE: 'Orientation' = ...
     COLLINEAR: 'Orientation' = ...
