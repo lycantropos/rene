@@ -34,17 +34,17 @@ impl IntoPy<PyObject> for ExactPoint {
     }
 }
 
-#[pyclass(name = "Contour", module = "rene", subclass)]
+#[pyclass(name = "Contour", module = "rene.exact", subclass)]
 #[pyo3(text_signature = "(vertices, /)")]
 #[derive(Clone)]
 struct PyExactContour(ExactContour);
 
-#[pyclass(name = "Point", module = "rene", subclass)]
+#[pyclass(name = "Point", module = "rene.exact", subclass)]
 #[pyo3(text_signature = "(x, y, /)")]
 #[derive(Clone)]
 struct PyExactPoint(ExactPoint);
 
-#[pyclass(name = "Segment", module = "rene", subclass)]
+#[pyclass(name = "Segment", module = "rene.exact", subclass)]
 #[pyo3(text_signature = "(start, end, /)")]
 #[derive(Clone)]
 struct PyExactSegment(ExactSegment);
