@@ -274,6 +274,11 @@ impl<Scalar: Clone> traits::Contour<Scalar> for Contour<Scalar> {
 #[derive(Clone)]
 pub struct Polygon<Scalar>(Contour<Scalar>, Vec<Contour<Scalar>>);
 
+impl<Scalar: AdditiveGroup + Clone + Eq + Hash + MultiplicativeMonoid + Ord + Signed> Eq
+    for Polygon<Scalar>
+{
+}
+
 impl<Scalar: AdditiveGroup + Clone + Eq + Hash + MultiplicativeMonoid + Ord + Signed> PartialEq
     for Polygon<Scalar>
 {
