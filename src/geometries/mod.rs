@@ -1,6 +1,9 @@
 use std::cmp::Ordering;
+use std::collections::hash_map::RandomState;
+use std::collections::hash_set::HashSet;
 use std::fmt;
 use std::hash::{Hash, Hasher};
+use std::iter::FromIterator;
 
 use rithm::traits::{AdditiveGroup, MultiplicativeMonoid, Sign, Signed};
 
@@ -270,6 +273,32 @@ impl<Scalar: Clone> traits::Contour<Scalar> for Contour<Scalar> {
 
 #[derive(Clone)]
 pub struct Polygon<Scalar>(Contour<Scalar>, Vec<Contour<Scalar>>);
+
+impl<Scalar: AdditiveGroup + Clone + Eq + Hash + MultiplicativeMonoid + Ord + Signed> PartialEq
+    for Polygon<Scalar>
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+            && are_unique_hashable_sequences_permutationally_equivalent(&self.1, &other.1)
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        self.0 != other.0
+            || !are_unique_hashable_sequences_permutationally_equivalent(&self.1, &other.1)
+    }
+}
+
+fn are_unique_hashable_sequences_permutationally_equivalent<T: Eq + Hash>(
+    left: &[T],
+    right: &[T],
+) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        let left_set = HashSet::<_, RandomState>::from_iter(left);
+        right.iter().all(|value| left_set.contains(value))
+    }
+}
 
 impl<Scalar: Clone> traits::Polygon<Scalar> for Polygon<Scalar> {
     type Point = self::Point<Scalar>;
