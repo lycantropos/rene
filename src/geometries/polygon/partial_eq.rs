@@ -10,16 +10,18 @@ impl<Scalar: AdditiveGroup + Clone + Eq + Hash + MultiplicativeMonoid + Ord + Si
     for Polygon<Scalar>
 {
     fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
+        self.border == other.border
             && contracts::are_unique_hashable_sequences_permutationally_equivalent(
-                &self.1, &other.1,
+                &self.holes,
+                &other.holes,
             )
     }
 
     fn ne(&self, other: &Self) -> bool {
-        self.0 != other.0
+        self.border != other.border
             || !contracts::are_unique_hashable_sequences_permutationally_equivalent(
-                &self.1, &other.1,
+                &self.holes,
+                &other.holes,
             )
     }
 }
