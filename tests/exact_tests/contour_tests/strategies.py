@@ -1,5 +1,3 @@
-from operator import attrgetter
-
 from hypothesis import strategies
 from rithm import Fraction
 
