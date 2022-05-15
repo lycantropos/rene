@@ -14,7 +14,7 @@ settings.register_profile('default',
 if on_ci:
     @pytest.hookimpl(tryfirst=True)
     def pytest_runtest_call(item: pytest.Item) -> None:
-        set_deadline = settings(deadline=((timedelta(hours=1)
+        set_deadline = settings(deadline=((timedelta(minutes=10)
                                            / (max_examples
                                               * len(item.session.items)))))
         item.obj = set_deadline(item.obj)
