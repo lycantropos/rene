@@ -1,6 +1,7 @@
 try:
     from ._exact import (Contour,
                          Point,
+                         Polygon,
                          Segment)
 except ImportError:
     from typing import (Any as _Any,
@@ -127,6 +128,31 @@ except ImportError:
 
         def __str__(self):
             return f'{type(self).__qualname__}({self.x}, {self.y})'
+
+
+    class Polygon:
+        @property
+        def border(self):
+            return self._border
+
+        @property
+        def holes(self):
+            return self._holes[:]
+
+        __slots__ = '_border', '_holes'
+
+        def __new__(cls, border, holes):
+            self = super().__new__(cls)
+            self._border, self._holes = border, list(holes)
+            return self
+
+        def __repr__(self):
+            return (f'{__name__}.{type(self).__qualname__}'
+                    f'({self.border!r}, {self.holes!r})')
+
+        def __str__(self):
+            return (f'{type(self).__qualname__}({self.border}, [{{}}])'
+                    .format(', '.join(map(str, self.holes))))
 
 
     class Segment:

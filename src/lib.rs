@@ -12,7 +12,7 @@ use rithm::{big_int, fraction};
 
 use crate::geometries::MIN_CONTOUR_VERTICES_COUNT;
 use crate::oriented::{Orientation, Oriented};
-use crate::traits::{Contour, Point, Segment};
+use crate::traits::{Contour, Point, Polygon, Segment};
 
 pub mod geometries;
 pub mod oriented;
@@ -29,6 +29,7 @@ type BigInt = big_int::BigInt<Digit, '_', BINARY_SHIFT>;
 type Fraction = fraction::Fraction<BigInt>;
 type ExactContour = geometries::Contour<Fraction>;
 type ExactPoint = geometries::Point<Fraction>;
+type ExactPolygon = geometries::Polygon<Fraction>;
 type ExactSegment = geometries::Segment<Fraction>;
 
 impl IntoPy<PyObject> for ExactContour {
@@ -105,6 +106,11 @@ struct PyExactContour(ExactContour);
 #[pyo3(text_signature = "(x, y, /)")]
 #[derive(Clone)]
 struct PyExactPoint(ExactPoint);
+
+#[pyclass(name = "Polygon", module = "rene.exact", subclass)]
+#[pyo3(text_signature = "(border, holes, /)")]
+#[derive(Clone)]
+struct PyExactPolygon(ExactPolygon);
 
 #[pyclass(name = "Segment", module = "rene.exact", subclass)]
 #[pyo3(text_signature = "(start, end, /)")]
@@ -240,6 +246,55 @@ impl PyExactPoint {
             "Point({}, {})",
             self.x(py)?.str()?.extract::<String>()?,
             self.y(py)?.str()?.extract::<String>()?,
+        ))
+    }
+}
+
+#[pymethods]
+impl PyExactPolygon {
+    #[new]
+    fn new(border: &PyExactContour, holes: &PySequence) -> PyResult<Self> {
+        let mut result_holes = Vec::<ExactContour>::with_capacity(holes.len()?);
+        for hole in holes.iter()? {
+            result_holes.push(hole?.extract::<PyExactContour>()?.0);
+        }
+        Ok(PyExactPolygon(ExactPolygon::new(
+            border.0.clone(),
+            result_holes,
+        )))
+    }
+
+    #[getter]
+    fn border(&self) -> ExactContour {
+        self.0.border()
+    }
+
+    #[getter]
+    fn holes(&self) -> Vec<ExactContour> {
+        self.0.holes()
+    }
+
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        Ok(format!(
+            "rene.exact.Polygon({}, {})",
+            PyExactContour(self.border()).__repr__(py)?,
+            self.holes()
+                .into_py(py)
+                .as_ref(py)
+                .repr()?
+                .extract::<String>()?
+        ))
+    }
+
+    fn __str__(&self, py: Python) -> PyResult<String> {
+        Ok(format!(
+            "Polygon({}, [{}])",
+            PyExactContour(self.border()).__str__(py)?,
+            self.holes()
+                .into_iter()
+                .flat_map(|hole| PyExactContour(hole).__str__(py))
+                .collect::<Vec<String>>()
+                .join(", ")
         ))
     }
 }
@@ -395,6 +450,7 @@ static mut ROOT_MODULE: Option<&PyModule> = None;
 fn _exact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactContour>()?;
     module.add_class::<PyExactPoint>()?;
+    module.add_class::<PyExactPolygon>()?;
     module.add_class::<PyExactSegment>()?;
     unsafe {
         let py = Python::assume_gil_acquired();

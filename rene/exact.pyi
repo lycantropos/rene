@@ -79,6 +79,25 @@ class Point:
         ...
 
 
+class Polygon:
+    @property
+    def border(self) -> Contour:
+        ...
+
+    @property
+    def holes(self) -> _Sequence[Contour]:
+        ...
+
+    def __new__(cls, border: Contour, holes: _Sequence[Contour]) -> 'Polygon':
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+    def __str__(self) -> str:
+        ...
+
+
 class Segment:
     @property
     def end(self) -> Point:
