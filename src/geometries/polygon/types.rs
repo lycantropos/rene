@@ -7,6 +7,12 @@ pub struct Polygon<Scalar> {
     pub(in crate::geometries) holes: Vec<Contour<Scalar>>,
 }
 
+impl<Scalar> Polygon<Scalar> {
+    pub fn new(border: Contour<Scalar>, holes: Vec<Contour<Scalar>>) -> Self {
+        Self { border, holes }
+    }
+}
+
 impl<Scalar: Clone> traits::Polygon<Scalar> for Polygon<Scalar> {
     type Point = self::Point<Scalar>;
     type Segment = self::Segment<Scalar>;
