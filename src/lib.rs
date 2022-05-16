@@ -172,8 +172,8 @@ impl PyExactContour {
         Ok(format!(
             "Contour([{}])",
             self.vertices()
-                .iter()
-                .flat_map(|vertex| PyExactPoint(vertex.clone()).__str__(py))
+                .into_iter()
+                .flat_map(|vertex| PyExactPoint(vertex).__str__(py))
                 .collect::<Vec<String>>()
                 .join(", ")
         ))
