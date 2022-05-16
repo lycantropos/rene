@@ -10,6 +10,7 @@ use pyo3::{ffi, intern, AsPyPointer, IntoPy, Py, PyAny, PyErr, PyObject};
 use rithm::traits::{Endianness, FromBytes, ToBytes, Zeroable};
 use rithm::{big_int, fraction};
 
+use crate::geometries::MIN_CONTOUR_VERTICES_COUNT;
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{Contour, Point, Segment};
 
@@ -112,7 +113,15 @@ impl PyExactContour {
         for vertex in vertices.iter()? {
             result_vertices.push(vertex?.extract::<PyExactPoint>()?.0);
         }
-        Ok(PyExactContour(ExactContour::new(result_vertices)))
+        if result_vertices.len() < MIN_CONTOUR_VERTICES_COUNT {
+            Err(PyValueError::new_err(format!(
+                "Contour should have at least {} vertices, but found {}.",
+                MIN_CONTOUR_VERTICES_COUNT,
+                result_vertices.len()
+            )))
+        } else {
+            Ok(PyExactContour(ExactContour::new(result_vertices)))
+        }
     }
 
     #[getter]
@@ -391,5 +400,6 @@ fn _exact(_py: Python, module: &PyModule) -> PyResult<()> {
 #[pymodule]
 fn _rene(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyOrientation>()?;
+    module.add("MIN_CONTOUR_VERTICES_COUNT", MIN_CONTOUR_VERTICES_COUNT)?;
     Ok(())
 }

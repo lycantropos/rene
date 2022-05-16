@@ -8,7 +8,8 @@ except ImportError:
 
     from rithm import Fraction as _Fraction
 
-    from . import Orientation as _Orientation
+    from . import (MIN_CONTOUR_VERTICES_COUNT as _MIN_CONTOUR_VERTICES_COUNT,
+                   Orientation as _Orientation)
 
 
     class Contour:
@@ -30,6 +31,10 @@ except ImportError:
         __slots__ = '_vertices',
 
         def __new__(cls, vertices):
+            if len(vertices) < _MIN_CONTOUR_VERTICES_COUNT:
+                raise ValueError('Contour should have at least '
+                                 f'{_MIN_CONTOUR_VERTICES_COUNT} vertices, '
+                                 f'but found {len(vertices)}.')
             self = super().__new__(cls)
             self._vertices = list(vertices)
             return self

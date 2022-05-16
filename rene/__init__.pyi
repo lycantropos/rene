@@ -1,5 +1,7 @@
 __version__: str
 
+MIN_CONTOUR_VERTICES_COUNT: int = ...
+
 
 class Orientation:
     CLOCKWISE: 'Orientation' = ...

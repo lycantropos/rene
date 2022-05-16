@@ -3,9 +3,12 @@
 __version__ = '0.0.0'
 
 try:
-    from ._rene import Orientation
+    from ._rene import (Orientation,
+                        MIN_CONTOUR_VERTICES_COUNT)
 except ImportError:
     from enum import IntEnum as _IntEnum
+
+    MIN_CONTOUR_VERTICES_COUNT = 3
 
 
     class Orientation(_IntEnum):
