@@ -16,7 +16,9 @@ def read_file(path_string: str) -> str:
 parameters = dict(
         name=rene.__name__,
         packages=find_packages(exclude=('tests', 'tests.*')),
-        package_data={rene.__name__: ['exact.pyi', 'py.typed']},
+        package_data={
+            rene.__name__: ['__init__.pyi', 'exact.pyi', 'py.typed']
+        },
         version=rene.__version__,
         description=rene.__doc__,
         long_description=read_file('README.md'),
