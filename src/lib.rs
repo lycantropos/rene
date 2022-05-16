@@ -31,6 +31,12 @@ type ExactContour = geometries::Contour<Fraction>;
 type ExactPoint = geometries::Point<Fraction>;
 type ExactSegment = geometries::Segment<Fraction>;
 
+impl IntoPy<PyObject> for ExactContour {
+    fn into_py(self, py: Python<'_>) -> PyObject {
+        PyExactContour(self).into_py(py)
+    }
+}
+
 impl IntoPy<PyObject> for ExactPoint {
     fn into_py(self, py: Python<'_>) -> PyObject {
         PyExactPoint(self).into_py(py)
