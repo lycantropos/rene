@@ -6,7 +6,7 @@ use pyo3::exceptions::{PyOverflowError, PyTypeError, PyValueError, PyZeroDivisio
 use pyo3::prelude::{pyclass, pymethods, pymodule, PyModule, PyResult, Python};
 use pyo3::type_object::PyTypeObject;
 use pyo3::types::{PyFloat, PyLong, PySequence, PyTuple};
-use pyo3::{ffi, intern, AsPyPointer, IntoPy, Py, PyAny, PyErr, PyObject};
+use pyo3::{ffi, intern, AsPyPointer, IntoPy, Py, PyAny, PyErr, PyObject, ToPyObject};
 use rithm::traits::{Endianness, FromBytes, ToBytes, Zeroable};
 use rithm::{big_int, fraction};
 
@@ -35,6 +35,12 @@ type ExactSegment = geometries::Segment<Fraction>;
 impl IntoPy<PyObject> for ExactContour {
     fn into_py(self, py: Python<'_>) -> PyObject {
         PyExactContour(self).into_py(py)
+    }
+}
+
+impl ToPyObject for ExactPoint {
+    fn to_object(&self, py: Python<'_>) -> PyObject {
+        self.clone().into_py(py)
     }
 }
 
@@ -178,6 +184,16 @@ impl PyExactContour {
                 orientation_cls.getattr(intern!(py, "COUNTERCLOCKWISE"))
             }
         }
+    }
+
+    fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
+        let mut vertices = self.0.vertices();
+        vertices.rotate_left(self.0.to_min_vertex_index());
+        match self.0.orientation() {
+            Orientation::Clockwise => vertices[1..].reverse(),
+            _ => {}
+        }
+        PyTuple::new(py, &vertices).hash()
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {

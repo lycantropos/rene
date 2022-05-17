@@ -13,7 +13,7 @@ impl<Scalar: Clone> Contour<Scalar> {
 }
 
 impl<Scalar: Ord> Contour<Scalar> {
-    pub(super) fn to_min_vertex_index(&self) -> usize {
+    pub(crate) fn to_min_vertex_index(&self) -> usize {
         unsafe {
             (0..self.vertices.len())
                 .min_by_key(|index| &self.vertices[*index])

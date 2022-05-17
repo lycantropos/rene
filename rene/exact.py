@@ -19,11 +19,7 @@ except ImportError:
             vertices = self.vertices
             min_vertex_index = min(range(len(vertices)),
                                    key=vertices.__getitem__)
-            return _Orientation(_to_sign(_cross_multiply(
-                    vertices[min_vertex_index - 1], vertices[min_vertex_index],
-                    vertices[min_vertex_index - 1],
-                    vertices[(min_vertex_index + 1) % len(vertices)],
-            )))
+            return _to_contour_orientation(vertices, min_vertex_index)
 
         @property
         def vertices(self):
@@ -46,12 +42,33 @@ except ImportError:
                     if isinstance(other, Contour)
                     else NotImplemented)
 
+        def __hash__(self):
+            vertices = self.vertices
+            min_vertex_index = min(range(len(vertices)),
+                                   key=vertices.__getitem__)
+            vertices = ((vertices[min_vertex_index:min_vertex_index + 1]
+                         + vertices[:min_vertex_index:-1]
+                         + vertices[min_vertex_index - 1::-1])
+                        if (_to_contour_orientation(vertices, min_vertex_index)
+                            == _Orientation.CLOCKWISE)
+                        else (vertices[min_vertex_index:]
+                              + vertices[:min_vertex_index]))
+            return hash(tuple(vertices))
+
         def __repr__(self):
             return f'{__name__}.{type(self).__qualname__}({self.vertices!r})'
 
         def __str__(self):
             return (f'{type(self).__qualname__}([{{}}])'
                     .format(', '.join(map(str, self.vertices))))
+
+
+    def _to_contour_orientation(vertices, min_vertex_index):
+        return _Orientation(_to_sign(_cross_multiply(
+                vertices[min_vertex_index - 1], vertices[min_vertex_index],
+                vertices[min_vertex_index - 1],
+                vertices[(min_vertex_index + 1) % len(vertices)],
+        )))
 
 
     def _are_non_empty_unique_sequences_rotationally_equivalent(
