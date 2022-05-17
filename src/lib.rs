@@ -95,6 +95,31 @@ impl PyOrientation {
             }
         )
     }
+
+    fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyOrientation::type_object(py))? {
+            let other = other.extract::<PyOrientation>()?;
+            match op {
+                CompareOp::Eq => Ok((self.0 == other.0).into_py(py)),
+                CompareOp::Ne => Ok((self.0 != other.0).into_py(py)),
+                _ => Ok(py.NotImplemented()),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
+
+    fn __str__(&self) -> String {
+        format!(
+            "Orientation.{}",
+            match self.0 {
+                Orientation::Clockwise => "CLOCKWISE",
+                Orientation::Collinear => "COLLINEAR",
+                Orientation::Counterclockwise => "COUNTERCLOCKWISE",
+            }
+        )
+    }
 }
 
 #[pyclass(name = "Contour", module = "rene.exact", subclass)]

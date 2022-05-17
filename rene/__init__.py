@@ -3,8 +3,8 @@
 __version__ = '0.0.0'
 
 try:
-    from ._rene import (Orientation,
-                        MIN_CONTOUR_VERTICES_COUNT)
+    from ._rene import (MIN_CONTOUR_VERTICES_COUNT,
+                        Orientation)
 except ImportError:
     from enum import IntEnum as _IntEnum
 
@@ -17,4 +17,8 @@ except ImportError:
         COUNTERCLOCKWISE = 1
 
         def __repr__(self):
-            return f'{__name__}.{type(self).__qualname__}.{self.name}'
+            return (f'{type(self).__module__}.{type(self).__qualname__}'
+                    f'.{self.name}')
+
+        def __str__(self):
+            return f'{type(self).__qualname__}.{self.name}'
