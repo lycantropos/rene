@@ -46,9 +46,9 @@ except ImportError:
             vertices = self.vertices
             min_vertex_index = min(range(len(vertices)),
                                    key=vertices.__getitem__)
-            vertices = ((vertices[min_vertex_index:min_vertex_index + 1]
-                         + vertices[:min_vertex_index:-1]
-                         + vertices[min_vertex_index - 1::-1])
+            vertices = (vertices[min_vertex_index:min_vertex_index + 1]
+                        + vertices[:min_vertex_index][::-1]
+                        + vertices[:min_vertex_index:-1]
                         if (_to_contour_orientation(vertices, min_vertex_index)
                             == _Orientation.CLOCKWISE)
                         else (vertices[min_vertex_index:]
