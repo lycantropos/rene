@@ -14,12 +14,12 @@ crate-type = ["cdylib", "rlib"]
 rithm= "^9.0.0"
 
 [dependencies.pyo3]
-version = "^0.16.4"
+version = "^0.16.5"
 features = ["extension-module"]
 
 [dependencies.pyo3-ffi]
-version = "^0.16.4"
+version = "^0.16.5"
 features = ["extension-module"]
 
 [build-dependencies]
-pyo3-build-config = "^0.16.4"
+pyo3-build-config = "^0.16.5"
