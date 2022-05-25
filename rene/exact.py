@@ -163,6 +163,13 @@ except ImportError:
             self._border, self._holes = border, list(holes)
             return self
 
+        def __eq__(self, other):
+            return ((self.border == other.border
+                     and len(self.holes) == len(other.holes)
+                     and frozenset(self.holes) == frozenset(other.holes))
+                    if isinstance(other, Polygon)
+                    else NotImplemented)
+
         def __repr__(self):
             return (f'{__name__}.{type(self).__qualname__}'
                     f'({self.border!r}, {self.holes!r})')

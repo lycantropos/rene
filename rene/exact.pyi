@@ -94,6 +94,14 @@ class Polygon:
     def __new__(cls, border: Contour, holes: _Sequence[Contour]) -> 'Polygon':
         ...
 
+    @_overload
+    def __eq__(self, other: 'Polygon') -> bool:
+        ...
+
+    @_overload
+    def __eq__(self, other: _Any) -> _Any:
+        ...
+
     def __repr__(self) -> str:
         ...
 
