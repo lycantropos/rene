@@ -15,9 +15,6 @@ class Orientation:
     def value(self) -> int:
         ...
 
-    def __new__(cls, value: int) -> 'Orientation':
-        ...
-
     @_overload
     def __eq__(self, other: 'Orientation') -> bool:
         ...

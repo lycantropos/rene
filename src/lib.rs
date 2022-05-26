@@ -74,23 +74,6 @@ impl PyOrientation {
         }
     }
 
-    #[new]
-    fn __new__(value: &PyAny) -> PyResult<PyOrientation> {
-        let py = value.py();
-        if value.is_instance(PyLong::type_object(py))? {
-            match value.extract::<i8>()? {
-                -1 => return Ok(PyOrientation::CLOCKWISE),
-                0 => return Ok(PyOrientation::COLLINEAR),
-                1 => return Ok(PyOrientation::COUNTERCLOCKWISE),
-                _ => {}
-            }
-        }
-        Err(PyValueError::new_err(format!(
-            "Orientation should have a value one of -1, 0, 1, but found {}.",
-            value
-        )))
-    }
-
     fn __repr__(&self) -> String {
         format!(
             "rene.Orientation.{}",
