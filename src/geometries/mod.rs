@@ -8,7 +8,6 @@ mod constants;
 mod contour;
 mod contracts;
 mod multipolygon;
-mod operations;
 mod point;
 mod polygon;
 mod segment;

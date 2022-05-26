@@ -17,6 +17,7 @@ use crate::oriented::{Orientation, Oriented};
 use crate::traits::{Contour, Point, Polygon, Segment};
 
 pub mod geometries;
+mod operations;
 pub mod oriented;
 pub mod traits;
 

@@ -1,7 +1,8 @@
 use rithm::traits::{AdditiveGroup, MultiplicativeMonoid, Sign, Signed};
 
-use crate::geometries::operations;
+use crate::geometries::Point;
 use crate::oriented::{Orientation, Oriented};
+use crate::{operations, traits};
 
 use super::types::Contour;
 
@@ -20,17 +21,10 @@ impl<Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Ord + Signed> Orient
                 .checked_rem_euclid(self.vertices.len())
                 .unwrap_unchecked()
         };
-        match operations::cross_multiply(
-            self.vertices[previous_to_min_vertex_index].clone(),
-            self.vertices[min_vertex_index].clone(),
-            self.vertices[previous_to_min_vertex_index].clone(),
-            self.vertices[next_to_min_vertex_index].clone(),
+        operations::orient::<Scalar, Point<Scalar>>(
+            &self.vertices[previous_to_min_vertex_index],
+            &self.vertices[min_vertex_index],
+            &self.vertices[next_to_min_vertex_index],
         )
-        .sign()
-        {
-            Sign::Negative => Orientation::Clockwise,
-            Sign::Positive => Orientation::Counterclockwise,
-            Sign::Zero => Orientation::Collinear,
-        }
     }
 }
