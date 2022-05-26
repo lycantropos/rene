@@ -1,3 +1,5 @@
+#![feature(build_hasher_simple_hash_one)]
+
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 
