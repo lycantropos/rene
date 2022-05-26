@@ -1,5 +1,3 @@
-use std::hash::{BuildHasher, Hash, Hasher};
-
 use rithm::traits::{AdditiveGroup, MultiplicativeMonoid, Sign, Signed};
 
 use crate::oriented::Orientation;
@@ -18,22 +16,6 @@ pub(crate) fn cross_multiply<
         - (first_end.y() - first_start.y()) * (second_end.x() - second_start.x())
 }
 
-pub(crate) fn hash_slice_unordered<
-    Value: Hash,
-    H: Hasher,
-    ValueBuildHasher: BuildHasher + Default,
->(
-    values: &[Value],
-    state: &mut H,
-) {
-    let mut hash = 0;
-    let value_build_hasher = ValueBuildHasher::default();
-    for value in values {
-        hash ^= shuffle_bits(value_build_hasher.hash_one(value));
-    }
-    state.write_u64(hash);
-}
-
 pub(crate) fn orient<
     Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
     Point: Clone + traits::Point<Scalar>,
@@ -48,8 +30,4 @@ pub(crate) fn orient<
         Sign::Positive => Orientation::Counterclockwise,
         Sign::Zero => Orientation::Collinear,
     }
-}
-
-fn shuffle_bits(hash: u64) -> u64 {
-    ((hash ^ 89869747) ^ (hash.wrapping_shl(16))).wrapping_mul(3644798167)
 }

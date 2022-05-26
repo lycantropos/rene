@@ -11,3 +11,4 @@ mod multipolygon;
 mod point;
 mod polygon;
 mod segment;
+mod utils;
