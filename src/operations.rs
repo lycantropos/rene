@@ -18,7 +18,7 @@ pub(crate) fn cross_multiply<
 
 pub(crate) fn orient<
     Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
-    Point: Clone + traits::Point<Scalar>,
+    Point: traits::Point<Scalar>,
 >(
     vertex: &Point,
     first_ray_point: &Point,
