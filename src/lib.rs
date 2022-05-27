@@ -403,7 +403,7 @@ fn big_int_to_py_long(value: &BigInt) -> PyObject {
 fn try_py_integral_to_big_int(value: &PyAny) -> PyResult<BigInt> {
     let ptr = value
         .call_method0("__int__")
-        .or(Err(PyTypeError::new_err(INVALID_SCALAR_TYPE_ERROR_MESSAGE)))?
+        .map_err(|_| PyTypeError::new_err(INVALID_SCALAR_TYPE_ERROR_MESSAGE))?
         .as_ptr();
     let py = value.py();
     unsafe {
@@ -454,12 +454,12 @@ fn try_scalar_to_fraction(value: &PyAny) -> PyResult<Fraction> {
         let numerator = try_py_integral_to_big_int(
             value
                 .getattr(intern!(py, "numerator"))
-                .or(Err(PyTypeError::new_err(INVALID_SCALAR_TYPE_ERROR_MESSAGE)))?,
+                .map_err(|_| PyTypeError::new_err(INVALID_SCALAR_TYPE_ERROR_MESSAGE))?,
         )?;
         let denominator = try_py_integral_to_big_int(
             value
                 .getattr(intern!(py, "denominator"))
-                .or(Err(PyTypeError::new_err(INVALID_SCALAR_TYPE_ERROR_MESSAGE)))?,
+                .map_err(|_| PyTypeError::new_err(INVALID_SCALAR_TYPE_ERROR_MESSAGE))?,
         )?;
         match Fraction::new(numerator, denominator) {
             Some(value) => Ok(value),
