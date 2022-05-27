@@ -16,12 +16,4 @@ impl<Scalar: AdditiveGroup + Clone + Eq + Hash + MultiplicativeMonoid + Ord + Si
                 &other.holes,
             )
     }
-
-    fn ne(&self, other: &Self) -> bool {
-        self.border != other.border
-            || !contracts::are_unique_hashable_sequences_permutationally_equivalent(
-                &self.holes,
-                &other.holes,
-            )
-    }
 }

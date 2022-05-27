@@ -9,11 +9,4 @@ impl<Scalar: PartialEq> PartialEq for Contour<Scalar> {
             &other.vertices,
         )
     }
-
-    fn ne(&self, other: &Self) -> bool {
-        !contracts::are_non_empty_unique_sequences_rotationally_equivalent(
-            &self.vertices,
-            &other.vertices,
-        )
-    }
 }
