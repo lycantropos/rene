@@ -1,8 +1,8 @@
-use rithm::traits::{AdditiveGroup, MultiplicativeMonoid, Sign, Signed};
+use rithm::traits::{AdditiveGroup, MultiplicativeMonoid, Signed};
 
 use crate::geometries::Point;
+use crate::operations;
 use crate::oriented::{Orientation, Oriented};
-use crate::{operations, traits};
 
 use super::types::Contour;
 
