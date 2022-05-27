@@ -161,9 +161,8 @@ impl PyExactContour {
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
         let mut vertices = self.0.vertices();
         vertices.rotate_left(self.0.to_min_vertex_index());
-        match self.0.orientation() {
-            Orientation::Clockwise => vertices[1..].reverse(),
-            _ => {}
+        if self.0.orientation() == Orientation::Clockwise {
+            vertices[1..].reverse()
         }
         PyTuple::new(py, &vertices).hash()
     }
