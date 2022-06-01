@@ -53,6 +53,30 @@ impl IntoPy<PyObject> for ExactPoint {
     }
 }
 
+impl From<PyExactContour> for ExactContour {
+    fn from(value: PyExactContour) -> Self {
+        value.0
+    }
+}
+
+impl From<PyExactPoint> for ExactPoint {
+    fn from(value: PyExactPoint) -> Self {
+        value.0
+    }
+}
+
+impl From<PyExactPolygon> for ExactPolygon {
+    fn from(value: PyExactPolygon) -> Self {
+        value.0
+    }
+}
+
+impl From<PyExactSegment> for ExactSegment {
+    fn from(value: PyExactSegment) -> Self {
+        value.0
+    }
+}
+
 #[pyclass(name = "Orientation", module = "rene")]
 #[derive(Clone)]
 struct PyOrientation(Orientation);
