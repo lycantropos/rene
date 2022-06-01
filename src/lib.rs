@@ -148,18 +148,15 @@ struct PyExactSegment(ExactSegment);
 impl PyExactContour {
     #[new]
     fn new(vertices: &PySequence) -> PyResult<Self> {
-        let mut result_vertices = Vec::<ExactPoint>::with_capacity(vertices.len()?);
-        for vertex in vertices.iter()? {
-            result_vertices.push(vertex?.extract::<PyExactPoint>()?.0);
-        }
-        if result_vertices.len() < MIN_CONTOUR_VERTICES_COUNT {
+        let vertices = extract_from_sequence::<PyExactPoint, ExactPoint>(vertices)?;
+        if vertices.len() < MIN_CONTOUR_VERTICES_COUNT {
             Err(PyValueError::new_err(format!(
                 "Contour should have at least {} vertices, but found {}.",
                 MIN_CONTOUR_VERTICES_COUNT,
-                result_vertices.len()
+                vertices.len()
             )))
         } else {
-            Ok(PyExactContour(ExactContour::new(result_vertices)))
+            Ok(PyExactContour(ExactContour::new(vertices)))
         }
     }
 
@@ -290,13 +287,9 @@ impl PyExactPoint {
 impl PyExactPolygon {
     #[new]
     fn new(border: &PyExactContour, holes: &PySequence) -> PyResult<Self> {
-        let mut result_holes = Vec::<ExactContour>::with_capacity(holes.len()?);
-        for hole in holes.iter()? {
-            result_holes.push(hole?.extract::<PyExactContour>()?.0);
-        }
         Ok(PyExactPolygon(ExactPolygon::new(
             border.0.clone(),
-            result_holes,
+            extract_from_sequence::<PyExactContour, ExactContour>(holes)?,
         )))
     }
 
@@ -495,6 +488,16 @@ fn try_scalar_to_fraction(value: &PyAny) -> PyResult<Fraction> {
 }
 
 static mut ROOT_MODULE: Option<&PyModule> = None;
+
+fn extract_from_sequence<'a, Wrapper: FromPyObject<'a>, Wrapped: From<Wrapper>>(
+    sequence: &'a PySequence,
+) -> PyResult<Vec<Wrapped>> {
+    let mut result = Vec::<Wrapped>::with_capacity(sequence.len()?);
+    for element in sequence.iter()? {
+        result.push(element?.extract::<Wrapper>()?.into());
+    }
+    Ok(result)
+}
 
 #[pymodule]
 fn _exact(_py: Python, module: &PyModule) -> PyResult<()> {
