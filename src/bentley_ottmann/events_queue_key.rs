@@ -56,8 +56,8 @@ impl<Endpoint: Ord> Ord for EventsQueueKey<Endpoint> {
 fn compare_events<Endpoint: Ord>(
     first_event: Event,
     second_event: Event,
-    endpoints: &Vec<Endpoint>,
-    opposites: &Vec<Event>,
+    endpoints: &[Endpoint],
+    opposites: &[Event],
 ) -> Ordering {
     match endpoints[first_event].cmp(&endpoints[second_event]) {
         Ordering::Equal => {
