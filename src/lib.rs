@@ -362,6 +362,10 @@ impl PyExactSegment {
         PyExactPoint(self.0.end())
     }
 
+    fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
+        PyFrozenSet::new(py, &[self.start().into_py(py), self.end().into_py(py)])?.hash()
+    }
+
     fn __repr__(&self, py: Python) -> PyResult<String> {
         Ok(format!(
             "rene.exact.Segment({}, {})",

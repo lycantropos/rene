@@ -195,6 +195,9 @@ except ImportError:
             self._end, self._start = end, start
             return self
 
+        def __hash__(self):
+            return hash(frozenset((self.start, self.end)))
+
         def __eq__(self, other):
             return (self.start == other.start and self.end == other.end
                     or self.end == other.start and self.start == other.end
