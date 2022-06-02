@@ -4,4 +4,5 @@ mod eq;
 mod from;
 mod hash;
 mod partial_eq;
+mod relatable;
 mod types;

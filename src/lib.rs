@@ -23,6 +23,7 @@ mod bentley_ottmann;
 pub mod geometries;
 mod operations;
 pub mod oriented;
+pub mod relatable;
 pub mod traits;
 
 #[cfg(target_arch = "x86")]
