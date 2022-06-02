@@ -22,7 +22,7 @@ pub(crate) fn sweep<
     let mut sweep_line = SweepLine::new(&endpoints, &opposites);
     while let Some(event) = events_queue.pop() {
         if is_left_event(event) {
-            if let None = sweep_line.find(event) {
+            if sweep_line.find(event).is_none() {
                 sweep_line.insert(event);
                 if let Some(below_event) = sweep_line.below(event) {
                     events_queue.detect_intersection(below_event, event, &mut sweep_line);
@@ -39,11 +39,10 @@ pub(crate) fn sweep<
                     sweep_line.below(equal_segment_event),
                 );
                 sweep_line.remove(equal_segment_event);
-                match (maybe_above_event, maybe_below_event) {
-                    (Some(above_event), Some(below_event)) => {
-                        events_queue.detect_intersection(below_event, above_event, &mut sweep_line);
-                    }
-                    _ => {}
+                if let (Some(above_event), Some(below_event)) =
+                    (maybe_above_event, maybe_below_event)
+                {
+                    events_queue.detect_intersection(below_event, above_event, &mut sweep_line);
                 }
                 result.push(Segment::from((
                     events_queue.get_event_start(equal_segment_event).clone(),
