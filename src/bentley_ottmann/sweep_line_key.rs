@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 
 use rithm::traits::{AdditiveGroup, MultiplicativeMonoid, Signed};
 
-use crate::operations;
+use crate::operations::orient;
 use crate::oriented::Orientation;
 use crate::traits::Point;
 
@@ -101,8 +101,8 @@ fn compare_segments_position<
     right_start: &Endpoint,
     right_end: &Endpoint,
 ) -> Ordering {
-    let other_start_orientation = operations::orient(left_start, left_end, right_start);
-    let other_end_orientation = operations::orient(left_start, left_end, right_end);
+    let other_start_orientation = orient(left_start, left_end, right_start);
+    let other_end_orientation = orient(left_start, left_end, right_end);
     if other_start_orientation == other_end_orientation {
         match other_start_orientation {
             Orientation::Collinear => match left_start.y().cmp(&right_start.y()) {
@@ -119,8 +119,8 @@ fn compare_segments_position<
             Orientation::Counterclockwise => Ordering::Less,
         }
     } else {
-        let start_orientation = operations::orient(right_start, right_end, left_start);
-        let end_orientation = operations::orient(right_start, right_end, left_end);
+        let start_orientation = orient(right_start, right_end, left_start);
+        let end_orientation = orient(right_start, right_end, left_end);
         if start_orientation == end_orientation {
             match start_orientation {
                 Orientation::Clockwise => Ordering::Less,

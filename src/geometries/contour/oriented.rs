@@ -1,7 +1,7 @@
 use rithm::traits::{AdditiveGroup, MultiplicativeMonoid, Signed};
 
 use crate::geometries::Point;
-use crate::operations;
+use crate::operations::orient;
 use crate::oriented::{Orientation, Oriented};
 
 use super::types::Contour;
@@ -21,7 +21,7 @@ impl<Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Ord + Signed> Orient
                 .checked_rem_euclid(self.vertices.len())
                 .unwrap_unchecked()
         };
-        operations::orient::<Scalar, Point<Scalar>>(
+        orient::<Scalar, Point<Scalar>>(
             &self.vertices[previous_to_min_vertex_index],
             &self.vertices[min_vertex_index],
             &self.vertices[next_to_min_vertex_index],
