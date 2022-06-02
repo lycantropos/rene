@@ -1,4 +1,5 @@
 #![feature(build_hasher_simple_hash_one)]
+#![feature(map_first_last)]
 
 use std::cmp::Ordering;
 use std::convert::TryFrom;
@@ -18,6 +19,7 @@ use crate::geometries::MIN_CONTOUR_VERTICES_COUNT;
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{Contour, Point, Polygon, Segment};
 
+mod bentley_ottmann;
 pub mod geometries;
 mod operations;
 pub mod oriented;
