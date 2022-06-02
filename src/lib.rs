@@ -7,8 +7,10 @@ use pyo3::basic::CompareOp;
 use pyo3::exceptions::{PyOverflowError, PyTypeError, PyValueError, PyZeroDivisionError};
 use pyo3::prelude::{pyclass, pymethods, pymodule, PyModule, PyResult, Python};
 use pyo3::type_object::PyTypeObject;
-use pyo3::types::{PyFloat, PyLong, PySequence, PyTuple};
-use pyo3::{ffi, intern, AsPyPointer, IntoPy, Py, PyAny, PyErr, PyObject, ToPyObject};
+use pyo3::types::{PyFloat, PyFrozenSet, PyLong, PySequence, PyTuple};
+use pyo3::{
+    ffi, intern, AsPyPointer, FromPyObject, IntoPy, Py, PyAny, PyErr, PyObject, ToPyObject,
+};
 use rithm::traits::{Endianness, FromBytes, ToBytes, Zeroable};
 use rithm::{big_int, fraction};
 
