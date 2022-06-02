@@ -22,11 +22,19 @@ pub(super) struct EventsQueue<Scalar, Endpoint> {
 }
 
 impl<Scalar, Endpoint: Ord> EventsQueue<Scalar, Endpoint> {
-    pub(super) fn endpoints(&self) -> &mut Vec<Endpoint> {
+    pub(super) fn endpoints(&self) -> &Vec<Endpoint> {
+        unsafe { &*self.endpoints }
+    }
+
+    pub(super) fn opposites(&self) -> &Vec<Event> {
+        unsafe { &*self.opposites }
+    }
+
+    pub(super) fn endpoints_mut(&mut self) -> &mut Vec<Endpoint> {
         unsafe { &mut *self.endpoints }
     }
 
-    pub(super) fn opposites(&self) -> &mut Vec<Event> {
+    pub(super) fn opposites_mut(&mut self) -> &mut Vec<Event> {
         unsafe { &mut *self.opposites }
     }
 
@@ -57,12 +65,12 @@ impl<Scalar, Endpoint: Clone + Ord> EventsQueue<Scalar, Endpoint> {
         };
         for segment in segments {
             let (start, end) = to_sorted_pair((segment.start(), segment.end()));
-            let left_event = result.endpoints().len();
-            result.endpoints().push(start.clone());
-            let right_event = result.endpoints().len();
-            result.endpoints().push(end.clone());
-            result.opposites().push(right_event);
-            result.opposites().push(left_event);
+            let left_event = result.endpoints_mut().len();
+            result.endpoints_mut().push(start.clone());
+            let right_event = result.endpoints_mut().len();
+            result.endpoints_mut().push(end.clone());
+            result.opposites_mut().push(right_event);
+            result.opposites_mut().push(left_event);
             result.push(left_event);
             result.push(right_event);
         }
@@ -229,14 +237,15 @@ impl<
 impl<Scalar, Endpoint: Clone + self::Point<Scalar> + Ord> EventsQueue<Scalar, Endpoint> {
     pub(super) fn divide(&mut self, event: Event, mid_point: Endpoint) -> (Event, Event) {
         debug_assert!(event.is_even());
-        let mid_point_to_event_end_event = self.endpoints().len();
-        self.endpoints().push(mid_point.clone());
-        self.opposites().push(self.opposites()[event]);
-        self.opposites()[self.get_opposite(event)] = mid_point_to_event_end_event;
+        let opposite_event = self.get_opposite(event);
+        let mid_point_to_event_end_event = self.endpoints_mut().len();
+        self.endpoints_mut().push(mid_point.clone());
+        self.opposites_mut().push(opposite_event);
+        self.opposites_mut()[opposite_event] = mid_point_to_event_end_event;
         let mid_point_to_event_start_event = self.endpoints().len();
-        self.endpoints().push(mid_point.clone());
-        self.opposites().push(event);
-        self.opposites()[event] = mid_point_to_event_start_event;
+        self.endpoints_mut().push(mid_point);
+        self.opposites_mut().push(event);
+        self.opposites_mut()[event] = mid_point_to_event_start_event;
         (mid_point_to_event_start_event, mid_point_to_event_end_event)
     }
 }
