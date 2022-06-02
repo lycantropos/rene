@@ -1,5 +1,3 @@
-use std::ops::Div;
-
 use rithm::traits::{AdditiveGroup, DivisivePartialMagma, MultiplicativeMonoid, Sign, Signed};
 
 use crate::oriented::Orientation;
