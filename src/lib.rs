@@ -386,7 +386,7 @@ impl PyExactSegment {
 
     fn __str__(&self, py: Python) -> PyResult<String> {
         Ok(format!(
-            "rene.exact.Segment({}, {})",
+            "Segment({}, {})",
             self.start().__str__(py)?,
             self.end().__str__(py)?,
         ))
