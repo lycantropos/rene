@@ -22,12 +22,8 @@ pub(super) struct EventsQueue<Scalar, Endpoint> {
 }
 
 impl<Scalar, Endpoint: Ord> EventsQueue<Scalar, Endpoint> {
-    pub(super) fn endpoints(&self) -> &Vec<Endpoint> {
+    pub(super) fn get_endpoints(&self) -> &Vec<Endpoint> {
         &self.endpoints
-    }
-
-    pub(super) fn opposites(&self) -> &Vec<Event> {
-        &self.opposites
     }
 
     pub(super) fn get_event_start(&self, event: Event) -> &Endpoint {
@@ -40,6 +36,10 @@ impl<Scalar, Endpoint: Ord> EventsQueue<Scalar, Endpoint> {
 
     pub(super) fn get_opposite(&self, event: Event) -> Event {
         self.opposites[event]
+    }
+
+    pub(super) fn get_opposites(&self) -> &Vec<Event> {
+        &self.opposites
     }
 }
 
@@ -54,12 +54,12 @@ impl<Scalar, Endpoint: Clone + Ord> EventsQueue<Scalar, Endpoint> {
             queue: BinaryHeap::with_capacity(capacity),
             _phantom: PhantomData,
         };
-        for segment in segments {
+        for (index, segment) in segments.iter().enumerate() {
             let (start, end) = to_sorted_pair((segment.start(), segment.end()));
-            let left_event = result.endpoints.len();
-            result.endpoints.push(start.clone());
-            let right_event = result.endpoints.len();
-            result.endpoints.push(end.clone());
+            let left_event = 2 * index;
+            let right_event = 2 * index + 1;
+            result.endpoints.push(start);
+            result.endpoints.push(end);
             result.opposites.push(right_event);
             result.opposites.push(left_event);
             result.push(left_event);
@@ -247,7 +247,10 @@ impl<Scalar, Endpoint: Ord> EventsQueue<Scalar, Endpoint> {
     }
 
     fn push(&mut self, event: Event) {
-        let key = Reverse(EventsQueueKey::new(event, &self.endpoints, &self.opposites));
-        self.queue.push(key)
+        self.queue.push(Reverse(EventsQueueKey::new(
+            event,
+            &self.endpoints,
+            &self.opposites,
+        )))
     }
 }
