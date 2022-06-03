@@ -16,10 +16,8 @@ pub(crate) fn sweep<
     segments: &[Segment],
 ) -> Vec<Segment> {
     let mut result = Vec::with_capacity(segments.len());
-    let mut endpoints = Vec::with_capacity(2 * segments.len());
-    let mut opposites = Vec::with_capacity(2 * segments.len());
-    let mut events_queue = EventsQueue::new(&mut endpoints, &mut opposites, segments);
-    let mut sweep_line = SweepLine::new(&endpoints, &opposites);
+    let mut events_queue = EventsQueue::new(segments);
+    let mut sweep_line = SweepLine::new(events_queue.endpoints(), events_queue.opposites());
     while let Some(event) = events_queue.pop() {
         if is_left_event(event) {
             if sweep_line.find(event).is_none() {

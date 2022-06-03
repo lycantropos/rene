@@ -15,62 +15,53 @@ use super::events_queue_key::EventsQueueKey;
 use super::sweep_line::SweepLine;
 
 pub(super) struct EventsQueue<Scalar, Endpoint> {
+    endpoints: Vec<Endpoint>,
+    opposites: Vec<Event>,
     queue: BinaryHeap<Reverse<EventsQueueKey<Endpoint>>>,
-    endpoints: *mut Vec<Endpoint>,
-    opposites: *mut Vec<Event>,
     _phantom: PhantomData<fn() -> Scalar>,
 }
 
 impl<Scalar, Endpoint: Ord> EventsQueue<Scalar, Endpoint> {
     pub(super) fn endpoints(&self) -> &Vec<Endpoint> {
-        unsafe { &*self.endpoints }
+        &self.endpoints
     }
 
     pub(super) fn opposites(&self) -> &Vec<Event> {
-        unsafe { &*self.opposites }
-    }
-
-    pub(super) fn endpoints_mut(&mut self) -> &mut Vec<Endpoint> {
-        unsafe { &mut *self.endpoints }
-    }
-
-    pub(super) fn opposites_mut(&mut self) -> &mut Vec<Event> {
-        unsafe { &mut *self.opposites }
+        &self.opposites
     }
 
     pub(super) fn get_event_start(&self, event: Event) -> &Endpoint {
-        &self.endpoints()[event]
+        &self.endpoints[event]
     }
 
     pub(super) fn get_event_end(&self, event: Event) -> &Endpoint {
-        &self.endpoints()[self.get_opposite(event)]
+        &self.endpoints[self.get_opposite(event)]
     }
 
     pub(super) fn get_opposite(&self, event: Event) -> Event {
-        self.opposites()[event]
+        self.opposites[event]
     }
 }
 
 impl<Scalar, Endpoint: Clone + Ord> EventsQueue<Scalar, Endpoint> {
     pub(super) fn new<Segment: self::Segment<Scalar, Point = Endpoint>>(
-        endpoints: &mut Vec<Endpoint>,
-        opposites: &mut Vec<Event>,
         segments: &[Segment],
     ) -> Self {
+        let capacity = 2 * segments.len();
         let mut result = Self {
-            queue: BinaryHeap::with_capacity(endpoints.capacity()),
-            endpoints,
-            opposites,
+            endpoints: Vec::with_capacity(capacity),
+            opposites: Vec::with_capacity(capacity),
+            queue: BinaryHeap::with_capacity(capacity),
             _phantom: PhantomData,
         };
         for segment in segments {
             let (start, end) = to_sorted_pair((segment.start(), segment.end()));
-            let left_event = result.endpoints_mut().len();
-            result.endpoints_mut().push(start.clone());
-            let right_event = result.endpoints_mut().len();
-            result.endpoints_mut().push(end.clone());
-            result.opposites_mut().push(right_event);
-            result.opposites_mut().push(left_event);
+            let left_event = result.endpoints.len();
+            result.endpoints.push(start.clone());
+            let right_event = result.endpoints.len();
+            result.endpoints.push(end.clone());
+            result.opposites.push(right_event);
+            result.opposites.push(left_event);
             result.push(left_event);
             result.push(right_event);
         }
@@ -238,14 +229,14 @@ impl<Scalar, Endpoint: Clone + self::Point<Scalar> + Ord> EventsQueue<Scalar, En
     pub(super) fn divide(&mut self, event: Event, mid_point: Endpoint) -> (Event, Event) {
         debug_assert!(event.is_even());
         let opposite_event = self.get_opposite(event);
-        let mid_point_to_event_end_event = self.endpoints_mut().len();
-        self.endpoints_mut().push(mid_point.clone());
-        self.opposites_mut().push(opposite_event);
-        self.opposites_mut()[opposite_event] = mid_point_to_event_end_event;
-        let mid_point_to_event_start_event = self.endpoints().len();
-        self.endpoints_mut().push(mid_point);
-        self.opposites_mut().push(event);
-        self.opposites_mut()[event] = mid_point_to_event_start_event;
+        let mid_point_to_event_end_event = self.endpoints.len();
+        self.endpoints.push(mid_point.clone());
+        self.opposites.push(opposite_event);
+        self.opposites[opposite_event] = mid_point_to_event_end_event;
+        let mid_point_to_event_start_event = self.endpoints.len();
+        self.endpoints.push(mid_point);
+        self.opposites.push(event);
+        self.opposites[event] = mid_point_to_event_start_event;
         (mid_point_to_event_start_event, mid_point_to_event_end_event)
     }
 }
@@ -256,11 +247,7 @@ impl<Scalar, Endpoint: Ord> EventsQueue<Scalar, Endpoint> {
     }
 
     fn push(&mut self, event: Event) {
-        let key = Reverse(EventsQueueKey::new(
-            event,
-            self.endpoints(),
-            self.opposites(),
-        ));
+        let key = Reverse(EventsQueueKey::new(event, &self.endpoints, &self.opposites));
         self.queue.push(key)
     }
 }
