@@ -11,8 +11,8 @@ use super::event::Event;
 
 pub(super) struct SweepLineKey<Scalar, Endpoint> {
     pub(super) event: Event,
-    pub(super) endpoints: *const Vec<Endpoint>,
-    pub(super) opposites: *const Vec<Event>,
+    endpoints: *const Vec<Endpoint>,
+    opposites: *const Vec<Event>,
     _phantom: PhantomData<fn() -> Scalar>,
 }
 
@@ -28,11 +28,11 @@ impl<Scalar, Endpoint> SweepLineKey<Scalar, Endpoint> {
 }
 
 impl<Scalar, Endpoint> SweepLineKey<Scalar, Endpoint> {
-    pub(super) fn endpoints(&self) -> &Vec<Endpoint> {
+    fn endpoints(&self) -> &[Endpoint] {
         unsafe { &(*self.endpoints) }
     }
 
-    pub(super) fn opposites(&self) -> &Vec<Event> {
+    fn opposites(&self) -> &[Event] {
         unsafe { &(*self.opposites) }
     }
 }
