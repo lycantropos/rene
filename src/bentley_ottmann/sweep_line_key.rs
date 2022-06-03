@@ -28,11 +28,11 @@ impl<Scalar, Endpoint> SweepLineKey<Scalar, Endpoint> {
 }
 
 impl<Scalar, Endpoint> SweepLineKey<Scalar, Endpoint> {
-    fn endpoints(&self) -> &[Endpoint] {
+    fn get_endpoints(&self) -> &[Endpoint] {
         unsafe { &(*self.endpoints) }
     }
 
-    fn opposites(&self) -> &[Event] {
+    fn get_opposites(&self) -> &[Event] {
         unsafe { &(*self.opposites) }
     }
 }
@@ -54,8 +54,8 @@ impl<
         Some(compare_sweep_line_keys(
             self.event,
             other.event,
-            self.endpoints(),
-            self.opposites(),
+            self.get_endpoints(),
+            self.get_opposites(),
         ))
     }
 }
@@ -64,7 +64,12 @@ impl<Scalar: AdditiveGroup + MultiplicativeMonoid + Ord + Signed, Endpoint: Eq +
     for SweepLineKey<Scalar, Endpoint>
 {
     fn cmp(&self, other: &Self) -> Ordering {
-        compare_sweep_line_keys(self.event, other.event, self.endpoints(), self.opposites())
+        compare_sweep_line_keys(
+            self.event,
+            other.event,
+            self.get_endpoints(),
+            self.get_opposites(),
+        )
     }
 }
 
