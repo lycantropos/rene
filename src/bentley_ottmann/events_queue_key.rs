@@ -19,11 +19,11 @@ impl<Endpoint> EventsQueueKey<Endpoint> {
 }
 
 impl<Endpoint> EventsQueueKey<Endpoint> {
-    pub(super) fn endpoints(&self) -> &Vec<Endpoint> {
+    fn endpoints(&self) -> &[Endpoint] {
         unsafe { &(*self.endpoints) }
     }
 
-    pub(super) fn opposites(&self) -> &Vec<Event> {
+    fn opposites(&self) -> &[Event] {
         unsafe { &(*self.opposites) }
     }
 }
