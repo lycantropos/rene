@@ -21,7 +21,7 @@ pub(super) struct EventsQueue<Scalar, Endpoint> {
     _phantom: PhantomData<fn() -> Scalar>,
 }
 
-impl<Scalar, Endpoint: Ord> EventsQueue<Scalar, Endpoint> {
+impl<Scalar, Endpoint> EventsQueue<Scalar, Endpoint> {
     pub(super) fn get_endpoints(&self) -> &Vec<Endpoint> {
         &self.endpoints
     }
@@ -43,7 +43,7 @@ impl<Scalar, Endpoint: Ord> EventsQueue<Scalar, Endpoint> {
     }
 }
 
-impl<Scalar, Endpoint: Clone + Ord> EventsQueue<Scalar, Endpoint> {
+impl<Scalar, Endpoint: Ord> EventsQueue<Scalar, Endpoint> {
     pub(super) fn new<Segment: self::Segment<Scalar, Point = Endpoint>>(
         segments: &[Segment],
     ) -> Self {
