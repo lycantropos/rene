@@ -43,10 +43,10 @@ impl<Scalar, Endpoint> EventsQueue<Scalar, Endpoint> {
     }
 }
 
-impl<Scalar, Endpoint: Ord> EventsQueue<Scalar, Endpoint> {
-    pub(super) fn new<Segment: self::Segment<Scalar, Point = Endpoint>>(
-        segments: &[Segment],
-    ) -> Self {
+impl<Scalar, Endpoint: Ord, Segment: self::Segment<Scalar, Point = Endpoint>> From<&[Segment]>
+    for EventsQueue<Scalar, Endpoint>
+{
+    fn from(segments: &[Segment]) -> Self {
         let capacity = 2 * segments.len();
         let mut result = Self {
             endpoints: Vec::with_capacity(capacity),
