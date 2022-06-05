@@ -3,14 +3,14 @@ use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 use std::marker::PhantomData;
 
-use rithm::traits::{AdditiveGroup, DivisivePartialMagma, MultiplicativeMonoid, Parity, Signed};
+use rithm::traits::{AdditiveGroup, DivisivePartialMagma, MultiplicativeMonoid, Signed};
 
 use crate::operations::{intersect_crossing_segments, orient, to_sorted_pair};
 use crate::oriented::Orientation;
 use crate::traits;
 use crate::traits::{Point, Segment};
 
-use super::event::Event;
+use super::event::{is_left_event, Event};
 use super::events_queue_key::EventsQueueKey;
 use super::sweep_line::SweepLine;
 
@@ -229,7 +229,7 @@ impl<
 
 impl<Scalar, Endpoint: Clone + self::Point<Scalar> + Ord> EventsQueue<Scalar, Endpoint> {
     pub(super) fn divide(&mut self, event: Event, mid_point: Endpoint) -> (Event, Event) {
-        debug_assert!(event.is_even());
+        debug_assert!(is_left_event(event));
         let opposite_event = self.get_opposite(event);
         let mid_point_to_event_end_event = self.endpoints.len();
         self.endpoints.push(mid_point.clone());
