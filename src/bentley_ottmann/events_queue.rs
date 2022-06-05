@@ -104,28 +104,28 @@ impl<
                             below_event_start,
                             below_event_end,
                         );
-                        self.divide_below_event_by_midpoint(below_event, point.clone());
-                        self.divide_event_by_midpoint(event, point, sweep_line);
+                        self.divide_event_by_midpoint(below_event, point.clone());
+                        self.divide_event_by_midpoint_checking_above(event, point, sweep_line);
                     }
                 } else if below_event_start_orientation != Orientation::Collinear {
                     if event_start < below_event_end && below_event_end < event_end {
                         let point = below_event_end.clone();
-                        self.divide_event_by_midpoint(event, point, sweep_line);
+                        self.divide_event_by_midpoint_checking_above(event, point, sweep_line);
                     }
                 } else if event_start < below_event_start && below_event_start < event_end {
                     let point = below_event_start.clone();
-                    self.divide_event_by_midpoint(event, point, sweep_line);
+                    self.divide_event_by_midpoint_checking_above(event, point, sweep_line);
                 }
             }
         } else if event_end_orientation != Orientation::Collinear {
             if below_event_start < event_start && event_start < below_event_end {
                 let point = event_start.clone();
-                self.divide_below_event_by_midpoint(below_event, point);
+                self.divide_event_by_midpoint(below_event, point);
             }
         } else if event_start_orientation != Orientation::Collinear {
             if below_event_start < event_end && event_end < below_event_end {
                 let point = event_end.clone();
-                self.divide_below_event_by_midpoint(below_event, point);
+                self.divide_event_by_midpoint(below_event, point);
             }
         } else if event_start == below_event_start {
             // segments share the right endpoint
@@ -152,7 +152,7 @@ impl<
         } else if below_event_start < event_start && event_start < below_event_end {
             if event_end < below_event_end {
                 let (max_point, min_point) = (event_end.clone(), event_start.clone());
-                self.divide_composite_event_by_inner_points(below_event, min_point, max_point);
+                self.divide_event_by_midpoints(below_event, min_point, max_point);
             } else {
                 let (max_start, min_end) = (event_start.clone(), below_event_end.clone());
                 self.divide_overlapping_events(below_event, event, max_start, min_end);
@@ -161,7 +161,7 @@ impl<
             if below_event_end < event_end {
                 let min_point = below_event_start.clone();
                 let max_point = below_event_end.clone();
-                self.divide_composite_event_by_inner_points(event, min_point, max_point);
+                self.divide_event_by_midpoints(event, min_point, max_point);
             } else {
                 let max_start = below_event_start.clone();
                 let min_end = event_end.clone();
@@ -177,36 +177,18 @@ impl<
         max_start: Endpoint,
         min_end: Endpoint,
     ) {
-        let (min_end_max_start_event, min_end_max_end_event) =
-            self.divide(max_start_event, min_end);
-        self.push(min_end_max_start_event);
-        self.push(min_end_max_end_event);
+        self.divide_event_by_midpoint(max_start_event, min_end);
         let (max_start_min_start_event, _) = self.divide(min_start_event, max_start);
         self.push(max_start_min_start_event);
     }
 
-    fn divide_composite_event_by_inner_points(
-        &mut self,
-        event: Event,
-        min_point: Endpoint,
-        max_point: Endpoint,
-    ) {
-        let (max_point_event_start_index, max_point_event_end_index) =
-            self.divide(event, max_point);
-        self.push(max_point_event_start_index);
-        self.push(max_point_event_end_index);
-        let (min_point_event_start_index, _) = self.divide(event, min_point);
-        self.push(min_point_event_start_index);
+    fn divide_event_by_midpoint(&mut self, event: Event, point: Endpoint) {
+        let (point_to_event_start_index, point_to_event_end_index) = self.divide(event, point);
+        self.push(point_to_event_start_index);
+        self.push(point_to_event_end_index);
     }
 
-    fn divide_below_event_by_midpoint(&mut self, below_event: Event, point: Endpoint) {
-        let (point_below_event_start_index, point_below_event_end_index) =
-            self.divide(below_event, point);
-        self.push(point_below_event_start_index);
-        self.push(point_below_event_end_index);
-    }
-
-    fn divide_event_by_midpoint(
+    fn divide_event_by_midpoint_checking_above(
         &mut self,
         event: Event,
         point: Endpoint,
@@ -224,6 +206,17 @@ impl<
         let (point_event_start_event, point_event_end_event) = self.divide(event, point);
         self.push(point_event_start_event);
         self.push(point_event_end_event);
+    }
+
+    fn divide_event_by_midpoints(
+        &mut self,
+        event: Event,
+        min_midpoint: Endpoint,
+        max_midpoint: Endpoint,
+    ) {
+        self.divide_event_by_midpoint(event, max_midpoint);
+        let (min_midpoint_to_event_start_index, _) = self.divide(event, min_midpoint);
+        self.push(min_midpoint_to_event_start_index);
     }
 }
 
