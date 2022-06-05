@@ -128,6 +128,8 @@ impl<
                 self.divide_below_event_by_midpoint(below_event, point);
             }
         } else if event_start == below_event_start {
+            // segments share the right endpoint
+            debug_assert!(event_end != below_event_end);
             let (max_end_event, min_end_event) = if event_end < below_event_end {
                 (below_event, event)
             } else {
