@@ -6,6 +6,7 @@ use rithm::traits::{AdditiveGroup, MultiplicativeMonoid, Signed};
 use crate::traits::Point;
 
 use super::event::Event;
+use super::events_queue::EventsQueue;
 use super::sweep_line_key::SweepLineKey;
 
 pub(super) struct SweepLine<Scalar, Endpoint> {
@@ -14,12 +15,12 @@ pub(super) struct SweepLine<Scalar, Endpoint> {
     opposites: *const Vec<Event>,
 }
 
-impl<Scalar, Endpoint> SweepLine<Scalar, Endpoint> {
-    pub(super) fn new(endpoints: &Vec<Endpoint>, opposites: &Vec<Event>) -> Self {
+impl<Scalar, Endpoint> From<&EventsQueue<Scalar, Endpoint>> for SweepLine<Scalar, Endpoint> {
+    fn from(events_queue: &EventsQueue<Scalar, Endpoint>) -> Self {
         Self {
             data: BTreeSet::<SweepLineKey<Scalar, Endpoint>>::new(),
-            endpoints,
-            opposites,
+            endpoints: events_queue.get_endpoints(),
+            opposites: events_queue.get_opposites(),
         }
     }
 }
