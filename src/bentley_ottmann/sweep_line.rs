@@ -41,53 +41,32 @@ impl<
     > SweepLine<Scalar, Endpoint>
 {
     pub(super) fn insert(&mut self, event: Event) -> bool {
-        self.data
-            .insert(SweepLineKey::new(event, self.endpoints(), self.opposites()))
+        self.data.insert(self.to_key(event))
     }
 
     pub(super) fn remove(&mut self, event: Event) -> bool {
-        self.data.remove(&SweepLineKey::new(
-            event,
-            self.endpoints(),
-            self.opposites(),
-        ))
+        self.data.remove(&self.to_key(event))
     }
 
     pub(super) fn above(&self, event: Event) -> Option<Event> {
         self.data
-            .range((
-                Excluded(&SweepLineKey::new(
-                    event,
-                    self.endpoints(),
-                    self.opposites(),
-                )),
-                Unbounded,
-            ))
+            .range((Excluded(&self.to_key(event)), Unbounded))
             .next()
             .map(|key| key.event)
     }
 
     pub(super) fn below(&self, event: Event) -> Option<Event> {
         self.data
-            .range((
-                Unbounded,
-                Excluded(&SweepLineKey::new(
-                    event,
-                    self.endpoints(),
-                    self.opposites(),
-                )),
-            ))
+            .range((Unbounded, Excluded(&self.to_key(event))))
             .last()
             .map(|key| key.event)
     }
 
     pub(super) fn find(&self, event: Event) -> Option<Event> {
-        self.data
-            .get(&SweepLineKey::new(
-                event,
-                self.endpoints(),
-                self.opposites(),
-            ))
-            .map(|key| key.event)
+        self.data.get(&self.to_key(event)).map(|key| key.event)
+    }
+
+    fn to_key(&self, event: Event) -> SweepLineKey<Scalar, Endpoint> {
+        SweepLineKey::new(event, self.endpoints(), self.opposites())
     }
 }
