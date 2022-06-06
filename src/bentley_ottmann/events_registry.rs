@@ -8,7 +8,6 @@ use rithm::traits::{AdditiveGroup, DivisivePartialMagma, MultiplicativeMonoid, S
 
 use crate::operations::{intersect_crossing_segments, orient, to_sorted_pair};
 use crate::oriented::Orientation;
-use crate::traits;
 use crate::traits::{Point, Segment};
 
 use super::event::{is_left_event, Event};
@@ -66,7 +65,7 @@ impl<Scalar, Endpoint: Ord, Segment: self::Segment<Scalar, Point = Endpoint>> Fr
 
 impl<
         Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
-        Endpoint: Clone + From<(Scalar, Scalar)> + Ord + traits::Point<Scalar>,
+        Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Scalar>,
     > EventsRegistry<Scalar, Endpoint>
 {
     pub(super) fn detect_intersection(&mut self, below_event: Event, event: Event) {
