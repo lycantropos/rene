@@ -17,9 +17,9 @@ use super::traits::{EventsQueue, SweepLine};
 
 pub(super) struct EventsRegistry<Scalar, Endpoint> {
     endpoints: Vec<Endpoint>,
+    events_queue_data: BinaryHeap<Reverse<EventsQueueKey<Endpoint>>>,
     opposites: Vec<Event>,
-    events_queue: BinaryHeap<Reverse<EventsQueueKey<Endpoint>>>,
-    sweep_line: BTreeSet<SweepLineKey<Scalar, Endpoint>>,
+    sweep_line_data: BTreeSet<SweepLineKey<Scalar, Endpoint>>,
     _phantom: PhantomData<fn() -> Scalar>,
 }
 
@@ -48,9 +48,9 @@ impl<Scalar, Endpoint: Ord, Segment: self::Segment<Scalar, Point = Endpoint>> Fr
         let capacity = 2 * segments.len();
         let mut result = Self {
             endpoints: Vec::with_capacity(capacity),
+            events_queue_data: BinaryHeap::with_capacity(capacity),
             opposites: Vec::with_capacity(capacity),
-            events_queue: BinaryHeap::with_capacity(capacity),
-            sweep_line: BTreeSet::new(),
+            sweep_line_data: BTreeSet::new(),
             _phantom: PhantomData,
         };
         for (index, segment) in segments.iter().enumerate() {
@@ -74,6 +74,8 @@ impl<
     > EventsRegistry<Scalar, Endpoint>
 {
     pub(super) fn detect_intersection(&mut self, below_event: Event, event: Event) {
+        debug_assert_ne!(below_event, event);
+
         let event_start = self.get_event_start(event);
         let event_end = self.get_event_end(event);
         let below_event_start = self.get_event_start(below_event);
@@ -132,6 +134,7 @@ impl<
             let min_end = self.get_event_end(min_end_event).clone();
             let (_, min_end_max_end_event) = self.divide(max_end_event, min_end);
             self.push(min_end_max_end_event);
+            self.merge_equal_segment_events(event, below_event);
         } else if event_end == below_event_end {
             let (max_start_event, min_start_event) = if event_start < below_event_start {
                 (below_event, event)
@@ -139,27 +142,48 @@ impl<
                 (event, below_event)
             };
             let max_start = self.get_event_start(max_start_event).clone();
-            let (max_start_min_start_event, _) = self.divide(min_start_event, max_start);
-            self.push(max_start_min_start_event);
+            let (max_start_to_min_start_event, max_start_to_end_event) =
+                self.divide(min_start_event, max_start);
+            self.push(max_start_to_min_start_event);
+            self.merge_equal_segment_events(max_start_event, max_start_to_end_event);
         } else if below_event_start < event_start && event_start < below_event_end {
             if event_end < below_event_end {
-                let (max_point, min_point) = (event_end.clone(), event_start.clone());
-                self.divide_event_by_midpoints(below_event, min_point, max_point);
+                let event_start = event_start.clone();
+                let event_end = event_end.clone();
+                self.divide_event_by_mid_segment_event_endpoints(
+                    below_event,
+                    event,
+                    event_start,
+                    event_end,
+                );
             } else {
                 let (max_start, min_end) = (event_start.clone(), below_event_end.clone());
                 self.divide_overlapping_events(below_event, event, max_start, min_end);
             }
         } else if event_start < below_event_start && below_event_start < event_end {
             if below_event_end < event_end {
-                let min_point = below_event_start.clone();
-                let max_point = below_event_end.clone();
-                self.divide_event_by_midpoints(event, min_point, max_point);
+                let below_event_start = below_event_start.clone();
+                let below_event_end = below_event_end.clone();
+                self.divide_event_by_mid_segment_event_endpoints(
+                    event,
+                    below_event,
+                    below_event_start,
+                    below_event_end,
+                );
             } else {
                 let max_start = below_event_start.clone();
                 let min_end = event_end.clone();
                 self.divide_overlapping_events(event, below_event, max_start, min_end);
             }
         }
+    }
+
+    pub(super) fn merge_equal_segment_events(&mut self, first: Event, second: Event) {
+        debug_assert_ne!(first, second);
+        debug_assert!(is_left_event(first));
+        debug_assert!(is_left_event(second));
+        debug_assert!(self.get_event_start(first) == self.get_event_start(second));
+        debug_assert!(self.get_event_end(first) == self.get_event_end(second));
     }
 
     fn divide_overlapping_events(
@@ -170,8 +194,36 @@ impl<
         min_end: Endpoint,
     ) {
         self.divide_event_by_midpoint(max_start_event, min_end);
-        let (max_start_min_start_event, _) = self.divide(min_start_event, max_start);
+        let (max_start_min_start_event, max_start_min_end_event) =
+            self.divide(min_start_event, max_start);
         self.push(max_start_min_start_event);
+        self.merge_equal_segment_events(max_start_event, max_start_min_end_event);
+    }
+
+    fn divide_event_by_mid_segment_event_endpoints(
+        &mut self,
+        event: Event,
+        mid_segment_event: Event,
+        mid_segment_event_start: Endpoint,
+        mid_segment_event_end: Endpoint,
+    ) where
+        Endpoint: PartialEq,
+    {
+        debug_assert!(mid_segment_event_start.eq(self.get_event_start(mid_segment_event)));
+        debug_assert!(mid_segment_event_end.eq(self.get_event_end(mid_segment_event)));
+        debug_assert!(mid_segment_event_start.ne(self.get_event_start(event)));
+        debug_assert!(mid_segment_event_end.ne(self.get_event_end(event)));
+
+        self.divide_event_by_midpoint(event, mid_segment_event_end);
+        let (
+            inner_subsegment_event_start_to_composite_event_start_index,
+            inner_subsegment_event_start_to_inner_subsegment_event_end_index,
+        ) = self.divide(event, mid_segment_event_start);
+        self.push(inner_subsegment_event_start_to_composite_event_start_index);
+        self.merge_equal_segment_events(
+            mid_segment_event,
+            inner_subsegment_event_start_to_inner_subsegment_event_end_index,
+        );
     }
 
     fn divide_event_by_midpoint(&mut self, event: Event, point: Endpoint) {
@@ -188,22 +240,12 @@ impl<
                 && self.get_event_end(above_event).eq(&point)
             {
                 self.remove(above_event);
+                self.divide_event_by_midpoint(event, point);
+                self.merge_equal_segment_events(event, above_event);
+                return;
             }
         }
-        let (point_event_start_event, point_event_end_event) = self.divide(event, point);
-        self.push(point_event_start_event);
-        self.push(point_event_end_event);
-    }
-
-    fn divide_event_by_midpoints(
-        &mut self,
-        event: Event,
-        min_midpoint: Endpoint,
-        max_midpoint: Endpoint,
-    ) {
-        self.divide_event_by_midpoint(event, max_midpoint);
-        let (min_midpoint_to_event_start_index, _) = self.divide(event, min_midpoint);
-        self.push(min_midpoint_to_event_start_index);
+        self.divide_event_by_midpoint(event, point);
     }
 }
 
@@ -225,11 +267,11 @@ impl<Scalar, Endpoint: Clone + self::Point<Scalar> + Ord> EventsRegistry<Scalar,
 
 impl<Scalar, Endpoint: Ord> EventsQueue for EventsRegistry<Scalar, Endpoint> {
     fn pop(&mut self) -> Option<Event> {
-        self.events_queue.pop().map(|key| key.0.event)
+        self.events_queue_data.pop().map(|key| key.0.event)
     }
 
     fn push(&mut self, event: Event) {
-        self.events_queue.push(Reverse(EventsQueueKey::new(
+        self.events_queue_data.push(Reverse(EventsQueueKey::new(
             event,
             &self.endpoints,
             &self.opposites,
@@ -243,30 +285,30 @@ impl<
     > SweepLine for EventsRegistry<Scalar, Endpoint>
 {
     fn above(&self, event: Event) -> Option<Event> {
-        self.sweep_line
+        self.sweep_line_data
             .range((Excluded(&self.to_sweep_line_key(event)), Unbounded))
             .next()
             .map(|key| key.event)
     }
 
     fn below(&self, event: Event) -> Option<Event> {
-        self.sweep_line
+        self.sweep_line_data
             .range((Unbounded, Excluded(&self.to_sweep_line_key(event))))
             .last()
             .map(|key| key.event)
     }
 
     fn find(&self, event: Event) -> Option<Event> {
-        self.sweep_line
+        self.sweep_line_data
             .get(&self.to_sweep_line_key(event))
             .map(|key| key.event)
     }
 
     fn insert(&mut self, event: Event) -> bool {
-        self.sweep_line.insert(self.to_sweep_line_key(event))
+        self.sweep_line_data.insert(self.to_sweep_line_key(event))
     }
 
     fn remove(&mut self, event: Event) -> bool {
-        self.sweep_line.remove(&self.to_sweep_line_key(event))
+        self.sweep_line_data.remove(&self.to_sweep_line_key(event))
     }
 }
