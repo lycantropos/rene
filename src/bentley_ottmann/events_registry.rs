@@ -13,6 +13,7 @@ use crate::traits::{Point, Segment};
 use super::event::{is_left_event, Event};
 use super::events_queue_key::EventsQueueKey;
 use super::sweep_line_key::SweepLineKey;
+use super::traits::{EventsQueue, SweepLine};
 
 pub(super) struct EventsRegistry<Scalar, Endpoint> {
     endpoints: Vec<Endpoint>,
@@ -33,6 +34,10 @@ impl<Scalar, Endpoint> EventsRegistry<Scalar, Endpoint> {
 
     pub(super) fn get_opposite(&self, event: Event) -> Event {
         self.opposites[event]
+    }
+
+    fn to_sweep_line_key(&self, event: Event) -> SweepLineKey<Scalar, Endpoint> {
+        SweepLineKey::new(event, &self.endpoints, &self.opposites)
     }
 }
 
@@ -218,8 +223,8 @@ impl<Scalar, Endpoint: Clone + self::Point<Scalar> + Ord> EventsRegistry<Scalar,
     }
 }
 
-impl<Scalar, Endpoint: Ord> EventsRegistry<Scalar, Endpoint> {
-    pub(super) fn pop(&mut self) -> Option<Event> {
+impl<Scalar, Endpoint: Ord> EventsQueue for EventsRegistry<Scalar, Endpoint> {
+    fn pop(&mut self) -> Option<Event> {
         self.events_queue.pop().map(|key| key.0.event)
     }
 
@@ -235,37 +240,33 @@ impl<Scalar, Endpoint: Ord> EventsRegistry<Scalar, Endpoint> {
 impl<
         Scalar: AdditiveGroup + MultiplicativeMonoid + Ord + Signed,
         Endpoint: Clone + Eq + Point<Scalar>,
-    > EventsRegistry<Scalar, Endpoint>
+    > SweepLine for EventsRegistry<Scalar, Endpoint>
 {
-    pub(super) fn insert(&mut self, event: Event) -> bool {
-        self.sweep_line.insert(self.to_key(event))
-    }
-
-    pub(super) fn remove(&mut self, event: Event) -> bool {
-        self.sweep_line.remove(&self.to_key(event))
-    }
-
-    pub(super) fn above(&self, event: Event) -> Option<Event> {
+    fn above(&self, event: Event) -> Option<Event> {
         self.sweep_line
-            .range((Excluded(&self.to_key(event)), Unbounded))
+            .range((Excluded(&self.to_sweep_line_key(event)), Unbounded))
             .next()
             .map(|key| key.event)
     }
 
-    pub(super) fn below(&self, event: Event) -> Option<Event> {
+    fn below(&self, event: Event) -> Option<Event> {
         self.sweep_line
-            .range((Unbounded, Excluded(&self.to_key(event))))
+            .range((Unbounded, Excluded(&self.to_sweep_line_key(event))))
             .last()
             .map(|key| key.event)
     }
 
-    pub(super) fn find(&self, event: Event) -> Option<Event> {
+    fn find(&self, event: Event) -> Option<Event> {
         self.sweep_line
-            .get(&self.to_key(event))
+            .get(&self.to_sweep_line_key(event))
             .map(|key| key.event)
     }
 
-    fn to_key(&self, event: Event) -> SweepLineKey<Scalar, Endpoint> {
-        SweepLineKey::new(event, &self.endpoints, &self.opposites)
+    fn insert(&mut self, event: Event) -> bool {
+        self.sweep_line.insert(self.to_sweep_line_key(event))
+    }
+
+    fn remove(&mut self, event: Event) -> bool {
+        self.sweep_line.remove(&self.to_sweep_line_key(event))
     }
 }

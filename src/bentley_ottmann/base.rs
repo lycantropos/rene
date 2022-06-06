@@ -6,6 +6,7 @@ use crate::traits::{Point, Segment};
 
 use super::event::is_left_event;
 use super::events_registry::EventsRegistry;
+use super::traits::{EventsQueue, SweepLine};
 
 pub(crate) fn sweep<
     Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
