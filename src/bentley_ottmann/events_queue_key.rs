@@ -19,11 +19,11 @@ impl<Endpoint> EventsQueueKey<Endpoint> {
 }
 
 impl<Endpoint> EventsQueueKey<Endpoint> {
-    fn endpoints(&self) -> &[Endpoint] {
+    fn get_endpoints(&self) -> &[Endpoint] {
         unsafe { &(*self.endpoints) }
     }
 
-    fn opposites(&self) -> &[Event] {
+    fn get_opposites(&self) -> &[Event] {
         unsafe { &(*self.opposites) }
     }
 }
@@ -41,15 +41,20 @@ impl<Endpoint: Ord> PartialOrd for EventsQueueKey<Endpoint> {
         Some(compare_events(
             self.event,
             other.event,
-            self.endpoints(),
-            self.opposites(),
+            self.get_endpoints(),
+            self.get_opposites(),
         ))
     }
 }
 
 impl<Endpoint: Ord> Ord for EventsQueueKey<Endpoint> {
     fn cmp(&self, other: &Self) -> Ordering {
-        compare_events(self.event, other.event, self.endpoints(), self.opposites())
+        compare_events(
+            self.event,
+            other.event,
+            self.get_endpoints(),
+            self.get_opposites(),
+        )
     }
 }
 
