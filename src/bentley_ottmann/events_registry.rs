@@ -1,7 +1,8 @@
 use core::convert::From;
 use std::cmp::Reverse;
-use std::collections::BinaryHeap;
+use std::collections::{BTreeSet, BinaryHeap};
 use std::marker::PhantomData;
+use std::ops::Bound::{Excluded, Unbounded};
 
 use rithm::traits::{AdditiveGroup, DivisivePartialMagma, MultiplicativeMonoid, Signed};
 
@@ -12,20 +13,17 @@ use crate::traits::{Point, Segment};
 
 use super::event::{is_left_event, Event};
 use super::events_queue_key::EventsQueueKey;
-use super::sweep_line::SweepLine;
+use super::sweep_line_key::SweepLineKey;
 
-pub(super) struct EventsQueue<Scalar, Endpoint> {
+pub(super) struct EventsRegistry<Scalar, Endpoint> {
     endpoints: Vec<Endpoint>,
     opposites: Vec<Event>,
-    queue: BinaryHeap<Reverse<EventsQueueKey<Endpoint>>>,
+    events_queue: BinaryHeap<Reverse<EventsQueueKey<Endpoint>>>,
+    sweep_line: BTreeSet<SweepLineKey<Scalar, Endpoint>>,
     _phantom: PhantomData<fn() -> Scalar>,
 }
 
-impl<Scalar, Endpoint> EventsQueue<Scalar, Endpoint> {
-    pub(super) fn get_endpoints(&self) -> &Vec<Endpoint> {
-        &self.endpoints
-    }
-
+impl<Scalar, Endpoint> EventsRegistry<Scalar, Endpoint> {
     pub(super) fn get_event_start(&self, event: Event) -> &Endpoint {
         &self.endpoints[event]
     }
@@ -37,21 +35,18 @@ impl<Scalar, Endpoint> EventsQueue<Scalar, Endpoint> {
     pub(super) fn get_opposite(&self, event: Event) -> Event {
         self.opposites[event]
     }
-
-    pub(super) fn get_opposites(&self) -> &Vec<Event> {
-        &self.opposites
-    }
 }
 
 impl<Scalar, Endpoint: Ord, Segment: self::Segment<Scalar, Point = Endpoint>> From<&[Segment]>
-    for EventsQueue<Scalar, Endpoint>
+    for EventsRegistry<Scalar, Endpoint>
 {
     fn from(segments: &[Segment]) -> Self {
         let capacity = 2 * segments.len();
         let mut result = Self {
             endpoints: Vec::with_capacity(capacity),
             opposites: Vec::with_capacity(capacity),
-            queue: BinaryHeap::with_capacity(capacity),
+            events_queue: BinaryHeap::with_capacity(capacity),
+            sweep_line: BTreeSet::new(),
             _phantom: PhantomData,
         };
         for (index, segment) in segments.iter().enumerate() {
@@ -72,14 +67,9 @@ impl<Scalar, Endpoint: Ord, Segment: self::Segment<Scalar, Point = Endpoint>> Fr
 impl<
         Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
         Endpoint: Clone + From<(Scalar, Scalar)> + Ord + traits::Point<Scalar>,
-    > EventsQueue<Scalar, Endpoint>
+    > EventsRegistry<Scalar, Endpoint>
 {
-    pub(super) fn detect_intersection(
-        &mut self,
-        below_event: Event,
-        event: Event,
-        sweep_line: &mut SweepLine<Scalar, Endpoint>,
-    ) {
+    pub(super) fn detect_intersection(&mut self, below_event: Event, event: Event) {
         let event_start = self.get_event_start(event);
         let event_end = self.get_event_end(event);
         let below_event_start = self.get_event_start(below_event);
@@ -105,16 +95,16 @@ impl<
                             below_event_end,
                         );
                         self.divide_event_by_midpoint(below_event, point.clone());
-                        self.divide_event_by_midpoint_checking_above(event, point, sweep_line);
+                        self.divide_event_by_midpoint_checking_above(event, point);
                     }
                 } else if below_event_start_orientation != Orientation::Collinear {
                     if event_start < below_event_end && below_event_end < event_end {
                         let point = below_event_end.clone();
-                        self.divide_event_by_midpoint_checking_above(event, point, sweep_line);
+                        self.divide_event_by_midpoint_checking_above(event, point);
                     }
                 } else if event_start < below_event_start && below_event_start < event_end {
                     let point = below_event_start.clone();
-                    self.divide_event_by_midpoint_checking_above(event, point, sweep_line);
+                    self.divide_event_by_midpoint_checking_above(event, point);
                 }
             }
         } else if event_end_orientation != Orientation::Collinear {
@@ -134,7 +124,7 @@ impl<
             } else {
                 (event, below_event)
             };
-            sweep_line.remove(max_end_event);
+            self.remove(max_end_event);
             let min_end = self.get_event_end(min_end_event).clone();
             let (_, min_end_max_end_event) = self.divide(max_end_event, min_end);
             self.push(min_end_max_end_event);
@@ -186,19 +176,14 @@ impl<
         self.push(point_to_event_end_index);
     }
 
-    fn divide_event_by_midpoint_checking_above(
-        &mut self,
-        event: Event,
-        point: Endpoint,
-        sweep_line: &mut SweepLine<Scalar, Endpoint>,
-    ) {
-        if let Some(above_event) = sweep_line.above(event) {
+    fn divide_event_by_midpoint_checking_above(&mut self, event: Event, point: Endpoint) {
+        if let Some(above_event) = self.above(event) {
             if self
                 .get_event_start(above_event)
                 .eq(self.get_event_start(event))
                 && self.get_event_end(above_event).eq(&point)
             {
-                sweep_line.remove(above_event);
+                self.remove(above_event);
             }
         }
         let (point_event_start_event, point_event_end_event) = self.divide(event, point);
@@ -218,7 +203,7 @@ impl<
     }
 }
 
-impl<Scalar, Endpoint: Clone + self::Point<Scalar> + Ord> EventsQueue<Scalar, Endpoint> {
+impl<Scalar, Endpoint: Clone + self::Point<Scalar> + Ord> EventsRegistry<Scalar, Endpoint> {
     pub(super) fn divide(&mut self, event: Event, mid_point: Endpoint) -> (Event, Event) {
         debug_assert!(is_left_event(event));
         let opposite_event = self.get_opposite(event);
@@ -234,16 +219,54 @@ impl<Scalar, Endpoint: Clone + self::Point<Scalar> + Ord> EventsQueue<Scalar, En
     }
 }
 
-impl<Scalar, Endpoint: Ord> EventsQueue<Scalar, Endpoint> {
+impl<Scalar, Endpoint: Ord> EventsRegistry<Scalar, Endpoint> {
     pub(super) fn pop(&mut self) -> Option<Event> {
-        self.queue.pop().map(|key| key.0.event)
+        self.events_queue.pop().map(|key| key.0.event)
     }
 
     fn push(&mut self, event: Event) {
-        self.queue.push(Reverse(EventsQueueKey::new(
+        self.events_queue.push(Reverse(EventsQueueKey::new(
             event,
             &self.endpoints,
             &self.opposites,
         )))
+    }
+}
+
+impl<
+        Scalar: AdditiveGroup + MultiplicativeMonoid + Ord + Signed,
+        Endpoint: Clone + Eq + Point<Scalar>,
+    > EventsRegistry<Scalar, Endpoint>
+{
+    pub(super) fn insert(&mut self, event: Event) -> bool {
+        self.sweep_line.insert(self.to_key(event))
+    }
+
+    pub(super) fn remove(&mut self, event: Event) -> bool {
+        self.sweep_line.remove(&self.to_key(event))
+    }
+
+    pub(super) fn above(&self, event: Event) -> Option<Event> {
+        self.sweep_line
+            .range((Excluded(&self.to_key(event)), Unbounded))
+            .next()
+            .map(|key| key.event)
+    }
+
+    pub(super) fn below(&self, event: Event) -> Option<Event> {
+        self.sweep_line
+            .range((Unbounded, Excluded(&self.to_key(event))))
+            .last()
+            .map(|key| key.event)
+    }
+
+    pub(super) fn find(&self, event: Event) -> Option<Event> {
+        self.sweep_line
+            .get(&self.to_key(event))
+            .map(|key| key.event)
+    }
+
+    fn to_key(&self, event: Event) -> SweepLineKey<Scalar, Endpoint> {
+        SweepLineKey::new(event, &self.endpoints, &self.opposites)
     }
 }
