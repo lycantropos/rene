@@ -18,6 +18,7 @@ use super::traits::{EventsQueue, SweepLine};
 pub(super) struct EventsRegistry<Scalar, Endpoint> {
     endpoints: Vec<Endpoint>,
     events_queue_data: BinaryHeap<Reverse<EventsQueueKey<Endpoint>>>,
+    min_collinear_segments_ids: Vec<usize>,
     opposites: Vec<Event>,
     segments_ids: Vec<usize>,
     sweep_line_data: BTreeSet<SweepLineKey<Scalar, Endpoint>>,
@@ -42,6 +43,17 @@ impl<Scalar, Endpoint> EventsRegistry<Scalar, Endpoint> {
         self.segments_ids[event / 2]
     }
 
+    pub(super) fn to_min_collinear_segment_id(&self, segment_id: usize) -> usize {
+        let mut candidate = segment_id;
+        let mut iterations_count = 0;
+        while self.min_collinear_segments_ids[candidate] != candidate {
+            candidate = self.min_collinear_segments_ids[candidate];
+            iterations_count += 1;
+        }
+        debug_assert!(iterations_count < 3);
+        candidate
+    }
+
     fn to_sweep_line_key(&self, event: Event) -> SweepLineKey<Scalar, Endpoint> {
         debug_assert!(is_left_event(event));
         SweepLineKey::new(event, &self.endpoints, &self.opposites)
@@ -56,6 +68,7 @@ impl<Scalar, Endpoint: Ord, Segment: self::Segment<Scalar, Point = Endpoint>> Fr
         let mut result = Self {
             endpoints: Vec::with_capacity(capacity),
             events_queue_data: BinaryHeap::with_capacity(capacity),
+            min_collinear_segments_ids: (0..segments.len()).collect(),
             opposites: Vec::with_capacity(capacity),
             segments_ids: (0..segments.len()).collect(),
             sweep_line_data: BTreeSet::new(),
@@ -196,6 +209,17 @@ impl<
         );
         debug_assert!(self.get_event_start(first) == self.get_event_start(second));
         debug_assert!(self.get_event_end(first) == self.get_event_end(second));
+
+        let first_segment_id = self.to_left_event_segment_id(first);
+        let second_segment_id = self.to_left_event_segment_id(second);
+        let first_min_collinear_segment_id = self.min_collinear_segments_ids[first_segment_id];
+        let second_min_collinear_segment_id = self.min_collinear_segments_ids[second_segment_id];
+        let min_collinear_segment_id =
+            first_min_collinear_segment_id.min(second_min_collinear_segment_id);
+        self.min_collinear_segments_ids[first_segment_id] = min_collinear_segment_id;
+        self.min_collinear_segments_ids[second_segment_id] = min_collinear_segment_id;
+        self.min_collinear_segments_ids[first_min_collinear_segment_id] = min_collinear_segment_id;
+        self.min_collinear_segments_ids[second_min_collinear_segment_id] = min_collinear_segment_id;
     }
 
     fn divide_overlapping_events(
