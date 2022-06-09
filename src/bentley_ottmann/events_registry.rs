@@ -15,7 +15,7 @@ use super::events_queue_key::EventsQueueKey;
 use super::sweep_line_key::SweepLineKey;
 use super::traits::{EventsQueue, SweepLine};
 
-pub(super) struct EventsRegistry<Scalar, Endpoint> {
+pub(super) struct EventsRegistry<Scalar, Endpoint, const UNIQUE: bool> {
     endpoints: Vec<Endpoint>,
     events_queue_data: BinaryHeap<Reverse<EventsQueueKey<Endpoint>>>,
     min_collinear_segments_ids: Vec<usize>,
@@ -25,17 +25,86 @@ pub(super) struct EventsRegistry<Scalar, Endpoint> {
     _phantom: PhantomData<fn() -> Scalar>,
 }
 
-impl<Scalar, Endpoint> EventsRegistry<Scalar, Endpoint> {
-    pub(super) fn get_event_start(&self, event: Event) -> &Endpoint {
-        &self.endpoints[event]
+impl<
+        Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
+        Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Scalar>,
+        const UNIQUE: bool,
+    > Iterator for EventsRegistry<Scalar, Endpoint, UNIQUE>
+{
+    type Item = Event;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(event) = self.pop() {
+            if is_left_event(event) {
+                if let Some(equal_segment_event) = <Self as SweepLine>::find(self, event) {
+                    self.merge_equal_segment_events(equal_segment_event, event);
+                    if UNIQUE {
+                        self.next()
+                    } else {
+                        Some(event)
+                    }
+                } else {
+                    self.insert(event);
+                    if let Some(below_event) = self.below(event) {
+                        self.detect_intersection(below_event, event);
+                    }
+                    if let Some(above_event) = self.above(event) {
+                        self.detect_intersection(event, above_event);
+                    }
+                    Some(event)
+                }
+            } else {
+                let event_opposite = self.get_opposite(event);
+                debug_assert!(is_left_event(event_opposite));
+                if let Some(equal_segment_event) = <Self as SweepLine>::find(self, event_opposite) {
+                    let (maybe_above_event, maybe_below_event) = (
+                        self.above(equal_segment_event),
+                        self.below(equal_segment_event),
+                    );
+                    self.remove(equal_segment_event);
+                    if let (Some(above_event), Some(below_event)) =
+                        (maybe_above_event, maybe_below_event)
+                    {
+                        self.detect_intersection(below_event, above_event);
+                    }
+                    if equal_segment_event != event_opposite {
+                        self.merge_equal_segment_events(event_opposite, equal_segment_event);
+                    }
+                    Some(event)
+                } else {
+                    if UNIQUE {
+                        self.next()
+                    } else {
+                        Some(event)
+                    }
+                }
+            }
+        } else {
+            None
+        }
+    }
+}
+
+impl<Scalar, Endpoint, const UNIQUE: bool> EventsRegistry<Scalar, Endpoint, UNIQUE> {
+    pub(super) fn are_collinear(&self, segment_id: usize, other_segment_id: usize) -> bool {
+        self.to_min_collinear_segment_id(segment_id)
+            == self.to_min_collinear_segment_id(other_segment_id)
     }
 
     pub(super) fn get_event_end(&self, event: Event) -> &Endpoint {
         &self.endpoints[self.get_opposite(event)]
     }
 
-    pub(super) fn get_opposite(&self, event: Event) -> Event {
-        self.opposites[event]
+    pub(super) fn get_event_segment_id(&self, event: Event) -> usize {
+        self.to_left_event_segment_id(if is_left_event(event) {
+            event
+        } else {
+            self.get_opposite(event)
+        })
+    }
+
+    pub(super) fn get_event_start(&self, event: Event) -> &Endpoint {
+        &self.endpoints[event]
     }
 
     pub(super) fn get_segment_end(&self, segment_id: usize) -> &Endpoint {
@@ -46,12 +115,16 @@ impl<Scalar, Endpoint> EventsRegistry<Scalar, Endpoint> {
         &self.endpoints[2 * segment_id]
     }
 
-    pub(super) fn to_left_event_segment_id(&self, event: Event) -> usize {
+    fn get_opposite(&self, event: Event) -> Event {
+        self.opposites[event]
+    }
+
+    fn to_left_event_segment_id(&self, event: Event) -> usize {
         debug_assert!(is_left_event(event));
         self.segments_ids[event / 2]
     }
 
-    pub(super) fn to_min_collinear_segment_id(&self, segment_id: usize) -> usize {
+    fn to_min_collinear_segment_id(&self, segment_id: usize) -> usize {
         let mut candidate = segment_id;
         let mut iterations_count = 0;
         while self.min_collinear_segments_ids[candidate] != candidate {
@@ -68,8 +141,12 @@ impl<Scalar, Endpoint> EventsRegistry<Scalar, Endpoint> {
     }
 }
 
-impl<Scalar, Endpoint: Ord, Segment: self::Segment<Scalar, Point = Endpoint>> From<&[Segment]>
-    for EventsRegistry<Scalar, Endpoint>
+impl<
+        Scalar,
+        Endpoint: Ord,
+        Segment: self::Segment<Scalar, Point = Endpoint>,
+        const UNIQUE: bool,
+    > From<&[Segment]> for EventsRegistry<Scalar, Endpoint, UNIQUE>
 {
     fn from(segments: &[Segment]) -> Self {
         let capacity = 2 * segments.len();
@@ -100,7 +177,8 @@ impl<Scalar, Endpoint: Ord, Segment: self::Segment<Scalar, Point = Endpoint>> Fr
 impl<
         Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
         Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Scalar>,
-    > EventsRegistry<Scalar, Endpoint>
+        const UNIQUE: bool,
+    > EventsRegistry<Scalar, Endpoint, UNIQUE>
 {
     pub(super) fn detect_intersection(&mut self, below_event: Event, event: Event) {
         debug_assert_ne!(below_event, event);
@@ -293,7 +371,9 @@ impl<
     }
 }
 
-impl<Scalar, Endpoint: Clone + self::Point<Scalar> + Ord> EventsRegistry<Scalar, Endpoint> {
+impl<Scalar, Endpoint: Clone + self::Point<Scalar> + Ord, const UNIQUE: bool>
+    EventsRegistry<Scalar, Endpoint, UNIQUE>
+{
     pub(super) fn divide(&mut self, event: Event, mid_point: Endpoint) -> (Event, Event) {
         debug_assert!(is_left_event(event));
         let opposite_event = self.get_opposite(event);
@@ -310,7 +390,9 @@ impl<Scalar, Endpoint: Clone + self::Point<Scalar> + Ord> EventsRegistry<Scalar,
     }
 }
 
-impl<Scalar, Endpoint: Ord> EventsQueue for EventsRegistry<Scalar, Endpoint> {
+impl<Scalar, Endpoint: Ord, const UNIQUE: bool> EventsQueue
+    for EventsRegistry<Scalar, Endpoint, UNIQUE>
+{
     fn pop(&mut self) -> Option<Event> {
         self.events_queue_data.pop().map(|key| key.0.event)
     }
@@ -327,7 +409,8 @@ impl<Scalar, Endpoint: Ord> EventsQueue for EventsRegistry<Scalar, Endpoint> {
 impl<
         Scalar: AdditiveGroup + MultiplicativeMonoid + Ord + Signed,
         Endpoint: Clone + Eq + Point<Scalar>,
-    > SweepLine for EventsRegistry<Scalar, Endpoint>
+        const UNIQUE: bool,
+    > SweepLine for EventsRegistry<Scalar, Endpoint, UNIQUE>
 {
     fn above(&self, event: Event) -> Option<Event> {
         self.sweep_line_data
