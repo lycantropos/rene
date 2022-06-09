@@ -19,6 +19,7 @@ pub(super) struct EventsRegistry<Scalar, Endpoint> {
     endpoints: Vec<Endpoint>,
     events_queue_data: BinaryHeap<Reverse<EventsQueueKey<Endpoint>>>,
     opposites: Vec<Event>,
+    segments_ids: Vec<usize>,
     sweep_line_data: BTreeSet<SweepLineKey<Scalar, Endpoint>>,
     _phantom: PhantomData<fn() -> Scalar>,
 }
@@ -36,6 +37,11 @@ impl<Scalar, Endpoint> EventsRegistry<Scalar, Endpoint> {
         self.opposites[event]
     }
 
+    pub(super) fn to_left_event_segment_id(&self, event: Event) -> usize {
+        debug_assert!(is_left_event(event));
+        self.segments_ids[event / 2]
+    }
+
     fn to_sweep_line_key(&self, event: Event) -> SweepLineKey<Scalar, Endpoint> {
         SweepLineKey::new(event, &self.endpoints, &self.opposites)
     }
@@ -50,6 +56,7 @@ impl<Scalar, Endpoint: Ord, Segment: self::Segment<Scalar, Point = Endpoint>> Fr
             endpoints: Vec::with_capacity(capacity),
             events_queue_data: BinaryHeap::with_capacity(capacity),
             opposites: Vec::with_capacity(capacity),
+            segments_ids: (0..segments.len()).collect(),
             sweep_line_data: BTreeSet::new(),
             _phantom: PhantomData,
         };
@@ -254,6 +261,7 @@ impl<Scalar, Endpoint: Clone + self::Point<Scalar> + Ord> EventsRegistry<Scalar,
         debug_assert!(is_left_event(event));
         let opposite_event = self.get_opposite(event);
         let mid_point_to_event_end_event = self.endpoints.len();
+        self.segments_ids.push(self.to_left_event_segment_id(event));
         self.endpoints.push(mid_point.clone());
         self.opposites.push(opposite_event);
         self.opposites[opposite_event] = mid_point_to_event_end_event;
