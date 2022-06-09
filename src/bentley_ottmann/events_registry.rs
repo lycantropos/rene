@@ -38,12 +38,12 @@ impl<Scalar, Endpoint> EventsRegistry<Scalar, Endpoint> {
         self.opposites[event]
     }
 
-    pub(super) fn get_segment_start(&self, segment_id: usize) -> &Endpoint {
-        &self.endpoints[2 * segment_id]
-    }
-
     pub(super) fn get_segment_end(&self, segment_id: usize) -> &Endpoint {
         &self.endpoints[2 * segment_id + 1]
+    }
+
+    pub(super) fn get_segment_start(&self, segment_id: usize) -> &Endpoint {
+        &self.endpoints[2 * segment_id]
     }
 
     pub(super) fn to_left_event_segment_id(&self, event: Event) -> usize {
