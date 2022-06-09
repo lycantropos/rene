@@ -42,8 +42,8 @@ pub(crate) fn relate_segments<
     test_start: &Point,
     test_end: &Point,
 ) -> Relation {
-    let (test_start, test_end) = to_sorted_pair((test_start, test_end));
     let (goal_start, goal_end) = to_sorted_pair((goal_start, goal_end));
+    let (test_start, test_end) = to_sorted_pair((test_start, test_end));
     let starts_equal = test_start == goal_start;
     let ends_equal = test_end == goal_end;
     if starts_equal && ends_equal {
@@ -107,13 +107,13 @@ pub(crate) fn relate_segments<
         Relation::Touch
     } else if goal_start < test_start && test_start < goal_end {
         if test_end < goal_end {
-            Relation::Component
+            Relation::Composite
         } else {
             Relation::Overlap
         }
     } else if test_start < goal_start && goal_start < test_end {
         if goal_end < test_end {
-            Relation::Composite
+            Relation::Component
         } else {
             Relation::Overlap
         }
