@@ -43,6 +43,7 @@ impl<Scalar, Endpoint> EventsRegistry<Scalar, Endpoint> {
     }
 
     fn to_sweep_line_key(&self, event: Event) -> SweepLineKey<Scalar, Endpoint> {
+        debug_assert!(is_left_event(event));
         SweepLineKey::new(event, &self.endpoints, &self.opposites)
     }
 }
@@ -189,6 +190,10 @@ impl<
         debug_assert_ne!(first, second);
         debug_assert!(is_left_event(first));
         debug_assert!(is_left_event(second));
+        debug_assert_ne!(
+            self.to_left_event_segment_id(first),
+            self.to_left_event_segment_id(second)
+        );
         debug_assert!(self.get_event_start(first) == self.get_event_start(second));
         debug_assert!(self.get_event_end(first) == self.get_event_end(second));
     }
