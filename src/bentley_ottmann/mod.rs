@@ -1,4 +1,4 @@
-pub(crate) use base::sweep;
+pub(crate) use base::to_unique_non_crossing_or_overlapping_segments;
 
 mod base;
 mod event;

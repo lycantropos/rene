@@ -11,7 +11,7 @@ use super::event::is_left_event;
 use super::events_registry::EventsRegistry;
 use super::traits::{EventsQueue, SweepLine};
 
-pub(crate) fn sweep<
+pub(crate) fn to_unique_non_crossing_or_overlapping_segments<
     Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
     Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Scalar>,
     Segment: From<(Endpoint, Endpoint)> + self::Segment<Scalar, Point = Endpoint>,
