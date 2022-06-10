@@ -18,6 +18,7 @@ use rithm::{big_int, fraction};
 use crate::bentley_ottmann::{is_contour_valid, to_unique_non_crossing_or_overlapping_segments};
 use crate::geometries::MIN_CONTOUR_VERTICES_COUNT;
 use crate::oriented::{Orientation, Oriented};
+use crate::relatable::Relation;
 use crate::traits::{Contour, Point, Polygon, Segment};
 
 mod bentley_ottmann;
@@ -117,6 +118,84 @@ impl PyOrientation {
                 Orientation::Clockwise => "CLOCKWISE",
                 Orientation::Collinear => "COLLINEAR",
                 Orientation::Counterclockwise => "COUNTERCLOCKWISE",
+            }
+        )
+    }
+}
+
+#[pyclass(name = "Relation", module = "rene")]
+#[derive(Clone)]
+struct PyRelation(Relation);
+
+#[pymethods]
+impl PyRelation {
+    #[classattr]
+    const COMPONENT: PyRelation = PyRelation(Relation::Component);
+
+    #[classattr]
+    const COMPOSITE: PyRelation = PyRelation(Relation::Composite);
+
+    #[classattr]
+    const COVER: PyRelation = PyRelation(Relation::Cover);
+
+    #[classattr]
+    const CROSS: PyRelation = PyRelation(Relation::Cross);
+
+    #[classattr]
+    const DISJOINT: PyRelation = PyRelation(Relation::Disjoint);
+
+    #[classattr]
+    const ENCLOSED: PyRelation = PyRelation(Relation::Enclosed);
+
+    #[classattr]
+    const ENCLOSES: PyRelation = PyRelation(Relation::Encloses);
+
+    #[classattr]
+    const EQUAL: PyRelation = PyRelation(Relation::Equal);
+
+    #[classattr]
+    const OVERLAP: PyRelation = PyRelation(Relation::Overlap);
+
+    #[classattr]
+    const TOUCH: PyRelation = PyRelation(Relation::Touch);
+
+    #[classattr]
+    const WITHIN: PyRelation = PyRelation(Relation::Within);
+
+    fn __repr__(&self) -> String {
+        format!(
+            "rene.Relation.{}",
+            match self.0 {
+                Relation::Component => "COMPONENT",
+                Relation::Composite => "COMPOSITE",
+                Relation::Cover => "COVER",
+                Relation::Cross => "CROSS",
+                Relation::Disjoint => "DISJOINT",
+                Relation::Enclosed => "ENCLOSED",
+                Relation::Encloses => "ENCLOSES",
+                Relation::Equal => "EQUAL",
+                Relation::Overlap => "OVERLAP",
+                Relation::Touch => "TOUCH",
+                Relation::Within => "WITHIN",
+            }
+        )
+    }
+
+    fn __str__(&self) -> String {
+        format!(
+            "Relation.{}",
+            match self.0 {
+                Relation::Component => "COMPONENT",
+                Relation::Composite => "COMPOSITE",
+                Relation::Cover => "COVER",
+                Relation::Cross => "CROSS",
+                Relation::Disjoint => "DISJOINT",
+                Relation::Enclosed => "ENCLOSED",
+                Relation::Encloses => "ENCLOSES",
+                Relation::Equal => "EQUAL",
+                Relation::Overlap => "OVERLAP",
+                Relation::Touch => "TOUCH",
+                Relation::Within => "WITHIN",
             }
         )
     }
@@ -521,6 +600,7 @@ fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
 #[pymodule]
 fn _crene(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyOrientation>()?;
+    module.add_class::<PyRelation>()?;
     module.add("MIN_CONTOUR_VERTICES_COUNT", MIN_CONTOUR_VERTICES_COUNT)?;
     Ok(())
 }
