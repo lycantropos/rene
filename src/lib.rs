@@ -21,6 +21,7 @@ use crate::traits::{Contour, Point, Polygon, Segment};
 
 mod bentley_ottmann;
 pub mod geometries;
+mod iteration;
 mod operations;
 pub mod oriented;
 pub mod relatable;
