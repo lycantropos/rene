@@ -16,10 +16,10 @@ use super::sweep_line_key::SweepLineKey;
 use super::traits::{EventsQueue, SweepLine};
 
 pub(super) struct EventsRegistry<Scalar, Endpoint, const UNIQUE: bool> {
-    endpoints: Vec<Endpoint>,
+    endpoints: Box<Vec<Endpoint>>,
     events_queue_data: BinaryHeap<Reverse<EventsQueueKey<Endpoint>>>,
     min_collinear_segments_ids: Vec<usize>,
-    opposites: Vec<Event>,
+    opposites: Box<Vec<Event>>,
     segments_ids: Vec<usize>,
     sweep_line_data: BTreeSet<SweepLineKey<Scalar, Endpoint>>,
     _phantom: PhantomData<fn() -> Scalar>,
@@ -151,10 +151,10 @@ impl<
     fn from(segments: &[Segment]) -> Self {
         let capacity = 2 * segments.len();
         let mut result = Self {
-            endpoints: Vec::with_capacity(capacity),
+            endpoints: Box::new(Vec::with_capacity(capacity)),
             events_queue_data: BinaryHeap::with_capacity(capacity),
             min_collinear_segments_ids: (0..segments.len()).collect(),
-            opposites: Vec::with_capacity(capacity),
+            opposites: Box::new(Vec::with_capacity(capacity)),
             segments_ids: (0..segments.len()).collect(),
             sweep_line_data: BTreeSet::new(),
             _phantom: PhantomData,
