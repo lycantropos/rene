@@ -15,6 +15,7 @@ use pyo3::{
 use rithm::traits::{Endianness, FromBytes, ToBytes, Zeroable};
 use rithm::{big_int, fraction};
 
+use crate::bentley_ottmann::{is_contour_valid, to_unique_non_crossing_or_overlapping_segments};
 use crate::geometries::MIN_CONTOUR_VERTICES_COUNT;
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{Contour, Point, Polygon, Segment};
@@ -183,6 +184,10 @@ impl PyExactContour {
                 orientation_cls.getattr(intern!(py, "COUNTERCLOCKWISE"))
             }
         }
+    }
+
+    fn is_valid(&self) -> bool {
+        is_contour_valid(&self.0)
     }
 
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
