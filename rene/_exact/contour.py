@@ -3,8 +3,8 @@ from typing import (Any,
 
 from rithm import Fraction
 
-from rene import (MIN_CONTOUR_VERTICES_COUNT,
-                  Orientation)
+from rene._rene import (MIN_CONTOUR_VERTICES_COUNT,
+                        Orientation)
 from .point import Point
 
 
