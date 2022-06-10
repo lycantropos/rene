@@ -61,9 +61,6 @@ class Relation(Base):
     #: geometry is a subset of the interior of the other
     WITHIN = 10
 
-    def __repr__(self) -> str:
-        return type(self).__qualname__ + '.' + self.name
-
 
 @unique
 class Orientation(Base):
