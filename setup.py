@@ -51,8 +51,8 @@ if platform.python_implementation() == 'CPython':
     class LazyRustExtensions(list):
         def __iter__(self) -> Iterator['RustExtension']:
             from setuptools_rust import RustExtension
-            yield RustExtension(rene.__name__ + '._exact')
-            yield RustExtension(rene.__name__ + '._rene')
+            yield RustExtension(rene.__name__ + '._cexact')
+            yield RustExtension(rene.__name__ + '._crene')
 
         def __len__(self) -> int:
             return 2

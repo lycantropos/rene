@@ -515,7 +515,7 @@ fn extract_from_sequence<'a, Wrapper: FromPyObject<'a>, Wrapped: From<Wrapper>>(
 }
 
 #[pymodule]
-fn _exact(_py: Python, module: &PyModule) -> PyResult<()> {
+fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactContour>()?;
     module.add_class::<PyExactPoint>()?;
     module.add_class::<PyExactPolygon>()?;
@@ -528,7 +528,7 @@ fn _exact(_py: Python, module: &PyModule) -> PyResult<()> {
 }
 
 #[pymodule]
-fn _rene(_py: Python, module: &PyModule) -> PyResult<()> {
+fn _crene(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyOrientation>()?;
     module.add("MIN_CONTOUR_VERTICES_COUNT", MIN_CONTOUR_VERTICES_COUNT)?;
     Ok(())
