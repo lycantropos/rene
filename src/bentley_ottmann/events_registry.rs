@@ -22,7 +22,6 @@ pub(super) struct EventsRegistry<Scalar, Endpoint, const UNIQUE: bool> {
     opposites: Box<Vec<Event>>,
     segments_ids: Vec<usize>,
     sweep_line_data: BTreeSet<SweepLineKey<Scalar, Endpoint>>,
-    _phantom: PhantomData<fn() -> Scalar>,
 }
 
 impl<
@@ -157,7 +156,6 @@ impl<
             opposites: Box::new(Vec::with_capacity(capacity)),
             segments_ids: (0..segments.len()).collect(),
             sweep_line_data: BTreeSet::new(),
-            _phantom: PhantomData,
         };
         for (index, segment) in segments.iter().enumerate() {
             let (start, end) = to_sorted_pair((segment.start(), segment.end()));
