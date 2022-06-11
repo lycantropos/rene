@@ -83,9 +83,8 @@ def _are_non_empty_unique_sequences_rotationally_equivalent(
     else:
         return ((left[1:len(left) - index] == right[index + 1:]
                  and left[len(left) - index:] == right[:index])
-                or (left[:len(left) - index - 1:-1] == right[:index]
-                    and (left[len(left) - index - 1:0:-1]
-                         == right[index + 1:])))
+                or (left[1:index + 1] == right[index - 1::-1]
+                    and left[index + 1:] == right[len(right) - 1:index:-1]))
 
 
 def _cross_multiply(first_start: Point,
