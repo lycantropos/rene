@@ -18,14 +18,8 @@ pub(super) fn are_non_empty_unique_sequences_rotationally_equivalent<T: PartialE
             .map(|index| {
                 (left[1..left.len() - index] == right[index + 1..]
                     && left[left.len() - index..] == right[..index])
-                    || (left[left.len() - index..]
-                        .iter()
-                        .rev()
-                        .eq(right[..index].iter())
-                        && left[1..left.len() - index]
-                            .iter()
-                            .rev()
-                            .eq(right[index + 1..].iter()))
+                    || (left[1..index + 1].iter().eq(right[..index].iter().rev())
+                        && left[index + 1..].iter().eq(right[index + 1..].iter().rev()))
             })
             .unwrap_or(false)
     }
