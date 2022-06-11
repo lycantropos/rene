@@ -239,8 +239,8 @@ impl<
             };
             self.remove(max_end_event);
             let min_end = self.get_event_end(min_end_event).clone();
-            let (_, min_end_max_end_event) = self.divide(max_end_event, min_end);
-            self.push(min_end_max_end_event);
+            let (_, min_end_to_max_end_event) = self.divide(max_end_event, min_end);
+            self.push(min_end_to_max_end_event);
             self.merge_equal_segment_events(event, below_event);
         } else if event_end == below_event_end {
             let (max_start_event, min_start_event) = if event_start < below_event_start {
@@ -315,10 +315,10 @@ impl<
         min_end: Endpoint,
     ) {
         self.divide_event_by_midpoint(max_start_event, min_end);
-        let (max_start_min_start_event, max_start_min_end_event) =
+        let (max_start_to_min_start_event, max_start_to_min_end_event) =
             self.divide(min_start_event, max_start);
-        self.push(max_start_min_start_event);
-        self.merge_equal_segment_events(max_start_event, max_start_min_end_event);
+        self.push(max_start_to_min_start_event);
+        self.merge_equal_segment_events(max_start_event, max_start_to_min_end_event);
     }
 
     fn divide_event_by_mid_segment_event_endpoints(
@@ -337,20 +337,20 @@ impl<
 
         self.divide_event_by_midpoint(event, mid_segment_event_end);
         let (
-            inner_subsegment_event_start_to_composite_event_start_index,
-            inner_subsegment_event_start_to_inner_subsegment_event_end_index,
+            mid_segment_event_start_to_event_start_event,
+            mid_segment_event_start_to_mid_segment_event_end_event,
         ) = self.divide(event, mid_segment_event_start);
-        self.push(inner_subsegment_event_start_to_composite_event_start_index);
+        self.push(mid_segment_event_start_to_event_start_event);
         self.merge_equal_segment_events(
             mid_segment_event,
-            inner_subsegment_event_start_to_inner_subsegment_event_end_index,
+            mid_segment_event_start_to_mid_segment_event_end_event,
         );
     }
 
     fn divide_event_by_midpoint(&mut self, event: Event, point: Endpoint) {
-        let (point_to_event_start_index, point_to_event_end_index) = self.divide(event, point);
-        self.push(point_to_event_start_index);
-        self.push(point_to_event_end_index);
+        let (point_to_event_start_event, point_to_event_end_event) = self.divide(event, point);
+        self.push(point_to_event_start_event);
+        self.push(point_to_event_end_event);
     }
 
     fn divide_event_by_midpoint_checking_above(&mut self, event: Event, point: Endpoint) {
