@@ -1,7 +1,7 @@
 from hypothesis import given
 
 from rene.exact import Contour
-from tests.utils import equivalence
+from tests.utils import implication
 from . import strategies
 
 
@@ -14,4 +14,4 @@ def test_determinism(contour: Contour) -> None:
 
 @given(strategies.contours, strategies.contours)
 def test_preserving_equality(first: Contour, second: Contour) -> None:
-    assert equivalence(first == second, hash(first) == hash(second))
+    assert implication(first == second, hash(first) == hash(second))
