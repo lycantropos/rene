@@ -5,7 +5,8 @@ from typing import (Callable,
                     TypeVar)
 
 from rene.exact import (Contour,
-                        Polygon)
+                        Polygon,
+                        Segment)
 
 _T1 = TypeVar('_T1')
 _T2 = TypeVar('_T2')
@@ -42,6 +43,10 @@ def reverse_polygon_border(polygon: Polygon) -> Polygon:
 
 def reverse_polygon_holes(polygon: Polygon) -> Polygon:
     return type(polygon)(polygon.border, polygon.holes[::-1])
+
+
+def reverse_segment_endpoints(segment: Segment) -> Segment:
+    return type(segment)(segment.end, segment.start)
 
 
 def rotate_contour(contour: Contour, offset: int) -> Contour:
