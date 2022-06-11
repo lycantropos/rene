@@ -278,8 +278,7 @@ impl<
                     below_event_end,
                 );
             } else {
-                let max_start = below_event_start.clone();
-                let min_end = event_end.clone();
+                let (max_start, min_end) = (below_event_start.clone(), event_end.clone());
                 self.divide_overlapping_events(event, below_event, max_start, min_end);
             }
         }
