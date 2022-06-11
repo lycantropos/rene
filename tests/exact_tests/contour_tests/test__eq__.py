@@ -36,3 +36,8 @@ def test_vertices_reversal(contour: Contour) -> None:
 @given(strategies.contours, strategies.non_zero_integers)
 def test_vertices_rotations(contour: Contour, offset: int) -> None:
     assert contour == rotate_contour(contour, offset)
+
+
+@given(strategies.contours, strategies.non_zero_integers)
+def test_vertices_rotations_of_reversal(contour: Contour, offset: int) -> None:
+    assert contour == rotate_contour(reverse_contour(contour), offset)
