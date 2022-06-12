@@ -1,7 +1,27 @@
+from typing import (Protocol,
+                    Tuple,
+                    TypeVar)
+
 from rithm import Fraction
 
 from rene._rene import Orientation
 from .point import Point
+
+_Self = TypeVar('_Self',
+                contravariant=True)
+
+
+class Ordered(Protocol[_Self]):
+    def __lt__(self: _Self, other: _Self) -> bool:
+        ...
+
+
+_T = TypeVar('_T',
+             bound=Ordered)
+
+
+def to_sorted_pair(start: _T, end: _T) -> Tuple[_T, _T]:
+    return (start, end) if start < end else (end, start)
 
 
 def cross_multiply(first_start: Point,
