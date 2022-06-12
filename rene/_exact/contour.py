@@ -1,11 +1,10 @@
 from typing import (Any,
                     Sequence)
 
-from rithm import Fraction
-
 from rene._rene import (MIN_CONTOUR_VERTICES_COUNT,
                         Orientation)
 from .point import Point
+from .utils import orient
 
 
 class Contour:
@@ -62,11 +61,8 @@ class Contour:
 
 def _to_contour_orientation(vertices: Sequence[Point],
                             min_vertex_index: int) -> Orientation:
-    return Orientation(_to_sign(_cross_multiply(
-            vertices[min_vertex_index - 1], vertices[min_vertex_index],
-            vertices[min_vertex_index - 1],
-            vertices[(min_vertex_index + 1) % len(vertices)],
-    )))
+    return orient(vertices[min_vertex_index - 1], vertices[min_vertex_index],
+                  vertices[(min_vertex_index + 1) % len(vertices)])
 
 
 def _are_non_empty_unique_sequences_rotationally_equivalent(
@@ -85,16 +81,3 @@ def _are_non_empty_unique_sequences_rotationally_equivalent(
                  and left[len(left) - index:] == right[:index])
                 or (left[1:index + 1] == right[:index][::-1]
                     and left[index + 1:] == right[len(right) - 1:index:-1]))
-
-
-def _cross_multiply(first_start: Point,
-                    first_end: Point,
-                    second_start: Point,
-                    second_end: Point) -> Fraction:
-    return ((first_end.x - first_start.x) * (second_end.y - second_start.y)
-            - ((first_end.y - first_start.y)
-               * (second_end.x - second_start.x)))
-
-
-def _to_sign(value: Fraction) -> int:
-    return (1 if value > 0 else -1) if value else 0
