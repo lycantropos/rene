@@ -22,6 +22,9 @@ class Contour:
     def vertices(self) -> _Sequence[Point]:
         ...
 
+    def is_valid(self) -> bool:
+        ...
+
     def __new__(cls, vertices: _Sequence[Point]) -> 'Contour':
         ...
 

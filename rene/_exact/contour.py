@@ -3,6 +3,7 @@ from typing import (Any,
 
 from rene._rene import (MIN_CONTOUR_VERTICES_COUNT,
                         Orientation)
+from .bentley_ottmann.base import is_contour_valid
 from .segment import Segment
 from .point import Point
 from .utils import orient
@@ -26,6 +27,9 @@ class Contour:
     @property
     def vertices(self):
         return self._vertices[:]
+
+    def is_valid(self):
+        return is_contour_valid(self)
 
     __module__ = 'rene.exact'
     __slots__ = '_vertices',
