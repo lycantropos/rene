@@ -3,6 +3,7 @@ from typing import (Any,
 
 from rene._rene import (MIN_CONTOUR_VERTICES_COUNT,
                         Orientation)
+from .segment import Segment
 from .point import Point
 from .utils import orient
 
@@ -14,6 +15,13 @@ class Contour:
         min_vertex_index = min(range(len(vertices)),
                                key=vertices.__getitem__)
         return _to_contour_orientation(vertices, min_vertex_index)
+
+    @property
+    def segments(self):
+        result = [Segment(self._vertices[index], self._vertices[index + 1])
+                  for index in range(len(self.vertices) - 1)]
+        result.append(Segment(self._vertices[-1], self._vertices[0]))
+        return result
 
     @property
     def vertices(self):

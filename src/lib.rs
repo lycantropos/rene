@@ -61,6 +61,12 @@ impl IntoPy<PyObject> for ExactPoint {
     }
 }
 
+impl IntoPy<PyObject> for ExactSegment {
+    fn into_py(self, py: Python<'_>) -> PyObject {
+        PyExactSegment(self).into_py(py)
+    }
+}
+
 impl From<PyExactContour> for ExactContour {
     fn from(value: PyExactContour) -> Self {
         value.0
@@ -235,6 +241,11 @@ impl PyExactContour {
         } else {
             Ok(PyExactContour(ExactContour::new(vertices)))
         }
+    }
+
+    #[getter]
+    fn segments(&self) -> Vec<ExactSegment> {
+        self.0.segments()
     }
 
     #[getter]

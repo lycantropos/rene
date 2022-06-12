@@ -15,6 +15,10 @@ class Contour:
         ...
 
     @property
+    def segments(self) -> _Sequence[Segment]:
+        ...
+
+    @property
     def vertices(self) -> _Sequence[Point]:
         ...
 
