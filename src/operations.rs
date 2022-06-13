@@ -93,15 +93,15 @@ pub(crate) fn relate_segments<
         }
     } else if starts_equal {
         if test_end < goal_end {
-            Relation::Component
-        } else {
             Relation::Composite
+        } else {
+            Relation::Component
         }
     } else if ends_equal {
         if test_start < goal_start {
-            Relation::Composite
-        } else {
             Relation::Component
+        } else {
+            Relation::Composite
         }
     } else if test_start == goal_end || test_end == goal_start {
         Relation::Touch
