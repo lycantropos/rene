@@ -10,7 +10,6 @@ use crate::traits::{Point, Segment};
 
 use super::event::Event;
 use super::events_registry::EventsRegistry;
-use super::traits::EventsQueue;
 
 pub(super) struct Sweep<Scalar, Endpoint> {
     segments_ids_pairs: PairwiseCombinations<usize>,
@@ -99,9 +98,6 @@ impl<
             })
         } else if let Some(start_event) = self.start_event {
             self.populate_segments_ids_pairs(start_event);
-            self.next()
-        } else if let Some(start_event) = self.events_registry.pop() {
-            self.start_event = Some(start_event);
             self.next()
         } else {
             None
