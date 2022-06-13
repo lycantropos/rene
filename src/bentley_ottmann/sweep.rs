@@ -120,7 +120,7 @@ impl<
 {
     fn populate_segments_ids_pairs(&mut self, start_event: Event) {
         let mut segments_ids_containing_start =
-            Vec::from([self.events_registry.get_event_segment_id(start_event)]);
+            Vec::from([self.events_registry.to_event_segment_id(start_event)]);
         while let Some(event) = self.events_registry.next() {
             if self
                 .events_registry
@@ -131,7 +131,7 @@ impl<
                 (self.start_event, self.next_start_event) = (self.next_start_event, Some(event));
                 return;
             }
-            segments_ids_containing_start.push(self.events_registry.get_event_segment_id(event));
+            segments_ids_containing_start.push(self.events_registry.to_event_segment_id(event));
         }
         self.segments_ids_pairs = PairwiseCombinations::from(segments_ids_containing_start);
         (self.start_event, self.next_start_event) = (self.next_start_event, None);

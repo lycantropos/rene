@@ -13,6 +13,7 @@ use super::event::{is_left_event, Event};
 use super::events_queue_key::EventsQueueKey;
 use super::sweep_line_key::SweepLineKey;
 use super::traits::{EventsQueue, SweepLine};
+use crate::bentley_ottmann::event::{segment_id_to_left_event, segment_id_to_right_event};
 
 pub(super) struct EventsRegistry<Scalar, Endpoint, const UNIQUE: bool> {
     endpoints: Box<Vec<Endpoint>>,
@@ -52,7 +53,7 @@ impl<
                     Some(event)
                 }
             } else {
-                let event_opposite = self.get_opposite(event);
+                let event_opposite = self.to_opposite_event(event);
                 debug_assert!(is_left_event(event_opposite));
                 if let Some(equal_segment_event) = <Self as SweepLine>::find(self, event_opposite) {
                     let (maybe_above_event, maybe_below_event) = (
@@ -90,15 +91,7 @@ impl<Scalar, Endpoint, const UNIQUE: bool> EventsRegistry<Scalar, Endpoint, UNIQ
     }
 
     pub(super) fn get_event_end(&self, event: Event) -> &Endpoint {
-        &self.endpoints[self.get_opposite(event)]
-    }
-
-    pub(super) fn get_event_segment_id(&self, event: Event) -> usize {
-        self.to_left_event_segment_id(if is_left_event(event) {
-            event
-        } else {
-            self.get_opposite(event)
-        })
+        &self.endpoints[self.to_opposite_event(event)]
     }
 
     pub(super) fn get_event_start(&self, event: Event) -> &Endpoint {
@@ -106,15 +99,19 @@ impl<Scalar, Endpoint, const UNIQUE: bool> EventsRegistry<Scalar, Endpoint, UNIQ
     }
 
     pub(super) fn get_segment_end(&self, segment_id: usize) -> &Endpoint {
-        &self.endpoints[2 * segment_id + 1]
+        &self.endpoints[segment_id_to_right_event(segment_id)]
     }
 
     pub(super) fn get_segment_start(&self, segment_id: usize) -> &Endpoint {
-        &self.endpoints[2 * segment_id]
+        &self.endpoints[segment_id_to_left_event(segment_id)]
     }
 
-    fn get_opposite(&self, event: Event) -> Event {
-        self.opposites[event]
+    pub(super) fn to_event_segment_id(&self, event: Event) -> usize {
+        self.to_left_event_segment_id(if is_left_event(event) {
+            event
+        } else {
+            self.to_opposite_event(event)
+        })
     }
 
     fn to_left_event_segment_id(&self, event: Event) -> usize {
@@ -131,6 +128,10 @@ impl<Scalar, Endpoint, const UNIQUE: bool> EventsRegistry<Scalar, Endpoint, UNIQ
         }
         debug_assert!(iterations_count < 3);
         candidate
+    }
+
+    fn to_opposite_event(&self, event: Event) -> Event {
+        self.opposites[event]
     }
 
     fn to_sweep_line_key(&self, event: Event) -> SweepLineKey<Scalar, Endpoint> {
@@ -156,10 +157,10 @@ impl<
             segments_ids: (0..segments.len()).collect(),
             sweep_line_data: BTreeSet::new(),
         };
-        for (index, segment) in segments.iter().enumerate() {
+        for (segment_id, segment) in segments.iter().enumerate() {
             let (start, end) = to_sorted_pair((segment.start(), segment.end()));
-            let left_event = 2 * index;
-            let right_event = 2 * index + 1;
+            let left_event = segment_id_to_left_event(segment_id);
+            let right_event = segment_id_to_right_event(segment_id);
             result.endpoints.push(start);
             result.endpoints.push(end);
             result.opposites.push(right_event);
@@ -372,7 +373,7 @@ impl<Scalar, Endpoint: Clone + self::Point<Scalar> + Ord, const UNIQUE: bool>
 {
     pub(super) fn divide(&mut self, event: Event, mid_point: Endpoint) -> (Event, Event) {
         debug_assert!(is_left_event(event));
-        let opposite_event = self.get_opposite(event);
+        let opposite_event = self.to_opposite_event(event);
         let mid_point_to_event_end_event = self.endpoints.len();
         self.segments_ids.push(self.to_left_event_segment_id(event));
         self.endpoints.push(mid_point.clone());
