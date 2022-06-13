@@ -33,7 +33,6 @@ pub(crate) fn is_contour_valid<
                     }
                     has_second_tangent = true;
                 } else {
-                    debug_assert_ne!(intersection.second_segment_id, segment_id);
                     if !has_second_tangent {
                         return false;
                     }

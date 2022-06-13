@@ -48,7 +48,6 @@ class Contour:
                         return False
                     has_second_tangent = True
                 else:
-                    assert intersection.second_segment_id != segment_id
                     if not has_second_tangent:
                         return False
                     segment_id = intersection.first_segment_id
