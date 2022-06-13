@@ -37,7 +37,7 @@ class Intersection:
 
 def sweep(segments: Sequence[Segment]) -> Iterable[Intersection]:
     events_registry = EventsRegistry.from_segments(segments,
-                                                   unique=True)
+                                                   unique=False)
     events = iter(events_registry)
     event = next(events)
     events_registry.add(event)
@@ -45,55 +45,59 @@ def sweep(segments: Sequence[Segment]) -> Iterable[Intersection]:
     segments_ids_containing_start = [
         events_registry.get_event_segment_id(event)
     ]
-    for event in events_registry:
+    for event in events:
         event_start = events_registry.get_event_start(event)
         if event_start == start:
             segments_ids_containing_start.append(
                     events_registry.get_event_segment_id(event)
             )
         else:
-            for first_segment_id, second_segment_id in combinations(
-                    segments_ids_containing_start, 2
-            ):
-                first_start = events_registry.get_segment_start(
-                        first_segment_id
-                )
-                first_end = events_registry.get_segment_end(first_segment_id)
-                second_start = events_registry.get_segment_start(
-                        second_segment_id
-                )
-                second_end = events_registry.get_segment_end(second_segment_id)
-                if first_segment_id == second_segment_id:
-                    relation = Relation.EQUAL
-                elif not events_registry.are_collinear(first_segment_id,
-                                                       second_segment_id):
-                    if (first_start == second_start
-                            or first_start == second_end
-                            or first_end == second_start
-                            or first_end == second_end):
-                        relation = Relation.TOUCH
-                    else:
-                        relation = Relation.CROSS
-                elif max(first_start, second_start) == min(first_end,
-                                                           second_end):
-                    relation = Relation.TOUCH
-                elif first_start == second_start:
-                    if first_end == second_end:
-                        relation = Relation.EQUAL
-                    elif first_end > second_end:
-                        relation = Relation.COMPOSITE
-                    else:
-                        relation = Relation.COMPONENT
-                elif first_start > second_start:
-                    if first_end > second_end:
-                        relation = Relation.OVERLAP
-                    else:
-                        relation = Relation.COMPONENT
-                elif first_end < second_end:
-                    relation = Relation.OVERLAP
-                else:
-                    relation = Relation.COMPOSITE
-                yield Intersection(first_segment_id, second_segment_id,
-                                   relation)
+            yield from segments_ids_containing_start_to_intersections(
+                    segments_ids_containing_start, events_registry
+            )
             start = event_start
-            segments_ids_containing_start.clear()
+            segments_ids_containing_start = [
+                events_registry.get_event_segment_id(event)
+            ]
+    yield from segments_ids_containing_start_to_intersections(
+            segments_ids_containing_start, events_registry
+    )
+
+
+def segments_ids_containing_start_to_intersections(
+        segments_ids: Sequence[int],
+        events_registry: EventsRegistry
+) -> Iterable[Intersection]:
+    for first_segment_id, second_segment_id in combinations(segments_ids, 2):
+        first_start = events_registry.get_segment_start(first_segment_id)
+        first_end = events_registry.get_segment_end(first_segment_id)
+        second_start = events_registry.get_segment_start(second_segment_id)
+        second_end = events_registry.get_segment_end(second_segment_id)
+        if first_segment_id == second_segment_id:
+            relation = Relation.EQUAL
+        elif not events_registry.are_collinear(first_segment_id,
+                                               second_segment_id):
+            if (first_start == second_start or first_start == second_end
+                    or first_end == second_start or first_end == second_end):
+                relation = Relation.TOUCH
+            else:
+                relation = Relation.CROSS
+        elif max(first_start, second_start) == min(first_end, second_end):
+            relation = Relation.TOUCH
+        elif first_start == second_start:
+            if first_end == second_end:
+                relation = Relation.EQUAL
+            elif first_end > second_end:
+                relation = Relation.COMPOSITE
+            else:
+                relation = Relation.COMPONENT
+        elif first_start > second_start:
+            if first_end > second_end:
+                relation = Relation.OVERLAP
+            else:
+                relation = Relation.COMPONENT
+        elif first_end < second_end:
+            relation = Relation.OVERLAP
+        else:
+            relation = Relation.COMPOSITE
+        yield Intersection(first_segment_id, second_segment_id, relation)

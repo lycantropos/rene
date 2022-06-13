@@ -116,14 +116,12 @@ class EventsRegistry:
                         self.detect_intersection(event, above_event)
                     yield event
                 else:
-                    self.merge_equal_segment_events(
-                            equal_segment_event,
-                            event)
+                    self.merge_equal_segment_events(equal_segment_event, event)
                     if not self.unique:
                         yield event
             else:
-                event = self.get_opposite_event(event)
-                equal_segment_event = self.find(event)
+                event_opposite = self.get_opposite_event(event)
+                equal_segment_event = self.find(event_opposite)
                 if equal_segment_event is not None:
                     above_event, below_event = (
                         self.above(equal_segment_event),
@@ -131,12 +129,11 @@ class EventsRegistry:
                     )
                     self.remove(equal_segment_event)
                     if below_event is not None and above_event is not None:
-                        self.detect_intersection(below_event,
-                                                 above_event)
+                        self.detect_intersection(below_event, above_event)
                     if event != equal_segment_event:
-                        self.merge_equal_segment_events(
-                                equal_segment_event, event
-                        )
+                        self.merge_equal_segment_events(equal_segment_event,
+                                                        event_opposite)
+                    yield event
                 elif not self.unique:
                     yield event
 
