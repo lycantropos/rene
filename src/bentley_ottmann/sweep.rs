@@ -12,9 +12,10 @@ use super::event::Event;
 use super::events_registry::EventsRegistry;
 
 pub(super) struct Sweep<Scalar, Endpoint> {
+    events_registry: EventsRegistry<Scalar, Endpoint, false>,
+    next_start_event: Option<usize>,
     segments_ids_pairs: PairwiseCombinations<usize>,
     start_event: Option<usize>,
-    events_registry: EventsRegistry<Scalar, Endpoint, false>,
 }
 
 impl<
@@ -25,11 +26,12 @@ impl<
 {
     fn from(segments: &[Segment]) -> Self {
         let mut events_registry = EventsRegistry::from(segments);
-        let start_event = events_registry.next();
+        let next_start_event = events_registry.next();
         Self {
             events_registry,
-            start_event,
+            next_start_event,
             segments_ids_pairs: PairwiseCombinations::default(),
+            start_event: None,
         }
     }
 }
@@ -59,14 +61,20 @@ impl<
                 .events_registry
                 .are_collinear(first_segment_id, second_segment_id)
             {
-                if first_start == second_start
-                    || first_start == second_end
-                    || first_end == second_start
-                    || first_end == second_end
-                {
-                    Relation::Touch
-                } else {
-                    Relation::Cross
+                match self.start_event {
+                    Some(start_event) => {
+                        let start = self.events_registry.get_event_start(start_event);
+                        if first_start == start
+                            || first_end == start
+                            || second_start == start
+                            || second_end == start
+                        {
+                            Relation::Touch
+                        } else {
+                            Relation::Cross
+                        }
+                    }
+                    None => Relation::Touch,
                 }
             } else if first_start.max(second_start).eq(first_end.min(second_end)) {
                 Relation::Touch
@@ -96,8 +104,8 @@ impl<
                 second_segment_id,
                 relation,
             })
-        } else if let Some(start_event) = self.start_event {
-            self.populate_segments_ids_pairs(start_event);
+        } else if let Some(next_start_event) = self.next_start_event {
+            self.populate_segments_ids_pairs(next_start_event);
             self.next()
         } else {
             None
@@ -120,12 +128,12 @@ impl<
                 .ne(self.events_registry.get_event_start(event))
             {
                 self.segments_ids_pairs = PairwiseCombinations::from(segments_ids_containing_start);
-                self.start_event = Some(event);
+                (self.start_event, self.next_start_event) = (self.next_start_event, Some(event));
                 return;
             }
             segments_ids_containing_start.push(self.events_registry.get_event_segment_id(event));
         }
         self.segments_ids_pairs = PairwiseCombinations::from(segments_ids_containing_start);
-        self.start_event = None;
+        (self.start_event, self.next_start_event) = (self.next_start_event, None);
     }
 }
