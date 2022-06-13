@@ -1,7 +1,6 @@
 use core::convert::From;
 use std::cmp::Reverse;
 use std::collections::{BTreeSet, BinaryHeap};
-use std::marker::PhantomData;
 use std::ops::Bound::{Excluded, Unbounded};
 
 use rithm::traits::{AdditiveGroup, DivisivePartialMagma, MultiplicativeMonoid, Signed};
