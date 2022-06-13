@@ -1,8 +1,8 @@
 from reprit.base import generate_repr
 
-from rene._exact import Point
 from rene._exact.utils import orient
 from rene._rene import Orientation
+from rene.hints import Point
 from .event import Event
 from .hints import Map
 

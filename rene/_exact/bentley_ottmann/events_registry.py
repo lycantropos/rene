@@ -1,15 +1,19 @@
 from functools import partial
-from typing import (Iterator, List, Optional, Sequence,
+from typing import (Iterator,
+                    List,
+                    Optional,
+                    Sequence,
                     Tuple)
 
 from dendroid import red_black
 from prioq.base import PriorityQueue
 from reprit.base import generate_repr
 
-from rene import Orientation
-from rene._exact import (Point,
-                         Segment)
-from rene._exact.utils import orient, to_sorted_pair
+from rene._exact.utils import (orient,
+                               to_sorted_pair)
+from rene._rene import Orientation
+from rene.hints import (Point,
+                        Segment)
 from .event import (Event,
                     is_left_event)
 from .events_queue_key import EventsQueueKey
@@ -161,6 +165,8 @@ class EventsRegistry:
                                 event_start, event_end, below_event_start,
                                 below_event_end
                         )
+                        assert event_start < point < event_end
+                        assert below_event_start < point < below_event_end
                         self.divide_event_by_midpoint(below_event, point)
                         self.divide_event_by_midpoint_checking_above(event,
                                                                      point)

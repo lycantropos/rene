@@ -2,10 +2,11 @@ from typing import (Any,
                     Sequence)
 
 from rene._rene import (MIN_CONTOUR_VERTICES_COUNT,
-                        Orientation)
-from .bentley_ottmann.base import is_contour_valid
-from .segment import Segment
+                        Orientation,
+                        Relation)
+from .bentley_ottmann.base import sweep
 from .point import Point
+from .segment import Segment
 from .utils import orient
 
 
@@ -29,7 +30,30 @@ class Contour:
         return self._vertices[:]
 
     def is_valid(self):
-        return is_contour_valid(self)
+        segments = self.segments
+        if len(segments) < MIN_CONTOUR_VERTICES_COUNT:
+            return False
+        intersections = iter(sweep(segments))
+        intersection = next(intersections)
+        if intersection.relation is not Relation.TOUCH:
+            return False
+        else:
+            segment_id = intersection.first_segment_id
+            has_second_tangent = False
+            for intersection in intersections:
+                if intersection.relation is not Relation.TOUCH:
+                    return False
+                elif intersection.first_segment_id == segment_id:
+                    if has_second_tangent:
+                        return False
+                    has_second_tangent = True
+                else:
+                    assert intersection.second_segment_id != segment_id
+                    if not has_second_tangent:
+                        return False
+                    segment_id = intersection.first_segment_id
+                    has_second_tangent = False
+            return True
 
     __module__ = 'rene.exact'
     __slots__ = '_vertices',

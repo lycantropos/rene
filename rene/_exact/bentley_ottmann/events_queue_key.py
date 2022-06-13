@@ -1,6 +1,6 @@
 from reprit.base import generate_repr
 
-from rene._exact import Point
+from rene.hints import Point
 from .event import (Event,
                     is_left_event)
 from .hints import Map

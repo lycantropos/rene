@@ -4,8 +4,8 @@ from typing import (Iterable,
 
 from reprit.base import generate_repr
 
-from rene._exact import Segment
 from rene._rene import Relation
+from rene.hints import Segment
 from .events_registry import EventsRegistry
 
 

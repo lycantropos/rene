@@ -1,11 +1,11 @@
-from typing import (Protocol,
-                    Tuple,
+from typing import (Tuple,
                     TypeVar)
 
 from rithm import Fraction
+from typing_extensions import Protocol
 
 from rene._rene import Orientation
-from .point import Point
+from rene.hints import Point
 
 _Self = TypeVar('_Self',
                 contravariant=True)
