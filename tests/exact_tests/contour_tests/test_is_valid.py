@@ -6,7 +6,7 @@ from tests.utils import (reverse_contour,
 from . import strategies
 
 
-@given(strategies.contours)
+@given(strategies.contours_like)
 def test_basic(contour: Contour) -> None:
     assert isinstance(contour.is_valid(), bool)
 

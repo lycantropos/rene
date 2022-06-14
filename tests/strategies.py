@@ -19,15 +19,24 @@ context = Context(contour_cls=Contour,
                   polygon_cls=Polygon,
                   segment_cls=Segment,
                   mode=Mode.PLAIN)
-integers = strategies.builds(Int, strategies.integers())
+MAX_VALUE = 10 ** 10
+MIN_VALUE = -MAX_VALUE
+integers = strategies.builds(Int, strategies.integers(MIN_VALUE, MAX_VALUE))
 non_zero_integers = strategies.builds(Int,
-                                      strategies.integers(max_value=-1)
-                                      | strategies.integers(min_value=1))
-scalars = integers | strategies.builds(Fraction, integers, non_zero_integers)
+                                      strategies.integers(MIN_VALUE, -1)
+                                      | strategies.integers(1, MAX_VALUE))
+scalars = (integers | strategies.builds(Fraction, integers, non_zero_integers)
+           | strategies.floats(MIN_VALUE, MAX_VALUE,
+                               allow_infinity=False,
+                               allow_nan=False))
 to_contours = partial(planar.contours, scalars, scalars,
                       context=context)
 to_polygons = partial(planar.polygons, scalars, scalars,
                       context=context)
+segments = planar.segments(scalars,
+                           context=context)
+points = planar.points(scalars,
+                       context=context)
 contours = to_contours()
 contours_vertices = contours.map(attrgetter('vertices')).map(itemgetter(0))
 polygons = to_polygons()
