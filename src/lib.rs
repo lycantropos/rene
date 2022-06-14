@@ -514,13 +514,10 @@ fn big_int_to_py_long(value: &BigInt) -> PyObject {
 
 #[inline]
 fn try_py_integral_to_big_int(value: &PyAny) -> PyResult<BigInt> {
-    let ptr = value
-        .call_method0("__int__")
-        .map_err(|_| PyTypeError::new_err(INVALID_SCALAR_TYPE_ERROR_MESSAGE))?
-        .as_ptr();
+    let ptr = value.as_ptr();
     let py = value.py();
     unsafe {
-        let ptr = ffi::PyNumber_Index(ptr);
+        let ptr = ffi::PyNumber_Long(ptr);
         if ptr.is_null() {
             return Err(PyErr::fetch(py));
         }
