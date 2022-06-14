@@ -4,7 +4,8 @@ from typing import (Any,
 from rene._rene import (MIN_CONTOUR_VERTICES_COUNT,
                         Orientation,
                         Relation)
-from .bentley_ottmann.base import sweep
+from .bentley_ottmann.base import (Intersection,
+                                   sweep)
 from .point import Point
 from .segment import Segment
 from .utils import orient
@@ -33,26 +34,12 @@ class Contour:
         segments = self.segments
         if len(segments) < MIN_CONTOUR_VERTICES_COUNT:
             return False
-        intersections = iter(sweep(segments))
-        intersection = next(intersections)
-        if intersection.relation is not Relation.TOUCH:
-            return False
-        else:
-            segment_id = intersection.first_segment_id
-            has_second_tangent = False
-            for intersection in intersections:
-                if intersection.relation is not Relation.TOUCH:
-                    return False
-                elif intersection.first_segment_id == segment_id:
-                    if has_second_tangent:
-                        return False
-                    has_second_tangent = True
-                else:
-                    if not has_second_tangent:
-                        return False
-                    segment_id = intersection.first_segment_id
-                    has_second_tangent = False
-            return True
+        neighbour_segments_touches_count = 0
+        for intersection in sweep(segments):
+            if not _neighbour_segments_vertices_touch(intersection, segments):
+                return False
+            neighbour_segments_touches_count += 1
+        return neighbour_segments_touches_count == len(segments)
 
     __module__ = 'rene.exact'
     __slots__ = '_vertices',
@@ -92,6 +79,28 @@ class Contour:
     def __str__(self):
         return (f'{type(self).__qualname__}([{{}}])'
                 .format(', '.join(map(str, self.vertices))))
+
+
+def _neighbour_segments_vertices_touch(intersection: Intersection,
+                                       segments: Sequence[Segment]) -> bool:
+    first_segment = segments[intersection.first_segment_id]
+    second_segment = segments[intersection.second_segment_id]
+    touches_at_vertices = (
+            intersection.relation is Relation.TOUCH
+            and (intersection.start == first_segment.start
+                 or intersection.start == first_segment.end)
+            and (intersection.start == second_segment.start
+                 or intersection.start == second_segment.end)
+    )
+    neighbour_segments_intersection = (
+            abs(intersection.first_segment_id
+                - intersection.second_segment_id) == 1
+            or (intersection.first_segment_id == len(segments) - 1
+                and intersection.second_segment_id == 0)
+            or (intersection.second_segment_id == len(segments) - 1
+                and intersection.first_segment_id == 0)
+    )
+    return touches_at_vertices and neighbour_segments_intersection
 
 
 def _to_contour_orientation(vertices: Sequence[Point],

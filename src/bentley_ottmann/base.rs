@@ -20,28 +20,39 @@ pub(crate) fn is_contour_valid<
     let segments = contour.segments();
     segments.len() >= 3 && {
         let mut sweep = Sweep::from(segments.as_slice());
-        let intersection = unsafe { sweep.next().unwrap_unchecked() };
-        matches!(intersection.relation, Relation::Touch) && {
-            let mut segment_id = intersection.first_segment_id;
-            let mut has_second_tangent = false;
-            while let Some(intersection) = sweep.next() {
-                if !matches!(intersection.relation, Relation::Touch) {
-                    return false;
-                } else if intersection.first_segment_id == segment_id {
-                    if has_second_tangent {
-                        return false;
-                    }
-                    has_second_tangent = true;
-                } else {
-                    if !has_second_tangent {
-                        return false;
-                    }
-                    segment_id = intersection.first_segment_id;
-                    has_second_tangent = false;
-                }
+        let mut neighbour_segments_touches_count = 0usize;
+        while let Some(intersection) = sweep.next() {
+            debug_assert_eq!(
+                intersection.start == intersection.end,
+                matches!(intersection.relation, Relation::Touch | Relation::Cross)
+            );
+            let touches_at_vertices = (matches!(intersection.relation, Relation::Touch)
+                && (intersection
+                    .start
+                    .eq(sweep.get_segment_start(intersection.first_segment_id))
+                    || intersection
+                        .start
+                        .eq(sweep.get_segment_end(intersection.first_segment_id)))
+                && (intersection
+                    .start
+                    .eq(sweep.get_segment_start(intersection.second_segment_id))
+                    || intersection
+                        .start
+                        .eq(sweep.get_segment_end(intersection.second_segment_id))));
+            let neighbour_segments_intersection = intersection
+                .first_segment_id
+                .abs_diff(intersection.second_segment_id)
+                == 1
+                || (intersection.first_segment_id == segments.len() - 1
+                    && intersection.second_segment_id == 0)
+                || (intersection.second_segment_id == segments.len() - 1
+                    && intersection.first_segment_id == 0);
+            if !(touches_at_vertices && neighbour_segments_intersection) {
+                return false;
             }
-            true
+            neighbour_segments_touches_count += 1;
         }
+        neighbour_segments_touches_count == segments.len()
     }
 }
 
