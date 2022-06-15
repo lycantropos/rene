@@ -1,6 +1,5 @@
 from functools import partial
-from operator import (attrgetter,
-                      itemgetter)
+from operator import attrgetter
 
 from ground.base import (Context,
                          Mode)
@@ -36,7 +35,7 @@ points = scalars_strategies.flatmap(partial(planar.points,
                                             context=context))
 contours = scalars_strategies.flatmap(partial(planar.contours,
                                               context=context))
-contours_vertices = contours.map(attrgetter('vertices')).map(itemgetter(0))
+contours_vertices = contours.map(attrgetter('vertices'))
 polygons = scalars_strategies.flatmap(partial(planar.polygons,
                                               context=context))
 polygons_components = polygons.map(attrgetter('border', 'holes'))
