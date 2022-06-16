@@ -1,8 +1,6 @@
-from functools import partial
 from operator import attrgetter
 
-from ground.base import (Context,
-                         Mode)
+from ground import hints
 from hypothesis import strategies
 from hypothesis_geometry import planar
 from rithm import (Fraction,
@@ -10,14 +8,8 @@ from rithm import (Fraction,
 
 from rene.exact import (Contour,
                         Point,
-                        Polygon,
-                        Segment)
+                        Polygon)
 
-context = Context(contour_cls=Contour,
-                  point_cls=Point,
-                  polygon_cls=Polygon,
-                  segment_cls=Segment,
-                  mode=Mode.PLAIN)
 MAX_VALUE = 10 ** 10
 MIN_VALUE = -MAX_VALUE
 integers = strategies.builds(Int, strategies.integers(MIN_VALUE, MAX_VALUE))
@@ -31,11 +23,24 @@ scalars_strategies = strategies.sampled_from([
                       allow_infinity=False,
                       allow_nan=False)
 ])
-points = scalars_strategies.flatmap(partial(planar.points,
-                                            context=context))
-contours = scalars_strategies.flatmap(partial(planar.contours,
-                                              context=context))
+
+
+def to_point(raw_point: hints.Point) -> Point:
+    return Point(raw_point.x, raw_point.y)
+
+
+points = scalars_strategies.flatmap(planar.points).map(to_point)
+
+
+def to_contour(raw_contour: hints.Contour) -> Contour:
+    return Contour([to_point(vertex) for vertex in raw_contour.vertices])
+
+
+contours = scalars_strategies.flatmap(planar.contours).map(to_contour)
 contours_vertices = contours.map(attrgetter('vertices'))
-polygons = scalars_strategies.flatmap(partial(planar.polygons,
-                                              context=context))
+polygons = scalars_strategies.flatmap(planar.polygons).map(
+        lambda raw_polygon: Polygon(to_contour(raw_polygon.border),
+                                    [to_contour(hole)
+                                     for hole in raw_polygon.holes])
+)
 polygons_components = polygons.map(attrgetter('border', 'holes'))
