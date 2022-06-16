@@ -3,8 +3,6 @@ from operator import attrgetter
 from ground import hints
 from hypothesis import strategies
 from hypothesis_geometry import planar
-from rithm import (Fraction,
-                   Int)
 
 from rene.exact import (Contour,
                         Point,
@@ -12,13 +10,13 @@ from rene.exact import (Contour,
 
 MAX_VALUE = 10 ** 10
 MIN_VALUE = -MAX_VALUE
-integers = strategies.builds(Int, strategies.integers(MIN_VALUE, MAX_VALUE))
-non_zero_integers = strategies.builds(Int,
-                                      strategies.integers(MIN_VALUE, -1)
-                                      | strategies.integers(1, MAX_VALUE))
+integers = strategies.integers(MIN_VALUE, MAX_VALUE)
+non_zero_integers = (strategies.integers(MIN_VALUE, -1)
+                     | strategies.integers(1, MAX_VALUE))
 scalars_strategies = strategies.sampled_from([
     integers,
-    strategies.builds(Fraction, integers, non_zero_integers),
+    strategies.fractions(MIN_VALUE, MAX_VALUE,
+                         max_denominator=MAX_VALUE),
     strategies.floats(MIN_VALUE, MAX_VALUE,
                       allow_infinity=False,
                       allow_nan=False)
