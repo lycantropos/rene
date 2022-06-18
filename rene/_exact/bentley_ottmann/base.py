@@ -7,9 +7,7 @@ from reprit.base import generate_repr
 from rene._rene import Relation
 from rene.hints import (Point,
                         Segment)
-from .event import segment_id_to_left_event
 from .events_registry import EventsRegistry
-from .utils import intersect_crossing_segments
 
 
 class Intersection:
