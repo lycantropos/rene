@@ -177,131 +177,131 @@ jobs:
 
   build-wheels:
     name: 'Build wheels'
-    runs-on: ${{ matrix.build.os }}
+    runs-on: ${{ matrix.platform.os }}
     needs: pre-deploy
     strategy:
       matrix:
-        build_prefix: ['cp37', 'cp38', 'cp39', 'cp310']
-        build: [
+        python_tag: ['cp37', 'cp38', 'cp39', 'cp310']
+        platform: [
           {
             architecture: 'x86_64',
-            postfix: 'macosx_x86_64',
             os: 'macos-latest',
             python_architecture: 'x64',
-            rust_target: 'x86_64-apple-darwin'
+            rust_target: 'x86_64-apple-darwin',
+            tag: 'macosx_x86_64'
           },
           {
             architecture: 'aarch64',
-            postfix: 'manylinux_aarch64',
             os: 'ubuntu-latest',
             python_architecture: 'x64',
-            rust_target: 'aarch64-unknown-linux-gnu'
+            rust_target: 'aarch64-unknown-linux-gnu',
+            tag: 'manylinux_aarch64'
           },
           {
             architecture: 'aarch64',
-            postfix: 'musllinux_aarch64',
             os: 'ubuntu-latest',
             python_architecture: 'x64',
-            rust_target: 'aarch64-unknown-linux-musl'
+            rust_target: 'aarch64-unknown-linux-musl',
+            tag: 'musllinux_aarch64'
           },
           {
             architecture: 'i686',
-            postfix: 'manylinux_i686',
             os: 'ubuntu-latest',
             python_architecture: 'x64',
-            rust_target: 'i686-unknown-linux-gnu'
+            rust_target: 'i686-unknown-linux-gnu',
+            tag: 'manylinux_i686'
           },
           {
             architecture: 'ppc64le',
-            postfix: 'manylinux_ppc64le',
             os: 'ubuntu-latest',
             python_architecture: 'x64',
-            rust_target: 'powerpc64le-unknown-linux-gnu'
+            rust_target: 'powerpc64le-unknown-linux-gnu',
+            tag: 'manylinux_ppc64le'
           },
           {
             architecture: 's390x',
-            postfix: 'manylinux_s390x',
             os: 'ubuntu-latest',
             python_architecture: 'x64',
-            rust_target: 's390x-unknown-linux-gnu'
+            rust_target: 's390x-unknown-linux-gnu',
+            tag: 'manylinux_s390x'
           },
           {
             architecture: 'x86_64',
-            postfix: 'manylinux_x86_64',
             os: 'ubuntu-latest',
             python_architecture: 'x64',
-            rust_target: 'x86_64-unknown-linux-gnu'
+            rust_target: 'x86_64-unknown-linux-gnu',
+            tag: 'manylinux_x86_64'
           },
           {
             architecture: 'x86_64',
-            postfix: 'musllinux_x86_64',
             os: 'ubuntu-latest',
             python_architecture: 'x64',
-            rust_target: 'x86_64-unknown-linux-musl'
+            rust_target: 'x86_64-unknown-linux-musl',
+            tag: 'musllinux_x86_64'
           },
           {
             architecture: 'AMD64',
-            postfix: 'win_amd64',
             os: 'windows-latest',
             python_architecture: 'x64',
-            rust_target: 'x86_64-pc-windows-msvc'
+            rust_target: 'x86_64-pc-windows-msvc',
+            tag: 'win_amd64'
           },
           {
             architecture: 'x86',
-            postfix: 'win32',
             os: 'windows-latest',
             python_architecture: 'x86',
-            rust_target: 'i686-pc-windows-msvc'
+            rust_target: 'i686-pc-windows-msvc',
+            tag: 'win32'
           },
         ]
         include:
-          - build_prefix: 'cp38'
-            build: {
+          - python_tag: 'cp38'
+            platform: {
               architecture: 'arm64',
-              postfix: 'macosx_arm64',
               os: 'macos-latest',
               python_architecture: 'x64',
-              rust_target: 'aarch64-apple-darwin'
+              rust_target: 'aarch64-apple-darwin',
+              tag: 'macosx_arm64'
             }
-          - build_prefix: 'cp38'
-            build: {
+          - python_tag: 'cp38'
+            platform: {
               architecture: 'universal2',
-              postfix: 'macosx_universal2',
               os: 'macos-latest',
               python_architecture: 'x64',
-              rust_target: 'aarch64-apple-darwin'
+              rust_target: 'aarch64-apple-darwin',
+              tag: 'macosx_universal2'
             }
-          - build_prefix: 'cp39'
-            build: {
+          - python_tag: 'cp39'
+            platform: {
               architecture: 'arm64',
-              postfix: 'macosx_arm64',
               os: 'macos-latest',
               python_architecture: 'x64',
-              rust_target: 'aarch64-apple-darwin'
+              rust_target: 'aarch64-apple-darwin',
+              tag: 'macosx_arm64'
             }
-          - build_prefix: 'cp39'
-            build: {
+          - python_tag: 'cp39'
+            platform: {
               architecture: 'universal2',
-              postfix: 'macosx_universal2',
               os: 'macos-latest',
               python_architecture: 'x64',
-              rust_target: 'aarch64-apple-darwin'
+              rust_target: 'aarch64-apple-darwin',
+              tag: 'macosx_universal2'
             }
-          - build_prefix: 'cp310'
-            build: {
+          - python_tag: 'cp310'
+            platform: {
               architecture: 'arm64',
-              postfix: 'macosx_arm64',
               os: 'macos-latest',
               python_architecture: 'x64',
-              rust_target: 'aarch64-apple-darwin'
+              rust_target: 'aarch64-apple-darwin',
+              tag: 'macosx_arm64'
             }
-          - build_prefix: 'cp310'
-            build: {
+          - python_tag: 'cp310'
+            platform: {
               architecture: 'universal2',
-              postfix: 'macosx_universal2',
               os: 'macos-latest',
               python_architecture: 'x64',
-              rust_target: 'aarch64-apple-darwin'
+              rust_target: 'aarch64-apple-darwin',
+              tag: 'macosx_universal2'
             }
     steps:
       - name: 'Checkout'
@@ -311,12 +311,12 @@ jobs:
       - name: 'Setup Python'
         uses: actions/setup-python@v3
         with:
-          architecture: ${{ matrix.build.python_architecture }}
+          architecture: ${{ matrix.platform.python_architecture }}
       - name: 'Setup Rust'
         uses: actions-rs/toolchain@v1
         with:
           default: true
-          target: ${{ matrix.build.rust_target }}
+          target: ${{ matrix.platform.rust_target }}
           toolchain: nightly
         if: ${{ runner.os != 'Linux' }}
       - name: 'Setup QEMU'
@@ -327,7 +327,7 @@ jobs:
       - name: 'Build wheels'
         uses: pypa/cibuildwheel@v2.6.1
         env:
-          CIBW_ARCHS: ${{ matrix.build.architecture }}
+          CIBW_ARCHS: ${{ matrix.platform.architecture }}
           CIBW_BEFORE_ALL_LINUX: |
             curl https://sh.rustup.rs -sSf |
             sh -s -- -y --default-toolchain=nightly &&
@@ -336,7 +336,7 @@ jobs:
             [net]
             git-fetch-with-cli = true
             EOF
-          CIBW_BUILD: ${{ matrix.build_prefix }}-${{ matrix.build.postfix }}
+          CIBW_BUILD: ${{ matrix.python_tag }}-${{ matrix.platform.tag }}
           CIBW_BUILD_VERBOSITY: 1
           CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
       - name: 'Upload wheels'
