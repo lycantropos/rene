@@ -75,6 +75,14 @@ impl<
 }
 
 impl<Scalar, Endpoint> Triangulation<Scalar, Endpoint> {
+    pub(crate) fn get_start(&self, edge: QuadEdge) -> &Endpoint {
+        self.edges_registry.get_start(edge)
+    }
+
+    pub(crate) fn get_end(&self, edge: QuadEdge) -> &Endpoint {
+        self.edges_registry.get_end(edge)
+    }
+
     pub(crate) fn to_boundary_edges(&self) -> Vec<QuadEdge> {
         let start = self.left_side;
         let mut edge = start;
@@ -88,14 +96,6 @@ impl<Scalar, Endpoint> Triangulation<Scalar, Endpoint> {
             edge = candidate;
         }
         result
-    }
-
-    pub(crate) fn get_start(&self, edge: QuadEdge) -> &Endpoint {
-        self.edges_registry.get_start(edge)
-    }
-
-    pub(crate) fn get_end(&self, edge: QuadEdge) -> &Endpoint {
-        self.edges_registry.get_end(edge)
     }
 }
 
