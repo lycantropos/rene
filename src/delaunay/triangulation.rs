@@ -6,12 +6,12 @@ use crate::oriented::Orientation;
 use crate::traits::Point;
 
 use super::contracts::UNDEFINED_INDEX;
-use super::quad_edge::{to_opposite_edge, QuadEdge};
-use super::quad_edge_registry::QuadEdgeRegistry;
+use super::mesh::Mesh;
+use super::quad_edge::{QuadEdge, to_opposite_edge};
 
 pub(crate) struct Triangulation<Scalar, Endpoint> {
-    edges_registry: QuadEdgeRegistry<Scalar, Endpoint>,
     left_side: QuadEdge,
+    mesh: Mesh<Scalar, Endpoint>,
     right_side: QuadEdge,
 }
 
@@ -25,11 +25,11 @@ impl<
         endpoints.sort();
         endpoints.dedup();
         let endpoints_count = endpoints.len();
-        let mut edges_registry = QuadEdgeRegistry::from(endpoints);
+        let mut mesh = Mesh::from(endpoints);
         if endpoints_count < 2 {
             Self {
-                edges_registry,
                 left_side: UNDEFINED_INDEX,
+                mesh,
                 right_side: UNDEFINED_INDEX,
             }
         } else {
@@ -37,13 +37,13 @@ impl<
             let mut sub_triangulations_sides =
                 Vec::<(QuadEdge, QuadEdge)>::with_capacity(segments_count + triangles_count);
             for index in 0..segments_count {
-                let edge = edges_registry.create_edge(2 * index, 2 * index + 1);
+                let edge = mesh.create_edge(2 * index, 2 * index + 1);
                 let opposite_edge = to_opposite_edge(edge);
                 sub_triangulations_sides.push((edge, opposite_edge));
             }
             let offset = 2 * segments_count;
             for index in 0..triangles_count {
-                sub_triangulations_sides.push(edges_registry.create_triangle(
+                sub_triangulations_sides.push(mesh.create_triangle(
                     offset + 3 * index,
                     offset + 3 * index + 1,
                     offset + 3 * index + 2,
@@ -53,7 +53,7 @@ impl<
                 let merge_steps_count = sub_triangulations_sides.len() / 2;
                 let mut next_sub_triangulations_sides = Vec::with_capacity(merge_steps_count);
                 for step in 0..merge_steps_count {
-                    next_sub_triangulations_sides.push(edges_registry.merge(
+                    next_sub_triangulations_sides.push(mesh.merge(
                         sub_triangulations_sides[2 * step],
                         sub_triangulations_sides[2 * step + 1],
                     ));
@@ -66,8 +66,8 @@ impl<
             debug_assert_eq!(sub_triangulations_sides.len(), 1);
             let (left_side, right_side) = sub_triangulations_sides[0];
             Self {
-                edges_registry,
                 left_side,
+                mesh,
                 right_side,
             }
         }
@@ -76,11 +76,11 @@ impl<
 
 impl<Scalar, Endpoint> Triangulation<Scalar, Endpoint> {
     pub(crate) fn get_start(&self, edge: QuadEdge) -> &Endpoint {
-        self.edges_registry.get_start(edge)
+        self.mesh.get_start(edge)
     }
 
     pub(crate) fn get_end(&self, edge: QuadEdge) -> &Endpoint {
-        self.edges_registry.get_end(edge)
+        self.mesh.get_end(edge)
     }
 
     pub(crate) fn to_boundary_edges(&self) -> Vec<QuadEdge> {
@@ -89,7 +89,7 @@ impl<Scalar, Endpoint> Triangulation<Scalar, Endpoint> {
         let mut result = Vec::new();
         loop {
             result.push(edge);
-            let candidate = self.edges_registry.to_right_from_end(edge);
+            let candidate = self.mesh.to_right_from_end(edge);
             if candidate == start {
                 break;
             }
@@ -113,7 +113,7 @@ fn to_base_cases(points_count: usize) -> (usize, usize) {
 impl<
         Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Signed,
         Endpoint: self::Point<Scalar> + PartialEq,
-    > QuadEdgeRegistry<Scalar, Endpoint>
+    > Mesh<Scalar, Endpoint>
 {
     fn build_base_edge(
         &mut self,
@@ -265,7 +265,7 @@ impl<
 }
 
 impl<Scalar: AdditiveGroup + MultiplicativeMonoid + Signed, Endpoint: self::Point<Scalar>>
-    QuadEdgeRegistry<Scalar, Endpoint>
+    Mesh<Scalar, Endpoint>
 {
     pub(super) fn create_triangle(
         &mut self,
@@ -291,7 +291,7 @@ impl<Scalar: AdditiveGroup + MultiplicativeMonoid + Signed, Endpoint: self::Poin
 }
 
 impl<Scalar: AdditiveGroup + MultiplicativeMonoid + Signed, Endpoint: self::Point<Scalar>>
-    QuadEdgeRegistry<Scalar, Endpoint>
+    Mesh<Scalar, Endpoint>
 {
     fn orient_point_to_edge(&self, edge: usize, point: &Endpoint) -> Orientation {
         orient(self.get_start(edge), self.get_end(edge), point)

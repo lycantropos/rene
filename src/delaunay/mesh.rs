@@ -3,14 +3,14 @@ use std::marker::PhantomData;
 use crate::delaunay::contracts::UNDEFINED_INDEX;
 use crate::delaunay::quad_edge::{to_opposite_edge, to_rotated_edge, QuadEdge};
 
-pub(super) struct QuadEdgeRegistry<Scalar, Endpoint> {
+pub(super) struct Mesh<Scalar, Endpoint> {
     endpoints: Vec<Endpoint>,
     left_from_start: Vec<QuadEdge>,
     starts_indices: Vec<usize>,
     _phantom: PhantomData<fn() -> Scalar>,
 }
 
-impl<Scalar, Endpoint> From<Vec<Endpoint>> for QuadEdgeRegistry<Scalar, Endpoint> {
+impl<Scalar, Endpoint> From<Vec<Endpoint>> for Mesh<Scalar, Endpoint> {
     fn from(endpoints: Vec<Endpoint>) -> Self {
         let endpoints_count = endpoints.len();
         Self {
@@ -22,7 +22,7 @@ impl<Scalar, Endpoint> From<Vec<Endpoint>> for QuadEdgeRegistry<Scalar, Endpoint
     }
 }
 
-impl<Scalar, Endpoint> QuadEdgeRegistry<Scalar, Endpoint> {
+impl<Scalar, Endpoint> Mesh<Scalar, Endpoint> {
     pub(super) fn get_start(&self, edge: QuadEdge) -> &Endpoint {
         &self.endpoints[self.to_start_index(edge)]
     }
@@ -60,7 +60,7 @@ impl<Scalar, Endpoint> QuadEdgeRegistry<Scalar, Endpoint> {
     }
 }
 
-impl<Scalar, Endpoint> QuadEdgeRegistry<Scalar, Endpoint> {
+impl<Scalar, Endpoint> Mesh<Scalar, Endpoint> {
     pub(super) fn connect_edges(&mut self, first: QuadEdge, second: QuadEdge) -> QuadEdge {
         let result = self.create_edge(self.to_end_index(first), self.to_start_index(second));
         self.splice_edges(result, self.to_left_from_end(first));
