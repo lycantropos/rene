@@ -7,7 +7,7 @@ use crate::traits::Point;
 
 use super::contracts::UNDEFINED_INDEX;
 use super::mesh::Mesh;
-use super::quad_edge::{QuadEdge, to_opposite_edge};
+use super::quad_edge::{to_opposite_edge, QuadEdge};
 
 pub(crate) struct Triangulation<Scalar, Endpoint> {
     left_side: QuadEdge,
