@@ -22,8 +22,10 @@ use crate::relatable::Relation;
 use crate::traits::{Contour, Point, Polygon, Segment};
 
 mod bentley_ottmann;
+mod delaunay;
 pub mod geometries;
 mod iteration;
+pub mod locatable;
 mod operations;
 pub mod oriented;
 pub mod relatable;

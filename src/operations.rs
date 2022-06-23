@@ -1,5 +1,9 @@
-use rithm::traits::{AdditiveGroup, DivisivePartialMagma, MultiplicativeMonoid, Sign, Signed};
+use rithm::traits::{
+    AdditiveGroup, BitLength, DivisivePartialMagma, IsPowerOfTwo, MultiplicativeMonoid, Sign,
+    Signed, SubtractiveMagma,
+};
 
+use crate::locatable::Location;
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
 use crate::traits;
@@ -139,10 +143,45 @@ pub(crate) fn intersect_crossing_segments<
     ))
 }
 
+pub(crate) fn locate_point_in_point_point_point_circle<
+    Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Signed,
+    Point: traits::Point<Scalar>,
+>(
+    point: &Point,
+    first: &Point,
+    second: &Point,
+    third: &Point,
+) -> Location {
+    let (first_dx, first_dy) = (first.x() - point.x(), first.y() - point.y());
+    let (second_dx, second_dy) = (second.x() - point.x(), second.y() - point.y());
+    let (third_dx, third_dy) = (third.x() - point.x(), third.y() - point.y());
+    match ((first_dx.clone() * first_dx.clone() + first_dy.clone() * first_dy.clone())
+        * (second_dx.clone() * third_dy.clone() - second_dy.clone() * third_dx.clone())
+        - (second_dx.clone() * second_dx.clone() + second_dy.clone() * second_dy.clone())
+            * (first_dx.clone() * third_dy.clone() - first_dy.clone() * third_dx.clone())
+        + (third_dx.clone() * third_dx + third_dy.clone() * third_dy)
+            * (first_dx * second_dy - first_dy * second_dx))
+        .sign()
+    {
+        Sign::Negative => Location::Exterior,
+        Sign::Positive => Location::Interior,
+        Sign::Zero => Location::Boundary,
+    }
+}
+
 pub(crate) fn to_sorted_pair<Value: PartialOrd>((left, right): (Value, Value)) -> (Value, Value) {
     if left < right {
         (left, right)
     } else {
         (right, left)
     }
+}
+
+pub(crate) fn ceil_log2<
+    Number: Copy + BitLength<Output = Value> + IsPowerOfTwo,
+    Value: SubtractiveMagma + From<bool>,
+>(
+    number: Number,
+) -> Value {
+    number.bit_length() - <Number as BitLength>::Output::from(number.is_power_of_two())
 }
