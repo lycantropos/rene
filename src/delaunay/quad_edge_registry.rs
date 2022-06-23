@@ -48,7 +48,9 @@ impl<Scalar, Endpoint> QuadEdgeRegistry<Scalar, Endpoint> {
     }
 
     fn to_end_index(&self, edge: QuadEdge) -> usize {
-        self.starts_indices[to_opposite_edge(edge)]
+        let result = self.starts_indices[to_opposite_edge(edge)];
+        debug_assert_ne!(result, UNDEFINED_INDEX);
+        result
     }
 
     fn to_start_index(&self, edge: QuadEdge) -> usize {
