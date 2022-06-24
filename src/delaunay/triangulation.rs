@@ -99,6 +99,9 @@ impl<Scalar, Endpoint> Triangulation<Scalar, Endpoint> {
     }
 }
 
+/// Searches solution of linear diophantine equation
+///   `2 * segments_count + 3 * triangles_count == points_count`
+/// where `points_count >= 2`
 fn to_base_cases(points_count: usize) -> (usize, usize) {
     debug_assert!(points_count >= 2);
     let (triangles_count, rest_points) = points_count.div_rem(3);
