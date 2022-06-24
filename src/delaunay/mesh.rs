@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
-use crate::delaunay::contracts::UNDEFINED_INDEX;
+use rithm::traits::Parity;
+
 use crate::delaunay::quad_edge::{to_opposite_edge, to_rotated_edge, QuadEdge};
 
 pub(super) struct Mesh<Scalar, Endpoint> {
@@ -16,7 +17,7 @@ impl<Scalar, Endpoint> From<Vec<Endpoint>> for Mesh<Scalar, Endpoint> {
         Self {
             endpoints,
             left_from_start: Vec::with_capacity(4 * endpoints_count),
-            starts_indices: Vec::with_capacity(4 * endpoints_count),
+            starts_indices: Vec::with_capacity(2 * endpoints_count),
             _phantom: PhantomData,
         }
     }
@@ -48,15 +49,12 @@ impl<Scalar, Endpoint> Mesh<Scalar, Endpoint> {
     }
 
     fn to_end_index(&self, edge: QuadEdge) -> usize {
-        let result = self.starts_indices[to_opposite_edge(edge)];
-        debug_assert_ne!(result, UNDEFINED_INDEX);
-        result
+        self.to_start_index(to_opposite_edge(edge))
     }
 
     fn to_start_index(&self, edge: QuadEdge) -> usize {
-        let result = self.starts_indices[edge];
-        debug_assert_ne!(result, UNDEFINED_INDEX);
-        result
+        debug_assert!(edge.is_even());
+        self.starts_indices[edge / 2]
     }
 }
 
@@ -70,9 +68,7 @@ impl<Scalar, Endpoint> Mesh<Scalar, Endpoint> {
 
     pub(super) fn create_edge(&mut self, start_index: usize, end_index: usize) -> QuadEdge {
         self.starts_indices.push(start_index);
-        self.starts_indices.push(UNDEFINED_INDEX);
         self.starts_indices.push(end_index);
-        self.starts_indices.push(UNDEFINED_INDEX);
         let edge = self.left_from_start.len();
         let rotated_edge = edge + 1;
         let opposite_edge = edge + 2;
