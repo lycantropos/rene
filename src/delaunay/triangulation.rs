@@ -100,6 +100,7 @@ impl<Scalar, Endpoint> Triangulation<Scalar, Endpoint> {
 }
 
 fn to_base_cases(points_count: usize) -> (usize, usize) {
+    debug_assert!(points_count >= 2);
     let (triangles_count, rest_points) = points_count.div_rem(3);
     if rest_points == 0 {
         (0, triangles_count)
