@@ -3,7 +3,7 @@ use crate::traits;
 
 #[derive(Clone)]
 pub struct Contour<Scalar> {
-    pub(in crate::geometries) vertices: Vec<Point<Scalar>>,
+    pub(super) vertices: Vec<Point<Scalar>>,
 }
 
 impl<Scalar: Clone> Contour<Scalar> {
