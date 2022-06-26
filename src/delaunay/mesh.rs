@@ -1,4 +1,6 @@
+use std::iter::Map;
 use std::marker::PhantomData;
+use std::ops::Range;
 
 use rithm::traits::Parity;
 
@@ -34,6 +36,10 @@ impl<Scalar, Endpoint> Mesh<Scalar, Endpoint> {
 
     pub(super) fn is_empty(&self) -> bool {
         self.left_from_start.is_empty()
+    }
+
+    pub(super) fn to_edges(&self) -> Map<Range<usize>, fn(usize) -> QuadEdge> {
+        (0..self.left_from_start.len() / 2).map(|index| index * 2)
     }
 
     pub(super) fn to_left_from_start(&self, edge: QuadEdge) -> QuadEdge {
