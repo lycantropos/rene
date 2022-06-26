@@ -84,16 +84,18 @@ impl<Scalar, Endpoint> Triangulation<Scalar, Endpoint> {
     }
 
     pub(crate) fn to_boundary_edges(&self) -> Vec<QuadEdge> {
-        let start = self.left_side;
-        let mut edge = start;
         let mut result = Vec::new();
-        loop {
-            result.push(edge);
-            let candidate = self.mesh.to_right_from_end(edge);
-            if candidate == start {
-                break;
+        if !self.mesh.is_empty() {
+            let start = self.left_side;
+            let mut edge = start;
+            loop {
+                result.push(edge);
+                let candidate = self.mesh.to_right_from_end(edge);
+                if candidate == start {
+                    break;
+                }
+                edge = candidate;
             }
-            edge = candidate;
         }
         result
     }

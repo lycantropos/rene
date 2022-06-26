@@ -32,6 +32,10 @@ impl<Scalar, Endpoint> Mesh<Scalar, Endpoint> {
         &self.endpoints[self.to_start_index(to_opposite_edge(edge))]
     }
 
+    pub(super) fn is_empty(&self) -> bool {
+        self.left_from_start.is_empty()
+    }
+
     pub(super) fn to_left_from_start(&self, edge: QuadEdge) -> QuadEdge {
         self.left_from_start[edge]
     }
