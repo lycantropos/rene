@@ -4,8 +4,8 @@ use crate::traits;
 
 #[derive(Clone, fmt::Debug)]
 pub struct Point<Scalar> {
-    pub(in crate::geometries) x: Scalar,
-    pub(in crate::geometries) y: Scalar,
+    pub(super) x: Scalar,
+    pub(super) y: Scalar,
 }
 
 impl<Scalar: Clone> traits::Point<Scalar> for Point<Scalar> {
