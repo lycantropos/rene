@@ -3,8 +3,8 @@ use crate::traits;
 
 #[derive(Clone)]
 pub struct Segment<Scalar> {
-    pub(in crate::geometries) start: Point<Scalar>,
-    pub(in crate::geometries) end: Point<Scalar>,
+    pub(super) start: Point<Scalar>,
+    pub(super) end: Point<Scalar>,
 }
 
 impl<Scalar> Segment<Scalar> {
