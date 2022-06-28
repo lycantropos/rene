@@ -159,6 +159,7 @@ impl<
         };
         for (segment_id, segment) in segments.iter().enumerate() {
             let (start, end) = to_sorted_pair((segment.start(), segment.end()));
+            debug_assert!(start != end);
             let left_event = segment_id_to_left_event(segment_id);
             let right_event = segment_id_to_right_event(segment_id);
             result.endpoints.push(start);
