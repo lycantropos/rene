@@ -17,6 +17,7 @@ use rithm::{big_int, fraction};
 
 use crate::bentley_ottmann::{is_contour_valid, to_unique_non_crossing_or_overlapping_segments};
 use crate::geometries::MIN_CONTOUR_VERTICES_COUNT;
+use crate::operations::to_arg_min;
 use crate::oriented::{Orientation, Oriented};
 use crate::relatable::Relation;
 use crate::traits::{Contour, Point, Polygon, Segment};
@@ -275,7 +276,8 @@ impl PyExactContour {
 
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
         let mut vertices = self.0.vertices();
-        vertices.rotate_left(self.0.to_min_vertex_index());
+        let min_vertex_index = unsafe { to_arg_min(&vertices).unwrap_unchecked() };
+        vertices.rotate_left(min_vertex_index);
         if self.0.orientation() == Orientation::Clockwise {
             vertices[1..].reverse()
         }

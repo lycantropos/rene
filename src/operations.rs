@@ -169,6 +169,10 @@ pub(crate) fn locate_point_in_point_point_point_circle<
     }
 }
 
+pub(crate) fn to_arg_min<Value: Ord>(values: &[Value]) -> Option<usize> {
+    (0..values.len()).min_by_key(|index| &values[*index])
+}
+
 pub(crate) fn to_sorted_pair<Value: PartialOrd>((left, right): (Value, Value)) -> (Value, Value) {
     if left < right {
         (left, right)
