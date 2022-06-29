@@ -31,6 +31,8 @@ class Contour:
         return self._vertices[:]
 
     def is_valid(self):
+        if not _are_contour_vertices_non_degenerate(self.vertices):
+            return False
         segments = self.segments
         if len(segments) < MIN_CONTOUR_VERTICES_COUNT:
             return False
@@ -79,6 +81,17 @@ class Contour:
     def __str__(self):
         return (f'{type(self).__qualname__}([{{}}])'
                 .format(', '.join(map(str, self.vertices))))
+
+
+def _are_contour_vertices_non_degenerate(vertices: Sequence[Point]) -> bool:
+    return (all(orient(vertices[index - 1], vertices[index],
+                       vertices[index + 1]) is not Orientation.COLLINEAR
+                for index in range(1, len(vertices) - 1))
+            and (len(vertices) <= MIN_CONTOUR_VERTICES_COUNT
+                 or ((orient(vertices[-2], vertices[-1], vertices[0])
+                      is not Orientation.COLLINEAR)
+                     and (orient(vertices[-1], vertices[0], vertices[1])
+                          is not Orientation.COLLINEAR))))
 
 
 def _neighbour_segments_vertices_touch(intersection: Intersection,
