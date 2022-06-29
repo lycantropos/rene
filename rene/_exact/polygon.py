@@ -23,7 +23,7 @@ class Polygon:
                 else NotImplemented)
 
     def __hash__(self):
-        return hash((self.border, self.holes))
+        return hash((self.border, frozenset(self.holes)))
 
     def __repr__(self):
         return (f'{type(self).__module__}.{type(self).__qualname__}'
