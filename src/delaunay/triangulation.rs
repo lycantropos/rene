@@ -18,10 +18,9 @@ pub(crate) struct Triangulation<Scalar, Endpoint> {
 impl<
         Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Signed,
         Endpoint: Clone + Ord + self::Point<Scalar>,
-    > From<&[Endpoint]> for Triangulation<Scalar, Endpoint>
+    > From<Vec<Endpoint>> for Triangulation<Scalar, Endpoint>
 {
-    fn from(points: &[Endpoint]) -> Self {
-        let mut endpoints = points.iter().cloned().collect::<Vec<Endpoint>>();
+    fn from(mut endpoints: Vec<Endpoint>) -> Self {
         endpoints.sort();
         endpoints.dedup();
         let endpoints_count = endpoints.len();
