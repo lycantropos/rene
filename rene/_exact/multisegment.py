@@ -1,7 +1,17 @@
+from rene._rene import Relation
+from .bentley_ottmann.base import sweep
+
+
 class Multisegment:
     @property
     def segments(self):
         return self._segments[:]
+
+    def is_valid(self):
+        segments = self.segments
+        return (len(segments) > 1
+                and all(intersection.relation is Relation.TOUCH
+                        for intersection in sweep(segments)))
 
     __module__ = 'rene.exact'
     __slots__ = '_segments',

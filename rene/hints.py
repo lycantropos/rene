@@ -131,6 +131,9 @@ class Multisegment(_Protocol[Scalar]):
     def segments(self) -> _Sequence[Segment[Scalar]]:
         ...
 
+    def is_valid(self) -> bool:
+        ...
+
     def __new__(cls, vertices: _Sequence[Segment[Scalar]]
                 ) -> 'Multisegment[Scalar]':
         ...

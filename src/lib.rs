@@ -15,7 +15,9 @@ use pyo3::{
 use rithm::traits::{Endianness, FromBytes, ToBytes, Zeroable};
 use rithm::{big_int, fraction};
 
-use crate::bentley_ottmann::{is_contour_valid, to_unique_non_crossing_or_overlapping_segments};
+use crate::bentley_ottmann::{
+    is_contour_valid, is_multisegment_valid, to_unique_non_crossing_or_overlapping_segments,
+};
 use crate::geometries::MIN_CONTOUR_VERTICES_COUNT;
 use crate::operations::to_arg_min;
 use crate::oriented::{Orientation, Oriented};
@@ -345,6 +347,10 @@ impl PyExactMultisegment {
     #[getter]
     fn segments(&self) -> Vec<ExactSegment> {
         self.0.segments()
+    }
+
+    fn is_valid(&self) -> bool {
+        is_multisegment_valid(&self.0)
     }
 
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {

@@ -51,6 +51,9 @@ class Multisegment:
     def segments(self) -> _Sequence[Segment]:
         ...
 
+    def is_valid(self) -> bool:
+        ...
+
     def __new__(cls, segments: _Sequence[Segment]) -> 'Multisegment':
         ...
 
