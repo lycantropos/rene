@@ -138,6 +138,9 @@ class Polygon:
     def __eq__(self, other: _Any) -> _Any:
         ...
 
+    def __hash__(self) -> int:
+        ...
+
     def __repr__(self) -> str:
         ...
 

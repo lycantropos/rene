@@ -22,6 +22,9 @@ class Polygon:
                 if isinstance(other, Polygon)
                 else NotImplemented)
 
+    def __hash__(self):
+        return hash((self.border, self.holes))
+
     def __repr__(self):
         return (f'{type(self).__module__}.{type(self).__qualname__}'
                 f'({self.border!r}, {self.holes!r})')

@@ -55,18 +55,6 @@ impl IntoPy<PyObject> for ExactContour {
     }
 }
 
-impl ToPyObject for ExactPoint {
-    fn to_object(&self, py: Python<'_>) -> PyObject {
-        self.clone().into_py(py)
-    }
-}
-
-impl ToPyObject for ExactSegment {
-    fn to_object(&self, py: Python<'_>) -> PyObject {
-        self.clone().into_py(py)
-    }
-}
-
 impl IntoPy<PyObject> for ExactPoint {
     fn into_py(self, py: Python<'_>) -> PyObject {
         PyExactPoint(self).into_py(py)
@@ -76,6 +64,24 @@ impl IntoPy<PyObject> for ExactPoint {
 impl IntoPy<PyObject> for ExactSegment {
     fn into_py(self, py: Python<'_>) -> PyObject {
         PyExactSegment(self).into_py(py)
+    }
+}
+
+impl ToPyObject for ExactContour {
+    fn to_object(&self, py: Python<'_>) -> PyObject {
+        self.clone().into_py(py)
+    }
+}
+
+impl ToPyObject for ExactPoint {
+    fn to_object(&self, py: Python<'_>) -> PyObject {
+        self.clone().into_py(py)
+    }
+}
+
+impl ToPyObject for ExactSegment {
+    fn to_object(&self, py: Python<'_>) -> PyObject {
+        self.clone().into_py(py)
     }
 }
 
@@ -470,6 +476,17 @@ impl PyExactPolygon {
     #[getter]
     fn holes(&self) -> Vec<ExactContour> {
         self.0.holes()
+    }
+
+    fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
+        PyTuple::new(
+            py,
+            &[
+                self.border().into_py(py),
+                PyFrozenSet::new(py, &self.holes())?.into_py(py),
+            ],
+        )
+        .hash()
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
