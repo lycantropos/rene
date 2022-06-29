@@ -1,9 +1,7 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{BuildHasherDefault, Hash, Hasher};
 
-use rithm::traits::{AdditiveGroup, MultiplicativeMonoid, Signed};
-
-use crate::geometries::{utils, Contour};
+use crate::geometries::utils;
 
 use super::types::Multisegment;
 
