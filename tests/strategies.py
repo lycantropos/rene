@@ -5,8 +5,10 @@ from hypothesis import strategies
 from hypothesis_geometry import planar
 
 from rene.exact import (Contour,
+                        Multisegment,
                         Point,
-                        Polygon)
+                        Polygon,
+                        Segment)
 
 MAX_VALUE = 10 ** 10
 MIN_VALUE = -MAX_VALUE
@@ -28,6 +30,24 @@ def to_point(raw_point: hints.Point) -> Point:
 
 
 points = scalars_strategies.flatmap(planar.points).map(to_point)
+
+
+def to_segment(raw_segment: hints.Segment) -> Segment:
+    return Segment(to_point(raw_segment.start), to_point(raw_segment.end))
+
+
+segments = scalars_strategies.flatmap(planar.segments).map(to_segment)
+
+
+def to_multisegment(raw_contour: hints.Multisegment) -> Multisegment:
+    return Multisegment([to_segment(segment)
+                         for segment in raw_contour.segments])
+
+
+multisegments = (scalars_strategies
+                 .flatmap(planar.multisegments)
+                 .map(to_multisegment))
+multisegments_segments = multisegments.map(attrgetter('segments'))
 
 
 def to_contour(raw_contour: hints.Contour) -> Contour:

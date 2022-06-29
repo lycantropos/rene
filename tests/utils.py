@@ -5,6 +5,7 @@ from typing import (Callable,
                     TypeVar)
 
 from rene.exact import (Contour,
+                        Multisegment,
                         Polygon,
                         Segment)
 
@@ -37,6 +38,10 @@ def reverse_each_polygon_hole(polygon: Polygon) -> Polygon:
                          [reverse_contour(hole) for hole in polygon.holes])
 
 
+def reverse_multisegment(multisegment: Multisegment) -> Multisegment:
+    return type(multisegment)(multisegment.segments[::-1])
+
+
 def reverse_polygon_border(polygon: Polygon) -> Polygon:
     return type(polygon)(reverse_contour(polygon.border), polygon.holes)
 
@@ -57,6 +62,10 @@ def rotate_each_polygon_hole(polygon: Polygon, offset: int) -> Polygon:
     return type(polygon)(polygon.border,
                          [rotate_contour(hole, offset)
                           for hole in polygon.holes])
+
+
+def rotate_multisegment(multisegment: Multisegment, offset: int) -> Contour:
+    return type(multisegment)(rotate_sequence(multisegment.segments, offset))
 
 
 def rotate_polygon_border(polygon: Polygon, offset: int) -> Polygon:
