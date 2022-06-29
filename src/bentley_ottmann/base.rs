@@ -73,7 +73,7 @@ pub(crate) fn is_multisegment_valid<
     multisegment: &Multisegment,
 ) -> bool {
     let segments = multisegment.segments();
-    segments.len() > MIN_MULTISEGMENT_SEGMENTS_COUNT
+    segments.len() >= MIN_MULTISEGMENT_SEGMENTS_COUNT
         && segments
             .iter()
             .all(|segment| segment.start() != segment.end())
