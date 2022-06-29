@@ -2,6 +2,8 @@ use core::convert::From;
 
 use rithm::traits::{AdditiveGroup, DivisivePartialMagma, MultiplicativeMonoid, Signed};
 
+use crate::constants::{MIN_CONTOUR_VERTICES_COUNT, MIN_MULTISEGMENT_SEGMENTS_COUNT};
+use crate::contracts::are_contour_vertices_non_degenerate;
 use crate::relatable::Relation;
 use crate::traits::{Contour, Multisegment, Point, Segment};
 
@@ -17,47 +19,49 @@ pub(crate) fn is_contour_valid<
 >(
     contour: &Contour,
 ) -> bool {
-    let segments = contour.segments();
-    segments.len() >= 3
-        && segments
-            .iter()
-            .all(|segment| segment.start() != segment.end())
-        && {
-            let mut sweep = Sweep::from(segments.as_slice());
-            let mut neighbour_segments_touches_count = 0usize;
-            while let Some(intersection) = sweep.next() {
-                debug_assert_eq!(
-                    intersection.start == intersection.end,
-                    matches!(intersection.relation, Relation::Touch | Relation::Cross)
-                );
-                let touches_at_vertices = (matches!(intersection.relation, Relation::Touch)
-                    && (intersection
-                        .start
-                        .eq(sweep.get_segment_start(intersection.first_segment_id))
-                        || intersection
+    are_contour_vertices_non_degenerate(&contour.vertices()) && {
+        let segments = contour.segments();
+        segments.len() >= MIN_CONTOUR_VERTICES_COUNT
+            && segments
+                .iter()
+                .all(|segment| segment.start() != segment.end())
+            && {
+                let mut sweep = Sweep::from(segments.as_slice());
+                let mut neighbour_segments_touches_count = 0usize;
+                while let Some(intersection) = sweep.next() {
+                    debug_assert_eq!(
+                        intersection.start == intersection.end,
+                        matches!(intersection.relation, Relation::Touch | Relation::Cross)
+                    );
+                    let touches_at_vertices = (matches!(intersection.relation, Relation::Touch)
+                        && (intersection
                             .start
-                            .eq(sweep.get_segment_end(intersection.first_segment_id)))
-                    && (intersection
-                        .start
-                        .eq(sweep.get_segment_start(intersection.second_segment_id))
-                        || intersection
+                            .eq(sweep.get_segment_start(intersection.first_segment_id))
+                            || intersection
+                                .start
+                                .eq(sweep.get_segment_end(intersection.first_segment_id)))
+                        && (intersection
                             .start
-                            .eq(sweep.get_segment_end(intersection.second_segment_id))));
-                let neighbour_segments_intersection = intersection
-                    .first_segment_id
-                    .abs_diff(intersection.second_segment_id)
-                    == 1
-                    || (intersection.first_segment_id == segments.len() - 1
-                        && intersection.second_segment_id == 0)
-                    || (intersection.second_segment_id == segments.len() - 1
-                        && intersection.first_segment_id == 0);
-                if !(touches_at_vertices && neighbour_segments_intersection) {
-                    return false;
+                            .eq(sweep.get_segment_start(intersection.second_segment_id))
+                            || intersection
+                                .start
+                                .eq(sweep.get_segment_end(intersection.second_segment_id))));
+                    let neighbour_segments_intersection = intersection
+                        .first_segment_id
+                        .abs_diff(intersection.second_segment_id)
+                        == 1
+                        || (intersection.first_segment_id == segments.len() - 1
+                            && intersection.second_segment_id == 0)
+                        || (intersection.second_segment_id == segments.len() - 1
+                            && intersection.first_segment_id == 0);
+                    if !(touches_at_vertices && neighbour_segments_intersection) {
+                        return false;
+                    }
+                    neighbour_segments_touches_count += 1;
                 }
-                neighbour_segments_touches_count += 1;
+                neighbour_segments_touches_count == segments.len()
             }
-            neighbour_segments_touches_count == segments.len()
-        }
+    }
 }
 
 pub(crate) fn is_multisegment_valid<
@@ -69,7 +73,7 @@ pub(crate) fn is_multisegment_valid<
     multisegment: &Multisegment,
 ) -> bool {
     let segments = multisegment.segments();
-    segments.len() > 1
+    segments.len() > MIN_MULTISEGMENT_SEGMENTS_COUNT
         && segments
             .iter()
             .all(|segment| segment.start() != segment.end())

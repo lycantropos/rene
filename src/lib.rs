@@ -26,6 +26,7 @@ use crate::traits::{Contour, Multisegment, Point, Polygon, Segment};
 
 mod bentley_ottmann;
 mod constants;
+mod contracts;
 mod delaunay;
 pub mod geometries;
 mod iteration;
