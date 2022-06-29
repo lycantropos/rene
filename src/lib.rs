@@ -18,13 +18,14 @@ use rithm::{big_int, fraction};
 use crate::bentley_ottmann::{
     is_contour_valid, is_multisegment_valid, to_unique_non_crossing_or_overlapping_segments,
 };
-use crate::geometries::MIN_CONTOUR_VERTICES_COUNT;
+use crate::constants::{MIN_CONTOUR_VERTICES_COUNT, MIN_MULTISEGMENT_SEGMENTS_COUNT};
 use crate::operations::to_arg_min;
 use crate::oriented::{Orientation, Oriented};
 use crate::relatable::Relation;
 use crate::traits::{Contour, Multisegment, Point, Polygon, Segment};
 
 mod bentley_ottmann;
+mod constants;
 mod delaunay;
 pub mod geometries;
 mod iteration;
@@ -705,5 +706,9 @@ fn _crene(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyOrientation>()?;
     module.add_class::<PyRelation>()?;
     module.add("MIN_CONTOUR_VERTICES_COUNT", MIN_CONTOUR_VERTICES_COUNT)?;
+    module.add(
+        "MIN_MULTISEGMENT_SEGMENTS_COUNT",
+        MIN_MULTISEGMENT_SEGMENTS_COUNT,
+    )?;
     Ok(())
 }

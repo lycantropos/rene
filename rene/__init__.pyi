@@ -4,6 +4,7 @@ from typing import (Any as _Any,
 __version__: str
 
 MIN_CONTOUR_VERTICES_COUNT: int = ...
+MIN_MULTISEGMENT_SEGMENTS_COUNT: int = ...
 
 
 class Orientation:
