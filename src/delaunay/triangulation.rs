@@ -147,6 +147,65 @@ impl<
         )
     }
 
+    fn find_left_candidate(&mut self, base_edge: QuadEdge) -> Option<QuadEdge> {
+        let mut result = self.to_left_from_start(to_opposite_edge(base_edge));
+        if !matches!(
+            self.orient_point_to_edge(base_edge, self.get_end(result)),
+            Orientation::Clockwise
+        ) {
+            None
+        } else {
+            while matches!(
+                self.orient_point_to_edge(base_edge, self.get_end(self.to_left_from_start(result))),
+                Orientation::Clockwise
+            ) && matches!(
+                locate_point_in_point_point_point_circle(
+                    self.get_end(self.to_left_from_start(result)),
+                    self.get_end(base_edge),
+                    self.get_start(base_edge),
+                    self.get_end(result)
+                ),
+                Location::Interior
+            ) {
+                let next_candidate = self.to_left_from_start(result);
+                self.delete_edge(result);
+                result = next_candidate;
+            }
+            Some(result)
+        }
+    }
+
+    fn find_right_candidate(&mut self, base_edge: QuadEdge) -> Option<QuadEdge> {
+        let mut result = self.to_right_from_start(base_edge);
+        if !matches!(
+            self.orient_point_to_edge(base_edge, self.get_end(result)),
+            Orientation::Clockwise
+        ) {
+            None
+        } else {
+            while matches!(
+                self.orient_point_to_edge(
+                    base_edge,
+                    self.get_end(self.to_right_from_start(result))
+                ),
+                Orientation::Clockwise
+            ) && matches!(
+                locate_point_in_point_point_point_circle(
+                    self.get_end(self.to_right_from_start(result)),
+                    self.get_end(base_edge),
+                    self.get_start(base_edge),
+                    self.get_end(result)
+                ),
+                Location::Interior
+            ) {
+                let next_candidate = self.to_right_from_start(result);
+                self.delete_edge(result);
+                result = next_candidate;
+            }
+            Some(result)
+        }
+    }
+
     fn merge(
         &mut self,
         (first_left_side, first_right_side): (QuadEdge, QuadEdge),
@@ -171,8 +230,8 @@ impl<
     fn rise_bubble(&mut self, mut base_edge: QuadEdge) {
         loop {
             let (maybe_left_candidate, maybe_right_candidate) = (
-                self.to_left_candidate(base_edge),
-                self.to_right_candidate(base_edge),
+                self.find_left_candidate(base_edge),
+                self.find_right_candidate(base_edge),
             );
             base_edge = match maybe_left_candidate {
                 Some(left_candidate) => match maybe_right_candidate {
@@ -206,65 +265,6 @@ impl<
                     None => break,
                 },
             };
-        }
-    }
-
-    fn to_left_candidate(&mut self, base_edge: QuadEdge) -> Option<QuadEdge> {
-        let mut result = self.to_left_from_start(to_opposite_edge(base_edge));
-        if !matches!(
-            self.orient_point_to_edge(base_edge, self.get_end(result)),
-            Orientation::Clockwise
-        ) {
-            None
-        } else {
-            while matches!(
-                self.orient_point_to_edge(base_edge, self.get_end(self.to_left_from_start(result))),
-                Orientation::Clockwise
-            ) && matches!(
-                locate_point_in_point_point_point_circle(
-                    self.get_end(self.to_left_from_start(result)),
-                    self.get_end(base_edge),
-                    self.get_start(base_edge),
-                    self.get_end(result)
-                ),
-                Location::Interior
-            ) {
-                let next_candidate = self.to_left_from_start(result);
-                self.delete_edge(result);
-                result = next_candidate;
-            }
-            Some(result)
-        }
-    }
-
-    fn to_right_candidate(&mut self, base_edge: QuadEdge) -> Option<QuadEdge> {
-        let mut result = self.to_right_from_start(base_edge);
-        if !matches!(
-            self.orient_point_to_edge(base_edge, self.get_end(result)),
-            Orientation::Clockwise
-        ) {
-            None
-        } else {
-            while matches!(
-                self.orient_point_to_edge(
-                    base_edge,
-                    self.get_end(self.to_right_from_start(result))
-                ),
-                Orientation::Clockwise
-            ) && matches!(
-                locate_point_in_point_point_point_circle(
-                    self.get_end(self.to_right_from_start(result)),
-                    self.get_end(base_edge),
-                    self.get_start(base_edge),
-                    self.get_end(result)
-                ),
-                Location::Interior
-            ) {
-                let next_candidate = self.to_right_from_start(result);
-                self.delete_edge(result);
-                result = next_candidate;
-            }
-            Some(result)
         }
     }
 }
