@@ -1,4 +1,5 @@
 use crate::geometries::{Point, Segment};
+use crate::operations::to_arg_min;
 use crate::traits;
 
 #[derive(Clone)]
@@ -13,12 +14,8 @@ impl<Scalar: Clone> Contour<Scalar> {
 }
 
 impl<Scalar: Ord> Contour<Scalar> {
-    pub(crate) fn to_min_vertex_index(&self) -> usize {
-        unsafe {
-            (0..self.vertices.len())
-                .min_by_key(|index| &self.vertices[*index])
-                .unwrap_unchecked()
-        }
+    pub(super) fn to_min_vertex_index(&self) -> usize {
+        unsafe { to_arg_min(&self.vertices).unwrap_unchecked() }
     }
 }
 
