@@ -3,7 +3,7 @@ use core::convert::From;
 use rithm::traits::{AdditiveGroup, DivisivePartialMagma, MultiplicativeMonoid, Signed};
 
 use crate::relatable::Relation;
-use crate::traits::{Contour, Point, Segment};
+use crate::traits::{Contour, Multisegment, Point, Segment};
 
 use super::event::is_left_event;
 use super::events_registry::EventsRegistry;
@@ -58,6 +58,23 @@ pub(crate) fn is_contour_valid<
             }
             neighbour_segments_touches_count == segments.len()
         }
+}
+
+pub(crate) fn is_multisegment_valid<
+    Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
+    Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Scalar>,
+    Segment: self::Segment<Scalar, Point = Endpoint>,
+    Multisegment: self::Multisegment<Scalar, Point = Endpoint, Segment = Segment>,
+>(
+    multisegment: &Multisegment,
+) -> bool {
+    let segments = multisegment.segments();
+    segments.len() > 1
+        && segments
+            .iter()
+            .all(|segment| segment.start() != segment.end())
+        && Sweep::from(segments.as_slice())
+            .all(|intersection| matches!(intersection.relation, Relation::Touch))
 }
 
 pub(crate) fn to_unique_non_crossing_or_overlapping_segments<
