@@ -39,9 +39,9 @@ def to_segment(raw_segment: hints.Segment) -> Segment:
 segments = scalars_strategies.flatmap(planar.segments).map(to_segment)
 
 
-def to_multisegment(raw_contour: hints.Multisegment) -> Multisegment:
+def to_multisegment(raw_multisegment: hints.Multisegment) -> Multisegment:
     return Multisegment([to_segment(segment)
-                         for segment in raw_contour.segments])
+                         for segment in raw_multisegment.segments])
 
 
 multisegments = (scalars_strategies
