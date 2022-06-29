@@ -46,6 +46,32 @@ class Contour:
         ...
 
 
+class Multisegment:
+    @property
+    def segments(self) -> _Sequence[Segment]:
+        ...
+
+    def __new__(cls, segments: _Sequence[Segment]) -> 'Multisegment':
+        ...
+
+    @_overload
+    def __eq__(self, other: 'Multisegment') -> bool:
+        ...
+
+    @_overload
+    def __eq__(self, other: _Any) -> _Any:
+        ...
+
+    def __hash__(self) -> int:
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+    def __str__(self) -> str:
+        ...
+
+
 class Point:
     @property
     def x(self) -> _Fraction:

@@ -126,6 +126,33 @@ class Contour(_Protocol[Scalar]):
         ...
 
 
+class Multisegment(_Protocol[Scalar]):
+    @property
+    def segments(self) -> _Sequence[Segment[Scalar]]:
+        ...
+
+    def __new__(cls, vertices: _Sequence[Segment[Scalar]]
+                ) -> 'Multisegment[Scalar]':
+        ...
+
+    @_overload
+    def __eq__(self, other: 'Multisegment[Scalar]') -> bool:
+        ...
+
+    @_overload
+    def __eq__(self, other: _Any) -> _Any:
+        ...
+
+    def __hash__(self) -> int:
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+    def __str__(self) -> str:
+        ...
+
+
 class Polygon(_Protocol[Scalar]):
     @property
     def border(self) -> Contour[Scalar]:

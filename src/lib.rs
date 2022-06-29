@@ -20,7 +20,7 @@ use crate::geometries::MIN_CONTOUR_VERTICES_COUNT;
 use crate::operations::to_arg_min;
 use crate::oriented::{Orientation, Oriented};
 use crate::relatable::Relation;
-use crate::traits::{Contour, Point, Polygon, Segment};
+use crate::traits::{Contour, Multisegment, Point, Polygon, Segment};
 
 mod bentley_ottmann;
 mod delaunay;
@@ -42,6 +42,7 @@ const BINARY_SHIFT: usize = (Digit::BITS - 1) as usize;
 type BigInt = big_int::BigInt<Digit, '_', BINARY_SHIFT>;
 type Fraction = fraction::Fraction<BigInt>;
 type ExactContour = geometries::Contour<Fraction>;
+type ExactMultisegment = geometries::Multisegment<Fraction>;
 type ExactPoint = geometries::Point<Fraction>;
 type ExactPolygon = geometries::Polygon<Fraction>;
 type ExactSegment = geometries::Segment<Fraction>;
@@ -53,6 +54,12 @@ impl IntoPy<PyObject> for ExactContour {
 }
 
 impl ToPyObject for ExactPoint {
+    fn to_object(&self, py: Python<'_>) -> PyObject {
+        self.clone().into_py(py)
+    }
+}
+
+impl ToPyObject for ExactSegment {
     fn to_object(&self, py: Python<'_>) -> PyObject {
         self.clone().into_py(py)
     }
@@ -215,6 +222,11 @@ impl PyRelation {
 #[derive(Clone)]
 struct PyExactContour(ExactContour);
 
+#[pyclass(name = "Multisegment", module = "rene.exact", subclass)]
+#[pyo3(text_signature = "(segments, /)")]
+#[derive(Clone)]
+struct PyExactMultisegment(ExactMultisegment);
+
 #[pyclass(name = "Point", module = "rene.exact", subclass)]
 #[pyo3(text_signature = "(x, y, /)")]
 #[derive(Clone)]
@@ -315,6 +327,61 @@ impl PyExactContour {
             self.vertices()
                 .into_iter()
                 .flat_map(|vertex| PyExactPoint(vertex).__str__(py))
+                .collect::<Vec<String>>()
+                .join(", ")
+        ))
+    }
+}
+
+#[pymethods]
+impl PyExactMultisegment {
+    #[new]
+    fn new(segments: &PySequence) -> PyResult<Self> {
+        Ok(PyExactMultisegment(ExactMultisegment::new(
+            extract_from_sequence::<PyExactSegment, ExactSegment>(segments)?,
+        )))
+    }
+
+    #[getter]
+    fn segments(&self) -> Vec<ExactSegment> {
+        self.0.segments()
+    }
+
+    fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
+        PyFrozenSet::new(py, &self.segments())?.hash()
+    }
+
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        Ok(format!(
+            "rene.exact.Multisegment({})",
+            self.segments()
+                .into_py(py)
+                .as_ref(py)
+                .repr()?
+                .extract::<String>()?
+        ))
+    }
+
+    fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactMultisegment::type_object(py))? {
+            let other = other.extract::<PyExactMultisegment>()?;
+            match op {
+                CompareOp::Eq => Ok((self.0 == other.0).into_py(py)),
+                CompareOp::Ne => Ok((self.0 != other.0).into_py(py)),
+                _ => Ok(py.NotImplemented()),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
+
+    fn __str__(&self, py: Python) -> PyResult<String> {
+        Ok(format!(
+            "Multisegment([{}])",
+            self.segments()
+                .into_iter()
+                .flat_map(|segment| PyExactSegment(segment).__str__(py))
                 .collect::<Vec<String>>()
                 .join(", ")
         ))
@@ -599,6 +666,7 @@ fn extract_from_sequence<'a, Wrapper: FromPyObject<'a>, Wrapped: From<Wrapper>>(
 #[pymodule]
 fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactContour>()?;
+    module.add_class::<PyExactMultisegment>()?;
     module.add_class::<PyExactPoint>()?;
     module.add_class::<PyExactPolygon>()?;
     module.add_class::<PyExactSegment>()?;
