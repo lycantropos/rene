@@ -1,4 +1,5 @@
-from rene._rene import Relation
+from rene._rene import (MIN_MULTISEGMENT_SEGMENTS_COUNT,
+                        Relation)
 from .bentley_ottmann.base import sweep
 
 
@@ -9,7 +10,7 @@ class Multisegment:
 
     def is_valid(self):
         segments = self.segments
-        return (len(segments) > 1
+        return (len(segments) >= MIN_MULTISEGMENT_SEGMENTS_COUNT
                 and all(intersection.relation is Relation.TOUCH
                         for intersection in sweep(segments)))
 
