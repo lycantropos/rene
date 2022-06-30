@@ -16,12 +16,8 @@ class Ordered(Protocol[_Self]):
         ...
 
 
-_T = TypeVar('_T',
-             bound=Ordered)
-
-
-def to_sorted_pair(start: _T, end: _T) -> Tuple[_T, _T]:
-    return (start, end) if start < end else (end, start)
+_Ordered = TypeVar('_Ordered',
+                   bound=Ordered)
 
 
 def cross_multiply(first_start: Point,
@@ -32,12 +28,17 @@ def cross_multiply(first_start: Point,
             - (first_end.y - first_start.y) * (second_end.x - second_start.x))
 
 
-def to_sign(value: Fraction) -> int:
-    return 1 if value > 0 else (-1 if value else 0)
-
-
 def orient(vertex: Point,
            first_ray_point: Point,
            second_ray_point: Point) -> Orientation:
     return Orientation(to_sign(cross_multiply(vertex, first_ray_point, vertex,
                                               second_ray_point)))
+
+
+def to_sign(value: Fraction) -> int:
+    return 1 if value > 0 else (-1 if value else 0)
+
+
+def to_sorted_pair(start: _Ordered, end: _Ordered
+                   ) -> Tuple[_Ordered, _Ordered]:
+    return (start, end) if start < end else (end, start)
