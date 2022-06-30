@@ -9,9 +9,9 @@ from dendroid import red_black
 from prioq.base import PriorityQueue
 from reprit.base import generate_repr
 
-from rene._exact.utils import (orient,
-                               to_sorted_pair)
 from rene._rene import Orientation
+from rene._utils import (orient,
+                         to_sorted_pair)
 from rene.hints import (Point,
                         Segment)
 from .event import (Event,

@@ -3,14 +3,14 @@ from typing import (Any,
 
 from reprit.base import generate_repr
 
+from rene._bentley_ottmann.base import (Intersection,
+                                        sweep)
 from rene._rene import (MIN_CONTOUR_VERTICES_COUNT,
                         Orientation,
                         Relation)
-from .bentley_ottmann.base import (Intersection,
-                                   sweep)
+from rene._utils import orient
 from .point import Point
 from .segment import Segment
-from .utils import orient
 
 
 class Contour:

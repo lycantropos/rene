@@ -1,8 +1,8 @@
 from reprit.base import generate_repr
 
+from rene._bentley_ottmann.base import sweep
 from rene._rene import (MIN_MULTISEGMENT_SEGMENTS_COUNT,
                         Relation)
-from .bentley_ottmann.base import sweep
 
 
 class Multisegment:

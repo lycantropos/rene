@@ -1,4 +1,4 @@
-from rene._exact.utils import cross_multiply
+from rene._utils import cross_multiply
 from rene.hints import Point
 
 
