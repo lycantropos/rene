@@ -1,3 +1,6 @@
+from reprit.base import generate_repr
+
+
 class Segment:
     @property
     def end(self):
@@ -24,9 +27,8 @@ class Segment:
                 if isinstance(other, Segment)
                 else NotImplemented)
 
-    def __repr__(self):
-        return (f'{type(self).__module__}.{type(self).__qualname__}'
-                f'({self.start!r}, {self.end!r})')
+    __repr__ = generate_repr(__new__,
+                             with_module_name=True)
 
     def __str__(self):
         return f'{type(self).__qualname__}({self.start}, {self.end})'
