@@ -1,3 +1,6 @@
+from reprit.base import generate_repr
+
+
 class Polygon:
     @property
     def border(self):
@@ -25,9 +28,8 @@ class Polygon:
     def __hash__(self):
         return hash((self.border, frozenset(self.holes)))
 
-    def __repr__(self):
-        return (f'{type(self).__module__}.{type(self).__qualname__}'
-                f'({self.border!r}, {self.holes!r})')
+    __repr__ = generate_repr(__new__,
+                             with_module_name=True)
 
     def __str__(self):
         return (f'{type(self).__qualname__}({self.border}, [{{}}])'
