@@ -1,6 +1,8 @@
 from typing import (Any,
                     Sequence)
 
+from reprit.base import generate_repr
+
 from rene._rene import (MIN_CONTOUR_VERTICES_COUNT,
                         Orientation,
                         Relation)
@@ -74,9 +76,8 @@ class Contour:
                           + vertices[:min_vertex_index]))
         return hash(tuple(vertices))
 
-    def __repr__(self):
-        return (f'{type(self).__module__}.{type(self).__qualname__}'
-                f'({self.vertices!r})')
+    __repr__ = generate_repr(__new__,
+                             with_module_name=True)
 
     def __str__(self):
         return (f'{type(self).__qualname__}([{{}}])'
