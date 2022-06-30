@@ -5,7 +5,6 @@ use crate::operations::{ceil_log2, locate_point_in_point_point_point_circle, ori
 use crate::oriented::Orientation;
 use crate::traits::Point;
 
-use super::contracts::UNDEFINED_INDEX;
 use super::mesh::Mesh;
 use super::quad_edge::{to_opposite_edge, QuadEdge};
 
@@ -14,6 +13,8 @@ pub(crate) struct Triangulation<Scalar, Endpoint> {
     mesh: Mesh<Scalar, Endpoint>,
     right_side: QuadEdge,
 }
+
+const UNDEFINED_INDEX: usize = usize::MAX;
 
 impl<
         Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Signed,
