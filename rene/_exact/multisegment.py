@@ -1,3 +1,5 @@
+from reprit.base import generate_repr
+
 from rene._rene import (MIN_MULTISEGMENT_SEGMENTS_COUNT,
                         Relation)
 from .bentley_ottmann.base import sweep
@@ -30,9 +32,8 @@ class Multisegment:
     def __hash__(self):
         return hash(frozenset(self.segments))
 
-    def __repr__(self):
-        return (f'{type(self).__module__}.{type(self).__qualname__}'
-                f'({self.segments!r})')
+    __repr__ = generate_repr(__new__,
+                             with_module_name=True)
 
     def __str__(self):
         return (f'{type(self).__qualname__}([{{}}])'
