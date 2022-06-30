@@ -181,6 +181,44 @@ pub(crate) fn to_sorted_pair<Value: PartialOrd>((left, right): (Value, Value)) -
     }
 }
 
+pub(crate) fn shrink_collinear_vertices<
+    Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
+    Point: Clone + traits::Point<Scalar>,
+>(
+    vertices: &[Point],
+) -> Vec<Point> {
+    debug_assert!(!vertices.is_empty());
+    let mut result = Vec::with_capacity(vertices.len());
+    result.push(vertices[0].clone());
+    for index in 1..vertices.len() - 1 {
+        if !matches!(
+            orient(
+                &result[result.len() - 1],
+                &vertices[index],
+                &vertices[index + 1]
+            ),
+            Orientation::Collinear
+        ) {
+            result.push(vertices[index].clone())
+        }
+    }
+    if result.len() == 1
+        || !matches!(
+            orient(
+                &result[result.len() - 1],
+                &vertices[vertices.len() - 1],
+                &result[0]
+            ),
+            Orientation::Collinear
+        )
+    {
+        result.push(vertices[vertices.len() - 1].clone())
+    } else if result.len() > 2 {
+        result[0] = unsafe { result.pop().unwrap_unchecked() }
+    }
+    result
+}
+
 pub(crate) fn ceil_log2<
     Number: Copy + BitLength<Output = Value> + IsPowerOfTwo,
     Value: SubtractiveMagma + From<bool>,

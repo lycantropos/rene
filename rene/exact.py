@@ -3,10 +3,12 @@ try:
                           Multisegment,
                           Point,
                           Polygon,
-                          Segment)
+                          Segment,
+                          Triangulation)
 except ImportError:
     from ._exact import (Contour,
                          Multisegment,
                          Point,
                          Polygon,
-                         Segment)
+                         Segment,
+                         Triangulation)

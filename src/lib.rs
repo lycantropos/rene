@@ -8,7 +8,7 @@ use pyo3::basic::CompareOp;
 use pyo3::exceptions::{PyOverflowError, PyTypeError, PyValueError, PyZeroDivisionError};
 use pyo3::prelude::{pyclass, pymethods, pymodule, PyModule, PyResult, Python};
 use pyo3::type_object::PyTypeObject;
-use pyo3::types::{PyFloat, PyFrozenSet, PyLong, PySequence, PyTuple};
+use pyo3::types::{PyFloat, PyFrozenSet, PyLong, PySequence, PyTuple, PyType};
 use pyo3::{
     ffi, intern, AsPyPointer, FromPyObject, IntoPy, Py, PyAny, PyErr, PyObject, ToPyObject,
 };
@@ -19,8 +19,9 @@ use crate::bentley_ottmann::{
     is_contour_valid, is_multisegment_valid, to_unique_non_crossing_or_overlapping_segments,
 };
 use crate::constants::{MIN_CONTOUR_VERTICES_COUNT, MIN_MULTISEGMENT_SEGMENTS_COUNT};
+use crate::delaunay::Triangulation;
 use crate::locatable::Location;
-use crate::operations::to_arg_min;
+use crate::operations::{shrink_collinear_vertices, to_arg_min};
 use crate::oriented::{Orientation, Oriented};
 use crate::relatable::Relation;
 use crate::traits::{Contour, Multisegment, Point, Polygon, Segment};
@@ -51,6 +52,7 @@ type ExactMultisegment = geometries::Multisegment<Fraction>;
 type ExactPoint = geometries::Point<Fraction>;
 type ExactPolygon = geometries::Polygon<Fraction>;
 type ExactSegment = geometries::Segment<Fraction>;
+type ExactTriangulation = Triangulation<Fraction, ExactPoint>;
 
 impl IntoPy<PyObject> for ExactContour {
     fn into_py(self, py: Python<'_>) -> PyObject {
@@ -290,6 +292,10 @@ struct PyExactPolygon(ExactPolygon);
 #[pyo3(text_signature = "(start, end, /)")]
 #[derive(Clone)]
 struct PyExactSegment(ExactSegment);
+
+#[pyclass(name = "Triangulation", module = "rene.exact")]
+#[derive(Clone)]
+struct PyExactTriangulation(ExactTriangulation);
 
 #[pymethods]
 impl PyExactContour {
@@ -624,6 +630,36 @@ impl PyExactSegment {
     }
 }
 
+#[pymethods]
+impl PyExactTriangulation {
+    #[classmethod]
+    fn delaunay(_: &PyType, points: &PySequence) -> PyResult<Self> {
+        Ok(PyExactTriangulation(Triangulation::from(
+            extract_from_sequence::<PyExactPoint, ExactPoint>(points)?,
+        )))
+    }
+
+    fn boundary(&self) -> ExactContour {
+        ExactContour::new(shrink_collinear_vertices(
+            &self
+                .0
+                .to_boundary_edges()
+                .into_iter()
+                .map(|edge| self.0.get_start(edge))
+                .cloned()
+                .collect::<Vec<_>>(),
+        ))
+    }
+
+    fn triangles(&self) -> Vec<ExactContour> {
+        self.0
+            .to_triangles_vertices()
+            .into_iter()
+            .map(ExactContour::from)
+            .collect()
+    }
+}
+
 fn try_fraction_to_py_fraction(value: Fraction, py: Python) -> PyResult<&PyAny> {
     let rithm_module = py.import("rithm")?;
     let fraction_cls = rithm_module.getattr("Fraction")?;
@@ -734,6 +770,7 @@ fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactPoint>()?;
     module.add_class::<PyExactPolygon>()?;
     module.add_class::<PyExactSegment>()?;
+    module.add_class::<PyExactTriangulation>()?;
     unsafe {
         let py = Python::assume_gil_acquired();
         ROOT_MODULE = Some(py.import("rene")?);

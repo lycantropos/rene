@@ -8,6 +8,7 @@ use crate::traits::Point;
 use super::mesh::Mesh;
 use super::quad_edge::{to_opposite_edge, QuadEdge};
 
+#[derive(Clone)]
 pub(crate) struct Triangulation<Scalar, Endpoint> {
     left_side: QuadEdge,
     mesh: Mesh<Scalar, Endpoint>,
@@ -83,9 +84,16 @@ impl<Scalar, Endpoint> Triangulation<Scalar, Endpoint> {
         self.mesh.get_end(edge)
     }
 
+    pub(crate) fn is_empty(&self) -> bool {
+        let result = self.mesh.is_empty();
+        debug_assert_eq!(self.left_side == UNDEFINED_INDEX, result);
+        debug_assert_eq!(self.right_side == UNDEFINED_INDEX, result);
+        result
+    }
+
     pub(crate) fn to_boundary_edges(&self) -> Vec<QuadEdge> {
         let mut result = Vec::new();
-        if !self.mesh.is_empty() {
+        if !self.is_empty() {
             let start = self.left_side;
             let mut edge = start;
             loop {
@@ -101,6 +109,16 @@ impl<Scalar, Endpoint> Triangulation<Scalar, Endpoint> {
     }
 }
 
+impl<
+        Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
+        Endpoint: Clone + PartialOrd + self::Point<Scalar>,
+    > Triangulation<Scalar, Endpoint>
+{
+    pub(crate) fn to_triangles_vertices(&self) -> Vec<[Endpoint; 3]> {
+        self.mesh.to_triangles_vertices()
+    }
+}
+
 /// Searches solution of linear diophantine equation
 ///   `2 * segments_count + 3 * triangles_count == points_count`
 /// where `points_count >= 2`
@@ -113,6 +131,36 @@ fn to_base_cases(points_count: usize) -> (usize, usize) {
         (2, triangles_count - 1)
     } else {
         (1, triangles_count)
+    }
+}
+
+impl<
+        Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
+        Endpoint: Clone + PartialOrd + self::Point<Scalar>,
+    > Mesh<Scalar, Endpoint>
+{
+    fn to_triangles_vertices(&self) -> Vec<[Endpoint; 3]> {
+        let mut result = Vec::new();
+        for edge in self.to_edges() {
+            let first_vertex = self.get_start(edge);
+            let second_vertex = self.get_end(edge);
+            let third_vertex = self.get_end(self.to_left_from_start(edge));
+            if first_vertex < second_vertex
+                && first_vertex < third_vertex
+                && third_vertex == self.get_end(self.to_right_from_start(to_opposite_edge(edge)))
+                && matches!(
+                    self.orient_point_to_edge(edge, self.get_end(self.to_left_from_start(edge))),
+                    Orientation::Counterclockwise
+                )
+            {
+                result.push([
+                    first_vertex.clone(),
+                    second_vertex.clone(),
+                    third_vertex.clone(),
+                ]);
+            }
+        }
+        result
     }
 }
 

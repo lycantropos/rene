@@ -6,6 +6,7 @@ use rithm::traits::Parity;
 
 use crate::delaunay::quad_edge::{to_opposite_edge, to_rotated_edge, QuadEdge};
 
+#[derive(Clone)]
 pub(super) struct Mesh<Scalar, Endpoint> {
     endpoints: Vec<Endpoint>,
     left_from_start: Vec<QuadEdge>,

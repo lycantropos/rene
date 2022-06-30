@@ -1,5 +1,6 @@
 from numbers import Rational as _Rational
 from typing import (Any as _Any,
+                    List as _List,
                     Sequence as _Sequence,
                     Union as _Union,
                     overload as _overload)
@@ -175,4 +176,16 @@ class Segment:
         ...
 
     def __str__(self) -> str:
+        ...
+
+
+class Triangulation:
+    @classmethod
+    def delaunay(cls, points: _Sequence[Point]) -> 'Triangulation':
+        ...
+
+    def boundary(self) -> Contour:
+        ...
+
+    def triangles(self) -> _List[Contour]:
         ...
