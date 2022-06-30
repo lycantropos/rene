@@ -17,6 +17,23 @@ class Base(IntEnum):
 
 
 @unique
+class Location(Base):
+    #: point lies on the boundary of the geometry
+    BOUNDARY = 0
+    #: point lies in the exterior of the geometry
+    EXTERIOR = -1
+    #: point lies in the interior of the geometry
+    INTERIOR = 1
+
+
+@unique
+class Orientation(Base):
+    CLOCKWISE = -1
+    COLLINEAR = 0
+    COUNTERCLOCKWISE = 1
+
+
+@unique
 class Relation(Base):
     """
     Represents kinds of relations in which geometries can be.
@@ -61,10 +78,3 @@ class Relation(Base):
     ENCLOSED = 9
     #: geometry is a subset of the interior of the other
     WITHIN = 10
-
-
-@unique
-class Orientation(Base):
-    CLOCKWISE = -1
-    COLLINEAR = 0
-    COUNTERCLOCKWISE = 1

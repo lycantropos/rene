@@ -19,6 +19,7 @@ use crate::bentley_ottmann::{
     is_contour_valid, is_multisegment_valid, to_unique_non_crossing_or_overlapping_segments,
 };
 use crate::constants::{MIN_CONTOUR_VERTICES_COUNT, MIN_MULTISEGMENT_SEGMENTS_COUNT};
+use crate::locatable::Location;
 use crate::operations::to_arg_min;
 use crate::oriented::{Orientation, Oriented};
 use crate::relatable::Relation;
@@ -108,6 +109,44 @@ impl From<PyExactPolygon> for ExactPolygon {
 impl From<PyExactSegment> for ExactSegment {
     fn from(value: PyExactSegment) -> Self {
         value.0
+    }
+}
+
+#[pyclass(name = "Location", module = "rene")]
+#[derive(Clone)]
+struct PyLocation(Location);
+
+#[pymethods]
+impl PyLocation {
+    #[classattr]
+    const BOUNDARY: PyLocation = PyLocation(Location::Boundary);
+
+    #[classattr]
+    const EXTERIOR: PyLocation = PyLocation(Location::Exterior);
+
+    #[classattr]
+    const INTERIOR: PyLocation = PyLocation(Location::Interior);
+
+    fn __repr__(&self) -> String {
+        format!(
+            "rene.Location.{}",
+            match self.0 {
+                Location::Boundary => "BOUNDARY",
+                Location::Exterior => "EXTERIOR",
+                Location::Interior => "INTERIOR",
+            }
+        )
+    }
+
+    fn __str__(&self) -> String {
+        format!(
+            "Location.{}",
+            match self.0 {
+                Location::Boundary => "BOUNDARY",
+                Location::Exterior => "EXTERIOR",
+                Location::Interior => "INTERIOR",
+            }
+        )
     }
 }
 
@@ -704,6 +743,7 @@ fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
 
 #[pymodule]
 fn _crene(_py: Python, module: &PyModule) -> PyResult<()> {
+    module.add_class::<PyLocation>()?;
     module.add_class::<PyOrientation>()?;
     module.add_class::<PyRelation>()?;
     module.add("MIN_CONTOUR_VERTICES_COUNT", MIN_CONTOUR_VERTICES_COUNT)?;
