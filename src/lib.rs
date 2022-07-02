@@ -301,16 +301,9 @@ struct PyExactTriangulation(ExactTriangulation);
 impl PyExactContour {
     #[new]
     fn new(vertices: &PySequence) -> PyResult<Self> {
-        let vertices = extract_from_sequence::<PyExactPoint, ExactPoint>(vertices)?;
-        if vertices.len() < MIN_CONTOUR_VERTICES_COUNT {
-            Err(PyValueError::new_err(format!(
-                "Contour should have at least {} vertices, but found {}.",
-                MIN_CONTOUR_VERTICES_COUNT,
-                vertices.len()
-            )))
-        } else {
-            Ok(PyExactContour(ExactContour::new(vertices)))
-        }
+        try_vertices_to_py_exact_contour(extract_from_sequence::<PyExactPoint, ExactPoint>(
+            vertices,
+        )?)
     }
 
     #[getter]
@@ -639,16 +632,19 @@ impl PyExactTriangulation {
         )))
     }
 
-    fn boundary(&self) -> ExactContour {
-        ExactContour::new(shrink_collinear_vertices(
-            &self
-                .0
-                .to_boundary_edges()
-                .into_iter()
-                .map(|edge| self.0.get_start(edge))
-                .cloned()
-                .collect::<Vec<_>>(),
-        ))
+    fn boundary(&self) -> PyResult<PyExactContour> {
+        let vertices = self
+            .0
+            .to_boundary_edges()
+            .into_iter()
+            .map(|edge| self.0.get_start(edge))
+            .cloned()
+            .collect::<Vec<_>>();
+        try_vertices_to_py_exact_contour(if vertices.len() < MIN_CONTOUR_VERTICES_COUNT {
+            vertices
+        } else {
+            shrink_collinear_vertices(&vertices)
+        })
     }
 
     fn triangles(&self) -> Vec<ExactContour> {
@@ -748,6 +744,18 @@ fn try_scalar_to_fraction(value: &PyAny) -> PyResult<Fraction> {
                 UNDEFINED_DIVISION_ERROR_MESSAGE,
             )),
         }
+    }
+}
+
+fn try_vertices_to_py_exact_contour(vertices: Vec<ExactPoint>) -> PyResult<PyExactContour> {
+    if vertices.len() < MIN_CONTOUR_VERTICES_COUNT {
+        Err(PyValueError::new_err(format!(
+            "Contour should have at least {} vertices, but found {}.",
+            MIN_CONTOUR_VERTICES_COUNT,
+            vertices.len()
+        )))
+    } else {
+        Ok(PyExactContour(ExactContour::new(vertices)))
     }
 }
 
