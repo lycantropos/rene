@@ -3,6 +3,7 @@ from typing import (Any as _Any,
                     List as _List,
                     Sequence as _Sequence,
                     Union as _Union,
+                    final as _final,
                     overload as _overload)
 
 from rithm import Fraction as _Fraction
@@ -179,6 +180,7 @@ class Segment:
         ...
 
 
+@_final
 class Triangulation:
     @classmethod
     def delaunay(cls, points: _Sequence[Point]) -> 'Triangulation':
