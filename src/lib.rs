@@ -319,8 +319,7 @@ impl PyExactContour {
     #[getter]
     fn orientation(&self, py: Python) -> PyResult<&PyAny> {
         let orientation = self.0.orientation();
-        let orientation_cls =
-            unsafe { ROOT_MODULE.unwrap_unchecked() }.getattr(intern!(py, "Orientation"))?;
+        let orientation_cls = unsafe { MAYBE_ORIENTATION_CLS.unwrap_unchecked() };
         match orientation {
             Orientation::Clockwise => orientation_cls.getattr(intern!(py, "CLOCKWISE")),
             Orientation::Collinear => orientation_cls.getattr(intern!(py, "COLLINEAR")),
@@ -757,8 +756,8 @@ fn try_vertices_to_py_exact_contour(vertices: Vec<ExactPoint>) -> PyResult<PyExa
     }
 }
 
-static mut ROOT_MODULE: Option<&PyModule> = None;
 static mut MAYBE_FRACTION_CLS: Option<&PyAny> = None;
+static mut MAYBE_ORIENTATION_CLS: Option<&PyAny> = None;
 
 fn extract_from_sequence<'a, Wrapper: FromPyObject<'a>, Wrapped: From<Wrapper>>(
     sequence: &'a PySequence,
@@ -780,8 +779,8 @@ fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactTriangulation>()?;
     unsafe {
         let py = Python::assume_gil_acquired();
-        ROOT_MODULE = Some(py.import("rene")?);
         MAYBE_FRACTION_CLS = Some(py.import("rithm")?.getattr(intern!(py, "Fraction"))?);
+        MAYBE_ORIENTATION_CLS = Some(py.import("rene")?.getattr(intern!(py, "Orientation"))?);
     }
     Ok(())
 }
