@@ -1,10 +1,15 @@
+import sys
 from numbers import Rational as _Rational
 from typing import (Any as _Any,
                     List as _List,
                     Sequence as _Sequence,
                     Union as _Union,
-                    final as _final,
                     overload as _overload)
+
+if sys.version_info < (3, 8):
+    from typing_extensions import final as _final
+else:
+    from typing import final as _final
 
 from rithm import Fraction as _Fraction
 
