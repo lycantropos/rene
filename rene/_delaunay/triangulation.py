@@ -18,27 +18,6 @@ from .quad_edge import (QuadEdge,
 UNDEFINED_EDGE = QuadEdge(sys.maxsize)
 
 
-def create_triangle(mesh: Mesh,
-                    left_point_index: int,
-                    mid_point_index: int,
-                    right_point_index: int) -> Tuple[QuadEdge, QuadEdge]:
-    first_edge = mesh.create_edge(left_point_index, mid_point_index)
-    second_edge = mesh.create_edge(mid_point_index, right_point_index)
-    mesh.splice_edges(to_opposite_edge(first_edge), second_edge)
-    orientation = orient_point_to_edge(
-            mesh, first_edge, mesh.to_end(second_edge)
-    )
-    if orientation is Orientation.CLOCKWISE:
-        third_edge = mesh.connect_edges(second_edge, first_edge)
-        return to_opposite_edge(third_edge), third_edge
-    elif orientation is Orientation.COLLINEAR:
-        return first_edge, to_opposite_edge(second_edge)
-    else:
-        assert orientation is Orientation.COUNTERCLOCKWISE
-        mesh.connect_edges(second_edge, first_edge)
-        return first_edge, to_opposite_edge(second_edge)
-
-
 class Triangulation:
     @classmethod
     def delaunay(cls, points: Sequence[Point]) -> 'Triangulation':
@@ -136,6 +115,27 @@ def build_base_edge(
             mesh.connect_edges(to_opposite_edge(second_left_side),
                                first_right_side),
             second_left_side)
+
+
+def create_triangle(mesh: Mesh,
+                    left_point_index: int,
+                    mid_point_index: int,
+                    right_point_index: int) -> Tuple[QuadEdge, QuadEdge]:
+    first_edge = mesh.create_edge(left_point_index, mid_point_index)
+    second_edge = mesh.create_edge(mid_point_index, right_point_index)
+    mesh.splice_edges(to_opposite_edge(first_edge), second_edge)
+    orientation = orient_point_to_edge(
+            mesh, first_edge, mesh.to_end(second_edge)
+    )
+    if orientation is Orientation.CLOCKWISE:
+        third_edge = mesh.connect_edges(second_edge, first_edge)
+        return to_opposite_edge(third_edge), third_edge
+    elif orientation is Orientation.COLLINEAR:
+        return first_edge, to_opposite_edge(second_edge)
+    else:
+        assert orientation is Orientation.COUNTERCLOCKWISE
+        mesh.connect_edges(second_edge, first_edge)
+        return first_edge, to_opposite_edge(second_edge)
 
 
 def find_left_candidate(mesh: Mesh, base_edge: QuadEdge) -> Optional[QuadEdge]:
