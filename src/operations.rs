@@ -3,6 +3,7 @@ use rithm::traits::{
     Signed, SubtractiveMagma,
 };
 
+use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 use crate::locatable::Location;
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
@@ -188,7 +189,7 @@ pub(crate) fn shrink_collinear_vertices<
 >(
     vertices: &[&'a Point],
 ) -> Vec<&'a Point> {
-    debug_assert!(!vertices.is_empty());
+    debug_assert!(vertices.len() >= MIN_CONTOUR_VERTICES_COUNT);
     let mut result = Vec::with_capacity(vertices.len());
     result.push(vertices[0]);
     for index in 1..vertices.len() - 1 {

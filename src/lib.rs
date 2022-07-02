@@ -634,14 +634,16 @@ impl PyExactTriangulation {
 
     fn boundary(&self) -> PyResult<PyExactContour> {
         let boundary_points = self.0.get_boundary_points();
-        try_vertices_to_py_exact_contour(if boundary_points.is_empty() {
-            Vec::new()
-        } else {
-            shrink_collinear_vertices(&boundary_points)
-                .into_iter()
-                .cloned()
-                .collect()
-        })
+        try_vertices_to_py_exact_contour(
+            if boundary_points.len() < MIN_CONTOUR_VERTICES_COUNT {
+                boundary_points
+            } else {
+                shrink_collinear_vertices(&boundary_points)
+            }
+            .into_iter()
+            .cloned()
+            .collect(),
+        )
     }
 
     fn triangles(&self) -> Vec<ExactContour> {

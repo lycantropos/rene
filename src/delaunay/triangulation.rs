@@ -7,6 +7,7 @@ use crate::traits::Point;
 
 use super::mesh::Mesh;
 use super::quad_edge::{to_opposite_edge, QuadEdge};
+use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 
 #[derive(Clone)]
 pub(crate) struct Triangulation<Scalar, Endpoint> {
@@ -77,8 +78,9 @@ impl<
 
 impl<Scalar, Endpoint> Triangulation<Scalar, Endpoint> {
     pub(crate) fn get_boundary_points(&self) -> Vec<&Endpoint> {
-        if self.is_empty() {
-            self.mesh.get_endpoints().iter().collect()
+        let endpoints = self.mesh.get_endpoints();
+        if endpoints.len() < MIN_CONTOUR_VERTICES_COUNT {
+            endpoints.iter().collect()
         } else {
             let mut result = Vec::new();
             let start = self.left_side;

@@ -7,7 +7,8 @@ from typing import (List,
 from rithm import Fraction
 from typing_extensions import Protocol
 
-from rene._rene import (Location,
+from rene._rene import (MIN_CONTOUR_VERTICES_COUNT,
+                        Location,
                         Orientation)
 from rene.hints import Point
 
@@ -70,7 +71,7 @@ def orient(vertex: Point,
 
 
 def shrink_collinear_vertices(vertices: Sequence[Point]) -> List[Point]:
-    assert len(vertices) > 0
+    assert len(vertices) >= MIN_CONTOUR_VERTICES_COUNT
     result = [vertices[0]]
     for index in range(1, len(vertices) - 1):
         if (orient(result[-1], vertices[index], vertices[index + 1])
