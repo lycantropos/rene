@@ -1,11 +1,19 @@
 from functools import partial
 from typing import (Callable,
                     Iterable,
+                    List,
                     Sequence,
                     TypeVar)
 
-from rene.exact import (Contour,
+from rene import MIN_CONTOUR_VERTICES_COUNT
+from rene._rene import (Location,
+                        Orientation)
+from rene._utils import (deduplicate,
+                         locate_point_in_point_point_point_circle,
+                         orient)
+from rene.hints import (Contour,
                         Multisegment,
+                        Point,
                         Polygon,
                         Segment)
 
@@ -23,6 +31,19 @@ def equivalence(left: bool, right: bool) -> bool:
 
 def implication(antecedent: bool, consequent: bool) -> bool:
     return not antecedent or consequent
+
+
+def is_contour_triangular(contour: Contour) -> bool:
+    return len(contour.vertices) == MIN_CONTOUR_VERTICES_COUNT
+
+
+def is_point_inside_circumcircle(point: Point,
+                                 first_vertex: Point,
+                                 second_vertex: Point,
+                                 third_vertex: Point) -> bool:
+    return locate_point_in_point_point_point_circle(
+            point, first_vertex, second_vertex, third_vertex
+    ) is Location.INTERIOR
 
 
 def pack(function: Callable[..., _T2]) -> Callable[[Iterable[_T1]], _T2]:
@@ -64,7 +85,8 @@ def rotate_each_polygon_hole(polygon: Polygon, offset: int) -> Polygon:
                           for hole in polygon.holes])
 
 
-def rotate_multisegment(multisegment: Multisegment, offset: int) -> Contour:
+def rotate_multisegment(multisegment: Multisegment, offset: int
+                        ) -> Multisegment:
     return type(multisegment)(rotate_sequence(multisegment.segments, offset))
 
 
@@ -82,3 +104,24 @@ def rotate_sequence(sequence: Sequence[_T1], offset: int) -> Sequence[_T1]:
         return sequence
     offset = (offset % len(sequence)) - len(sequence) * (offset < 0)
     return sequence[-offset:] + sequence[:-offset]
+
+
+to_distinct = dict.fromkeys
+
+
+def to_max_convex_hull(points: Sequence[Point]) -> List[Point]:
+    points = deduplicate(sorted(points))
+    lower, upper = _to_sub_hull(points), _to_sub_hull(reversed(points))
+    return lower[:-1] + upper[:-1] or points
+
+
+def _to_sub_hull(points: Iterable[Point]) -> List[Point]:
+    result = []
+    for point in points:
+        while len(result) >= 2:
+            if orient(result[-2], result[-1], point) is Orientation.CLOCKWISE:
+                del result[-1]
+            else:
+                break
+        result.append(point)
+    return result
