@@ -3,9 +3,12 @@ from typing import Sequence
 from ground.hints import Point
 from hypothesis import given
 
-from rene.exact import Triangulation
+from rene import MIN_CONTOUR_VERTICES_COUNT
+from rene.exact import (Contour,
+                        Triangulation)
 from tests.utils import (is_contour_triangular,
                          is_point_inside_circumcircle,
+                         to_convex_hull,
                          to_distinct,
                          to_max_convex_hull)
 from . import strategies
@@ -19,7 +22,16 @@ def test_basic(points: Sequence[Point]) -> None:
 
 
 @given(strategies.points_lists)
-def test_sizes(points: Sequence[Point]) -> None:
+def test_boundary(points: Sequence[Point]) -> None:
+    result = Triangulation.delaunay(points)
+
+    convex_hull = to_convex_hull(points)
+    assert (len(convex_hull) < MIN_CONTOUR_VERTICES_COUNT
+            or result.boundary() == Contour(convex_hull))
+
+
+@given(strategies.points_lists)
+def test_triangles(points: Sequence[Point]) -> None:
     result = Triangulation.delaunay(points)
 
     triangles = result.triangles()

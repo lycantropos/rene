@@ -106,20 +106,39 @@ def rotate_sequence(sequence: Sequence[_T1], offset: int) -> Sequence[_T1]:
     return sequence[-offset:] + sequence[:-offset]
 
 
+def to_convex_hull(points: Sequence[Point]) -> List[Point]:
+    points = deduplicate(sorted(points))
+    lower, upper = _to_sub_hull(points), _to_sub_hull(reversed(points))
+    return lower[:-1] + upper[:-1] or points
+
+
 to_distinct = dict.fromkeys
 
 
 def to_max_convex_hull(points: Sequence[Point]) -> List[Point]:
     points = deduplicate(sorted(points))
-    lower, upper = _to_sub_hull(points), _to_sub_hull(reversed(points))
+    lower, upper = _to_max_sub_hull(points), _to_max_sub_hull(reversed(points))
     return lower[:-1] + upper[:-1] or points
+
+
+def _to_max_sub_hull(points: Iterable[Point]) -> List[Point]:
+    result = []
+    for point in points:
+        while len(result) >= 2:
+            if orient(result[-2], result[-1], point) is Orientation.CLOCKWISE:
+                del result[-1]
+            else:
+                break
+        result.append(point)
+    return result
 
 
 def _to_sub_hull(points: Iterable[Point]) -> List[Point]:
     result = []
     for point in points:
         while len(result) >= 2:
-            if orient(result[-2], result[-1], point) is Orientation.CLOCKWISE:
+            if (orient(result[-2], result[-1], point)
+                    is not Orientation.COUNTERCLOCKWISE):
                 del result[-1]
             else:
                 break
