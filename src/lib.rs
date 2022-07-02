@@ -369,12 +369,12 @@ impl PyExactContour {
         }
     }
 
-    fn __str__(&self, py: Python) -> PyResult<String> {
+    fn __str__(&self) -> PyResult<String> {
         Ok(format!(
             "Contour([{}])",
             self.vertices()
                 .into_iter()
-                .flat_map(|vertex| PyExactPoint(vertex).__str__(py))
+                .flat_map(|vertex| PyExactPoint(vertex).__str__())
                 .collect::<Vec<String>>()
                 .join(", ")
         ))
@@ -428,12 +428,12 @@ impl PyExactMultisegment {
         }
     }
 
-    fn __str__(&self, py: Python) -> PyResult<String> {
+    fn __str__(&self) -> PyResult<String> {
         Ok(format!(
             "Multisegment([{}])",
             self.segments()
                 .into_iter()
-                .flat_map(|segment| PyExactSegment(segment).__str__(py))
+                .flat_map(|segment| PyExactSegment(segment).__str__())
                 .collect::<Vec<String>>()
                 .join(", ")
         ))
@@ -451,24 +451,24 @@ impl PyExactPoint {
     }
 
     #[getter]
-    fn x<'a>(&self, py: Python<'a>) -> PyResult<&'a PyAny> {
-        try_fraction_to_py_fraction(self.0.x(), py)
+    fn x<'a>(&self) -> PyResult<&'a PyAny> {
+        try_fraction_to_py_fraction(self.0.x())
     }
 
     #[getter]
-    fn y<'a>(&self, py: Python<'a>) -> PyResult<&'a PyAny> {
-        try_fraction_to_py_fraction(self.0.y(), py)
+    fn y<'a>(&self) -> PyResult<&'a PyAny> {
+        try_fraction_to_py_fraction(self.0.y())
     }
 
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
-        PyTuple::new(py, [self.x(py)?, self.y(py)?]).hash()
+        PyTuple::new(py, [self.x()?, self.y()?]).hash()
     }
 
-    fn __repr__(&self, py: Python) -> PyResult<String> {
+    fn __repr__(&self) -> PyResult<String> {
         Ok(format!(
             "rene.exact.Point({}, {})",
-            self.x(py)?.repr()?.extract::<String>()?,
-            self.y(py)?.repr()?.extract::<String>()?,
+            self.x()?.repr()?.extract::<String>()?,
+            self.y()?.repr()?.extract::<String>()?,
         ))
     }
 
@@ -489,11 +489,11 @@ impl PyExactPoint {
         }
     }
 
-    fn __str__(&self, py: Python) -> PyResult<String> {
+    fn __str__(&self) -> PyResult<String> {
         Ok(format!(
             "Point({}, {})",
-            self.x(py)?.str()?.extract::<String>()?,
-            self.y(py)?.str()?.extract::<String>()?,
+            self.x()?.str()?.extract::<String>()?,
+            self.y()?.str()?.extract::<String>()?,
         ))
     }
 }
@@ -555,13 +555,13 @@ impl PyExactPolygon {
         }
     }
 
-    fn __str__(&self, py: Python) -> PyResult<String> {
+    fn __str__(&self) -> PyResult<String> {
         Ok(format!(
             "Polygon({}, [{}])",
-            PyExactContour(self.border()).__str__(py)?,
+            PyExactContour(self.border()).__str__()?,
             self.holes()
                 .into_iter()
-                .flat_map(|hole| PyExactContour(hole).__str__(py))
+                .flat_map(|hole| PyExactContour(hole).__str__())
                 .collect::<Vec<String>>()
                 .join(", ")
         ))
@@ -592,11 +592,11 @@ impl PyExactSegment {
         PyFrozenSet::new(py, &[self.start().into_py(py), self.end().into_py(py)])?.hash()
     }
 
-    fn __repr__(&self, py: Python) -> PyResult<String> {
+    fn __repr__(&self) -> PyResult<String> {
         Ok(format!(
             "rene.exact.Segment({}, {})",
-            self.start().__repr__(py)?,
-            self.end().__repr__(py)?,
+            self.start().__repr__()?,
+            self.end().__repr__()?,
         ))
     }
 
@@ -614,11 +614,11 @@ impl PyExactSegment {
         }
     }
 
-    fn __str__(&self, py: Python) -> PyResult<String> {
+    fn __str__(&self) -> PyResult<String> {
         Ok(format!(
             "Segment({}, {})",
-            self.start().__str__(py)?,
-            self.end().__str__(py)?,
+            self.start().__str__()?,
+            self.end().__str__()?,
         ))
     }
 }
@@ -655,9 +655,8 @@ impl PyExactTriangulation {
     }
 }
 
-fn try_fraction_to_py_fraction(value: Fraction, py: Python) -> PyResult<&PyAny> {
-    let rithm_module = py.import("rithm")?;
-    let fraction_cls = rithm_module.getattr("Fraction")?;
+fn try_fraction_to_py_fraction<'a>(value: Fraction) -> PyResult<&'a PyAny> {
+    let fraction_cls = unsafe { MAYBE_FRACTION_CLS.unwrap_unchecked() };
     fraction_cls.call(
         (
             big_int_to_py_long(value.numerator()),
@@ -759,6 +758,7 @@ fn try_vertices_to_py_exact_contour(vertices: Vec<ExactPoint>) -> PyResult<PyExa
 }
 
 static mut ROOT_MODULE: Option<&PyModule> = None;
+static mut MAYBE_FRACTION_CLS: Option<&PyAny> = None;
 
 fn extract_from_sequence<'a, Wrapper: FromPyObject<'a>, Wrapped: From<Wrapper>>(
     sequence: &'a PySequence,
@@ -781,6 +781,7 @@ fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
     unsafe {
         let py = Python::assume_gil_acquired();
         ROOT_MODULE = Some(py.import("rene")?);
+        MAYBE_FRACTION_CLS = Some(py.import("rithm")?.getattr(intern!(py, "Fraction"))?);
     }
     Ok(())
 }
