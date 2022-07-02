@@ -12,7 +12,7 @@ class Triangulation:
     def boundary(self):
         boundary_points = self._raw.to_boundary_points()
         return Contour(boundary_points
-                       if boundary_points < MIN_CONTOUR_VERTICES_COUNT
+                       if len(boundary_points) < MIN_CONTOUR_VERTICES_COUNT
                        else shrink_collinear_vertices(boundary_points))
 
     def triangles(self):
