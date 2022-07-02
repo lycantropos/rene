@@ -22,5 +22,8 @@ class Triangulation:
     __module__ = 'rene.exact'
     __slots__ = '_raw',
 
+    def __bool__(self):
+        return bool(self._raw)
+
     def __init__(self, _raw: RawTriangulation) -> None:
         self._raw = _raw

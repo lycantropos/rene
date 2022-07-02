@@ -652,6 +652,10 @@ impl PyExactTriangulation {
             .map(ExactContour::from)
             .collect()
     }
+
+    fn __bool__(&self) -> bool {
+        !self.0.is_empty()
+    }
 }
 
 fn try_fraction_to_py_fraction<'a>(value: Fraction) -> PyResult<&'a PyAny> {

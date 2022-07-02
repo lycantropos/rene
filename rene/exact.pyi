@@ -189,3 +189,6 @@ class Triangulation:
 
     def triangles(self) -> _List[Contour]:
         ...
+
+    def __bool__(self) -> bool:
+        ...
