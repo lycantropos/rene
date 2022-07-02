@@ -27,6 +27,10 @@ impl<Scalar, Endpoint> From<Vec<Endpoint>> for Mesh<Scalar, Endpoint> {
 }
 
 impl<Scalar, Endpoint> Mesh<Scalar, Endpoint> {
+    pub(super) fn get_endpoints(&self) -> &[Endpoint] {
+        &self.endpoints
+    }
+
     pub(super) fn get_start(&self, edge: QuadEdge) -> &Endpoint {
         &self.endpoints[self.to_start_index(edge)]
     }

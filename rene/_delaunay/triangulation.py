@@ -58,24 +58,20 @@ class Triangulation:
             left_side, right_side = sub_triangulations_sides[0]
             return cls(left_side, right_side, mesh)
 
-    def to_boundary_edges(self) -> List[QuadEdge]:
-        result = []
+    def to_boundary_points(self) -> List[Point]:
         if self:
+            result = []
             start = self.left_side
             edge = start
             while True:
-                result.append(edge)
+                result.append(self.mesh.to_start(edge))
                 candidate = self.mesh.to_right_from_end(edge)
                 if candidate == start:
                     break
                 edge = candidate
-        return result
-
-    def to_end(self, edge: QuadEdge) -> Point:
-        return self.mesh.to_end(edge)
-
-    def to_start(self, edge: QuadEdge) -> Point:
-        return self.mesh.to_start(edge)
+            return result
+        else:
+            return self.mesh.endpoints[:]
 
     def triangles_vertices(self) -> List[Tuple[Point, Point, Point]]:
         return to_triangles_vertices(self.mesh)

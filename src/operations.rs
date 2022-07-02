@@ -182,37 +182,36 @@ pub(crate) fn to_sorted_pair<Value: PartialOrd>((left, right): (Value, Value)) -
 }
 
 pub(crate) fn shrink_collinear_vertices<
+    'a,
     Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
-    Point: Clone + traits::Point<Scalar>,
+    Point: traits::Point<Scalar>,
 >(
-    vertices: &[Point],
-) -> Vec<Point> {
+    vertices: &[&'a Point],
+) -> Vec<&'a Point> {
     debug_assert!(!vertices.is_empty());
     let mut result = Vec::with_capacity(vertices.len());
-    result.push(vertices[0].clone());
+    result.push(vertices[0]);
     for index in 1..vertices.len() - 1 {
         if !matches!(
             orient(
-                &result[result.len() - 1],
-                &vertices[index],
-                &vertices[index + 1]
+                result[result.len() - 1],
+                vertices[index],
+                vertices[index + 1]
             ),
             Orientation::Collinear
         ) {
-            result.push(vertices[index].clone())
+            result.push(vertices[index])
         }
     }
-    if result.len() == 1
-        || !matches!(
-            orient(
-                &result[result.len() - 1],
-                &vertices[vertices.len() - 1],
-                &result[0]
-            ),
-            Orientation::Collinear
-        )
-    {
-        result.push(vertices[vertices.len() - 1].clone())
+    if !matches!(
+        orient(
+            result[result.len() - 1],
+            vertices[vertices.len() - 1],
+            result[0]
+        ),
+        Orientation::Collinear
+    ) {
+        result.push(vertices[vertices.len() - 1])
     } else if result.len() > 2 {
         result[0] = unsafe { result.pop().unwrap_unchecked() }
     }

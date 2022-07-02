@@ -76,9 +76,8 @@ def shrink_collinear_vertices(vertices: Sequence[Point]) -> List[Point]:
         if (orient(result[-1], vertices[index], vertices[index + 1])
                 is not Orientation.COLLINEAR):
             result.append(vertices[index])
-    if (len(result) == 1
-            or (orient(result[-1], vertices[-1], result[0])
-                is not Orientation.COLLINEAR)):
+    if (orient(result[-1], vertices[-1], result[0])
+            is not Orientation.COLLINEAR):
         result.append(vertices[-1])
     elif len(result) > 2:
         result[0] = result.pop()

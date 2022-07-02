@@ -76,35 +76,29 @@ impl<
 }
 
 impl<Scalar, Endpoint> Triangulation<Scalar, Endpoint> {
-    pub(crate) fn get_start(&self, edge: QuadEdge) -> &Endpoint {
-        self.mesh.get_start(edge)
-    }
-
-    pub(crate) fn get_end(&self, edge: QuadEdge) -> &Endpoint {
-        self.mesh.get_end(edge)
-    }
-
-    pub(crate) fn is_empty(&self) -> bool {
-        let result = self.mesh.is_empty();
-        debug_assert_eq!(self.left_side == UNDEFINED_INDEX, result);
-        debug_assert_eq!(self.right_side == UNDEFINED_INDEX, result);
-        result
-    }
-
-    pub(crate) fn to_boundary_edges(&self) -> Vec<QuadEdge> {
-        let mut result = Vec::new();
-        if !self.is_empty() {
+    pub(crate) fn get_boundary_points(&self) -> Vec<&Endpoint> {
+        if self.is_empty() {
+            self.mesh.get_endpoints().iter().collect()
+        } else {
+            let mut result = Vec::new();
             let start = self.left_side;
             let mut edge = start;
             loop {
-                result.push(edge);
+                result.push(self.mesh.get_start(edge));
                 let candidate = self.mesh.to_right_from_end(edge);
                 if candidate == start {
                     break;
                 }
                 edge = candidate;
             }
+            result
         }
+    }
+
+    pub(crate) fn is_empty(&self) -> bool {
+        let result = self.mesh.is_empty();
+        debug_assert_eq!(self.left_side == UNDEFINED_INDEX, result);
+        debug_assert_eq!(self.right_side == UNDEFINED_INDEX, result);
         result
     }
 }
