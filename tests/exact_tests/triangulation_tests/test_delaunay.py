@@ -22,19 +22,19 @@ def test_basic(points: Sequence[Point]) -> None:
 
 
 @given(strategies.points_lists)
-def test_boundary(points: Sequence[Point]) -> None:
+def test_border(points: Sequence[Point]) -> None:
     result = Triangulation.delaunay(points)
 
     convex_hull = to_convex_hull(points)
     assert (len(convex_hull) < MIN_CONTOUR_VERTICES_COUNT
-            or result.boundary() == Contour(convex_hull))
+            or result.border == Contour(convex_hull))
 
 
 @given(strategies.points_lists)
 def test_triangles(points: Sequence[Point]) -> None:
     result = Triangulation.delaunay(points)
 
-    triangles = result.triangles()
+    triangles = result.triangles
     assert len(triangles) <= max(2 * (len(to_distinct(points)) - 1)
                                  - len(to_max_convex_hull(points)),
                                  0)
@@ -46,7 +46,7 @@ def test_delaunay_criterion(points: Sequence[Point]) -> None:
     result = Triangulation.delaunay(points)
 
     assert all(not any(is_point_inside_circumcircle(point, *triangle.vertices)
-                       for triangle in result.triangles())
+                       for triangle in result.triangles)
                for point in points)
 
 
@@ -54,7 +54,7 @@ def test_delaunay_criterion(points: Sequence[Point]) -> None:
 def test_base_case(point: Point) -> None:
     result = Triangulation.delaunay([point])
 
-    triangles = result.triangles()
+    triangles = result.triangles
     assert len(triangles) == 0
 
 
@@ -65,8 +65,8 @@ def test_step(points: Sequence[Point]) -> None:
     result = Triangulation.delaunay(rest_points)
     next_result = Triangulation.delaunay(points)
 
-    triangles = result.triangles()
-    next_triangles = next_result.triangles()
+    triangles = result.triangles
+    next_triangles = next_result.triangles
     assert len(triangles) <= len(next_triangles) + 2
     assert all(triangle not in next_triangles
                for triangle in triangles
