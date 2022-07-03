@@ -1,7 +1,6 @@
 import sys
 from numbers import Rational as _Rational
 from typing import (Any as _Any,
-                    List as _List,
                     Sequence as _Sequence,
                     Union as _Union,
                     overload as _overload)
@@ -196,7 +195,7 @@ class Triangulation:
         ...
 
     @property
-    def triangles(self) -> _List[Contour]:
+    def triangles(self) -> _Sequence[Contour]:
         ...
 
     def __bool__(self) -> bool:
