@@ -191,9 +191,11 @@ class Triangulation:
     def delaunay(cls, points: _Sequence[Point]) -> 'Triangulation':
         ...
 
-    def boundary(self) -> Contour:
+    @property
+    def border(self) -> Contour:
         ...
 
+    @property
     def triangles(self) -> _List[Contour]:
         ...
 

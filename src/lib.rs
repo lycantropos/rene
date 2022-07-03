@@ -631,7 +631,8 @@ impl PyExactTriangulation {
         )))
     }
 
-    fn boundary(&self) -> PyResult<PyExactContour> {
+    #[getter]
+    fn border(&self) -> PyResult<PyExactContour> {
         let boundary_points = self.0.get_boundary_points();
         try_vertices_to_py_exact_contour(
             if boundary_points.len() < MIN_CONTOUR_VERTICES_COUNT {
@@ -645,6 +646,7 @@ impl PyExactTriangulation {
         )
     }
 
+    #[getter]
     fn triangles(&self) -> Vec<ExactContour> {
         self.0
             .to_triangles_vertices()

@@ -9,12 +9,14 @@ class Triangulation:
     def delaunay(cls, points):
         return cls(RawTriangulation.delaunay(points))
 
-    def boundary(self):
+    @property
+    def border(self):
         boundary_points = self._raw.to_boundary_points()
         return Contour(boundary_points
                        if len(boundary_points) < MIN_CONTOUR_VERTICES_COUNT
                        else shrink_collinear_vertices(boundary_points))
 
+    @property
     def triangles(self):
         return [Contour(vertices)
                 for vertices in self._raw.triangles_vertices()]
