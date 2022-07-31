@@ -1,7 +1,8 @@
-use rithm::traits::{
-    AdditiveGroup, BitLength, DivisivePartialMagma, IsPowerOfTwo, MultiplicativeMonoid, Sign,
-    Signed, SubtractiveMagma,
-};
+use std::ops::{Add, Div, Mul, Sub};
+
+use rithm::big_int::BigInt;
+use rithm::fraction::Fraction;
+use rithm::traits::{BitLength, IsPowerOfTwo, Sign, Signed, Unitary};
 
 use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 use crate::locatable::Location;
@@ -9,39 +10,59 @@ use crate::oriented::Orientation;
 use crate::relatable::Relation;
 use crate::traits;
 
-pub(crate) fn cross_multiply<
-    Scalar: AdditiveGroup + MultiplicativeMonoid,
-    Point: traits::Point<Coordinate = Scalar>,
->(
-    first_start: &Point,
-    first_end: &Point,
-    second_start: &Point,
-    second_end: &Point,
-) -> Scalar {
-    (first_end.x() - first_start.x()) * (second_end.y() - second_start.y())
-        - (first_end.y() - first_start.y()) * (second_end.x() - second_start.x())
+pub(crate) trait CrossMultiply {
+    type Output;
+
+    fn cross_multiply(
+        first_start: &Self,
+        first_end: &Self,
+        second_start: &Self,
+        second_end: &Self,
+    ) -> Self::Output;
 }
 
-pub(crate) fn orient<
-    Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
-    Point: traits::Point<Coordinate = Scalar>,
->(
-    vertex: &Point,
-    first_ray_point: &Point,
-    second_ray_point: &Point,
-) -> Orientation {
-    match cross_multiply::<Scalar, Point>(vertex, first_ray_point, vertex, second_ray_point).sign()
-    {
-        Sign::Negative => Orientation::Clockwise,
-        Sign::Positive => Orientation::Counterclockwise,
-        Sign::Zero => Orientation::Collinear,
+impl<
+        Digit,
+        const SEPARATOR: char,
+        const SHIFT: usize,
+        Point: traits::Point<Coordinate = Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>,
+    > CrossMultiply for Point
+where
+    BigInt<Digit, SEPARATOR, SHIFT>: Clone,
+    <Self as traits::Point>::Coordinate: Mul<Output = <Self as traits::Point>::Coordinate>
+        + Sub<Output = <Self as traits::Point>::Coordinate>,
+{
+    type Output = <Self as traits::Point>::Coordinate;
+
+    fn cross_multiply(
+        first_start: &Self,
+        first_end: &Self,
+        second_start: &Self,
+        second_end: &Self,
+    ) -> Self::Output {
+        (first_end.x() - first_start.x()) * (second_end.y() - second_start.y())
+            - (first_end.y() - first_start.y()) * (second_end.x() - second_start.x())
     }
 }
 
-pub(crate) fn relate_segments<
-    Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
-    Point: PartialOrd + traits::Point<Coordinate = Scalar>,
->(
+pub(crate) trait Orient {
+    fn orient(&self, first_ray_point: &Self, second_ray_point: &Self) -> Orientation;
+}
+
+impl<Point: CrossMultiply> Orient for Point
+where
+    <Self as CrossMultiply>::Output: Signed,
+{
+    fn orient(&self, first_ray_point: &Self, second_ray_point: &Self) -> Orientation {
+        match Self::cross_multiply(self, first_ray_point, self, second_ray_point).sign() {
+            Sign::Negative => Orientation::Clockwise,
+            Sign::Positive => Orientation::Counterclockwise,
+            Sign::Zero => Orientation::Collinear,
+        }
+    }
+}
+
+pub(crate) fn relate_segments<Point: Orient + PartialOrd>(
     goal_start: &Point,
     goal_end: &Point,
     test_start: &Point,
@@ -54,16 +75,16 @@ pub(crate) fn relate_segments<
     if starts_equal && ends_equal {
         return Relation::Equal;
     }
-    let test_start_orientation = orient(goal_end, goal_start, test_start);
-    let test_end_orientation = orient(goal_end, goal_start, test_end);
+    let test_start_orientation = goal_end.orient(goal_start, test_start);
+    let test_end_orientation = goal_end.orient(goal_start, test_end);
     if test_start_orientation != Orientation::Collinear
         && test_end_orientation != Orientation::Collinear
     {
         if test_start_orientation == test_end_orientation {
             Relation::Disjoint
         } else {
-            let goal_start_orientation = orient(test_start, test_end, goal_start);
-            let goal_end_orientation = orient(test_start, test_end, goal_end);
+            let goal_start_orientation = test_start.orient(test_end, goal_start);
+            let goal_end_orientation = test_start.orient(test_end, goal_end);
             if goal_start_orientation != Orientation::Collinear
                 && goal_end_orientation != Orientation::Collinear
             {
@@ -127,46 +148,76 @@ pub(crate) fn relate_segments<
     }
 }
 
-pub(crate) fn intersect_crossing_segments<
-    Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid,
-    Point: From<(Scalar, Scalar)> + traits::Point<Coordinate = Scalar>,
->(
-    first_start: &Point,
-    first_end: &Point,
-    second_start: &Point,
-    second_end: &Point,
-) -> Point {
-    let scale = cross_multiply(first_start, second_start, second_start, second_end)
-        / cross_multiply(first_start, first_end, second_start, second_end);
-    Point::from((
-        first_start.x() + (first_end.x() - first_start.x()) * scale.clone(),
-        first_start.y() + (first_end.y() - first_start.y()) * scale,
-    ))
+pub(crate) trait IntersectCrossingSegments {
+    fn intersect_crossing_segments(
+        first_start: &Self,
+        first_end: &Self,
+        second_start: &Self,
+        second_end: &Self,
+    ) -> Self;
 }
 
-pub(crate) fn locate_point_in_point_point_point_circle<
-    Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Signed,
-    Point: traits::Point<Coordinate = Scalar>,
->(
-    point: &Point,
-    first: &Point,
-    second: &Point,
-    third: &Point,
-) -> Location {
-    let (first_dx, first_dy) = (first.x() - point.x(), first.y() - point.y());
-    let (second_dx, second_dy) = (second.x() - point.x(), second.y() - point.y());
-    let (third_dx, third_dy) = (third.x() - point.x(), third.y() - point.y());
-    match ((first_dx.clone() * first_dx.clone() + first_dy.clone() * first_dy.clone())
-        * (second_dx.clone() * third_dy.clone() - second_dy.clone() * third_dx.clone())
-        - (second_dx.clone() * second_dx.clone() + second_dy.clone() * second_dy.clone())
-            * (first_dx.clone() * third_dy.clone() - first_dy.clone() * third_dx.clone())
-        + (third_dx.clone() * third_dx + third_dy.clone() * third_dy)
-            * (first_dx * second_dy - first_dy * second_dx))
-        .sign()
-    {
-        Sign::Negative => Location::Exterior,
-        Sign::Positive => Location::Interior,
-        Sign::Zero => Location::Boundary,
+impl<
+        Scalar: Add<Output = Scalar>
+            + Clone
+            + Div<Output = Scalar>
+            + Mul<Output = Scalar>
+            + Sub<Output = Scalar>,
+        Point: CrossMultiply<Output = Scalar>
+            + From<(Scalar, Scalar)>
+            + traits::Point<Coordinate = Scalar>,
+    > IntersectCrossingSegments for Point
+{
+    fn intersect_crossing_segments(
+        first_start: &Self,
+        first_end: &Self,
+        second_start: &Self,
+        second_end: &Self,
+    ) -> Self {
+        let scale = Self::cross_multiply(first_start, second_start, second_start, second_end)
+            / Self::cross_multiply(first_start, first_end, second_start, second_end);
+        Point::from((
+            first_start.x() + (first_end.x() - first_start.x()) * scale.clone(),
+            first_start.y() + (first_end.y() - first_start.y()) * scale,
+        ))
+    }
+}
+
+pub(crate) trait LocatePointInPointPointPointCircle {
+    fn locate_point_in_point_point_point_circle(
+        &self,
+        first: &Self,
+        second: &Self,
+        third: &Self,
+    ) -> Location;
+}
+
+impl<
+        Scalar: Add<Output = Scalar> + Mul<Output = Scalar> + Sub<Output = Scalar> + Clone + Signed,
+        Point: traits::Point<Coordinate = Scalar>,
+    > LocatePointInPointPointPointCircle for Point
+{
+    fn locate_point_in_point_point_point_circle(
+        &self,
+        first: &Self,
+        second: &Self,
+        third: &Self,
+    ) -> Location {
+        let (first_dx, first_dy) = (first.x() - self.x(), first.y() - self.y());
+        let (second_dx, second_dy) = (second.x() - self.x(), second.y() - self.y());
+        let (third_dx, third_dy) = (third.x() - self.x(), third.y() - self.y());
+        match ((first_dx.clone() * first_dx.clone() + first_dy.clone() * first_dy.clone())
+            * (second_dx.clone() * third_dy.clone() - second_dy.clone() * third_dx.clone())
+            - (second_dx.clone() * second_dx.clone() + second_dy.clone() * second_dy.clone())
+                * (first_dx.clone() * third_dy.clone() - first_dy.clone() * third_dx.clone())
+            + (third_dx.clone() * third_dx + third_dy.clone() * third_dy)
+                * (first_dx * second_dy - first_dy * second_dx))
+            .sign()
+        {
+            Sign::Negative => Location::Exterior,
+            Sign::Positive => Location::Interior,
+            Sign::Zero => Location::Boundary,
+        }
     }
 }
 
@@ -182,11 +233,7 @@ pub(crate) fn to_sorted_pair<Value: PartialOrd>((left, right): (Value, Value)) -
     }
 }
 
-pub(crate) fn shrink_collinear_vertices<
-    'a,
-    Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
-    Point: traits::Point<Coordinate = Scalar>,
->(
+pub(crate) fn shrink_collinear_vertices<'a, Point: Orient>(
     vertices: &[&'a Point],
 ) -> Vec<&'a Point> {
     debug_assert!(vertices.len() >= MIN_CONTOUR_VERTICES_COUNT);
@@ -194,22 +241,14 @@ pub(crate) fn shrink_collinear_vertices<
     result.push(vertices[0]);
     for index in 1..vertices.len() - 1 {
         if !matches!(
-            orient(
-                result[result.len() - 1],
-                vertices[index],
-                vertices[index + 1]
-            ),
+            result[result.len() - 1].orient(vertices[index], vertices[index + 1]),
             Orientation::Collinear
         ) {
             result.push(vertices[index])
         }
     }
     if !matches!(
-        orient(
-            result[result.len() - 1],
-            vertices[vertices.len() - 1],
-            result[0]
-        ),
+        result[result.len() - 1].orient(vertices[vertices.len() - 1], result[0]),
         Orientation::Collinear
     ) {
         result.push(vertices[vertices.len() - 1])
@@ -221,9 +260,13 @@ pub(crate) fn shrink_collinear_vertices<
 
 pub(crate) fn ceil_log2<
     Number: Copy + BitLength<Output = Value> + IsPowerOfTwo,
-    Value: SubtractiveMagma + From<bool>,
+    Value: Sub<Output = Value> + Unitary,
 >(
     number: Number,
 ) -> Value {
-    number.bit_length() - <Number as BitLength>::Output::from(number.is_power_of_two())
+    if number.is_power_of_two() {
+        number.bit_length() - <Number as BitLength>::Output::one()
+    } else {
+        number.bit_length()
+    }
 }

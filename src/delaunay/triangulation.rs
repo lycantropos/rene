@@ -1,13 +1,12 @@
-use rithm::traits::{AdditiveGroup, DivRem, MultiplicativeMonoid, Signed};
+use rithm::traits::DivRem;
 
+use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 use crate::locatable::Location;
-use crate::operations::{ceil_log2, locate_point_in_point_point_point_circle, orient};
+use crate::operations::{ceil_log2, LocatePointInPointPointPointCircle, Orient};
 use crate::oriented::Orientation;
-use crate::traits::Point;
 
 use super::mesh::Mesh;
 use super::quad_edge::{to_opposite_edge, QuadEdge};
-use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 
 #[derive(Clone)]
 pub(crate) struct Triangulation<Endpoint> {
@@ -18,10 +17,8 @@ pub(crate) struct Triangulation<Endpoint> {
 
 const UNDEFINED_INDEX: usize = usize::MAX;
 
-impl<
-        Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Signed,
-        Endpoint: Clone + Ord + self::Point<Coordinate = Scalar>,
-    > From<Vec<Endpoint>> for Triangulation<Endpoint>
+impl<Endpoint: Clone + LocatePointInPointPointPointCircle + Ord + Orient> From<Vec<Endpoint>>
+    for Triangulation<Endpoint>
 {
     fn from(mut endpoints: Vec<Endpoint>) -> Self {
         endpoints.sort();
@@ -105,11 +102,7 @@ impl<Endpoint> Triangulation<Endpoint> {
     }
 }
 
-impl<
-        Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
-        Endpoint: Clone + PartialOrd + self::Point<Coordinate = Scalar>,
-    > Triangulation<Endpoint>
-{
+impl<Endpoint: Clone + Orient + PartialOrd> Triangulation<Endpoint> {
     pub(crate) fn to_triangles_vertices(&self) -> Vec<[Endpoint; 3]> {
         self.mesh.to_triangles_vertices()
     }
@@ -130,11 +123,7 @@ fn to_base_cases(points_count: usize) -> (usize, usize) {
     }
 }
 
-impl<
-        Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
-        Endpoint: Clone + PartialOrd + self::Point<Coordinate = Scalar>,
-    > Mesh<Endpoint>
-{
+impl<Endpoint: Clone + Orient + PartialOrd> Mesh<Endpoint> {
     fn to_triangles_vertices(&self) -> Vec<[Endpoint; 3]> {
         let mut result = Vec::new();
         for edge in self.to_edges() {
@@ -160,11 +149,7 @@ impl<
     }
 }
 
-impl<
-        Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Signed,
-        Endpoint: self::Point<Coordinate = Scalar> + PartialEq,
-    > Mesh<Endpoint>
-{
+impl<Endpoint: Orient + PartialEq + LocatePointInPointPointPointCircle> Mesh<Endpoint> {
     fn build_base_edge(
         &mut self,
         mut first_right_side: QuadEdge,
@@ -204,12 +189,12 @@ impl<
                 self.orient_point_to_edge(base_edge, self.get_end(self.to_left_from_start(result))),
                 Orientation::Clockwise
             ) && matches!(
-                locate_point_in_point_point_point_circle(
-                    self.get_end(self.to_left_from_start(result)),
-                    self.get_end(base_edge),
-                    self.get_start(base_edge),
-                    self.get_end(result)
-                ),
+                self.get_end(self.to_left_from_start(result))
+                    .locate_point_in_point_point_point_circle(
+                        self.get_end(base_edge),
+                        self.get_start(base_edge),
+                        self.get_end(result)
+                    ),
                 Location::Interior
             ) {
                 let next_candidate = self.to_left_from_start(result);
@@ -235,12 +220,12 @@ impl<
                 ),
                 Orientation::Clockwise
             ) && matches!(
-                locate_point_in_point_point_point_circle(
-                    self.get_end(self.to_right_from_start(result)),
-                    self.get_end(base_edge),
-                    self.get_start(base_edge),
-                    self.get_end(result)
-                ),
+                self.get_end(self.to_right_from_start(result))
+                    .locate_point_in_point_point_point_circle(
+                        self.get_end(base_edge),
+                        self.get_start(base_edge),
+                        self.get_end(result)
+                    ),
                 Location::Interior
             ) {
                 let next_candidate = self.to_right_from_start(result);
@@ -282,12 +267,12 @@ impl<
                 Some(left_candidate) => match maybe_right_candidate {
                     Some(right_candidate) => {
                         if matches!(
-                            locate_point_in_point_point_point_circle(
-                                self.get_end(right_candidate),
-                                self.get_end(left_candidate),
-                                self.get_end(base_edge),
-                                self.get_start(base_edge),
-                            ),
+                            self.get_end(right_candidate)
+                                .locate_point_in_point_point_point_circle(
+                                    self.get_end(left_candidate),
+                                    self.get_end(base_edge),
+                                    self.get_start(base_edge),
+                                ),
                             Location::Interior,
                         ) {
                             self.connect_edges(right_candidate, to_opposite_edge(base_edge))
@@ -314,11 +299,7 @@ impl<
     }
 }
 
-impl<
-        Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
-        Endpoint: self::Point<Coordinate = Scalar>,
-    > Mesh<Endpoint>
-{
+impl<Endpoint: Orient> Mesh<Endpoint> {
     pub(super) fn create_triangle(
         &mut self,
         left_point_index: usize,
@@ -342,12 +323,8 @@ impl<
     }
 }
 
-impl<
-        Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
-        Endpoint: self::Point<Coordinate = Scalar>,
-    > Mesh<Endpoint>
-{
+impl<Endpoint: Orient> Mesh<Endpoint> {
     fn orient_point_to_edge(&self, edge: usize, point: &Endpoint) -> Orientation {
-        orient(self.get_start(edge), self.get_end(edge), point)
+        self.get_start(edge).orient(self.get_end(edge), point)
     }
 }

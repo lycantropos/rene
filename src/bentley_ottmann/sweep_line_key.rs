@@ -1,8 +1,6 @@
 use std::cmp::Ordering;
 
-use rithm::traits::{AdditiveGroup, MultiplicativeMonoid, Signed};
-
-use crate::operations::orient;
+use crate::operations::Orient;
 use crate::oriented::Orientation;
 use crate::traits::Point;
 
@@ -42,10 +40,10 @@ impl<Endpoint: PartialEq> PartialEq for SweepLineKey<Endpoint> {
 
 impl<Endpoint: Eq> Eq for SweepLineKey<Endpoint> {}
 
-impl<
-        Scalar: AdditiveGroup + MultiplicativeMonoid + Ord + Signed,
-        Endpoint: PartialEq + Point<Coordinate = Scalar>,
-    > PartialOrd for SweepLineKey<Endpoint>
+impl<Scalar: Ord, Endpoint: Orient + Point<Coordinate = Scalar>> PartialOrd
+    for SweepLineKey<Endpoint>
+where
+    Self: PartialEq,
 {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(compare_sweep_line_keys(
@@ -57,10 +55,9 @@ impl<
     }
 }
 
-impl<
-        Scalar: AdditiveGroup + MultiplicativeMonoid + Ord + Signed,
-        Endpoint: Eq + Point<Coordinate = Scalar>,
-    > Ord for SweepLineKey<Endpoint>
+impl<Scalar: Ord, Endpoint: Orient + Point<Coordinate = Scalar>> Ord for SweepLineKey<Endpoint>
+where
+    Self: Eq + PartialOrd,
 {
     fn cmp(&self, other: &Self) -> Ordering {
         compare_sweep_line_keys(
@@ -72,10 +69,7 @@ impl<
     }
 }
 
-fn compare_sweep_line_keys<
-    Scalar: AdditiveGroup + MultiplicativeMonoid + Ord + Signed,
-    Endpoint: PartialEq + Point<Coordinate = Scalar>,
->(
+fn compare_sweep_line_keys<Scalar: Ord, Endpoint: Orient + Point<Coordinate = Scalar>>(
     left_event: Event,
     right_event: Event,
     endpoints: &[Endpoint],
@@ -89,17 +83,14 @@ fn compare_sweep_line_keys<
     )
 }
 
-fn compare_segments_position<
-    Scalar: AdditiveGroup + MultiplicativeMonoid + Ord + Signed,
-    Endpoint: PartialEq + Point<Coordinate = Scalar>,
->(
+fn compare_segments_position<Scalar: Ord, Endpoint: Orient + Point<Coordinate = Scalar>>(
     first_start: &Endpoint,
     first_end: &Endpoint,
     second_start: &Endpoint,
     second_end: &Endpoint,
 ) -> Ordering {
-    let other_start_orientation = orient(first_start, first_end, second_start);
-    let other_end_orientation = orient(first_start, first_end, second_end);
+    let other_start_orientation = first_start.orient(first_end, second_start);
+    let other_end_orientation = first_start.orient(first_end, second_end);
     if other_start_orientation == other_end_orientation {
         match other_start_orientation {
             Orientation::Collinear => match first_start.y().cmp(&second_start.y()) {
@@ -116,8 +107,8 @@ fn compare_segments_position<
             Orientation::Counterclockwise => Ordering::Less,
         }
     } else {
-        let start_orientation = orient(second_start, second_end, first_start);
-        let end_orientation = orient(second_start, second_end, first_end);
+        let start_orientation = second_start.orient(second_end, first_start);
+        let end_orientation = second_start.orient(second_end, first_end);
         if start_orientation == end_orientation {
             match start_orientation {
                 Orientation::Clockwise => Ordering::Less,

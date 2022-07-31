@@ -1,24 +1,25 @@
 use core::convert::From;
 
-use rithm::traits::{AdditiveGroup, DivisivePartialMagma, MultiplicativeMonoid, Signed};
-
 use crate::constants::{MIN_CONTOUR_VERTICES_COUNT, MIN_MULTISEGMENT_SEGMENTS_COUNT};
 use crate::contracts::are_contour_vertices_non_degenerate;
+use crate::operations::Orient;
 use crate::relatable::Relation;
-use crate::traits::{Contour, Multisegment, Point, Segment};
+use crate::traits::{Contour, Multisegment, Segment};
 
-use super::event::is_left_event;
+use super::event::{is_left_event, Event};
 use super::events_registry::EventsRegistry;
-use super::sweep::Sweep;
+use super::sweep::{Intersection, Sweep};
 
 pub(crate) fn is_contour_valid<
-    Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
-    Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Coordinate = Scalar>,
+    Endpoint: Ord + Orient,
     Segment: self::Segment<Point = Endpoint>,
     Contour: self::Contour<Point = Endpoint, Segment = Segment>,
 >(
     contour: &Contour,
-) -> bool {
+) -> bool
+where
+    for<'a> Sweep<Endpoint>: From<&'a [Segment]> + Iterator<Item = Intersection<Endpoint>>,
+{
     are_contour_vertices_non_degenerate(&contour.vertices()) && {
         let segments = contour.segments();
         segments.len() >= MIN_CONTOUR_VERTICES_COUNT
@@ -65,13 +66,15 @@ pub(crate) fn is_contour_valid<
 }
 
 pub(crate) fn is_multisegment_valid<
-    Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
-    Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Coordinate = Scalar>,
+    Endpoint: PartialEq,
     Segment: self::Segment<Point = Endpoint>,
     Multisegment: self::Multisegment<Point = Endpoint, Segment = Segment>,
 >(
     multisegment: &Multisegment,
-) -> bool {
+) -> bool
+where
+    for<'a> Sweep<Endpoint>: From<&'a [Segment]> + Iterator<Item = Intersection<Endpoint>>,
+{
     let segments = multisegment.segments();
     segments.len() >= MIN_MULTISEGMENT_SEGMENTS_COUNT
         && segments
@@ -82,12 +85,15 @@ pub(crate) fn is_multisegment_valid<
 }
 
 pub(crate) fn to_unique_non_crossing_or_overlapping_segments<
-    Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
-    Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Coordinate = Scalar>,
+    Scalar,
+    Endpoint: Clone,
     Segment: From<(Endpoint, Endpoint)> + self::Segment<Point = Endpoint>,
 >(
     segments: &[Segment],
-) -> Vec<Segment> {
+) -> Vec<Segment>
+where
+    for<'a> EventsRegistry<Endpoint, true>: From<&'a [Segment]> + Iterator<Item = Event>,
+{
     let mut result = Vec::with_capacity(segments.len());
     let mut events_registry = EventsRegistry::<Endpoint, true>::from(segments);
     while let Some(event) = events_registry.next() {

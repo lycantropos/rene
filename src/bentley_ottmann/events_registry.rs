@@ -3,19 +3,17 @@ use std::cmp::Reverse;
 use std::collections::{BTreeSet, BinaryHeap};
 use std::ops::Bound::{Excluded, Unbounded};
 
-use rithm::traits::{AdditiveGroup, DivisivePartialMagma, MultiplicativeMonoid, Signed};
-
-use crate::operations::{intersect_crossing_segments, orient, to_sorted_pair};
+use crate::bentley_ottmann::event::{segment_id_to_left_event, segment_id_to_right_event};
+use crate::operations::{to_sorted_pair, IntersectCrossingSegments, Orient};
 use crate::oriented::Orientation;
-use crate::traits::{Point, Segment};
+use crate::traits::Segment;
 
 use super::event::{is_left_event, Event};
 use super::events_queue_key::EventsQueueKey;
 use super::sweep_line_key::SweepLineKey;
 use super::traits::{EventsQueue, SweepLine};
-use crate::bentley_ottmann::event::{segment_id_to_left_event, segment_id_to_right_event};
 
-pub(super) struct EventsRegistry<Endpoint, const UNIQUE: bool> {
+pub(crate) struct EventsRegistry<Endpoint, const UNIQUE: bool> {
     endpoints: Box<Vec<Endpoint>>,
     events_queue_data: BinaryHeap<Reverse<EventsQueueKey<Endpoint>>>,
     min_collinear_segments_ids: Vec<usize>,
@@ -24,11 +22,10 @@ pub(super) struct EventsRegistry<Endpoint, const UNIQUE: bool> {
     sweep_line_data: BTreeSet<SweepLineKey<Endpoint>>,
 }
 
-impl<
-        Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
-        Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Coordinate = Scalar>,
-        const UNIQUE: bool,
-    > Iterator for EventsRegistry<Endpoint, UNIQUE>
+impl<Endpoint: Clone + IntersectCrossingSegments + Orient + PartialOrd, const UNIQUE: bool> Iterator
+    for EventsRegistry<Endpoint, UNIQUE>
+where
+    Self: EventsQueue + SweepLine,
 {
     type Item = Event;
 
@@ -169,11 +166,10 @@ impl<Endpoint: Ord, Segment: self::Segment<Point = Endpoint>, const UNIQUE: bool
     }
 }
 
-impl<
-        Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
-        Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Coordinate = Scalar>,
-        const UNIQUE: bool,
-    > EventsRegistry<Endpoint, UNIQUE>
+impl<Endpoint: Clone + IntersectCrossingSegments + Orient + PartialOrd, const UNIQUE: bool>
+    EventsRegistry<Endpoint, UNIQUE>
+where
+    Self: EventsQueue + SweepLine,
 {
     pub(super) fn detect_intersection(&mut self, below_event: Event, event: Event) {
         debug_assert_ne!(below_event, event);
@@ -183,20 +179,20 @@ impl<
         let below_event_start = self.get_event_start(below_event);
         let below_event_end = self.get_event_end(below_event);
 
-        let event_start_orientation = orient(below_event_end, below_event_start, event_start);
-        let event_end_orientation = orient(below_event_end, below_event_start, event_end);
+        let event_start_orientation = below_event_end.orient(below_event_start, event_start);
+        let event_end_orientation = below_event_end.orient(below_event_start, event_end);
         if event_start_orientation != Orientation::Collinear
             && event_end_orientation != Orientation::Collinear
         {
             if event_start_orientation != event_end_orientation {
                 let below_event_start_orientation =
-                    orient(event_start, event_end, below_event_start);
-                let below_event_end_orientation = orient(event_start, event_end, below_event_end);
+                    event_start.orient(event_end, below_event_start);
+                let below_event_end_orientation = event_start.orient(event_end, below_event_end);
                 if below_event_start_orientation != Orientation::Collinear
                     && below_event_end_orientation != Orientation::Collinear
                 {
                     if below_event_start_orientation != below_event_end_orientation {
-                        let point = intersect_crossing_segments(
+                        let point = Endpoint::intersect_crossing_segments(
                             event_start,
                             event_end,
                             below_event_start,
@@ -365,9 +361,7 @@ impl<
     }
 }
 
-impl<Scalar, Endpoint: Clone + self::Point<Coordinate = Scalar> + Ord, const UNIQUE: bool>
-    EventsRegistry<Endpoint, UNIQUE>
-{
+impl<Endpoint: Clone, const UNIQUE: bool> EventsRegistry<Endpoint, UNIQUE> {
     pub(super) fn divide(&mut self, event: Event, mid_point: Endpoint) -> (Event, Event) {
         debug_assert!(is_left_event(event));
         let opposite_event = self.to_opposite_event(event);
@@ -398,11 +392,9 @@ impl<Endpoint: Ord, const UNIQUE: bool> EventsQueue for EventsRegistry<Endpoint,
     }
 }
 
-impl<
-        Scalar: AdditiveGroup + MultiplicativeMonoid + Ord + Signed,
-        Endpoint: Clone + Eq + Point<Coordinate = Scalar>,
-        const UNIQUE: bool,
-    > SweepLine for EventsRegistry<Endpoint, UNIQUE>
+impl<Endpoint, const UNIQUE: bool> SweepLine for EventsRegistry<Endpoint, UNIQUE>
+where
+    SweepLineKey<Endpoint>: Ord,
 {
     fn above(&self, event: Event) -> Option<Event> {
         self.sweep_line_data

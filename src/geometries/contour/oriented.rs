@@ -1,20 +1,16 @@
-use rithm::traits::{AdditiveGroup, MultiplicativeMonoid, Signed};
-
 use crate::geometries::Point;
-use crate::operations::orient;
+use crate::operations::Orient;
 use crate::oriented::{Orientation, Oriented};
-use crate::traits;
 
 use super::types::Contour;
 
-impl<Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Ord + Signed> Oriented
-    for Contour<Scalar>
+impl<Scalar: Ord> Oriented for Contour<Scalar>
 where
-    Point<Scalar>: traits::Point<Coordinate = Scalar>,
+    Point<Scalar>: Orient,
 {
     fn to_orientation(&self) -> Orientation {
         let min_vertex_index = self.to_min_vertex_index();
-        let previous_to_min_vertex_index = if min_vertex_index.is_zero() {
+        let previous_to_min_vertex_index = if min_vertex_index == 0 {
             self.vertices.len() - 1
         } else {
             min_vertex_index - 1
@@ -24,8 +20,7 @@ where
                 .checked_rem_euclid(self.vertices.len())
                 .unwrap_unchecked()
         };
-        orient::<Scalar, Point<Scalar>>(
-            &self.vertices[previous_to_min_vertex_index],
+        self.vertices[previous_to_min_vertex_index].orient(
             &self.vertices[min_vertex_index],
             &self.vertices[next_to_min_vertex_index],
         )
