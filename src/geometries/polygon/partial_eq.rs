@@ -1,13 +1,12 @@
 use std::hash::Hash;
 
-use rithm::traits::{AdditiveGroup, MultiplicativeMonoid, Signed};
-
-use crate::geometries::contracts;
+use crate::geometries::{contracts, Contour};
 
 use super::types::Polygon;
 
-impl<Scalar: AdditiveGroup + Clone + Eq + Hash + MultiplicativeMonoid + Ord + Signed> PartialEq
-    for Polygon<Scalar>
+impl<Scalar> PartialEq for Polygon<Scalar>
+where
+    Contour<Scalar>: Eq + Hash,
 {
     fn eq(&self, other: &Self) -> bool {
         self.border == other.border
