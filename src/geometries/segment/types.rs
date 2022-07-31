@@ -1,3 +1,6 @@
+use rithm::big_int::BigInt;
+use rithm::fraction::Fraction;
+
 use crate::geometries::Point;
 use crate::traits;
 
@@ -13,8 +16,12 @@ impl<Scalar> Segment<Scalar> {
     }
 }
 
-impl<Scalar: Clone> traits::Segment for Segment<Scalar> {
-    type Point = self::Point<Scalar>;
+impl<Digit, const SEPARATOR: char, const SHIFT: usize> traits::Segment
+    for Segment<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
+where
+    BigInt<Digit, SEPARATOR, SHIFT>: Clone,
+{
+    type Point = self::Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>;
 
     fn start(&self) -> Self::Point {
         self.start.clone()
