@@ -1,3 +1,6 @@
+use rithm::big_int::BigInt;
+use rithm::fraction::Fraction;
+
 use crate::geometries::{Contour, Point, Segment};
 use crate::traits;
 
@@ -13,10 +16,14 @@ impl<Scalar> Polygon<Scalar> {
     }
 }
 
-impl<Scalar: Clone> traits::Polygon for Polygon<Scalar> {
-    type Point = self::Point<Scalar>;
-    type Segment = self::Segment<Scalar>;
-    type Contour = self::Contour<Scalar>;
+impl<Digit, const SEPARATOR: char, const SHIFT: usize> traits::Polygon
+    for Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
+where
+    BigInt<Digit, SEPARATOR, SHIFT>: Clone,
+{
+    type Point = self::Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>;
+    type Segment = self::Segment<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>;
+    type Contour = self::Contour<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>;
 
     fn border(&self) -> Self::Contour {
         self.border.clone()
