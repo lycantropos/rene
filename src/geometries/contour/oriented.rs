@@ -3,11 +3,14 @@ use rithm::traits::{AdditiveGroup, MultiplicativeMonoid, Signed};
 use crate::geometries::Point;
 use crate::operations::orient;
 use crate::oriented::{Orientation, Oriented};
+use crate::traits;
 
 use super::types::Contour;
 
 impl<Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Ord + Signed> Oriented
     for Contour<Scalar>
+where
+    Point<Scalar>: traits::Point<Coordinate = Scalar>,
 {
     fn to_orientation(&self) -> Orientation {
         let min_vertex_index = self.to_min_vertex_index();

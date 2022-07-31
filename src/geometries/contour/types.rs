@@ -1,3 +1,6 @@
+use rithm::big_int::BigInt;
+use rithm::fraction::Fraction;
+
 use crate::geometries::{Point, Segment};
 use crate::operations::to_arg_min;
 use crate::traits;
@@ -19,9 +22,13 @@ impl<Scalar: Ord> Contour<Scalar> {
     }
 }
 
-impl<Scalar: Clone> traits::Contour for Contour<Scalar> {
-    type Point = self::Point<Scalar>;
-    type Segment = self::Segment<Scalar>;
+impl<Digit, const SEPARATOR: char, const SHIFT: usize> traits::Contour
+    for Contour<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
+where
+    BigInt<Digit, SEPARATOR, SHIFT>: Clone,
+{
+    type Point = self::Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>;
+    type Segment = self::Segment<<Self::Point as traits::Point>::Coordinate>;
 
     fn vertices(&self) -> Vec<Self::Point> {
         self.vertices.clone()
