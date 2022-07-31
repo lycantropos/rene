@@ -1,5 +1,8 @@
 use std::fmt;
 
+use rithm::big_int::BigInt;
+use rithm::fraction::Fraction;
+
 use crate::traits;
 
 #[derive(Clone, fmt::Debug)]
@@ -8,8 +11,12 @@ pub struct Point<Scalar> {
     pub(super) y: Scalar,
 }
 
-impl<Scalar: Clone> traits::Point for Point<Scalar> {
-    type Coordinate = Scalar;
+impl<Digit, const SEPARATOR: char, const SHIFT: usize> traits::Point
+    for Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
+where
+    BigInt<Digit, SEPARATOR, SHIFT>: Clone,
+{
+    type Coordinate = Fraction<BigInt<Digit, SEPARATOR, SHIFT>>;
 
     fn x(&self) -> Self::Coordinate {
         self.x.clone()
