@@ -7,9 +7,9 @@ use crate::oriented::{Orientation, Oriented};
 use super::types::Contour;
 
 impl<Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Ord + Signed> Oriented
-    for &Contour<Scalar>
+    for Contour<Scalar>
 {
-    fn orientation(self) -> Orientation {
+    fn to_orientation(&self) -> Orientation {
         let min_vertex_index = self.to_min_vertex_index();
         let previous_to_min_vertex_index = if min_vertex_index.is_zero() {
             self.vertices.len() - 1

@@ -6,5 +6,5 @@ pub enum Orientation {
 }
 
 pub trait Oriented {
-    fn orientation(self) -> Orientation;
+    fn to_orientation(&self) -> Orientation;
 }

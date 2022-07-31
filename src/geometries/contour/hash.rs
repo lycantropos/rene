@@ -12,7 +12,7 @@ impl<Scalar: AdditiveGroup + Clone + Hash + MultiplicativeMonoid + Ord + Signed>
     fn hash<H: Hasher>(&self, state: &mut H) {
         let min_vertex_index = self.to_min_vertex_index();
         self.vertices[min_vertex_index].hash(state);
-        match self.orientation() {
+        match self.to_orientation() {
             Orientation::Clockwise => {
                 for index in (0..min_vertex_index).rev() {
                     self.vertices[index].hash(state);

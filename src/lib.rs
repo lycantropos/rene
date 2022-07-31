@@ -318,7 +318,7 @@ impl PyExactContour {
 
     #[getter]
     fn orientation(&self, py: Python) -> PyResult<&PyAny> {
-        let orientation = self.0.orientation();
+        let orientation = self.0.to_orientation();
         let orientation_cls = unsafe { MAYBE_ORIENTATION_CLS.unwrap_unchecked() };
         match orientation {
             Orientation::Clockwise => orientation_cls.getattr(intern!(py, "CLOCKWISE")),
@@ -337,7 +337,7 @@ impl PyExactContour {
         let mut vertices = self.0.vertices();
         let min_vertex_index = unsafe { to_arg_min(&vertices).unwrap_unchecked() };
         vertices.rotate_left(min_vertex_index);
-        if self.0.orientation() == Orientation::Clockwise {
+        if self.0.to_orientation() == Orientation::Clockwise {
             vertices[1..].reverse()
         }
         PyTuple::new(py, &vertices).hash()
