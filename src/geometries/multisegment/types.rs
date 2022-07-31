@@ -12,7 +12,7 @@ impl<Scalar: Clone> Multisegment<Scalar> {
     }
 }
 
-impl<Scalar: Clone> traits::Multisegment<Scalar> for Multisegment<Scalar> {
+impl<Scalar: Clone> traits::Multisegment for Multisegment<Scalar> {
     type Point = self::Point<Scalar>;
     type Segment = self::Segment<Scalar>;
 

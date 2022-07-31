@@ -52,7 +52,7 @@ type ExactMultisegment = geometries::Multisegment<Fraction>;
 type ExactPoint = geometries::Point<Fraction>;
 type ExactPolygon = geometries::Polygon<Fraction>;
 type ExactSegment = geometries::Segment<Fraction>;
-type ExactTriangulation = Triangulation<Fraction, ExactPoint>;
+type ExactTriangulation = Triangulation<ExactPoint>;
 
 impl IntoPy<PyObject> for ExactContour {
     fn into_py(self, py: Python<'_>) -> PyObject {

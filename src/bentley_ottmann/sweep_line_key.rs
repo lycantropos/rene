@@ -1,5 +1,4 @@
 use std::cmp::Ordering;
-use std::marker::PhantomData;
 
 use rithm::traits::{AdditiveGroup, MultiplicativeMonoid, Signed};
 
@@ -9,25 +8,23 @@ use crate::traits::Point;
 
 use super::event::Event;
 
-pub(super) struct SweepLineKey<Scalar, Endpoint> {
+pub(super) struct SweepLineKey<Endpoint> {
     pub(super) event: Event,
     endpoints: *const Vec<Endpoint>,
     opposites: *const Vec<Event>,
-    _phantom: PhantomData<fn() -> Scalar>,
 }
 
-impl<Scalar, Endpoint> SweepLineKey<Scalar, Endpoint> {
+impl<Endpoint> SweepLineKey<Endpoint> {
     pub(super) fn new(event: Event, endpoints: &Vec<Endpoint>, opposites: &Vec<Event>) -> Self {
         Self {
             event,
             endpoints,
             opposites,
-            _phantom: PhantomData,
         }
     }
 }
 
-impl<Scalar, Endpoint> SweepLineKey<Scalar, Endpoint> {
+impl<Endpoint> SweepLineKey<Endpoint> {
     fn get_endpoints(&self) -> &[Endpoint] {
         unsafe { &(*self.endpoints) }
     }
@@ -37,18 +34,18 @@ impl<Scalar, Endpoint> SweepLineKey<Scalar, Endpoint> {
     }
 }
 
-impl<Scalar, Endpoint: PartialEq> PartialEq for SweepLineKey<Scalar, Endpoint> {
+impl<Endpoint: PartialEq> PartialEq for SweepLineKey<Endpoint> {
     fn eq(&self, other: &Self) -> bool {
         self.event == other.event
     }
 }
 
-impl<Scalar, Endpoint: Eq> Eq for SweepLineKey<Scalar, Endpoint> {}
+impl<Endpoint: Eq> Eq for SweepLineKey<Endpoint> {}
 
 impl<
         Scalar: AdditiveGroup + MultiplicativeMonoid + Ord + Signed,
-        Endpoint: PartialEq + Point<Scalar>,
-    > PartialOrd for SweepLineKey<Scalar, Endpoint>
+        Endpoint: PartialEq + Point<Coordinate = Scalar>,
+    > PartialOrd for SweepLineKey<Endpoint>
 {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(compare_sweep_line_keys(
@@ -60,8 +57,10 @@ impl<
     }
 }
 
-impl<Scalar: AdditiveGroup + MultiplicativeMonoid + Ord + Signed, Endpoint: Eq + Point<Scalar>> Ord
-    for SweepLineKey<Scalar, Endpoint>
+impl<
+        Scalar: AdditiveGroup + MultiplicativeMonoid + Ord + Signed,
+        Endpoint: Eq + Point<Coordinate = Scalar>,
+    > Ord for SweepLineKey<Endpoint>
 {
     fn cmp(&self, other: &Self) -> Ordering {
         compare_sweep_line_keys(
@@ -75,7 +74,7 @@ impl<Scalar: AdditiveGroup + MultiplicativeMonoid + Ord + Signed, Endpoint: Eq +
 
 fn compare_sweep_line_keys<
     Scalar: AdditiveGroup + MultiplicativeMonoid + Ord + Signed,
-    Endpoint: PartialEq + Point<Scalar>,
+    Endpoint: PartialEq + Point<Coordinate = Scalar>,
 >(
     left_event: Event,
     right_event: Event,
@@ -92,7 +91,7 @@ fn compare_sweep_line_keys<
 
 fn compare_segments_position<
     Scalar: AdditiveGroup + MultiplicativeMonoid + Ord + Signed,
-    Endpoint: PartialEq + Point<Scalar>,
+    Endpoint: PartialEq + Point<Coordinate = Scalar>,
 >(
     first_start: &Endpoint,
     first_end: &Endpoint,

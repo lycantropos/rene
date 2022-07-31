@@ -13,7 +13,7 @@ impl<Scalar> Segment<Scalar> {
     }
 }
 
-impl<Scalar: Clone> traits::Segment<Scalar> for Segment<Scalar> {
+impl<Scalar: Clone> traits::Segment for Segment<Scalar> {
     type Point = self::Point<Scalar>;
 
     fn start(&self) -> Self::Point {

@@ -13,7 +13,7 @@ impl<Scalar> Polygon<Scalar> {
     }
 }
 
-impl<Scalar: Clone> traits::Polygon<Scalar> for Polygon<Scalar> {
+impl<Scalar: Clone> traits::Polygon for Polygon<Scalar> {
     type Point = self::Point<Scalar>;
     type Segment = self::Segment<Scalar>;
     type Contour = self::Contour<Scalar>;

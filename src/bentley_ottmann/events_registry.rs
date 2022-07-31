@@ -15,20 +15,20 @@ use super::sweep_line_key::SweepLineKey;
 use super::traits::{EventsQueue, SweepLine};
 use crate::bentley_ottmann::event::{segment_id_to_left_event, segment_id_to_right_event};
 
-pub(super) struct EventsRegistry<Scalar, Endpoint, const UNIQUE: bool> {
+pub(super) struct EventsRegistry<Endpoint, const UNIQUE: bool> {
     endpoints: Box<Vec<Endpoint>>,
     events_queue_data: BinaryHeap<Reverse<EventsQueueKey<Endpoint>>>,
     min_collinear_segments_ids: Vec<usize>,
     opposites: Box<Vec<Event>>,
     segments_ids: Vec<usize>,
-    sweep_line_data: BTreeSet<SweepLineKey<Scalar, Endpoint>>,
+    sweep_line_data: BTreeSet<SweepLineKey<Endpoint>>,
 }
 
 impl<
         Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
-        Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Scalar>,
+        Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Coordinate = Scalar>,
         const UNIQUE: bool,
-    > Iterator for EventsRegistry<Scalar, Endpoint, UNIQUE>
+    > Iterator for EventsRegistry<Endpoint, UNIQUE>
 {
     type Item = Event;
 
@@ -84,7 +84,7 @@ impl<
     }
 }
 
-impl<Scalar, Endpoint, const UNIQUE: bool> EventsRegistry<Scalar, Endpoint, UNIQUE> {
+impl<Endpoint, const UNIQUE: bool> EventsRegistry<Endpoint, UNIQUE> {
     pub(super) fn are_collinear(&self, segment_id: usize, other_segment_id: usize) -> bool {
         self.to_min_collinear_segment_id(segment_id)
             == self.to_min_collinear_segment_id(other_segment_id)
@@ -134,18 +134,14 @@ impl<Scalar, Endpoint, const UNIQUE: bool> EventsRegistry<Scalar, Endpoint, UNIQ
         self.opposites[event]
     }
 
-    fn to_sweep_line_key(&self, event: Event) -> SweepLineKey<Scalar, Endpoint> {
+    fn to_sweep_line_key(&self, event: Event) -> SweepLineKey<Endpoint> {
         debug_assert!(is_left_event(event));
         SweepLineKey::new(event, &self.endpoints, &self.opposites)
     }
 }
 
-impl<
-        Scalar,
-        Endpoint: Ord,
-        Segment: self::Segment<Scalar, Point = Endpoint>,
-        const UNIQUE: bool,
-    > From<&[Segment]> for EventsRegistry<Scalar, Endpoint, UNIQUE>
+impl<Endpoint: Ord, Segment: self::Segment<Point = Endpoint>, const UNIQUE: bool> From<&[Segment]>
+    for EventsRegistry<Endpoint, UNIQUE>
 {
     fn from(segments: &[Segment]) -> Self {
         let capacity = 2 * segments.len();
@@ -175,9 +171,9 @@ impl<
 
 impl<
         Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
-        Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Scalar>,
+        Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Coordinate = Scalar>,
         const UNIQUE: bool,
-    > EventsRegistry<Scalar, Endpoint, UNIQUE>
+    > EventsRegistry<Endpoint, UNIQUE>
 {
     pub(super) fn detect_intersection(&mut self, below_event: Event, event: Event) {
         debug_assert_ne!(below_event, event);
@@ -369,8 +365,8 @@ impl<
     }
 }
 
-impl<Scalar, Endpoint: Clone + self::Point<Scalar> + Ord, const UNIQUE: bool>
-    EventsRegistry<Scalar, Endpoint, UNIQUE>
+impl<Scalar, Endpoint: Clone + self::Point<Coordinate = Scalar> + Ord, const UNIQUE: bool>
+    EventsRegistry<Endpoint, UNIQUE>
 {
     pub(super) fn divide(&mut self, event: Event, mid_point: Endpoint) -> (Event, Event) {
         debug_assert!(is_left_event(event));
@@ -388,9 +384,7 @@ impl<Scalar, Endpoint: Clone + self::Point<Scalar> + Ord, const UNIQUE: bool>
     }
 }
 
-impl<Scalar, Endpoint: Ord, const UNIQUE: bool> EventsQueue
-    for EventsRegistry<Scalar, Endpoint, UNIQUE>
-{
+impl<Endpoint: Ord, const UNIQUE: bool> EventsQueue for EventsRegistry<Endpoint, UNIQUE> {
     fn pop(&mut self) -> Option<Event> {
         self.events_queue_data.pop().map(|key| key.0.event)
     }
@@ -406,9 +400,9 @@ impl<Scalar, Endpoint: Ord, const UNIQUE: bool> EventsQueue
 
 impl<
         Scalar: AdditiveGroup + MultiplicativeMonoid + Ord + Signed,
-        Endpoint: Clone + Eq + Point<Scalar>,
+        Endpoint: Clone + Eq + Point<Coordinate = Scalar>,
         const UNIQUE: bool,
-    > SweepLine for EventsRegistry<Scalar, Endpoint, UNIQUE>
+    > SweepLine for EventsRegistry<Endpoint, UNIQUE>
 {
     fn above(&self, event: Event) -> Option<Event> {
         self.sweep_line_data

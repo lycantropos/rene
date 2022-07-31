@@ -13,9 +13,9 @@ use super::sweep::Sweep;
 
 pub(crate) fn is_contour_valid<
     Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
-    Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Scalar>,
-    Segment: self::Segment<Scalar, Point = Endpoint>,
-    Contour: self::Contour<Scalar, Point = Endpoint, Segment = Segment>,
+    Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Coordinate = Scalar>,
+    Segment: self::Segment<Point = Endpoint>,
+    Contour: self::Contour<Point = Endpoint, Segment = Segment>,
 >(
     contour: &Contour,
 ) -> bool {
@@ -66,9 +66,9 @@ pub(crate) fn is_contour_valid<
 
 pub(crate) fn is_multisegment_valid<
     Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
-    Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Scalar>,
-    Segment: self::Segment<Scalar, Point = Endpoint>,
-    Multisegment: self::Multisegment<Scalar, Point = Endpoint, Segment = Segment>,
+    Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Coordinate = Scalar>,
+    Segment: self::Segment<Point = Endpoint>,
+    Multisegment: self::Multisegment<Point = Endpoint, Segment = Segment>,
 >(
     multisegment: &Multisegment,
 ) -> bool {
@@ -83,13 +83,13 @@ pub(crate) fn is_multisegment_valid<
 
 pub(crate) fn to_unique_non_crossing_or_overlapping_segments<
     Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
-    Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Scalar>,
-    Segment: From<(Endpoint, Endpoint)> + self::Segment<Scalar, Point = Endpoint>,
+    Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Coordinate = Scalar>,
+    Segment: From<(Endpoint, Endpoint)> + self::Segment<Point = Endpoint>,
 >(
     segments: &[Segment],
 ) -> Vec<Segment> {
     let mut result = Vec::with_capacity(segments.len());
-    let mut events_registry = EventsRegistry::<Scalar, Endpoint, true>::from(segments);
+    let mut events_registry = EventsRegistry::<Endpoint, true>::from(segments);
     while let Some(event) = events_registry.next() {
         if !is_left_event(event) {
             result.push(Segment::from((

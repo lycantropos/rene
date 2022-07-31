@@ -11,8 +11,8 @@ use crate::traits::{Point, Segment};
 use super::event::Event;
 use super::events_registry::EventsRegistry;
 
-pub(super) struct Sweep<Scalar, Endpoint> {
-    events_registry: EventsRegistry<Scalar, Endpoint, false>,
+pub(super) struct Sweep<Endpoint> {
+    events_registry: EventsRegistry<Endpoint, false>,
     next_start_event: Option<usize>,
     segments_ids_pairs: PairwiseCombinations<usize>,
     start_event: Option<usize>,
@@ -20,9 +20,9 @@ pub(super) struct Sweep<Scalar, Endpoint> {
 
 impl<
         Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
-        Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Scalar>,
-        Segment: self::Segment<Scalar, Point = Endpoint>,
-    > From<&[Segment]> for Sweep<Scalar, Endpoint>
+        Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Coordinate = Scalar>,
+        Segment: self::Segment<Point = Endpoint>,
+    > From<&[Segment]> for Sweep<Endpoint>
 {
     fn from(segments: &[Segment]) -> Self {
         let mut events_registry = EventsRegistry::from(segments);
@@ -36,7 +36,7 @@ impl<
     }
 }
 
-impl<Scalar, Endpoint> Sweep<Scalar, Endpoint> {
+impl<Endpoint> Sweep<Endpoint> {
     pub(super) fn get_segment_end(&self, segment_id: usize) -> &Endpoint {
         self.events_registry.get_segment_end(segment_id)
     }
@@ -56,8 +56,8 @@ pub(super) struct Intersection<Endpoint> {
 
 impl<
         Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
-        Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Scalar>,
-    > Iterator for Sweep<Scalar, Endpoint>
+        Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Coordinate = Scalar>,
+    > Iterator for Sweep<Endpoint>
 {
     type Item = Intersection<Endpoint>;
 
@@ -137,8 +137,8 @@ impl<
 
 impl<
         Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid + Ord + Signed,
-        Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Scalar>,
-    > Sweep<Scalar, Endpoint>
+        Endpoint: Clone + From<(Scalar, Scalar)> + Ord + self::Point<Coordinate = Scalar>,
+    > Sweep<Endpoint>
 {
     fn populate_segments_ids_pairs(&mut self, start_event: Event) {
         let mut segments_ids_containing_start =

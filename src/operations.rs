@@ -11,7 +11,7 @@ use crate::traits;
 
 pub(crate) fn cross_multiply<
     Scalar: AdditiveGroup + MultiplicativeMonoid,
-    Point: traits::Point<Scalar>,
+    Point: traits::Point<Coordinate = Scalar>,
 >(
     first_start: &Point,
     first_end: &Point,
@@ -24,7 +24,7 @@ pub(crate) fn cross_multiply<
 
 pub(crate) fn orient<
     Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
-    Point: traits::Point<Scalar>,
+    Point: traits::Point<Coordinate = Scalar>,
 >(
     vertex: &Point,
     first_ray_point: &Point,
@@ -40,7 +40,7 @@ pub(crate) fn orient<
 
 pub(crate) fn relate_segments<
     Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
-    Point: PartialOrd + traits::Point<Scalar>,
+    Point: PartialOrd + traits::Point<Coordinate = Scalar>,
 >(
     goal_start: &Point,
     goal_end: &Point,
@@ -129,7 +129,7 @@ pub(crate) fn relate_segments<
 
 pub(crate) fn intersect_crossing_segments<
     Scalar: AdditiveGroup + Clone + DivisivePartialMagma + MultiplicativeMonoid,
-    Point: From<(Scalar, Scalar)> + traits::Point<Scalar>,
+    Point: From<(Scalar, Scalar)> + traits::Point<Coordinate = Scalar>,
 >(
     first_start: &Point,
     first_end: &Point,
@@ -146,7 +146,7 @@ pub(crate) fn intersect_crossing_segments<
 
 pub(crate) fn locate_point_in_point_point_point_circle<
     Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Signed,
-    Point: traits::Point<Scalar>,
+    Point: traits::Point<Coordinate = Scalar>,
 >(
     point: &Point,
     first: &Point,
@@ -185,7 +185,7 @@ pub(crate) fn to_sorted_pair<Value: PartialOrd>((left, right): (Value, Value)) -
 pub(crate) fn shrink_collinear_vertices<
     'a,
     Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
-    Point: traits::Point<Scalar>,
+    Point: traits::Point<Coordinate = Scalar>,
 >(
     vertices: &[&'a Point],
 ) -> Vec<&'a Point> {

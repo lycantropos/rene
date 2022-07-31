@@ -10,9 +10,9 @@ use super::quad_edge::{to_opposite_edge, QuadEdge};
 use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 
 #[derive(Clone)]
-pub(crate) struct Triangulation<Scalar, Endpoint> {
+pub(crate) struct Triangulation<Endpoint> {
     left_side: QuadEdge,
-    mesh: Mesh<Scalar, Endpoint>,
+    mesh: Mesh<Endpoint>,
     right_side: QuadEdge,
 }
 
@@ -20,8 +20,8 @@ const UNDEFINED_INDEX: usize = usize::MAX;
 
 impl<
         Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Signed,
-        Endpoint: Clone + Ord + self::Point<Scalar>,
-    > From<Vec<Endpoint>> for Triangulation<Scalar, Endpoint>
+        Endpoint: Clone + Ord + self::Point<Coordinate = Scalar>,
+    > From<Vec<Endpoint>> for Triangulation<Endpoint>
 {
     fn from(mut endpoints: Vec<Endpoint>) -> Self {
         endpoints.sort();
@@ -76,7 +76,7 @@ impl<
     }
 }
 
-impl<Scalar, Endpoint> Triangulation<Scalar, Endpoint> {
+impl<Endpoint> Triangulation<Endpoint> {
     pub(crate) fn get_boundary_points(&self) -> Vec<&Endpoint> {
         let endpoints = self.mesh.get_endpoints();
         if endpoints.len() < MIN_CONTOUR_VERTICES_COUNT {
@@ -107,8 +107,8 @@ impl<Scalar, Endpoint> Triangulation<Scalar, Endpoint> {
 
 impl<
         Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
-        Endpoint: Clone + PartialOrd + self::Point<Scalar>,
-    > Triangulation<Scalar, Endpoint>
+        Endpoint: Clone + PartialOrd + self::Point<Coordinate = Scalar>,
+    > Triangulation<Endpoint>
 {
     pub(crate) fn to_triangles_vertices(&self) -> Vec<[Endpoint; 3]> {
         self.mesh.to_triangles_vertices()
@@ -132,8 +132,8 @@ fn to_base_cases(points_count: usize) -> (usize, usize) {
 
 impl<
         Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
-        Endpoint: Clone + PartialOrd + self::Point<Scalar>,
-    > Mesh<Scalar, Endpoint>
+        Endpoint: Clone + PartialOrd + self::Point<Coordinate = Scalar>,
+    > Mesh<Endpoint>
 {
     fn to_triangles_vertices(&self) -> Vec<[Endpoint; 3]> {
         let mut result = Vec::new();
@@ -162,8 +162,8 @@ impl<
 
 impl<
         Scalar: AdditiveGroup + Clone + MultiplicativeMonoid + Signed,
-        Endpoint: self::Point<Scalar> + PartialEq,
-    > Mesh<Scalar, Endpoint>
+        Endpoint: self::Point<Coordinate = Scalar> + PartialEq,
+    > Mesh<Endpoint>
 {
     fn build_base_edge(
         &mut self,
@@ -314,8 +314,10 @@ impl<
     }
 }
 
-impl<Scalar: AdditiveGroup + MultiplicativeMonoid + Signed, Endpoint: self::Point<Scalar>>
-    Mesh<Scalar, Endpoint>
+impl<
+        Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
+        Endpoint: self::Point<Coordinate = Scalar>,
+    > Mesh<Endpoint>
 {
     pub(super) fn create_triangle(
         &mut self,
@@ -340,8 +342,10 @@ impl<Scalar: AdditiveGroup + MultiplicativeMonoid + Signed, Endpoint: self::Poin
     }
 }
 
-impl<Scalar: AdditiveGroup + MultiplicativeMonoid + Signed, Endpoint: self::Point<Scalar>>
-    Mesh<Scalar, Endpoint>
+impl<
+        Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
+        Endpoint: self::Point<Coordinate = Scalar>,
+    > Mesh<Endpoint>
 {
     fn orient_point_to_edge(&self, edge: usize, point: &Endpoint) -> Orientation {
         orient(self.get_start(edge), self.get_end(edge), point)

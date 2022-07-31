@@ -8,12 +8,14 @@ pub struct Point<Scalar> {
     pub(super) y: Scalar,
 }
 
-impl<Scalar: Clone> traits::Point<Scalar> for Point<Scalar> {
-    fn x(&self) -> Scalar {
+impl<Scalar: Clone> traits::Point for Point<Scalar> {
+    type Coordinate = Scalar;
+
+    fn x(&self) -> Self::Coordinate {
         self.x.clone()
     }
 
-    fn y(&self) -> Scalar {
+    fn y(&self) -> Self::Coordinate {
         self.y.clone()
     }
 }

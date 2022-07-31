@@ -19,7 +19,7 @@ impl<Scalar: Ord> Contour<Scalar> {
     }
 }
 
-impl<Scalar: Clone> traits::Contour<Scalar> for Contour<Scalar> {
+impl<Scalar: Clone> traits::Contour for Contour<Scalar> {
     type Point = self::Point<Scalar>;
     type Segment = self::Segment<Scalar>;
 

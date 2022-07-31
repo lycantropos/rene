@@ -6,7 +6,7 @@ struct Multipolygon<Scalar> {
     polygons: Vec<Polygon<Scalar>>,
 }
 
-impl<Scalar: Clone> traits::Multipolygon<Scalar> for Multipolygon<Scalar> {
+impl<Scalar: Clone> traits::Multipolygon for Multipolygon<Scalar> {
     type Point = self::Point<Scalar>;
     type Segment = self::Segment<Scalar>;
     type Contour = self::Contour<Scalar>;

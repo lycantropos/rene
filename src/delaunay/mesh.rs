@@ -1,5 +1,4 @@
 use std::iter::Map;
-use std::marker::PhantomData;
 use std::ops::Range;
 
 use rithm::traits::Parity;
@@ -7,26 +6,24 @@ use rithm::traits::Parity;
 use crate::delaunay::quad_edge::{to_opposite_edge, to_rotated_edge, QuadEdge};
 
 #[derive(Clone)]
-pub(super) struct Mesh<Scalar, Endpoint> {
+pub(super) struct Mesh<Endpoint> {
     endpoints: Vec<Endpoint>,
     left_from_start: Vec<QuadEdge>,
     starts_indices: Vec<usize>,
-    _phantom: PhantomData<fn() -> Scalar>,
 }
 
-impl<Scalar, Endpoint> From<Vec<Endpoint>> for Mesh<Scalar, Endpoint> {
+impl<Endpoint> From<Vec<Endpoint>> for Mesh<Endpoint> {
     fn from(endpoints: Vec<Endpoint>) -> Self {
         let endpoints_count = endpoints.len();
         Self {
             endpoints,
             left_from_start: Vec::with_capacity(4 * endpoints_count),
             starts_indices: Vec::with_capacity(2 * endpoints_count),
-            _phantom: PhantomData,
         }
     }
 }
 
-impl<Scalar, Endpoint> Mesh<Scalar, Endpoint> {
+impl<Endpoint> Mesh<Endpoint> {
     pub(super) fn get_endpoints(&self) -> &[Endpoint] {
         &self.endpoints
     }
@@ -73,7 +70,7 @@ impl<Scalar, Endpoint> Mesh<Scalar, Endpoint> {
     }
 }
 
-impl<Scalar, Endpoint> Mesh<Scalar, Endpoint> {
+impl<Endpoint> Mesh<Endpoint> {
     pub(super) fn connect_edges(&mut self, first: QuadEdge, second: QuadEdge) -> QuadEdge {
         let result = self.create_edge(self.to_end_index(first), self.to_start_index(second));
         self.splice_edges(result, self.to_left_from_end(first));

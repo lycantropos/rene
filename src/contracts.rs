@@ -7,7 +7,7 @@ use crate::traits;
 
 pub(crate) fn are_contour_vertices_non_degenerate<
     Scalar: AdditiveGroup + MultiplicativeMonoid + Signed,
-    Point: traits::Point<Scalar>,
+    Point: traits::Point<Coordinate = Scalar>,
 >(
     vertices: &[Point],
 ) -> bool {
