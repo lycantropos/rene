@@ -1,13 +1,10 @@
 use std::hash::{Hash, Hasher};
 
-use rithm::traits::{AdditiveGroup, MultiplicativeMonoid, Signed};
-
 use crate::oriented::{Orientation, Oriented};
 
 use super::types::Contour;
 
-impl<Scalar: AdditiveGroup + Clone + Hash + MultiplicativeMonoid + Ord + Signed> Hash
-    for Contour<Scalar>
+impl<Scalar: Hash + Ord> Hash for Contour<Scalar>
 where
     Self: Oriented,
 {
