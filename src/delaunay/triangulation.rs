@@ -1,4 +1,4 @@
-use rithm::traits::DivRem;
+use traiter::numbers::DivRem;
 
 use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 use crate::locatable::Location;

@@ -2,7 +2,7 @@ use std::ops::{Add, Div, Mul, Sub};
 
 use rithm::big_int::BigInt;
 use rithm::fraction::Fraction;
-use rithm::traits::{BitLength, IsPowerOfTwo, Sign, Signed, Unitary};
+use traiter::numbers::{BitLength, IsPowerOfTwo, Sign, Signed, Unitary};
 
 use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 use crate::locatable::Location;

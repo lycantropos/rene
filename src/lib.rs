@@ -12,8 +12,8 @@ use pyo3::types::{PyFloat, PyFrozenSet, PyLong, PySequence, PyTuple, PyType};
 use pyo3::{
     ffi, intern, AsPyPointer, FromPyObject, IntoPy, Py, PyAny, PyErr, PyObject, ToPyObject,
 };
-use rithm::traits::{Endianness, FromBytes, ToBytes, Zeroable};
 use rithm::{big_int, fraction};
+use traiter::numbers::{Endianness, FromBytes, ToBytes, Zeroable};
 
 use crate::bentley_ottmann::{
     is_contour_valid, is_multisegment_valid, to_unique_non_crossing_or_overlapping_segments,

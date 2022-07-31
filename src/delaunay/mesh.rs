@@ -1,7 +1,7 @@
 use std::iter::Map;
 use std::ops::Range;
 
-use rithm::traits::Parity;
+use traiter::numbers::Parity;
 
 use crate::delaunay::quad_edge::{to_opposite_edge, to_rotated_edge, QuadEdge};
 

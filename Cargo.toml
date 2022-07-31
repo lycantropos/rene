@@ -11,7 +11,11 @@ name = "rene"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-rithm= "^9.4.0"
+rithm = "^10.1.0"
+
+[dependencies.traiter]
+version = "^0.1.0"
+features = ["numbers"]
 
 [dependencies.pyo3]
 version = "^0.16.5"

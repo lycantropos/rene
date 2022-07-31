@@ -1,4 +1,4 @@
-use rithm::traits::Parity;
+use traiter::numbers::Parity;
 
 pub(super) type Event = usize;
 
