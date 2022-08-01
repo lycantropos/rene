@@ -199,9 +199,18 @@ pub(crate) trait LocatePointInPointPointPointCircle {
 }
 
 impl<
-        Scalar: Add<Output = Scalar> + Mul<Output = Scalar> + Sub<Output = Scalar> + Clone + Signed,
-        Point: traits::Point<Coordinate = Scalar>,
+        Digit,
+        const SEPARATOR: char,
+        const SHIFT: usize,
+        Point: traits::Point<Coordinate = Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>,
     > LocatePointInPointPointPointCircle for Point
+where
+    for<'a> &'a <Point as traits::Point>::Coordinate:
+        Mul<Output = <Point as traits::Point>::Coordinate>,
+    <Point as traits::Point>::Coordinate: Add<Output = <Point as traits::Point>::Coordinate>
+        + Mul<Output = <Point as traits::Point>::Coordinate>
+        + Signed
+        + Sub<Output = <Point as traits::Point>::Coordinate>,
 {
     fn locate_point_in_point_point_point_circle(
         &self,
@@ -212,11 +221,11 @@ impl<
         let (first_dx, first_dy) = (first.x() - self.x(), first.y() - self.y());
         let (second_dx, second_dy) = (second.x() - self.x(), second.y() - self.y());
         let (third_dx, third_dy) = (third.x() - self.x(), third.y() - self.y());
-        match ((first_dx.clone() * first_dx.clone() + first_dy.clone() * first_dy.clone())
-            * (second_dx.clone() * third_dy.clone() - second_dy.clone() * third_dx.clone())
-            - (second_dx.clone() * second_dx.clone() + second_dy.clone() * second_dy.clone())
-                * (first_dx.clone() * third_dy.clone() - first_dy.clone() * third_dx.clone())
-            + (third_dx.clone() * third_dx + third_dy.clone() * third_dy)
+        match ((&first_dx * &first_dx + &first_dy * &first_dy)
+            * (&second_dx * &third_dy - &second_dy * &third_dx)
+            - (&second_dx * &second_dx + &second_dy * &second_dy)
+                * (&first_dx * &third_dy - &first_dy * &third_dx)
+            + (&third_dx * &third_dx + &third_dy * &third_dy)
                 * (first_dx * second_dy - first_dy * second_dx))
             .sign()
         {
