@@ -158,15 +158,21 @@ pub(crate) trait IntersectCrossingSegments {
 }
 
 impl<
-        Scalar: Add<Output = Scalar>
-            + Clone
-            + Div<Output = Scalar>
-            + Mul<Output = Scalar>
-            + Sub<Output = Scalar>,
-        Point: CrossMultiply<Output = Scalar>
-            + From<(Scalar, Scalar)>
-            + traits::Point<Coordinate = Scalar>,
+        Digit,
+        const SEPARATOR: char,
+        const SHIFT: usize,
+        Point: CrossMultiply<Output = <Point as traits::Point>::Coordinate>
+            + From<(
+                <Point as traits::Point>::Coordinate,
+                <Point as traits::Point>::Coordinate,
+            )> + traits::Point<Coordinate = Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>,
     > IntersectCrossingSegments for Point
+where
+    for<'a> <Point as traits::Point>::Coordinate: Add<Output = <Point as traits::Point>::Coordinate>
+        + Div<Output = <Point as traits::Point>::Coordinate>
+        + Mul<&'a <Point as traits::Point>::Coordinate, Output = <Point as traits::Point>::Coordinate>
+        + Mul<Output = <Point as traits::Point>::Coordinate>
+        + Sub<Output = <Point as traits::Point>::Coordinate>,
 {
     fn intersect_crossing_segments(
         first_start: &Self,
@@ -177,7 +183,7 @@ impl<
         let scale = Self::cross_multiply(first_start, second_start, second_start, second_end)
             / Self::cross_multiply(first_start, first_end, second_start, second_end);
         Point::from((
-            first_start.x() + (first_end.x() - first_start.x()) * scale.clone(),
+            first_start.x() + (first_end.x() - first_start.x()) * &scale,
             first_start.y() + (first_end.y() - first_start.y()) * scale,
         ))
     }
