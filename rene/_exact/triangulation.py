@@ -1,4 +1,6 @@
-from rene._delaunay.triangulation import Triangulation as RawTriangulation
+from rene._delaunay.triangulation import (ConstrainedDelaunay,
+                                          Delaunay,
+                                          Triangulation as _Raw)
 from rene._rene import MIN_CONTOUR_VERTICES_COUNT
 from rene._utils import shrink_collinear_vertices
 from .contour import Contour
@@ -6,8 +8,12 @@ from .contour import Contour
 
 class Triangulation:
     @classmethod
+    def constrained_delaunay(cls, polygon):
+        return cls(ConstrainedDelaunay.from_polygon(polygon))
+
+    @classmethod
     def delaunay(cls, points):
-        return cls(RawTriangulation.delaunay(points))
+        return cls(Delaunay.from_points(points))
 
     @property
     def border(self):
@@ -27,5 +33,5 @@ class Triangulation:
     def __bool__(self):
         return bool(self._raw)
 
-    def __init__(self, _raw: RawTriangulation) -> None:
+    def __init__(self, _raw: _Raw) -> None:
         self._raw = _raw

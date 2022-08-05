@@ -187,6 +187,10 @@ class Segment:
 @_final
 class Triangulation:
     @classmethod
+    def constrained_delaunay(cls, polygon: Polygon) -> 'Triangulation':
+        ...
+
+    @classmethod
     def delaunay(cls, points: _Sequence[Point]) -> 'Triangulation':
         ...
 
