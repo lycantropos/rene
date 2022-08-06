@@ -5,5 +5,5 @@ pub(crate) trait BoundaryEndpoints<Endpoint> {
 }
 
 pub(super) trait DelaunayTriangulatable {
-    fn delunay_triangulation(&mut self) -> (QuadEdge, QuadEdge);
+    fn delaunay_triangulation(&mut self) -> (QuadEdge, QuadEdge);
 }

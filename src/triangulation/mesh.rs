@@ -326,7 +326,7 @@ impl<Endpoint: Orient> Mesh<Endpoint> {
 impl<Endpoint: Clone + LocatePointInPointPointPointCircle + Ord + Orient> DelaunayTriangulatable
     for Mesh<Endpoint>
 {
-    fn delunay_triangulation(&mut self) -> (usize, usize) {
+    fn delaunay_triangulation(&mut self) -> (usize, usize) {
         let endpoints_count = self.get_endpoints().len();
         if endpoints_count < 2 {
             (UNDEFINED_QUAD_EDGE, UNDEFINED_QUAD_EDGE)

@@ -45,7 +45,7 @@ where
         endpoints.sort();
         endpoints.dedup();
         let mut mesh = Mesh::from(endpoints);
-        let (left_side, right_side) = mesh.delunay_triangulation();
+        let (left_side, right_side) = mesh.delaunay_triangulation();
         Self {
             left_side,
             mesh,
