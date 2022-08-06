@@ -1,8 +1,10 @@
-from rene._delaunay.triangulation import (
-    ConstrainedDelaunay as _RawConstrainedDelaunayTriangulation,
+from rene._rene import MIN_CONTOUR_VERTICES_COUNT
+from rene._triangulation.constrained_delaunay import (
+    ConstrainedDelaunay as _RawConstrainedDelaunayTriangulation
+)
+from rene._triangulation.delaunay import (
     DelaunayTriangulation as _RawDelaunayTriangulation
 )
-from rene._rene import MIN_CONTOUR_VERTICES_COUNT
 from rene._utils import shrink_collinear_vertices
 from .contour import Contour
 
