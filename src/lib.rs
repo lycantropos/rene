@@ -273,6 +273,10 @@ impl PyRelation {
 #[derive(Clone)]
 struct PyExactContour(ExactContour);
 
+#[pyclass(name = "DelaunayTriangulation", module = "rene.exact")]
+#[derive(Clone)]
+struct PyExactDelaunayTriangulation(ExactDelaunayTriangulation);
+
 #[pyclass(name = "Multisegment", module = "rene.exact", subclass)]
 #[pyo3(text_signature = "(segments, /)")]
 #[derive(Clone)]
@@ -292,10 +296,6 @@ struct PyExactPolygon(ExactPolygon);
 #[pyo3(text_signature = "(start, end, /)")]
 #[derive(Clone)]
 struct PyExactSegment(ExactSegment);
-
-#[pyclass(name = "DelaunayTriangulation", module = "rene.exact")]
-#[derive(Clone)]
-struct PyExactDelaunayTriangulation(ExactDelaunayTriangulation);
 
 #[pymethods]
 impl PyExactContour {
@@ -377,6 +377,34 @@ impl PyExactContour {
                 .collect::<Vec<String>>()
                 .join(", ")
         ))
+    }
+}
+
+#[pymethods]
+impl PyExactDelaunayTriangulation {
+    #[classmethod]
+    fn delaunay(_: &PyType, points: &PySequence) -> PyResult<Self> {
+        Ok(PyExactDelaunayTriangulation(DelaunayTriangulation::from(
+            extract_from_sequence::<PyExactPoint, ExactPoint>(points)?,
+        )))
+    }
+
+    #[getter]
+    fn border(&self) -> PyResult<PyExactContour> {
+        try_vertices_to_py_exact_contour(self.0.to_boundary_points())
+    }
+
+    #[getter]
+    fn triangles(&self) -> Vec<ExactContour> {
+        self.0
+            .to_triangles_vertices()
+            .into_iter()
+            .map(ExactContour::from)
+            .collect()
+    }
+
+    fn __bool__(&self) -> bool {
+        !self.0.is_empty()
     }
 }
 
@@ -619,34 +647,6 @@ impl PyExactSegment {
             self.start().__str__()?,
             self.end().__str__()?,
         ))
-    }
-}
-
-#[pymethods]
-impl PyExactDelaunayTriangulation {
-    #[classmethod]
-    fn delaunay(_: &PyType, points: &PySequence) -> PyResult<Self> {
-        Ok(PyExactDelaunayTriangulation(DelaunayTriangulation::from(
-            extract_from_sequence::<PyExactPoint, ExactPoint>(points)?,
-        )))
-    }
-
-    #[getter]
-    fn border(&self) -> PyResult<PyExactContour> {
-        try_vertices_to_py_exact_contour(self.0.to_boundary_points())
-    }
-
-    #[getter]
-    fn triangles(&self) -> Vec<ExactContour> {
-        self.0
-            .to_triangles_vertices()
-            .into_iter()
-            .map(ExactContour::from)
-            .collect()
-    }
-
-    fn __bool__(&self) -> bool {
-        !self.0.is_empty()
     }
 }
 
