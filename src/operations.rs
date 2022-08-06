@@ -255,17 +255,15 @@ pub(crate) fn shrink_collinear_vertices<'a, Point: Orient>(
     let mut result = Vec::with_capacity(vertices.len());
     result.push(vertices[0]);
     for index in 1..vertices.len() - 1 {
-        if !matches!(
-            result[result.len() - 1].orient(vertices[index], vertices[index + 1]),
-            Orientation::Collinear
-        ) {
+        if result[result.len() - 1].orient(vertices[index], vertices[index + 1])
+            != Orientation::Collinear
+        {
             result.push(vertices[index])
         }
     }
-    if !matches!(
-        result[result.len() - 1].orient(vertices[vertices.len() - 1], result[0]),
-        Orientation::Collinear
-    ) {
+    if result[result.len() - 1].orient(vertices[vertices.len() - 1], result[0])
+        != Orientation::Collinear
+    {
         result.push(vertices[vertices.len() - 1])
     } else if result.len() > 2 {
         result[0] = unsafe { result.pop().unwrap_unchecked() }

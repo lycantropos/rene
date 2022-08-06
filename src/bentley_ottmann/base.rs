@@ -34,7 +34,7 @@ where
                         intersection.start == intersection.end,
                         matches!(intersection.relation, Relation::Touch | Relation::Cross)
                     );
-                    let touches_at_vertices = (matches!(intersection.relation, Relation::Touch)
+                    let touches_at_vertices = intersection.relation == Relation::Touch
                         && (intersection
                             .start
                             .eq(sweep.get_segment_start(intersection.first_segment_id))
@@ -46,7 +46,7 @@ where
                             .eq(sweep.get_segment_start(intersection.second_segment_id))
                             || intersection
                                 .start
-                                .eq(sweep.get_segment_end(intersection.second_segment_id))));
+                                .eq(sweep.get_segment_end(intersection.second_segment_id)));
                     let neighbour_segments_intersection = intersection
                         .first_segment_id
                         .abs_diff(intersection.second_segment_id)
@@ -81,7 +81,7 @@ where
             .iter()
             .all(|segment| segment.start() != segment.end())
         && Sweep::from(segments.as_slice())
-            .all(|intersection| matches!(intersection.relation, Relation::Touch))
+            .all(|intersection| intersection.relation == Relation::Touch)
 }
 
 pub(crate) fn to_unique_non_crossing_or_overlapping_segments<

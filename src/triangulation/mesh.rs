@@ -127,10 +127,8 @@ impl<Endpoint: Clone + Orient + PartialOrd> Mesh<Endpoint> {
             if first_vertex < second_vertex
                 && first_vertex < third_vertex
                 && third_vertex == self.get_end(self.to_right_from_start(to_opposite_edge(edge)))
-                && matches!(
-                    self.orient_point_to_edge(edge, self.get_end(self.to_left_from_start(edge))),
-                    Orientation::Counterclockwise
-                )
+                && self.orient_point_to_edge(edge, self.get_end(self.to_left_from_start(edge)))
+                    == Orientation::Counterclockwise
             {
                 result.push([
                     first_vertex.clone(),
@@ -150,15 +148,13 @@ impl<Endpoint: Orient + PartialEq + LocatePointInPointPointPointCircle> Mesh<End
         mut second_left_side: QuadEdge,
     ) -> (QuadEdge, QuadEdge, QuadEdge) {
         loop {
-            if matches!(
-                self.orient_point_to_edge(first_right_side, self.get_start(second_left_side)),
-                Orientation::Counterclockwise
-            ) {
+            if self.orient_point_to_edge(first_right_side, self.get_start(second_left_side))
+                == Orientation::Counterclockwise
+            {
                 first_right_side = self.to_left_from_end(first_right_side);
-            } else if matches!(
-                self.orient_point_to_edge(second_left_side, self.get_start(first_right_side)),
-                Orientation::Clockwise
-            ) {
+            } else if self.orient_point_to_edge(second_left_side, self.get_start(first_right_side))
+                == Orientation::Clockwise
+            {
                 second_left_side = self.to_right_from_end(second_left_side);
             } else {
                 break;
@@ -173,24 +169,21 @@ impl<Endpoint: Orient + PartialEq + LocatePointInPointPointPointCircle> Mesh<End
 
     fn find_left_candidate(&mut self, base_edge: QuadEdge) -> Option<QuadEdge> {
         let mut result = self.to_left_from_start(to_opposite_edge(base_edge));
-        if !matches!(
-            self.orient_point_to_edge(base_edge, self.get_end(result)),
-            Orientation::Clockwise
-        ) {
+        if self.orient_point_to_edge(base_edge, self.get_end(result)) != Orientation::Clockwise {
             None
         } else {
-            while matches!(
-                self.orient_point_to_edge(base_edge, self.get_end(self.to_left_from_start(result))),
-                Orientation::Clockwise
-            ) && matches!(
-                self.get_end(self.to_left_from_start(result))
+            while self
+                .orient_point_to_edge(base_edge, self.get_end(self.to_left_from_start(result)))
+                == Orientation::Clockwise
+                && self
+                    .get_end(self.to_left_from_start(result))
                     .locate_point_in_point_point_point_circle(
                         self.get_end(base_edge),
                         self.get_start(base_edge),
-                        self.get_end(result)
-                    ),
-                Location::Interior
-            ) {
+                        self.get_end(result),
+                    )
+                    == Location::Interior
+            {
                 let next_candidate = self.to_left_from_start(result);
                 self.delete_edge(result);
                 result = next_candidate;
@@ -201,27 +194,21 @@ impl<Endpoint: Orient + PartialEq + LocatePointInPointPointPointCircle> Mesh<End
 
     fn find_right_candidate(&mut self, base_edge: QuadEdge) -> Option<QuadEdge> {
         let mut result = self.to_right_from_start(base_edge);
-        if !matches!(
-            self.orient_point_to_edge(base_edge, self.get_end(result)),
-            Orientation::Clockwise
-        ) {
+        if self.orient_point_to_edge(base_edge, self.get_end(result)) != Orientation::Clockwise {
             None
         } else {
-            while matches!(
-                self.orient_point_to_edge(
-                    base_edge,
-                    self.get_end(self.to_right_from_start(result))
-                ),
-                Orientation::Clockwise
-            ) && matches!(
-                self.get_end(self.to_right_from_start(result))
+            while self
+                .orient_point_to_edge(base_edge, self.get_end(self.to_right_from_start(result)))
+                == Orientation::Clockwise
+                && self
+                    .get_end(self.to_right_from_start(result))
                     .locate_point_in_point_point_point_circle(
                         self.get_end(base_edge),
                         self.get_start(base_edge),
-                        self.get_end(result)
-                    ),
-                Location::Interior
-            ) {
+                        self.get_end(result),
+                    )
+                    == Location::Interior
+            {
                 let next_candidate = self.to_right_from_start(result);
                 self.delete_edge(result);
                 result = next_candidate;
@@ -260,15 +247,15 @@ impl<Endpoint: Orient + PartialEq + LocatePointInPointPointPointCircle> Mesh<End
             base_edge = match maybe_left_candidate {
                 Some(left_candidate) => match maybe_right_candidate {
                     Some(right_candidate) => {
-                        if matches!(
-                            self.get_end(right_candidate)
-                                .locate_point_in_point_point_point_circle(
-                                    self.get_end(left_candidate),
-                                    self.get_end(base_edge),
-                                    self.get_start(base_edge),
-                                ),
-                            Location::Interior,
-                        ) {
+                        if self
+                            .get_end(right_candidate)
+                            .locate_point_in_point_point_point_circle(
+                                self.get_end(left_candidate),
+                                self.get_end(base_edge),
+                                self.get_start(base_edge),
+                            )
+                            == Location::Interior
+                        {
                             self.connect_edges(right_candidate, to_opposite_edge(base_edge))
                         } else {
                             self.connect_edges(
