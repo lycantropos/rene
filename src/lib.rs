@@ -383,7 +383,7 @@ impl PyExactContour {
 #[pymethods]
 impl PyExactDelaunayTriangulation {
     #[classmethod]
-    fn delaunay(_: &PyType, points: &PySequence) -> PyResult<Self> {
+    fn from_points(_: &PyType, points: &PySequence) -> PyResult<Self> {
         Ok(PyExactDelaunayTriangulation(DelaunayTriangulation::from(
             extract_from_sequence::<PyExactPoint, ExactPoint>(points)?,
         )))
