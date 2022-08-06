@@ -293,7 +293,7 @@ struct PyExactPolygon(ExactPolygon);
 #[derive(Clone)]
 struct PyExactSegment(ExactSegment);
 
-#[pyclass(name = "Triangulation", module = "rene.exact")]
+#[pyclass(name = "DelaunayTriangulation", module = "rene.exact")]
 #[derive(Clone)]
 struct PyExactDelaunayTriangulation(ExactDelaunayTriangulation);
 

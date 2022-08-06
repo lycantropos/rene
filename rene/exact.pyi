@@ -185,13 +185,28 @@ class Segment:
 
 
 @_final
-class Triangulation:
+class ConstrainedDelaunayTriangulation:
     @classmethod
-    def constrained_delaunay(cls, polygon: Polygon) -> 'Triangulation':
+    def from_polygon(cls,
+                     polygon: Polygon) -> 'ConstrainedDelaunayTriangulation':
         ...
 
+    @property
+    def border(self) -> Contour:
+        ...
+
+    @property
+    def triangles(self) -> _Sequence[Contour]:
+        ...
+
+    def __bool__(self) -> bool:
+        ...
+
+
+@_final
+class DelaunayTriangulation:
     @classmethod
-    def delaunay(cls, points: _Sequence[Point]) -> 'Triangulation':
+    def from_points(cls, points: _Sequence[Point]) -> 'DelaunayTriangulation':
         ...
 
     @property

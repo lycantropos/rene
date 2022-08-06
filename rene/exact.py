@@ -1,14 +1,15 @@
 try:
     from ._cexact import (Contour,
+                          DelaunayTriangulation,
                           Multisegment,
                           Point,
                           Polygon,
-                          Segment,
-                          Triangulation)
+                          Segment)
 except ImportError:
-    from ._exact import (Contour,
+    from ._exact import (ConstrainedDelaunayTriangulation,
+                         Contour,
+                         DelaunayTriangulation,
                          Multisegment,
                          Point,
                          Polygon,
-                         Segment,
-                         Triangulation)
+                         Segment)

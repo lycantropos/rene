@@ -1,5 +1,3 @@
-from abc import (ABC,
-                 abstractmethod)
 from collections import deque
 from itertools import (chain,
                        groupby,
@@ -37,17 +35,7 @@ from .vertices import (ContourVertex,
 BORDER_CONTOUR_INDEX = 0
 
 
-class Triangulation(ABC):
-    @abstractmethod
-    def to_boundary_points(self) -> List[Point]:
-        """Returns triangles vertices of the triangulation."""
-
-    @abstractmethod
-    def triangles_vertices(self) -> List[Tuple[Point, Point, Point]]:
-        """Returns triangles vertices of the triangulation."""
-
-
-class ConstrainedDelaunay(Triangulation):
+class ConstrainedDelaunay:
     @classmethod
     def from_polygon(cls, polygon: Polygon) -> 'ConstrainedDelaunay':
         contours_vertices = [polygon.border.vertices,
@@ -243,9 +231,9 @@ class ConstrainedDelaunay(Triangulation):
     __repr__ = generate_repr(__init__)
 
 
-class Delaunay(Triangulation):
+class DelaunayTriangulation:
     @classmethod
-    def from_points(cls, points: Sequence[Point]) -> 'Delaunay':
+    def from_points(cls, points: Sequence[Point]) -> 'DelaunayTriangulation':
         endpoints = list(points)
         endpoints.sort()
         mesh = Mesh.from_points(deduplicate(endpoints))
