@@ -1,3 +1,5 @@
+pub const UNDEFINED_QUAD_EDGE: QuadEdge = usize::MAX;
+
 pub(crate) type QuadEdge = usize;
 
 pub(super) fn to_opposite_edge(edge: QuadEdge) -> QuadEdge {

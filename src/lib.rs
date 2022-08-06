@@ -19,17 +19,16 @@ use crate::bentley_ottmann::{
     is_contour_valid, is_multisegment_valid, to_unique_non_crossing_or_overlapping_segments,
 };
 use crate::constants::{MIN_CONTOUR_VERTICES_COUNT, MIN_MULTISEGMENT_SEGMENTS_COUNT};
-use crate::delaunay::Triangulation;
 use crate::locatable::Location;
-use crate::operations::{shrink_collinear_vertices, to_arg_min};
+use crate::operations::to_arg_min;
 use crate::oriented::{Orientation, Oriented};
 use crate::relatable::Relation;
 use crate::traits::{Contour, Multisegment, Point, Polygon, Segment};
+use crate::triangulation::{BoundaryEndpoints, DelaunayTriangulation};
 
 mod bentley_ottmann;
 mod constants;
 mod contracts;
-mod delaunay;
 pub mod geometries;
 mod iteration;
 pub mod locatable;
@@ -37,6 +36,7 @@ mod operations;
 pub mod oriented;
 pub mod relatable;
 pub mod traits;
+mod triangulation;
 
 #[cfg(target_arch = "x86")]
 type Digit = u16;
@@ -48,11 +48,11 @@ const BINARY_SHIFT: usize = (Digit::BITS - 1) as usize;
 type BigInt = big_int::BigInt<Digit, '_', BINARY_SHIFT>;
 type Fraction = fraction::Fraction<BigInt>;
 type ExactContour = geometries::Contour<Fraction>;
+type ExactDelaunayTriangulation = DelaunayTriangulation<ExactPoint>;
 type ExactMultisegment = geometries::Multisegment<Fraction>;
 type ExactPoint = geometries::Point<Fraction>;
 type ExactPolygon = geometries::Polygon<Fraction>;
 type ExactSegment = geometries::Segment<Fraction>;
-type ExactTriangulation = Triangulation<ExactPoint>;
 
 impl IntoPy<PyObject> for ExactContour {
     fn into_py(self, py: Python<'_>) -> PyObject {
@@ -295,7 +295,7 @@ struct PyExactSegment(ExactSegment);
 
 #[pyclass(name = "Triangulation", module = "rene.exact")]
 #[derive(Clone)]
-struct PyExactTriangulation(ExactTriangulation);
+struct PyExactDelaunayTriangulation(ExactDelaunayTriangulation);
 
 #[pymethods]
 impl PyExactContour {
@@ -623,27 +623,17 @@ impl PyExactSegment {
 }
 
 #[pymethods]
-impl PyExactTriangulation {
+impl PyExactDelaunayTriangulation {
     #[classmethod]
     fn delaunay(_: &PyType, points: &PySequence) -> PyResult<Self> {
-        Ok(PyExactTriangulation(Triangulation::from(
+        Ok(PyExactDelaunayTriangulation(DelaunayTriangulation::from(
             extract_from_sequence::<PyExactPoint, ExactPoint>(points)?,
         )))
     }
 
     #[getter]
     fn border(&self) -> PyResult<PyExactContour> {
-        let boundary_points = self.0.get_boundary_points();
-        try_vertices_to_py_exact_contour(
-            if boundary_points.len() < MIN_CONTOUR_VERTICES_COUNT {
-                boundary_points
-            } else {
-                shrink_collinear_vertices(&boundary_points)
-            }
-            .into_iter()
-            .cloned()
-            .collect(),
-        )
+        try_vertices_to_py_exact_contour(self.0.to_boundary_points())
     }
 
     #[getter]
@@ -782,7 +772,7 @@ fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactPoint>()?;
     module.add_class::<PyExactPolygon>()?;
     module.add_class::<PyExactSegment>()?;
-    module.add_class::<PyExactTriangulation>()?;
+    module.add_class::<PyExactDelaunayTriangulation>()?;
     unsafe {
         let py = Python::assume_gil_acquired();
         MAYBE_FRACTION_CLS = Some(py.import("rithm")?.getattr(intern!(py, "Fraction"))?);

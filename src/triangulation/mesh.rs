@@ -1,130 +1,124 @@
-use traiter::numbers::DivRem;
+use std::iter::Map;
+use std::ops::Range;
 
-use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
+use traiter::numbers::{DivRem, Parity};
+
 use crate::locatable::Location;
 use crate::operations::{ceil_log2, LocatePointInPointPointPointCircle, Orient};
 use crate::oriented::Orientation;
 
-use super::mesh::Mesh;
-use super::quad_edge::{to_opposite_edge, QuadEdge};
+use super::operations::DelaunayTriangulatable;
+use super::quad_edge::{to_opposite_edge, to_rotated_edge, QuadEdge, UNDEFINED_QUAD_EDGE};
 
 #[derive(Clone)]
-pub(crate) struct Triangulation<Endpoint> {
-    left_side: QuadEdge,
-    mesh: Mesh<Endpoint>,
-    right_side: QuadEdge,
+pub(super) struct Mesh<Endpoint> {
+    endpoints: Vec<Endpoint>,
+    left_from_start: Vec<QuadEdge>,
+    starts_indices: Vec<usize>,
 }
 
-const UNDEFINED_INDEX: usize = usize::MAX;
-
-impl<Endpoint: Clone + LocatePointInPointPointPointCircle + Ord + Orient> From<Vec<Endpoint>>
-    for Triangulation<Endpoint>
-{
-    fn from(mut endpoints: Vec<Endpoint>) -> Self {
-        endpoints.sort();
-        endpoints.dedup();
+impl<Endpoint> From<Vec<Endpoint>> for Mesh<Endpoint> {
+    fn from(endpoints: Vec<Endpoint>) -> Self {
         let endpoints_count = endpoints.len();
-        let mut mesh = Mesh::from(endpoints);
-        if endpoints_count < 2 {
-            Self {
-                left_side: UNDEFINED_INDEX,
-                mesh,
-                right_side: UNDEFINED_INDEX,
-            }
-        } else {
-            let (segments_count, triangles_count) = to_base_cases(endpoints_count);
-            let mut sub_triangulations_sides =
-                Vec::<(QuadEdge, QuadEdge)>::with_capacity(segments_count + triangles_count);
-            for index in 0..segments_count {
-                let edge = mesh.create_edge(2 * index, 2 * index + 1);
-                let opposite_edge = to_opposite_edge(edge);
-                sub_triangulations_sides.push((edge, opposite_edge));
-            }
-            let offset = 2 * segments_count;
-            for index in 0..triangles_count {
-                sub_triangulations_sides.push(mesh.create_triangle(
-                    offset + 3 * index,
-                    offset + 3 * index + 1,
-                    offset + 3 * index + 2,
-                ));
-            }
-            for _ in 0..ceil_log2(sub_triangulations_sides.len()) {
-                let merge_steps_count = sub_triangulations_sides.len() / 2;
-                let mut next_sub_triangulations_sides = Vec::with_capacity(merge_steps_count);
-                for step in 0..merge_steps_count {
-                    next_sub_triangulations_sides.push(mesh.merge(
-                        sub_triangulations_sides[2 * step],
-                        sub_triangulations_sides[2 * step + 1],
-                    ));
-                }
-                next_sub_triangulations_sides
-                    .extend(&sub_triangulations_sides[2 * merge_steps_count..]);
-                sub_triangulations_sides.clear();
-                sub_triangulations_sides.append(&mut next_sub_triangulations_sides);
-            }
-            debug_assert_eq!(sub_triangulations_sides.len(), 1);
-            let (left_side, right_side) = sub_triangulations_sides[0];
-            Self {
-                left_side,
-                mesh,
-                right_side,
-            }
+        Self {
+            endpoints,
+            left_from_start: Vec::with_capacity(4 * endpoints_count),
+            starts_indices: Vec::with_capacity(2 * endpoints_count),
         }
     }
 }
 
-impl<Endpoint> Triangulation<Endpoint> {
-    pub(crate) fn get_boundary_points(&self) -> Vec<&Endpoint> {
-        let endpoints = self.mesh.get_endpoints();
-        if endpoints.len() < MIN_CONTOUR_VERTICES_COUNT {
-            endpoints.iter().collect()
-        } else {
-            let mut result = Vec::new();
-            let start = self.left_side;
-            let mut edge = start;
-            loop {
-                result.push(self.mesh.get_start(edge));
-                let candidate = self.mesh.to_right_from_end(edge);
-                if candidate == start {
-                    break;
-                }
-                edge = candidate;
-            }
-            result
-        }
+impl<Endpoint> Mesh<Endpoint> {
+    pub(super) fn get_endpoints(&self) -> &[Endpoint] {
+        &self.endpoints
     }
 
-    pub(crate) fn is_empty(&self) -> bool {
-        let result = self.mesh.is_empty();
-        debug_assert_eq!(self.left_side == UNDEFINED_INDEX, result);
-        debug_assert_eq!(self.right_side == UNDEFINED_INDEX, result);
+    pub(super) fn get_start(&self, edge: QuadEdge) -> &Endpoint {
+        &self.endpoints[self.to_start_index(edge)]
+    }
+
+    pub(super) fn get_end(&self, edge: QuadEdge) -> &Endpoint {
+        &self.endpoints[self.to_start_index(to_opposite_edge(edge))]
+    }
+
+    pub(super) fn is_empty(&self) -> bool {
+        self.left_from_start.is_empty()
+    }
+
+    pub(super) fn to_edges(&self) -> Map<Range<usize>, fn(usize) -> QuadEdge> {
+        (0..self.left_from_start.len() / 2).map(|index| index * 2)
+    }
+
+    pub(super) fn to_left_from_start(&self, edge: QuadEdge) -> QuadEdge {
+        self.left_from_start[edge]
+    }
+
+    pub(super) fn to_left_from_end(&self, edge: QuadEdge) -> QuadEdge {
+        to_rotated_edge(self.to_left_from_start(to_opposite_edge(to_rotated_edge(edge))))
+    }
+
+    pub(super) fn to_right_from_end(&self, edge: QuadEdge) -> QuadEdge {
+        self.to_left_from_start(to_opposite_edge(edge))
+    }
+
+    pub(super) fn to_right_from_start(&self, edge: QuadEdge) -> QuadEdge {
+        to_rotated_edge(self.to_left_from_start(to_rotated_edge(edge)))
+    }
+
+    fn to_end_index(&self, edge: QuadEdge) -> usize {
+        self.to_start_index(to_opposite_edge(edge))
+    }
+
+    fn to_start_index(&self, edge: QuadEdge) -> usize {
+        debug_assert!(edge.is_even());
+        self.starts_indices[edge / 2]
+    }
+}
+
+impl<Endpoint> Mesh<Endpoint> {
+    pub(super) fn connect_edges(&mut self, first: QuadEdge, second: QuadEdge) -> QuadEdge {
+        let result = self.create_edge(self.to_end_index(first), self.to_start_index(second));
+        self.splice_edges(result, self.to_left_from_end(first));
+        self.splice_edges(to_opposite_edge(result), second);
         result
     }
-}
 
-impl<Endpoint: Clone + Orient + PartialOrd> Triangulation<Endpoint> {
-    pub(crate) fn to_triangles_vertices(&self) -> Vec<[Endpoint; 3]> {
-        self.mesh.to_triangles_vertices()
+    pub(super) fn create_edge(&mut self, start_index: usize, end_index: usize) -> QuadEdge {
+        self.starts_indices.push(start_index);
+        self.starts_indices.push(end_index);
+        let edge = self.left_from_start.len();
+        let rotated_edge = edge + 1;
+        let opposite_edge = edge + 2;
+        let triple_rotated_edge = edge + 3;
+        self.left_from_start.push(edge);
+        self.left_from_start.push(triple_rotated_edge);
+        self.left_from_start.push(opposite_edge);
+        self.left_from_start.push(rotated_edge);
+        edge
     }
-}
 
-/// Searches solution of linear diophantine equation
-///   `2 * segments_count + 3 * triangles_count == points_count`
-/// where `points_count >= 2`
-fn to_base_cases(points_count: usize) -> (usize, usize) {
-    debug_assert!(points_count >= 2);
-    let (triangles_count, rest_points) = points_count.div_rem(3);
-    if rest_points == 0 {
-        (0, triangles_count)
-    } else if rest_points == 1 {
-        (2, triangles_count - 1)
-    } else {
-        (1, triangles_count)
+    pub(super) fn delete_edge(&mut self, edge: QuadEdge) {
+        self.splice_edges(edge, self.to_right_from_start(edge));
+        let opposite_edge = to_opposite_edge(edge);
+        self.splice_edges(opposite_edge, self.to_right_from_start(opposite_edge));
+    }
+
+    pub(super) fn splice_edges(&mut self, first: QuadEdge, second: QuadEdge) {
+        let alpha = to_rotated_edge(self.to_left_from_start(first));
+        let beta = to_rotated_edge(self.to_left_from_start(second));
+        (self.left_from_start[first], self.left_from_start[second]) = (
+            self.to_left_from_start(second),
+            self.to_left_from_start(first),
+        );
+        (self.left_from_start[alpha], self.left_from_start[beta]) = (
+            self.to_left_from_start(beta),
+            self.to_left_from_start(alpha),
+        );
     }
 }
 
 impl<Endpoint: Clone + Orient + PartialOrd> Mesh<Endpoint> {
-    fn to_triangles_vertices(&self) -> Vec<[Endpoint; 3]> {
+    pub(super) fn to_triangles_vertices(&self) -> Vec<[Endpoint; 3]> {
         let mut result = Vec::new();
         for edge in self.to_edges() {
             let first_vertex = self.get_start(edge);
@@ -300,7 +294,7 @@ impl<Endpoint: Orient + PartialEq + LocatePointInPointPointPointCircle> Mesh<End
 }
 
 impl<Endpoint: Orient> Mesh<Endpoint> {
-    pub(super) fn create_triangle(
+    pub(in crate::triangulation) fn create_triangle(
         &mut self,
         left_point_index: usize,
         mid_point_index: usize,
@@ -326,5 +320,65 @@ impl<Endpoint: Orient> Mesh<Endpoint> {
 impl<Endpoint: Orient> Mesh<Endpoint> {
     fn orient_point_to_edge(&self, edge: usize, point: &Endpoint) -> Orientation {
         self.get_start(edge).orient(self.get_end(edge), point)
+    }
+}
+
+impl<Endpoint: Clone + LocatePointInPointPointPointCircle + Ord + Orient> DelaunayTriangulatable
+    for Mesh<Endpoint>
+{
+    fn delunay_triangulation(&mut self) -> (usize, usize) {
+        let endpoints_count = self.get_endpoints().len();
+        if endpoints_count < 2 {
+            (UNDEFINED_QUAD_EDGE, UNDEFINED_QUAD_EDGE)
+        } else {
+            let (segments_count, triangles_count) = to_base_cases(endpoints_count);
+            let mut sub_triangulations_sides =
+                Vec::<(QuadEdge, QuadEdge)>::with_capacity(segments_count + triangles_count);
+            for index in 0..segments_count {
+                let edge = self.create_edge(2 * index, 2 * index + 1);
+                let opposite_edge = to_opposite_edge(edge);
+                sub_triangulations_sides.push((edge, opposite_edge));
+            }
+            let offset = 2 * segments_count;
+            for index in 0..triangles_count {
+                sub_triangulations_sides.push(self.create_triangle(
+                    offset + 3 * index,
+                    offset + 3 * index + 1,
+                    offset + 3 * index + 2,
+                ));
+            }
+            for _ in 0..ceil_log2(sub_triangulations_sides.len()) {
+                let merge_steps_count = sub_triangulations_sides.len() / 2;
+                let mut next_sub_triangulations_sides = Vec::with_capacity(merge_steps_count);
+                for step in 0..merge_steps_count {
+                    next_sub_triangulations_sides.push(self.merge(
+                        sub_triangulations_sides[2 * step],
+                        sub_triangulations_sides[2 * step + 1],
+                    ));
+                }
+                next_sub_triangulations_sides
+                    .extend(&sub_triangulations_sides[2 * merge_steps_count..]);
+                sub_triangulations_sides.clear();
+                sub_triangulations_sides.append(&mut next_sub_triangulations_sides);
+            }
+            debug_assert_eq!(sub_triangulations_sides.len(), 1);
+            let (left_side, right_side) = sub_triangulations_sides[0];
+            (left_side, right_side)
+        }
+    }
+}
+
+/// Searches solution of linear diophantine equation
+///   `2 * segments_count + 3 * triangles_count == points_count`
+/// where `points_count >= 2`
+fn to_base_cases(points_count: usize) -> (usize, usize) {
+    debug_assert!(points_count >= 2);
+    let (triangles_count, rest_points) = points_count.div_rem(3);
+    if rest_points == 0 {
+        (0, triangles_count)
+    } else if rest_points == 1 {
+        (2, triangles_count - 1)
+    } else {
+        (1, triangles_count)
     }
 }
