@@ -5,7 +5,7 @@ from hypothesis import given
 
 from rene import MIN_CONTOUR_VERTICES_COUNT
 from rene.exact import (Contour,
-                        Triangulation)
+                        DelaunayTriangulation)
 from tests.utils import (is_contour_triangular,
                          is_point_inside_circumcircle,
                          to_convex_hull,
@@ -16,14 +16,14 @@ from . import strategies
 
 @given(strategies.points_lists)
 def test_basic(points: Sequence[Point]) -> None:
-    result = Triangulation.delaunay(points)
+    result = DelaunayTriangulation.from_points(points)
 
-    assert isinstance(result, Triangulation)
+    assert isinstance(result, DelaunayTriangulation)
 
 
 @given(strategies.points_lists)
 def test_border(points: Sequence[Point]) -> None:
-    result = Triangulation.delaunay(points)
+    result = DelaunayTriangulation.from_points(points)
 
     convex_hull = to_convex_hull(points)
     assert (len(convex_hull) < MIN_CONTOUR_VERTICES_COUNT
@@ -32,7 +32,7 @@ def test_border(points: Sequence[Point]) -> None:
 
 @given(strategies.points_lists)
 def test_triangles(points: Sequence[Point]) -> None:
-    result = Triangulation.delaunay(points)
+    result = DelaunayTriangulation.from_points(points)
 
     triangles = result.triangles
     assert len(triangles) <= max(2 * (len(to_distinct(points)) - 1)
@@ -43,7 +43,7 @@ def test_triangles(points: Sequence[Point]) -> None:
 
 @given(strategies.points_lists)
 def test_delaunay_criterion(points: Sequence[Point]) -> None:
-    result = Triangulation.delaunay(points)
+    result = DelaunayTriangulation.from_points(points)
 
     assert all(not any(is_point_inside_circumcircle(point, *triangle.vertices)
                        for triangle in result.triangles)
@@ -52,7 +52,7 @@ def test_delaunay_criterion(points: Sequence[Point]) -> None:
 
 @given(strategies.points)
 def test_base_case(point: Point) -> None:
-    result = Triangulation.delaunay([point])
+    result = DelaunayTriangulation.from_points([point])
 
     triangles = result.triangles
     assert len(triangles) == 0
@@ -62,8 +62,8 @@ def test_base_case(point: Point) -> None:
 def test_step(points: Sequence[Point]) -> None:
     rest_points, last_point = points[:-1], points[-1]
 
-    result = Triangulation.delaunay(rest_points)
-    next_result = Triangulation.delaunay(points)
+    result = DelaunayTriangulation.from_points(rest_points)
+    next_result = DelaunayTriangulation.from_points(points)
 
     triangles = result.triangles
     next_triangles = next_result.triangles
