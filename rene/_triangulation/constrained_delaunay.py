@@ -4,7 +4,6 @@ from itertools import (chain,
                        repeat)
 from operator import attrgetter
 from typing import (Container,
-                    Iterable,
                     List,
                     Sequence,
                     Tuple)
@@ -88,15 +87,14 @@ class ConstrainedDelaunay:
                                                     contours_sizes)]
         while extraneous_mouths:
             mouth = extraneous_mouths.pop()
-            candidates = mouth_edge_to_incidents(mesh, mouth)
-            new_non_boundary = [candidate
-                                for candidate in candidates
-                                if not is_polygon_edge(mesh, candidate,
-                                                       contours_sizes)]
-            assert all(edge not in extraneous_mouths
-                       for edge in new_non_boundary)
+            first_candidate, second_candidate = mouth_edge_to_incidents(
+                    mesh, mouth
+            )
             self.delete_edge(mouth)
-            extraneous_mouths.extend(new_non_boundary)
+            if not is_polygon_edge(mesh, first_candidate, contours_sizes):
+                extraneous_mouths.append(first_candidate)
+            if not is_polygon_edge(mesh, second_candidate, contours_sizes):
+                extraneous_mouths.append(second_candidate)
 
     def constrain(self,
                   contours_sizes: List[int],
@@ -333,12 +331,13 @@ def is_edge_inside_hole(mesh: Mesh,
     return False
 
 
-def mouth_edge_to_incidents(mesh: Mesh, edge: QuadEdge) -> Iterable[QuadEdge]:
+def mouth_edge_to_incidents(mesh: Mesh,
+                            edge: QuadEdge) -> Tuple[QuadEdge, QuadEdge]:
     left_from_start = mesh.to_left_from_start(edge)
     assert orient_point_to_edge(
             mesh, edge, mesh.to_end(left_from_start)
     ) is Orientation.COUNTERCLOCKWISE
-    return [left_from_start, mesh.to_right_from_end(left_from_start)]
+    return left_from_start, mesh.to_right_from_end(left_from_start)
 
 
 def to_contours_constraints_flags(
