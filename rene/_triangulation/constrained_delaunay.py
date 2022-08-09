@@ -424,8 +424,8 @@ def resolve_crossings(mesh: Mesh[ContoursVertex],
 
 def restore_delaunay_criterion(mesh: Mesh, candidates: List[QuadEdge]) -> None:
     while True:
-        next_target_edges = []
-        edges_to_swap = []
+        next_target_edges: List[QuadEdge] = []
+        edges_to_swap: List[QuadEdge] = []
         for edge in candidates:
             (edges_to_swap
              if edge_should_be_swapped(mesh, edge)
