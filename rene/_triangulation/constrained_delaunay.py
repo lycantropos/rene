@@ -3,12 +3,10 @@ from itertools import (chain,
                        groupby,
                        repeat)
 from operator import attrgetter
-from typing import (Callable,
-                    Container,
+from typing import (Container,
                     Iterable,
                     List,
                     Sequence,
-                    Set,
                     Tuple)
 
 from reprit.base import generate_repr
@@ -18,8 +16,7 @@ from rene._rene import (Location,
                         Relation)
 from rene._utils import (locate_point_in_point_point_point_circle,
                          orient,
-                         relate_segments,
-                         to_sorted_pair)
+                         relate_segments)
 from rene.hints import (Point,
                         Polygon)
 from .mesh import (Mesh,
@@ -105,57 +102,37 @@ class ConstrainedDelaunay:
                   contours_sizes: List[int],
                   contours_vertices: List[Sequence[Point]]) -> None:
         mesh = self.mesh
-        has_three_boundary_edges = self.has_three_boundary_edges()
-        assert (has_three_boundary_edges
-                is (len(self.to_boundary_points()) == 3))
-        is_inner_edge = (
-            is_inner_edge_of_mesh_with_three_boundary_edges
-            if has_three_boundary_edges
-            else is_inner_edge_of_mesh_with_more_than_three_boundary_edges
-        )
-        potential_crossings = {
-            edge
-            for edge in mesh.to_unique_edges()
-            if (is_inner_edge(mesh, edge)
-                and not is_polygon_edge(mesh, edge, contours_sizes))
-        }
         contours_constraints_flags = to_contours_constraints_flags(
                 mesh, contours_sizes
         )
-        for (
-                constraint_start, constraint_end
-        ) in to_unsatisfied_constraints_endpoints(contours_constraints_flags,
-                                                  contours_vertices):
-            crossings = [
-                edge
-                for edge in potential_crossings
-                if relate_segments(mesh.to_start(edge).point,
-                                   mesh.to_end(edge).point,
-                                   constraint_start,
-                                   constraint_end) is Relation.CROSS
-            ]
-            set_constraint(mesh, constraint_start, constraint_end,
-                           crossings)
-            non_potential_crossings = []
-            for edge in crossings:
-                start, end = mesh.to_start(edge), mesh.to_end(edge)
-                common_contours_indices = (start.indices.keys()
-                                           & end.indices.keys())
-                for contour_index in common_contours_indices:
-                    start_index = start.indices[contour_index]
-                    end_index = end.indices[contour_index]
-                    if are_polygon_edge_indices(start_index,
-                                                end_index,
-                                                contours_sizes[contour_index]):
-                        non_potential_crossings.append(edge)
-                        contours_constraints_flags[contour_index][
-                            min(start_index, end_index)
-                            if abs(end_index - start_index) == 1
-                            else -1
-                        ] = True
-            potential_crossings.difference_update(non_potential_crossings)
-            assert all(not is_polygon_edge(mesh, edge, contours_sizes)
-                       for edge in potential_crossings)
+        for edge in mesh.to_edges():
+            vertex = mesh.to_start(edge)
+            for contour_index, vertex_index in vertex.indices.items():
+                contour_size = contours_sizes[contour_index]
+                next_vertex_index = (vertex_index + 1) % contour_size
+                constraint_index = to_constraint_index(vertex_index,
+                                                       next_vertex_index)
+                if not contours_constraints_flags[contour_index][
+                    constraint_index
+                ]:
+                    next_vertex_point = contours_vertices[contour_index][
+                        next_vertex_index
+                    ]
+                    angle_base_edge = to_angle_containing_constraint_base(
+                            mesh, edge, next_vertex_point
+                    )
+                    crossings = detect_crossings(
+                            mesh, angle_base_edge, vertex.point,
+                            next_vertex_point
+                    )
+                    if crossings:
+                        set_constraint(mesh, vertex.point, next_vertex_point,
+                                       crossings)
+                    contours_constraints_flags[contour_index][
+                        constraint_index
+                    ] = True
+            assert mesh.to_start(edge) is vertex
+        assert all(map(all, contours_constraints_flags))
 
     def cut(self, contours_vertices: List[Sequence[Point]]) -> None:
         mesh = self.mesh
@@ -173,31 +150,10 @@ class ConstrainedDelaunay:
             self._left_side = self.mesh.to_left_from_start(self.left_side)
         self.mesh.delete_edge(edge)
 
-    def has_three_boundary_edges(self) -> bool:
-        if self:
-            start = self.left_side
-            edge = start
-            for edges_count in range(1, 4):
-                candidate = self.mesh.to_right_from_end(edge)
-                if candidate == start:
-                    return edges_count == 3
-                edge = candidate
-        return False
-
     def to_boundary_points(self) -> List[Point]:
-        if self:
-            result = []
-            start = self.left_side
-            edge = start
-            while True:
-                result.append(self.mesh.to_start(edge).point)
-                candidate = self.mesh.to_right_from_end(edge)
-                if candidate == start:
-                    break
-                edge = candidate
-            return result
-        else:
-            return [endpoint.point for endpoint in self.mesh.endpoints]
+        edge_to_start = self.mesh.to_start
+        return [edge_to_start(edge).point
+                for edge in self.to_unique_boundary_edges()]
 
     def to_unique_boundary_edges(self) -> List[QuadEdge]:
         if self:
@@ -288,12 +244,12 @@ def are_polygon_edge_endpoints(start: ContoursVertex,
                for contour_index in start.indices.keys() & end.indices.keys())
 
 
-def are_polygon_edge_indices(start_index: int,
-                             end_index: int,
+def are_polygon_edge_indices(first: int,
+                             second: int,
                              contour_size: int) -> bool:
-    return (abs(start_index - end_index) == 1
-            or (start_index == 0 and end_index == contour_size - 1)
-            or (start_index == contour_size - 1 and end_index == 0))
+    return (abs(first - second) == 1
+            or (first == 0 and second == contour_size - 1)
+            or (first == contour_size - 1 and second == 0))
 
 
 def are_triangular_hole_vertices(
@@ -311,14 +267,43 @@ def are_triangular_hole_vertices(
                for hole_index in common_holes_indices)
 
 
+def detect_crossings(mesh: Mesh[ContoursVertex],
+                     base_edge: QuadEdge,
+                     constraint_start: Point,
+                     constraint_end: Point) -> List[QuadEdge]:
+    candidate = mesh.to_left_from_end(base_edge)
+    result = []
+    while mesh.to_start(candidate).point != constraint_end:
+        last_crossing = candidate
+        assert relate_segments(
+                mesh.to_start(last_crossing).point,
+                mesh.to_end(last_crossing).point,
+                constraint_start, constraint_end
+        ) is Relation.CROSS
+        result.append(last_crossing)
+        candidate = mesh.to_right_from_start(last_crossing)
+        if (orient_point_to_edge(mesh, candidate, constraint_end)
+                is not Orientation.CLOCKWISE):
+            candidate = to_opposite_edge(mesh.to_right_from_end(last_crossing))
+        elif (orient(constraint_start, constraint_end,
+                     mesh.to_end(candidate).point)
+              is Orientation.CLOCKWISE):
+            candidate = to_opposite_edge(mesh.to_right_from_end(last_crossing))
+    assert all(to_opposite_edge(edge) not in result for edge in result)
+    assert all(edge in result or to_opposite_edge(edge) in result
+               for edge in mesh.to_unique_edges()
+               if relate_segments(mesh.to_start(edge).point,
+                                  mesh.to_end(edge).point, constraint_start,
+                                  constraint_end) is Relation.CROSS)
+    return result
+
+
 def is_edge_inside_hole(mesh: Mesh,
                         edge: QuadEdge,
                         contours_vertices: List[Sequence[Point]]) -> bool:
     start, end = mesh.to_start(edge), mesh.to_end(edge)
-    common_holes_indices = (
-            start.indices.keys() & end.indices.keys()
-            - {BORDER_CONTOUR_INDEX}
-    )
+    common_holes_indices = (start.indices.keys() & end.indices.keys()
+                            - {BORDER_CONTOUR_INDEX})
     assert len(common_holes_indices) <= 1
     for hole_index in common_holes_indices:
         hole_vertices = contours_vertices[hole_index]
@@ -331,10 +316,10 @@ def is_edge_inside_hole(mesh: Mesh,
         prior_to_end_point = hole_vertices[end_index - 1]
         next_to_start_point = hole_vertices[(start_index + 1) % hole_size]
         next_to_end_point = hole_vertices[(end_index + 1) % hole_size]
-        end_angle_orientation = orient(end.point, prior_to_end_point,
-                                       next_to_end_point)
         start_angle_orientation = orient(start.point, prior_to_start_point,
                                          next_to_start_point)
+        end_angle_orientation = orient(end.point, prior_to_end_point,
+                                       next_to_end_point)
         if (((end_angle_orientation is Orientation.COUNTERCLOCKWISE)
              is angle_contains_point(end.point, prior_to_end_point,
                                      next_to_end_point, end_angle_orientation,
@@ -363,36 +348,15 @@ def to_contours_constraints_flags(
     result = [[False] * contour_size for contour_size in contours_sizes]
     for edge in mesh.to_unique_edges():
         start, end = mesh.to_start(edge), mesh.to_end(edge)
-        common_contours_indices = start.indices.keys() & end.indices.keys()
-        for contour_index in common_contours_indices:
-            start_vertex_index = start.indices[contour_index]
-            end_vertex_index = end.indices[contour_index]
-            if are_polygon_edge_indices(start_vertex_index, end_vertex_index,
+        for contour_index in start.indices.keys() & end.indices.keys():
+            start_index, end_index = (start.indices[contour_index],
+                                      end.indices[contour_index])
+            if are_polygon_edge_indices(start_index, end_index,
                                         contours_sizes[contour_index]):
                 result[contour_index][
-                    min(start_vertex_index, end_vertex_index)
-                    if abs(end_vertex_index - start_vertex_index) == 1
-                    else -1
+                    to_constraint_index(start_index, end_index)
                 ] = True
     return result
-
-
-def to_unsatisfied_constraints_endpoints(
-        constraints_flags: Sequence[Sequence[bool]],
-        contours_vertices: List[Sequence[Point]]
-) -> Iterable[Tuple[Point, Point]]:
-    for contour_index, are_contour_constraints_satisfied in enumerate(
-            constraints_flags
-    ):
-        for index, is_constraint_satisfied in enumerate(
-                are_contour_constraints_satisfied
-        ):
-            if not is_constraint_satisfied:
-                contour_vertices = contours_vertices[contour_index]
-                constraint_start = contour_vertices[index]
-                constraint_end = contour_vertices[(index + 1)
-                                                  % len(contour_vertices)]
-                yield constraint_start, constraint_end
 
 
 def edge_should_be_swapped(mesh: Mesh, edge: QuadEdge) -> bool:
@@ -430,29 +394,6 @@ def is_convex_quadrilateral_diagonal(mesh: Mesh, edge: QuadEdge) -> bool:
             ))
 
 
-def is_inner_edge_of_mesh_with_more_than_three_boundary_edges(
-        mesh: Mesh, edge: QuadEdge
-) -> bool:
-    return (
-            mesh.to_right_from_end(mesh.to_right_from_end(
-                    mesh.to_right_from_end(edge)
-            )) == edge
-            and
-            mesh.to_left_from_end(mesh.to_left_from_end(
-                    mesh.to_left_from_end(edge)
-            )) == edge
-    )
-
-
-def is_inner_edge_of_mesh_with_three_boundary_edges(mesh: Mesh,
-                                                    edge: QuadEdge) -> bool:
-    return (orient_point_to_edge(mesh, edge,
-                                 mesh.to_end(mesh.to_left_from_end(edge)))
-            is not
-            orient_point_to_edge(mesh, edge,
-                                 mesh.to_end(mesh.to_right_from_end(edge))))
-
-
 def is_polygon_edge(mesh: Mesh[ContoursVertex],
                     edge: QuadEdge,
                     contours_sizes: List[int]) -> bool:
@@ -460,26 +401,26 @@ def is_polygon_edge(mesh: Mesh[ContoursVertex],
                                       contours_sizes)
 
 
-def resolve_crossings(mesh: Mesh,
-                      crossings: List[QuadEdge],
+def resolve_crossings(mesh: Mesh[ContoursVertex],
                       constraint_start: Point,
-                      constraint_end: Point) -> List[QuadEdge]:
+                      constraint_end: Point,
+                      crossings: List[QuadEdge]) -> List[QuadEdge]:
     result = []
     crossings_queue = deque(crossings,
                             maxlen=len(crossings))
     while crossings_queue:
-        edge = crossings_queue.popleft()
-        if is_convex_quadrilateral_diagonal(mesh, edge):
-            mesh.swap_diagonal(edge)
-            relation = relate_segments(mesh.to_start(edge).point,
-                                       mesh.to_end(edge).point,
+        crossing = crossings_queue.popleft()
+        if is_convex_quadrilateral_diagonal(mesh, crossing):
+            mesh.swap_diagonal(crossing)
+            relation = relate_segments(mesh.to_start(crossing).point,
+                                       mesh.to_end(crossing).point,
                                        constraint_start, constraint_end)
             if relation is Relation.CROSS:
-                crossings_queue.append(edge)
+                crossings_queue.append(crossing)
             elif relation is not Relation.EQUAL:
-                result.append(edge)
+                result.append(crossing)
         else:
-            crossings_queue.append(edge)
+            crossings_queue.append(crossing)
     return result
 
 
@@ -502,6 +443,34 @@ def set_constraint(mesh: Mesh[ContoursVertex],
                    constraint_start: Point,
                    constraint_end: Point,
                    crossings: List[QuadEdge]) -> None:
-    new_edges = resolve_crossings(mesh, crossings, constraint_start,
-                                  constraint_end)
+    new_edges = resolve_crossings(mesh, constraint_start, constraint_end,
+                                  crossings)
     restore_delaunay_criterion(mesh, new_edges)
+
+
+def to_angle_containing_constraint_base(mesh: Mesh[ContoursVertex],
+                                        edge: QuadEdge,
+                                        constraint_end: Point) -> QuadEdge:
+    if mesh.to_end(edge).point != constraint_end:
+        orientation = orient_point_to_edge(mesh, edge, constraint_end)
+        if orientation is Orientation.CLOCKWISE:
+            while orientation is Orientation.CLOCKWISE:
+                edge = mesh.to_right_from_start(edge)
+                orientation = orient_point_to_edge(mesh, edge, constraint_end)
+        else:
+            assert orientation is Orientation.COUNTERCLOCKWISE
+            while True:
+                candidate = mesh.to_left_from_start(edge)
+                orientation = orient_point_to_edge(mesh, candidate,
+                                                   constraint_end)
+                if orientation is Orientation.CLOCKWISE:
+                    break
+                edge = candidate
+    return edge
+
+
+def to_constraint_index(first_vertex_index: int,
+                        second_vertex_index: int) -> int:
+    return (max(first_vertex_index, second_vertex_index)
+            if abs(second_vertex_index - first_vertex_index) == 1
+            else 0)
