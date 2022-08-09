@@ -280,12 +280,11 @@ def detect_crossings(mesh: Mesh[ContoursVertex],
         ) is Relation.CROSS
         result.append(last_crossing)
         candidate = mesh.to_right_from_start(last_crossing)
-        if (orient_point_to_edge(mesh, candidate, constraint_end)
-                is not Orientation.CLOCKWISE):
-            candidate = to_opposite_edge(mesh.to_right_from_end(last_crossing))
-        elif (orient(constraint_start, constraint_end,
-                     mesh.to_end(candidate).point)
-              is Orientation.CLOCKWISE):
+        if ((orient_point_to_edge(mesh, candidate, constraint_end)
+             is not Orientation.CLOCKWISE)
+                or (orient(constraint_start, constraint_end,
+                           mesh.to_end(candidate).point)
+                    is Orientation.CLOCKWISE)):
             candidate = to_opposite_edge(mesh.to_right_from_end(last_crossing))
     assert all(to_opposite_edge(edge) not in result for edge in result)
     assert all(edge in result or to_opposite_edge(edge) in result
@@ -452,12 +451,7 @@ def to_angle_containing_constraint_base(mesh: Mesh[ContoursVertex],
                                         constraint_end: Point) -> QuadEdge:
     if mesh.to_end(edge).point != constraint_end:
         orientation = orient_point_to_edge(mesh, edge, constraint_end)
-        if orientation is Orientation.CLOCKWISE:
-            while orientation is Orientation.CLOCKWISE:
-                edge = mesh.to_right_from_start(edge)
-                orientation = orient_point_to_edge(mesh, edge, constraint_end)
-        else:
-            assert orientation is Orientation.COUNTERCLOCKWISE
+        if orientation is Orientation.COUNTERCLOCKWISE:
             while True:
                 candidate = mesh.to_left_from_start(edge)
                 orientation = orient_point_to_edge(mesh, candidate,
@@ -465,6 +459,12 @@ def to_angle_containing_constraint_base(mesh: Mesh[ContoursVertex],
                 if orientation is Orientation.CLOCKWISE:
                     break
                 edge = candidate
+        else:
+            while True:
+                edge = mesh.to_right_from_start(edge)
+                orientation = orient_point_to_edge(mesh, edge, constraint_end)
+                if orientation is not Orientation.CLOCKWISE:
+                    break
     return edge
 
 
