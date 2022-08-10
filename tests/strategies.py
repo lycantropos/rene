@@ -56,9 +56,12 @@ def to_contour(raw_contour: hints.Contour) -> Contour:
 
 contours = scalars_strategies.flatmap(planar.contours).map(to_contour)
 contours_vertices = contours.map(attrgetter('vertices'))
-polygons = scalars_strategies.flatmap(planar.polygons).map(
-        lambda raw_polygon: Polygon(to_contour(raw_polygon.border),
-                                    [to_contour(hole)
-                                     for hole in raw_polygon.holes])
-)
+
+
+def to_polygon(raw_polygon: hints.Polygon) -> Polygon:
+    return Polygon(to_contour(raw_polygon.border),
+                   [to_contour(hole) for hole in raw_polygon.holes])
+
+
+polygons = scalars_strategies.flatmap(planar.polygons).map(to_polygon)
 polygons_components = polygons.map(attrgetter('border', 'holes'))
