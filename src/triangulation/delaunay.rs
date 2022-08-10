@@ -12,11 +12,11 @@ pub(crate) struct DelaunayTriangulation<Endpoint> {
     right_side: QuadEdge,
 }
 
-impl<Endpoint: Clone + Orient> BoundaryEndpoints<Endpoint> for DelaunayTriangulation<Endpoint> {
-    fn to_boundary_points(&self) -> Vec<Endpoint> {
+impl<Endpoint: Orient> BoundaryEndpoints<Endpoint> for DelaunayTriangulation<Endpoint> {
+    fn get_boundary_points(&self) -> Vec<&Endpoint> {
         let endpoints = self.mesh.get_endpoints();
         if endpoints.len() < MIN_CONTOUR_VERTICES_COUNT {
-            endpoints.to_vec()
+            endpoints.iter().collect()
         } else {
             let mut result = Vec::new();
             let start = self.left_side;
@@ -30,9 +30,6 @@ impl<Endpoint: Clone + Orient> BoundaryEndpoints<Endpoint> for DelaunayTriangula
                 edge = candidate;
             }
             shrink_collinear_vertices(&result)
-                .into_iter()
-                .cloned()
-                .collect()
         }
     }
 }
@@ -63,8 +60,12 @@ impl<Endpoint> DelaunayTriangulation<Endpoint> {
     }
 }
 
-impl<Endpoint: Clone + Orient + PartialOrd> DelaunayTriangulation<Endpoint> {
-    pub(crate) fn to_triangles_vertices(&self) -> Vec<[Endpoint; 3]> {
-        self.mesh.to_triangles_vertices()
+impl<Endpoint: Orient + PartialOrd> DelaunayTriangulation<Endpoint> {
+    pub(crate) fn iter_triangles_vertices(
+        &self,
+    ) -> impl Iterator<Item = (&Endpoint, &Endpoint, &Endpoint)> {
+        self.mesh
+            .to_triangles_base_edges()
+            .map(move |base_edge| self.mesh.triangle_base_to_vertices(base_edge))
     }
 }

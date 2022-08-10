@@ -391,15 +391,18 @@ impl PyExactDelaunayTriangulation {
 
     #[getter]
     fn border(&self) -> PyResult<PyExactContour> {
-        try_vertices_to_py_exact_contour(self.0.to_boundary_points())
+        try_vertices_to_py_exact_contour(
+            self.0.get_boundary_points().into_iter().cloned().collect(),
+        )
     }
 
     #[getter]
     fn triangles(&self) -> Vec<ExactContour> {
         self.0
-            .to_triangles_vertices()
-            .into_iter()
-            .map(ExactContour::from)
+            .iter_triangles_vertices()
+            .map(|(first, second, third)| {
+                ExactContour::from([first.clone(), second.clone(), third.clone()])
+            })
             .collect()
     }
 
@@ -768,11 +771,11 @@ fn extract_from_sequence<'a, Wrapper: FromPyObject<'a>, Wrapped: From<Wrapper>>(
 #[pymodule]
 fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactContour>()?;
+    module.add_class::<PyExactDelaunayTriangulation>()?;
     module.add_class::<PyExactMultisegment>()?;
     module.add_class::<PyExactPoint>()?;
     module.add_class::<PyExactPolygon>()?;
     module.add_class::<PyExactSegment>()?;
-    module.add_class::<PyExactDelaunayTriangulation>()?;
     unsafe {
         let py = Python::assume_gil_acquired();
         MAYBE_FRACTION_CLS = Some(py.import("rithm")?.getattr(intern!(py, "Fraction"))?);
