@@ -181,8 +181,7 @@ class ConstrainedDelaunay:
                             mesh.to_right_from_start(to_opposite_edge(edge))
                     )
                     and orient_point_to_edge(
-                            mesh, edge,
-                            mesh.to_end(mesh.to_left_from_start(edge))
+                            mesh, edge, third_vertex
                     ) is Orientation.COUNTERCLOCKWISE
                     and
                     not (self._triangular_holes_indices
