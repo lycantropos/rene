@@ -63,8 +63,7 @@ class DelaunayTriangulation:
                             mesh.to_right_from_start(to_opposite_edge(edge))
                     )
                     and orient_point_to_edge(
-                            mesh, edge,
-                            mesh.to_end(mesh.to_left_from_start(edge))
+                            mesh, edge, third_vertex
                     ) is Orientation.COUNTERCLOCKWISE):
                 result.append((first_vertex, second_vertex, third_vertex))
         return result
