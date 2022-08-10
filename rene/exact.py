@@ -1,5 +1,6 @@
 try:
-    from ._cexact import (Contour,
+    from ._cexact import (ConstrainedDelaunayTriangulation,
+                          Contour,
                           DelaunayTriangulation,
                           Multisegment,
                           Point,

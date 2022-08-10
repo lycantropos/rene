@@ -24,7 +24,9 @@ use crate::operations::to_arg_min;
 use crate::oriented::{Orientation, Oriented};
 use crate::relatable::Relation;
 use crate::traits::{Contour, Multisegment, Point, Polygon, Segment};
-use crate::triangulation::{BoundaryEndpoints, DelaunayTriangulation};
+use crate::triangulation::{
+    BoundaryEndpoints, ConstrainedDelaunayTriangulation, DelaunayTriangulation,
+};
 
 mod bentley_ottmann;
 mod constants;
@@ -47,6 +49,7 @@ const BINARY_SHIFT: usize = (Digit::BITS - 1) as usize;
 
 type BigInt = big_int::BigInt<Digit, '_', BINARY_SHIFT>;
 type Fraction = fraction::Fraction<BigInt>;
+type ExactConstrainedDelaunayTriangulation = ConstrainedDelaunayTriangulation<ExactPoint>;
 type ExactContour = geometries::Contour<Fraction>;
 type ExactDelaunayTriangulation = DelaunayTriangulation<ExactPoint>;
 type ExactMultisegment = geometries::Multisegment<Fraction>;
@@ -268,6 +271,10 @@ impl PyRelation {
     }
 }
 
+#[pyclass(name = "ConstrainedDelaunayTriangulation", module = "rene.exact")]
+#[derive(Clone)]
+struct PyExactConstrainedDelaunayTriangulation(ExactConstrainedDelaunayTriangulation);
+
 #[pyclass(name = "Contour", module = "rene.exact", subclass)]
 #[pyo3(text_signature = "(vertices, /)")]
 #[derive(Clone)]
@@ -296,6 +303,37 @@ struct PyExactPolygon(ExactPolygon);
 #[pyo3(text_signature = "(start, end, /)")]
 #[derive(Clone)]
 struct PyExactSegment(ExactSegment);
+
+#[pymethods]
+impl PyExactConstrainedDelaunayTriangulation {
+    #[classmethod]
+    fn from_polygon(_: &PyType, polygon: &PyExactPolygon) -> PyResult<Self> {
+        Ok(PyExactConstrainedDelaunayTriangulation(
+            ConstrainedDelaunayTriangulation::from(&polygon.0),
+        ))
+    }
+
+    #[getter]
+    fn border(&self) -> PyResult<PyExactContour> {
+        try_vertices_to_py_exact_contour(
+            self.0.get_boundary_points().into_iter().cloned().collect(),
+        )
+    }
+
+    #[getter]
+    fn triangles(&self) -> Vec<ExactContour> {
+        self.0
+            .to_triangles_vertices()
+            .map(|(first, second, third)| {
+                ExactContour::from([first.clone(), second.clone(), third.clone()])
+            })
+            .collect()
+    }
+
+    fn __bool__(&self) -> bool {
+        !self.0.is_empty()
+    }
+}
 
 #[pymethods]
 impl PyExactContour {
@@ -770,6 +808,7 @@ fn extract_from_sequence<'a, Wrapper: FromPyObject<'a>, Wrapped: From<Wrapper>>(
 
 #[pymodule]
 fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
+    module.add_class::<PyExactConstrainedDelaunayTriangulation>()?;
     module.add_class::<PyExactContour>()?;
     module.add_class::<PyExactDelaunayTriangulation>()?;
     module.add_class::<PyExactMultisegment>()?;
