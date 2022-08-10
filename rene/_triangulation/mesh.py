@@ -1,9 +1,7 @@
-from typing import (Generic,
-                    Iterable,
+from typing import (Iterable,
                     List,
                     Optional,
-                    Tuple,
-                    TypeVar)
+                    Tuple)
 
 from reprit.base import generate_repr
 
@@ -18,18 +16,15 @@ from .quad_edge import (UNDEFINED_EDGE,
                         QuadEdge,
                         to_opposite_edge,
                         to_rotated_edge)
-from .vertices import ContoursVertex
-
-Endpoint = TypeVar('Endpoint', Point, ContoursVertex)
 
 
-class Mesh(Generic[Endpoint]):
-    endpoints: List[Endpoint]
+class Mesh:
+    endpoints: List[Point]
     left_from_start: List[QuadEdge]
     starts_indices: List[int]
 
     @classmethod
-    def from_points(cls, endpoints: List[Endpoint]) -> 'Mesh[Endpoint]':
+    def from_points(cls, endpoints: List[Point]) -> 'Mesh':
         return cls(endpoints, [], [])
 
     def connect_edges(self, first: QuadEdge, second: QuadEdge) -> QuadEdge:
@@ -97,7 +92,7 @@ class Mesh(Generic[Endpoint]):
                 for candidate in candidates
                 if not self.is_deleted_edge(candidate)]
 
-    def to_end(self, edge: QuadEdge) -> Endpoint:
+    def to_end(self, edge: QuadEdge) -> Point:
         """
         aka "Dest" in L. Guibas and J. Stolfi notation.
         """
@@ -132,7 +127,7 @@ class Mesh(Generic[Endpoint]):
         """
         return to_rotated_edge(self.to_left_from_start(to_rotated_edge(edge)))
 
-    def to_start(self, edge: QuadEdge) -> Endpoint:
+    def to_start(self, edge: QuadEdge) -> Point:
         """
         aka "Org" in L. Guibas and J. Stolfi notation.
         """
@@ -155,7 +150,7 @@ class Mesh(Generic[Endpoint]):
         return bool(self.left_from_start)
 
     def __init__(self,
-                 endpoints: List[Endpoint],
+                 endpoints: List[Point],
                  left_from_start: List[QuadEdge],
                  starts_indices: List[int]) -> None:
         self.endpoints, self.left_from_start, self.starts_indices = (

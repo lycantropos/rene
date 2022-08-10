@@ -1,5 +1,4 @@
-from typing import (Any,
-                    Dict, Mapping)
+from typing import Any
 
 from reprit.base import generate_repr
 
@@ -54,45 +53,41 @@ class ContourVertex:
     __repr__ = generate_repr(__new__)
 
 
-class ContoursVertex:
-    indices: Mapping[int, int]
-    point: Point
+class PolygonVertexPosition:
+    contour_index: int
+    index: int
 
-    @property
-    def x(self) -> Scalar:
-        return self.point.x
-
-    @property
-    def y(self) -> Scalar:
-        return self.point.y
-
-    __slots__ = 'indices', 'point'
+    __slots__ = 'contour_index', 'index'
 
     def __new__(cls,
-                indices: Dict[int, int],
-                point: Point) -> 'ContoursVertex':
+                contour_index: int,
+                index: int) -> 'PolygonVertexPosition':
         self = super().__new__(cls)
-        self.indices, self.point = indices, point
+        self.contour_index, self.index = contour_index, index
         return self
 
     def __ge__(self, other: Any) -> Any:
-        return (self.point >= other.point
-                if isinstance(other, ContoursVertex)
+        return ((self.contour_index, self.index)
+                >= (other.contour_index, other.index)
+                if isinstance(other, ContourVertex)
                 else NotImplemented)
 
     def __gt__(self, other: Any) -> Any:
-        return (self.point > other.point
-                if isinstance(other, ContoursVertex)
+        return ((self.contour_index, self.index)
+                > (other.contour_index, other.index)
+                if isinstance(other, ContourVertex)
                 else NotImplemented)
 
     def __le__(self, other: Any) -> Any:
-        return (self.point <= other.point
-                if isinstance(other, ContoursVertex)
+        return ((self.contour_index, self.index)
+                <= (other.contour_index, other.index)
+                if isinstance(other, ContourVertex)
                 else NotImplemented)
 
     def __lt__(self, other: Any) -> Any:
-        return (self.point < other.point
-                if isinstance(other, ContoursVertex)
+        return ((self.contour_index, self.index)
+                < (other.contour_index, other.index)
+                if isinstance(other, ContourVertex)
                 else NotImplemented)
 
     __repr__ = generate_repr(__new__)

@@ -28,7 +28,7 @@ class DelaunayTriangulation:
         return self._left_side
 
     @property
-    def mesh(self) -> Mesh[Point]:
+    def mesh(self) -> Mesh:
         return self._mesh
 
     @property

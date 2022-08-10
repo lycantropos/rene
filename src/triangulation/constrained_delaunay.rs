@@ -412,9 +412,9 @@ fn intersect_polygon_vertices_positions_slices<const WITH_BORDER: bool>(
     right: &[PolygonVertexPosition],
 ) -> Vec<(PolygonVertexPosition, PolygonVertexPosition)> {
     if left.len() < right.len() {
-        intersect_polygon_vertices_positions_slices_impl::<true, WITH_BORDER>(right, left)
+        intersect_polygon_vertices_positions_slices_impl::<true, WITH_BORDER>(left, right)
     } else {
-        intersect_polygon_vertices_positions_slices_impl::<false, WITH_BORDER>(left, right)
+        intersect_polygon_vertices_positions_slices_impl::<false, WITH_BORDER>(right, left)
     }
 }
 
@@ -422,10 +422,10 @@ fn intersect_polygon_vertices_positions_slices_impl<
     const REVERSE: bool,
     const WITH_BORDER: bool,
 >(
-    longer: &[PolygonVertexPosition],
     shorter: &[PolygonVertexPosition],
+    longer: &[PolygonVertexPosition],
 ) -> Vec<(PolygonVertexPosition, PolygonVertexPosition)> {
-    debug_assert!(longer.len() >= shorter.len());
+    debug_assert!(shorter.len() <= longer.len());
     let mut result = Vec::with_capacity(shorter.len());
     for shorter_position in shorter {
         if WITH_BORDER || shorter_position.contour_index != 0 {
@@ -462,7 +462,7 @@ fn is_edge_inside_hole<Endpoint: Orient>(
         &polygon_vertices_positions[end_index],
     );
     debug_assert!(edge_holes_positions_pairs.len() <= 1);
-    for (start_hole_position, end_hole_position) in edge_holes_positions_pairs {
+    if let Some((start_hole_position, end_hole_position)) = edge_holes_positions_pairs.first() {
         debug_assert_eq!(
             start_hole_position.contour_index,
             end_hole_position.contour_index
