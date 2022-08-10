@@ -224,13 +224,10 @@ def angle_contains_point(vertex: Point,
     assert angle_orientation is not Orientation.COLLINEAR
     first_half_orientation = orient(vertex, first_ray_point, point)
     second_half_orientation = orient(second_ray_point, vertex, point)
-    return (second_half_orientation is angle_orientation
-            if first_half_orientation is Orientation.COLLINEAR
-            else (first_half_orientation is angle_orientation
-                  if second_half_orientation is Orientation.COLLINEAR
-                  else (first_half_orientation
-                        is angle_orientation
-                        is second_half_orientation)))
+    return ((first_half_orientation is Orientation.COLLINEAR
+             or first_half_orientation is angle_orientation)
+            and (second_half_orientation is Orientation.COLLINEAR
+                 or second_half_orientation is angle_orientation))
 
 
 def are_polygon_edge_endpoints(start: ContoursVertex,
