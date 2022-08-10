@@ -1,6 +1,3 @@
-use std::iter::Map;
-use std::ops::Range;
-
 use traiter::numbers::{DivRem, Parity};
 
 use crate::locatable::Location;
@@ -45,8 +42,27 @@ impl<Endpoint> Mesh<Endpoint> {
         self.left_from_start.is_empty()
     }
 
-    pub(super) fn to_edges(&self) -> Map<Range<usize>, fn(usize) -> QuadEdge> {
-        (0..self.left_from_start.len() / 2).map(|index| index * 2)
+    pub(super) fn iter_edges(&self) -> impl Iterator<Item = QuadEdge> + '_ {
+        (0..self.left_from_start.len())
+            .step_by(2)
+            .filter(move |edge| !self.is_deleted_edge(*edge))
+    }
+
+    pub(super) fn iter_unique_edges(&self) -> impl Iterator<Item = usize> + '_ {
+        (0..self.left_from_start.len())
+            .step_by(4)
+            .filter(move |edge| !self.is_deleted_edge(*edge))
+    }
+
+    pub(super) fn to_edges(&self) -> Vec<QuadEdge> {
+        let candidates = (0..self.left_from_start.len()).step_by(2);
+        let mut result = Vec::with_capacity(candidates.len());
+        for candidate in candidates {
+            if !self.is_deleted_edge(candidate) {
+                result.push(candidate);
+            }
+        }
+        result
     }
 
     pub(super) fn to_left_from_start(&self, edge: QuadEdge) -> QuadEdge {
@@ -65,13 +81,28 @@ impl<Endpoint> Mesh<Endpoint> {
         to_rotated_edge(self.to_left_from_start(to_rotated_edge(edge)))
     }
 
-    fn to_end_index(&self, edge: QuadEdge) -> usize {
+    pub(super) fn to_end_index(&self, edge: QuadEdge) -> usize {
         self.to_start_index(to_opposite_edge(edge))
     }
 
-    fn to_start_index(&self, edge: QuadEdge) -> usize {
+    pub(super) fn to_start_index(&self, edge: QuadEdge) -> usize {
         debug_assert!(edge.is_even());
         self.starts_indices[edge / 2]
+    }
+
+    pub(super) fn to_unique_edges(&self) -> Vec<QuadEdge> {
+        let candidates = (0..self.left_from_start.len()).step_by(4);
+        let mut result = Vec::with_capacity(candidates.len());
+        for candidate in candidates {
+            if !self.is_deleted_edge(candidate) {
+                result.push(candidate);
+            }
+        }
+        result
+    }
+
+    fn is_deleted_edge(&self, edge: QuadEdge) -> bool {
+        self.to_left_from_start(edge) == edge
     }
 }
 
@@ -115,29 +146,45 @@ impl<Endpoint> Mesh<Endpoint> {
             self.to_left_from_start(alpha),
         );
     }
+
+    pub(super) fn swap_diagonal(&mut self, edge: QuadEdge) {
+        let side = self.to_right_from_start(edge);
+        let opposite = to_opposite_edge(edge);
+        let opposite_side = self.to_right_from_start(opposite);
+        self.splice_edges(edge, side);
+        self.splice_edges(opposite, opposite_side);
+        self.splice_edges(edge, self.to_left_from_end(side));
+        self.splice_edges(opposite, self.to_left_from_end(opposite_side));
+        self.starts_indices[edge / 2] = self.to_end_index(side);
+        self.starts_indices[opposite / 2] = self.to_end_index(opposite_side);
+    }
 }
 
-impl<Endpoint: Clone + Orient + PartialOrd> Mesh<Endpoint> {
-    pub(super) fn to_triangles_vertices(&self) -> Vec<[Endpoint; 3]> {
-        let mut result = Vec::new();
-        for edge in self.to_edges() {
+impl<Endpoint> Mesh<Endpoint> {
+    pub(super) fn to_triangles_base_edges(&self) -> impl Iterator<Item = QuadEdge> + '_
+    where
+        Endpoint: Orient + PartialOrd,
+    {
+        self.iter_edges().filter(move |&edge| {
             let first_vertex = self.get_start(edge);
             let second_vertex = self.get_end(edge);
             let third_vertex = self.get_end(self.to_left_from_start(edge));
-            if first_vertex < second_vertex
+            first_vertex < second_vertex
                 && first_vertex < third_vertex
                 && third_vertex == self.get_end(self.to_right_from_start(to_opposite_edge(edge)))
-                && self.orient_point_to_edge(edge, self.get_end(self.to_left_from_start(edge)))
-                    == Orientation::Counterclockwise
-            {
-                result.push([
-                    first_vertex.clone(),
-                    second_vertex.clone(),
-                    third_vertex.clone(),
-                ]);
-            }
-        }
-        result
+                && self.orient_point_to_edge(edge, third_vertex) == Orientation::Counterclockwise
+        })
+    }
+
+    pub(super) fn triangle_base_to_vertices(
+        &self,
+        edge: QuadEdge,
+    ) -> (&Endpoint, &Endpoint, &Endpoint) {
+        (
+            self.get_start(edge),
+            self.get_end(edge),
+            self.get_end(self.to_left_from_start(edge)),
+        )
     }
 }
 
@@ -305,7 +352,7 @@ impl<Endpoint: Orient> Mesh<Endpoint> {
 }
 
 impl<Endpoint: Orient> Mesh<Endpoint> {
-    fn orient_point_to_edge(&self, edge: usize, point: &Endpoint) -> Orientation {
+    pub(super) fn orient_point_to_edge(&self, edge: usize, point: &Endpoint) -> Orientation {
         self.get_start(edge).orient(self.get_end(edge), point)
     }
 }
