@@ -30,9 +30,10 @@ from .vertices import (ContourVertex,
 BORDER_CONTOUR_INDEX = 0
 
 
-class ConstrainedDelaunay:
+class ConstrainedDelaunayTriangulation:
     @classmethod
-    def from_polygon(cls, polygon: Polygon) -> 'ConstrainedDelaunay':
+    def from_polygon(cls,
+                     polygon: Polygon) -> 'ConstrainedDelaunayTriangulation':
         contours_vertices = [polygon.border.vertices,
                              *[hole.vertices for hole in polygon.holes]]
         vertices = list(chain.from_iterable(

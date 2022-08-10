@@ -1,6 +1,6 @@
 from rene._rene import MIN_CONTOUR_VERTICES_COUNT
 from rene._triangulation.constrained_delaunay import (
-    ConstrainedDelaunay as _RawConstrainedDelaunayTriangulation
+    ConstrainedDelaunayTriangulation as _RawConstrainedDelaunayTriangulation
 )
 from rene._triangulation.delaunay import (
     DelaunayTriangulation as _RawDelaunayTriangulation
