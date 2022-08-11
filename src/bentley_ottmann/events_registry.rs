@@ -3,12 +3,11 @@ use std::cmp::Reverse;
 use std::collections::{BTreeSet, BinaryHeap};
 use std::ops::Bound::{Excluded, Unbounded};
 
-use crate::bentley_ottmann::event::{segment_id_to_left_event, segment_id_to_right_event};
 use crate::operations::{to_sorted_pair, IntersectCrossingSegments, Orient};
 use crate::oriented::Orientation;
 use crate::traits::Segment;
 
-use super::event::{is_left_event, Event};
+use super::event::{is_left_event, segment_id_to_left_event, segment_id_to_right_event, Event};
 use super::events_queue_key::EventsQueueKey;
 use super::sweep_line_key::SweepLineKey;
 use super::traits::{EventsQueue, SweepLine};
