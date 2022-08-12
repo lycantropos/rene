@@ -36,7 +36,9 @@ pub trait Polygon {
     type Contour: self::Contour<Point = Self::Point, Segment = Self::Segment>;
 
     fn border(&self) -> Self::Contour;
+    fn contours(&self) -> Vec<Self::Contour>;
     fn holes(&self) -> Vec<Self::Contour>;
+    fn holes_count(&self) -> usize;
 }
 
 pub trait Multipolygon {
