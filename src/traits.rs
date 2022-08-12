@@ -17,6 +17,7 @@ pub trait Multisegment {
     type Segment: self::Segment<Point = Self::Point>;
 
     fn segments(&self) -> Vec<Self::Segment>;
+    fn segments_count(&self) -> usize;
 }
 
 pub trait Contour {
