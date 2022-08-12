@@ -22,4 +22,8 @@ where
     fn polygons(&self) -> Vec<Self::Polygon> {
         self.polygons.clone()
     }
+
+    fn polygons_count(&self) -> usize {
+        self.polygons.len()
+    }
 }
