@@ -30,10 +30,6 @@ where
     type Point = self::Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>;
     type Segment = self::Segment<<Self::Point as traits::Point>::Coordinate>;
 
-    fn vertices(&self) -> Vec<Self::Point> {
-        self.vertices.clone()
-    }
-
     fn segments(&self) -> Vec<Self::Segment> {
         let mut result = Vec::<Self::Segment>::with_capacity(self.vertices.len());
         for index in 0..self.vertices.len() - 1 {
@@ -47,5 +43,17 @@ where
             self.vertices[0].clone(),
         ));
         result
+    }
+
+    fn segments_count(&self) -> usize {
+        self.vertices.len()
+    }
+
+    fn vertices(&self) -> Vec<Self::Point> {
+        self.vertices.clone()
+    }
+
+    fn vertices_count(&self) -> usize {
+        self.vertices.len()
     }
 }
