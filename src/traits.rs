@@ -50,4 +50,5 @@ pub trait Multipolygon {
     >;
 
     fn polygons(&self) -> Vec<Self::Polygon>;
+    fn polygons_count(&self) -> usize;
 }
