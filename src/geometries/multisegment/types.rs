@@ -26,4 +26,8 @@ where
     fn segments(&self) -> Vec<Self::Segment> {
         self.segments.clone()
     }
+
+    fn segments_count(&self) -> usize {
+        self.segments.len()
+    }
 }
