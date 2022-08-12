@@ -24,8 +24,10 @@ pub trait Contour {
     type Point: self::Point;
     type Segment: self::Segment<Point = Self::Point>;
 
-    fn vertices(&self) -> Vec<Self::Point>;
     fn segments(&self) -> Vec<Self::Segment>;
+    fn segments_count(&self) -> usize;
+    fn vertices(&self) -> Vec<Self::Point>;
+    fn vertices_count(&self) -> usize;
 }
 
 pub trait Polygon {
