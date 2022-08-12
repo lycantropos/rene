@@ -29,7 +29,18 @@ where
         self.border.clone()
     }
 
+    fn contours(&self) -> Vec<Self::Contour> {
+        let mut contours = Vec::with_capacity(1 + self.holes_count());
+        contours.push(self.border());
+        contours.append(&mut self.holes());
+        contours
+    }
+
     fn holes(&self) -> Vec<Self::Contour> {
         self.holes.clone()
+    }
+
+    fn holes_count(&self) -> usize {
+        self.holes.len()
     }
 }
