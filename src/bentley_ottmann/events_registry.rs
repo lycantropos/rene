@@ -140,27 +140,8 @@ impl<Endpoint: Ord, Segment: self::Segment<Point = Endpoint>, const UNIQUE: bool
     for EventsRegistry<Endpoint, UNIQUE>
 {
     fn from(segments: &[Segment]) -> Self {
-        let capacity = 2 * segments.len();
-        let mut result = Self {
-            endpoints: Box::new(Vec::with_capacity(capacity)),
-            events_queue_data: BinaryHeap::with_capacity(capacity),
-            min_collinear_segments_ids: (0..segments.len()).collect(),
-            opposites: Box::new(Vec::with_capacity(capacity)),
-            segments_ids: (0..segments.len()).collect(),
-            sweep_line_data: BTreeSet::new(),
-        };
-        for (segment_id, segment) in segments.iter().enumerate() {
-            let (start, end) = to_sorted_pair((segment.start(), segment.end()));
-            debug_assert!(start != end);
-            let left_event = segment_id_to_left_event(segment_id);
-            let right_event = segment_id_to_right_event(segment_id);
-            result.endpoints.push(start);
-            result.endpoints.push(end);
-            result.opposites.push(right_event);
-            result.opposites.push(left_event);
-            result.push(left_event);
-            result.push(right_event);
-        }
+        let mut result = Self::with_capacity(segments.len());
+        result.extend(segments.iter());
         result
     }
 }
@@ -421,5 +402,37 @@ where
 
     fn remove(&mut self, event: Event) -> bool {
         self.sweep_line_data.remove(&self.to_sweep_line_key(event))
+    }
+}
+
+impl<'a, Endpoint: Ord, const UNIQUE: bool> EventsRegistry<Endpoint, UNIQUE> {
+    fn extend<Segment: self::Segment<Point = Endpoint> + 'a>(
+        &'a mut self,
+        segments: impl Iterator<Item = &'a Segment>,
+    ) {
+        for (segment_id, segment) in segments.enumerate() {
+            let (start, end) = to_sorted_pair((segment.start(), segment.end()));
+            debug_assert!(start != end);
+            let left_event = segment_id_to_left_event(segment_id);
+            let right_event = segment_id_to_right_event(segment_id);
+            self.endpoints.push(start);
+            self.endpoints.push(end);
+            self.opposites.push(right_event);
+            self.opposites.push(left_event);
+            self.push(left_event);
+            self.push(right_event);
+        }
+    }
+
+    fn with_capacity(segments_count: usize) -> Self {
+        let capacity = 2 * segments_count;
+        Self {
+            endpoints: Box::new(Vec::with_capacity(capacity)),
+            events_queue_data: BinaryHeap::with_capacity(capacity),
+            min_collinear_segments_ids: (0..segments_count).collect(),
+            opposites: Box::new(Vec::with_capacity(capacity)),
+            segments_ids: (0..segments_count).collect(),
+            sweep_line_data: BTreeSet::new(),
+        }
     }
 }
