@@ -90,10 +90,9 @@ where
     Mesh<Endpoint>: DelaunayTriangulatable,
 {
     fn from(polygon: &Polygon) -> Self {
-        let holes = polygon.holes();
-        let mut contours_vertices = Vec::with_capacity(1 + holes.len());
+        let mut contours_vertices = Vec::with_capacity(1 + polygon.holes_count());
         contours_vertices.push(polygon.border().vertices());
-        for hole in holes {
+        for hole in polygon.holes() {
             contours_vertices.push(hole.vertices());
         }
         let mut polygon_endpoints = Vec::with_capacity(
