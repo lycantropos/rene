@@ -8,16 +8,16 @@ use crate::relatable::Relation;
 use super::event::Event;
 use super::events_registry::EventsRegistry;
 
-pub(crate) struct Sweep<Endpoint> {
-    events_registry: EventsRegistry<Endpoint, false>,
+pub(crate) struct Sweep<Point> {
+    events_registry: EventsRegistry<Point, false>,
     next_start_event: Option<usize>,
     segments_ids_pairs: PairwiseCombinations<usize>,
     start_event: Option<usize>,
 }
 
-impl<Endpoint, Segment> From<&[Segment]> for Sweep<Endpoint>
+impl<Point, Segment> From<&[Segment]> for Sweep<Point>
 where
-    for<'a> EventsRegistry<Endpoint, false>: From<&'a [Segment]> + Iterator<Item = Event>,
+    for<'a> EventsRegistry<Point, false>: From<&'a [Segment]> + Iterator<Item = Event>,
 {
     fn from(segments: &[Segment]) -> Self {
         let mut events_registry = EventsRegistry::from(segments);
@@ -31,29 +31,29 @@ where
     }
 }
 
-impl<Endpoint> Sweep<Endpoint> {
-    pub(super) fn get_segment_end(&self, segment_id: usize) -> &Endpoint {
+impl<Point> Sweep<Point> {
+    pub(super) fn get_segment_end(&self, segment_id: usize) -> &Point {
         self.events_registry.get_segment_end(segment_id)
     }
 
-    pub(super) fn get_segment_start(&self, segment_id: usize) -> &Endpoint {
+    pub(super) fn get_segment_start(&self, segment_id: usize) -> &Point {
         self.events_registry.get_segment_start(segment_id)
     }
 }
 
-pub(crate) struct Intersection<Endpoint> {
+pub(crate) struct Intersection<Point> {
     pub(super) first_segment_id: usize,
     pub(super) second_segment_id: usize,
     pub(super) relation: Relation,
-    pub(super) start: Endpoint,
-    pub(super) end: Endpoint,
+    pub(super) start: Point,
+    pub(super) end: Point,
 }
 
-impl<Endpoint: Clone + Orient + Ord> Iterator for Sweep<Endpoint>
+impl<Point: Clone + Orient + Ord> Iterator for Sweep<Point>
 where
-    EventsRegistry<Endpoint, false>: Iterator<Item = Event>,
+    EventsRegistry<Point, false>: Iterator<Item = Event>,
 {
-    type Item = Intersection<Endpoint>;
+    type Item = Intersection<Point>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if let Some((first_segment_id, second_segment_id)) = self.segments_ids_pairs.next() {
@@ -129,9 +129,9 @@ where
     }
 }
 
-impl<Endpoint: PartialEq> Sweep<Endpoint>
+impl<Point: PartialEq> Sweep<Point>
 where
-    EventsRegistry<Endpoint, false>: Iterator<Item = Event>,
+    EventsRegistry<Point, false>: Iterator<Item = Event>,
 {
     fn populate_segments_ids_pairs(&mut self, start_event: Event) {
         let mut segments_ids_containing_start =

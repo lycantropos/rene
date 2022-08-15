@@ -1,6 +1,7 @@
 pub use types::Point;
 
 mod display;
+mod elemental;
 mod eq;
 mod from;
 mod hash;

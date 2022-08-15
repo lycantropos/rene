@@ -2,14 +2,14 @@ use std::cmp::Ordering;
 
 use super::event::{is_left_event, Event};
 
-pub(super) struct EventsQueueKey<Endpoint> {
+pub(super) struct EventsQueueKey<Point> {
     pub(super) event: Event,
-    endpoints: *const Vec<Endpoint>,
+    endpoints: *const Vec<Point>,
     opposites: *const Vec<Event>,
 }
 
-impl<Endpoint> EventsQueueKey<Endpoint> {
-    pub(super) fn new(event: Event, endpoints: &Vec<Endpoint>, opposites: &Vec<Event>) -> Self {
+impl<Point> EventsQueueKey<Point> {
+    pub(super) fn new(event: Event, endpoints: &Vec<Point>, opposites: &Vec<Event>) -> Self {
         Self {
             event,
             endpoints,
@@ -18,8 +18,8 @@ impl<Endpoint> EventsQueueKey<Endpoint> {
     }
 }
 
-impl<Endpoint> EventsQueueKey<Endpoint> {
-    fn get_endpoints(&self) -> &[Endpoint] {
+impl<Point> EventsQueueKey<Point> {
+    fn get_endpoints(&self) -> &[Point] {
         unsafe { &(*self.endpoints) }
     }
 
@@ -28,15 +28,15 @@ impl<Endpoint> EventsQueueKey<Endpoint> {
     }
 }
 
-impl<Endpoint: PartialEq> PartialEq for EventsQueueKey<Endpoint> {
+impl<Point: PartialEq> PartialEq for EventsQueueKey<Point> {
     fn eq(&self, other: &Self) -> bool {
         self.event == other.event
     }
 }
 
-impl<Endpoint: Eq> Eq for EventsQueueKey<Endpoint> {}
+impl<Point: Eq> Eq for EventsQueueKey<Point> {}
 
-impl<Endpoint: Ord> PartialOrd for EventsQueueKey<Endpoint> {
+impl<Point: Ord> PartialOrd for EventsQueueKey<Point> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(compare_events(
             self.event,
@@ -47,7 +47,7 @@ impl<Endpoint: Ord> PartialOrd for EventsQueueKey<Endpoint> {
     }
 }
 
-impl<Endpoint: Ord> Ord for EventsQueueKey<Endpoint> {
+impl<Point: Ord> Ord for EventsQueueKey<Point> {
     fn cmp(&self, other: &Self) -> Ordering {
         compare_events(
             self.event,
@@ -58,10 +58,10 @@ impl<Endpoint: Ord> Ord for EventsQueueKey<Endpoint> {
     }
 }
 
-fn compare_events<Endpoint: Ord>(
+fn compare_events<Point: Ord>(
     first_event: Event,
     second_event: Event,
-    endpoints: &[Endpoint],
+    endpoints: &[Point],
     opposites: &[Event],
 ) -> Ordering {
     match endpoints[first_event].cmp(&endpoints[second_event]) {

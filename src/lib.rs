@@ -23,7 +23,7 @@ use crate::locatable::Location;
 use crate::operations::to_arg_min;
 use crate::oriented::{Orientation, Oriented};
 use crate::relatable::Relation;
-use crate::traits::{Contour, Multisegment, Point, Polygon, Segment};
+use crate::traits::{Elemental, Multisegmental, Multivertexal, Polygonal, Segmental};
 use crate::triangulation::{
     BoundaryEndpoints, ConstrainedDelaunayTriangulation, DelaunayTriangulation,
 };

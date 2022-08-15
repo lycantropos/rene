@@ -8,7 +8,7 @@ use crate::operations::{
 };
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
-use crate::traits::{Contour, Polygon};
+use crate::traits::{Contoural, Multivertexal, Polygonal};
 
 use super::mesh::Mesh;
 use super::operations::{BoundaryEndpoints, DelaunayTriangulatable};
@@ -84,10 +84,11 @@ struct PolygonVertexPosition {
 
 impl<
         Endpoint: Clone + LocatePointInPointPointPointCircle + Ord + Orient + PartialOrd,
-        Polygon: self::Polygon<Point = Endpoint>,
+        Polygon: self::Polygonal,
     > From<&Polygon> for ConstrainedDelaunayTriangulation<Endpoint>
 where
     Mesh<Endpoint>: DelaunayTriangulatable,
+    <Polygon as Polygonal>::Contour: Contoural<Vertex = Endpoint>,
 {
     fn from(polygon: &Polygon) -> Self {
         let mut contours_vertices = Vec::with_capacity(1 + polygon.holes_count());

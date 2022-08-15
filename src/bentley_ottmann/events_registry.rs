@@ -5,24 +5,24 @@ use std::ops::Bound::{Excluded, Unbounded};
 
 use crate::operations::{to_sorted_pair, IntersectCrossingSegments, Orient};
 use crate::oriented::Orientation;
-use crate::traits::Segment;
+use crate::traits::Segmental;
 
 use super::event::{is_left_event, segment_id_to_left_event, segment_id_to_right_event, Event};
 use super::events_queue_key::EventsQueueKey;
 use super::sweep_line_key::SweepLineKey;
 use super::traits::{EventsQueue, SweepLine};
 
-pub(crate) struct EventsRegistry<Endpoint, const UNIQUE: bool> {
-    endpoints: Box<Vec<Endpoint>>,
-    events_queue_data: BinaryHeap<Reverse<EventsQueueKey<Endpoint>>>,
+pub(crate) struct EventsRegistry<Point, const UNIQUE: bool> {
+    endpoints: Box<Vec<Point>>,
+    events_queue_data: BinaryHeap<Reverse<EventsQueueKey<Point>>>,
     min_collinear_segments_ids: Vec<usize>,
     opposites: Box<Vec<Event>>,
     segments_ids: Vec<usize>,
-    sweep_line_data: BTreeSet<SweepLineKey<Endpoint>>,
+    sweep_line_data: BTreeSet<SweepLineKey<Point>>,
 }
 
-impl<Endpoint: Clone + IntersectCrossingSegments + Orient + PartialOrd, const UNIQUE: bool> Iterator
-    for EventsRegistry<Endpoint, UNIQUE>
+impl<Point: Clone + IntersectCrossingSegments + Orient + PartialOrd, const UNIQUE: bool> Iterator
+    for EventsRegistry<Point, UNIQUE>
 where
     Self: EventsQueue + SweepLine,
 {
@@ -80,25 +80,25 @@ where
     }
 }
 
-impl<Endpoint, const UNIQUE: bool> EventsRegistry<Endpoint, UNIQUE> {
+impl<Point, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
     pub(super) fn are_collinear(&self, segment_id: usize, other_segment_id: usize) -> bool {
         self.to_min_collinear_segment_id(segment_id)
             == self.to_min_collinear_segment_id(other_segment_id)
     }
 
-    pub(super) fn get_event_end(&self, event: Event) -> &Endpoint {
+    pub(super) fn get_event_end(&self, event: Event) -> &Point {
         &self.endpoints[self.to_opposite_event(event)]
     }
 
-    pub(super) fn get_event_start(&self, event: Event) -> &Endpoint {
+    pub(super) fn get_event_start(&self, event: Event) -> &Point {
         &self.endpoints[event]
     }
 
-    pub(super) fn get_segment_end(&self, segment_id: usize) -> &Endpoint {
+    pub(super) fn get_segment_end(&self, segment_id: usize) -> &Point {
         &self.endpoints[segment_id_to_right_event(segment_id)]
     }
 
-    pub(super) fn get_segment_start(&self, segment_id: usize) -> &Endpoint {
+    pub(super) fn get_segment_start(&self, segment_id: usize) -> &Point {
         &self.endpoints[segment_id_to_left_event(segment_id)]
     }
 
@@ -130,14 +130,14 @@ impl<Endpoint, const UNIQUE: bool> EventsRegistry<Endpoint, UNIQUE> {
         self.opposites[event]
     }
 
-    fn to_sweep_line_key(&self, event: Event) -> SweepLineKey<Endpoint> {
+    fn to_sweep_line_key(&self, event: Event) -> SweepLineKey<Point> {
         debug_assert!(is_left_event(event));
         SweepLineKey::new(event, &self.endpoints, &self.opposites)
     }
 }
 
-impl<Endpoint: Ord, Segment: self::Segment<Point = Endpoint>, const UNIQUE: bool> From<&[Segment]>
-    for EventsRegistry<Endpoint, UNIQUE>
+impl<Point: Ord, Segment: self::Segmental<Endpoint = Point>, const UNIQUE: bool> From<&[Segment]>
+    for EventsRegistry<Point, UNIQUE>
 {
     fn from(segments: &[Segment]) -> Self {
         let mut result = Self::with_capacity(segments.len());
@@ -146,8 +146,8 @@ impl<Endpoint: Ord, Segment: self::Segment<Point = Endpoint>, const UNIQUE: bool
     }
 }
 
-impl<Endpoint: Clone + IntersectCrossingSegments + Orient + PartialOrd, const UNIQUE: bool>
-    EventsRegistry<Endpoint, UNIQUE>
+impl<Point: Clone + IntersectCrossingSegments + Orient + PartialOrd, const UNIQUE: bool>
+    EventsRegistry<Point, UNIQUE>
 where
     Self: EventsQueue + SweepLine,
 {
@@ -172,7 +172,7 @@ where
                     && below_event_end_orientation != Orientation::Collinear
                 {
                     if below_event_start_orientation != below_event_end_orientation {
-                        let point = Endpoint::intersect_crossing_segments(
+                        let point = Point::intersect_crossing_segments(
                             event_start,
                             event_end,
                             below_event_start,
@@ -282,8 +282,8 @@ where
         &mut self,
         min_start_event: Event,
         max_start_event: Event,
-        max_start: Endpoint,
-        min_end: Endpoint,
+        max_start: Point,
+        min_end: Point,
     ) {
         self.divide_event_by_midpoint(max_start_event, min_end);
         let (max_start_to_min_start_event, max_start_to_min_end_event) =
@@ -296,10 +296,10 @@ where
         &mut self,
         event: Event,
         mid_segment_event: Event,
-        mid_segment_event_start: Endpoint,
-        mid_segment_event_end: Endpoint,
+        mid_segment_event_start: Point,
+        mid_segment_event_end: Point,
     ) where
-        Endpoint: PartialEq,
+        Point: PartialEq,
     {
         debug_assert!(mid_segment_event_start.eq(self.get_event_start(mid_segment_event)));
         debug_assert!(mid_segment_event_end.eq(self.get_event_end(mid_segment_event)));
@@ -318,13 +318,13 @@ where
         );
     }
 
-    fn divide_event_by_midpoint(&mut self, event: Event, point: Endpoint) {
+    fn divide_event_by_midpoint(&mut self, event: Event, point: Point) {
         let (point_to_event_start_event, point_to_event_end_event) = self.divide(event, point);
         self.push(point_to_event_start_event);
         self.push(point_to_event_end_event);
     }
 
-    fn divide_event_by_midpoint_checking_above(&mut self, event: Event, point: Endpoint) {
+    fn divide_event_by_midpoint_checking_above(&mut self, event: Event, point: Point) {
         if let Some(above_event) = self.above(event) {
             if self
                 .get_event_start(above_event)
@@ -341,8 +341,8 @@ where
     }
 }
 
-impl<Endpoint: Clone, const UNIQUE: bool> EventsRegistry<Endpoint, UNIQUE> {
-    pub(super) fn divide(&mut self, event: Event, mid_point: Endpoint) -> (Event, Event) {
+impl<Point: Clone, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
+    pub(super) fn divide(&mut self, event: Event, mid_point: Point) -> (Event, Event) {
         debug_assert!(is_left_event(event));
         let opposite_event = self.to_opposite_event(event);
         let mid_point_to_event_end_event = self.endpoints.len();
@@ -358,7 +358,7 @@ impl<Endpoint: Clone, const UNIQUE: bool> EventsRegistry<Endpoint, UNIQUE> {
     }
 }
 
-impl<Endpoint: Ord, const UNIQUE: bool> EventsQueue for EventsRegistry<Endpoint, UNIQUE> {
+impl<Point: Ord, const UNIQUE: bool> EventsQueue for EventsRegistry<Point, UNIQUE> {
     fn pop(&mut self) -> Option<Event> {
         self.events_queue_data.pop().map(|key| key.0.event)
     }
@@ -372,9 +372,9 @@ impl<Endpoint: Ord, const UNIQUE: bool> EventsQueue for EventsRegistry<Endpoint,
     }
 }
 
-impl<Endpoint, const UNIQUE: bool> SweepLine for EventsRegistry<Endpoint, UNIQUE>
+impl<Point, const UNIQUE: bool> SweepLine for EventsRegistry<Point, UNIQUE>
 where
-    SweepLineKey<Endpoint>: Ord,
+    SweepLineKey<Point>: Ord,
 {
     fn above(&self, event: Event) -> Option<Event> {
         self.sweep_line_data
@@ -405,8 +405,8 @@ where
     }
 }
 
-impl<'a, Endpoint: Ord, const UNIQUE: bool> EventsRegistry<Endpoint, UNIQUE> {
-    fn extend<Segment: self::Segment<Point = Endpoint> + 'a>(
+impl<'a, Point: Ord, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
+    fn extend<Segment: self::Segmental<Endpoint = Point> + 'a>(
         &'a mut self,
         segments: impl Iterator<Item = &'a Segment>,
     ) {

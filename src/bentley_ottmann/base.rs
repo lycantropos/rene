@@ -4,21 +4,21 @@ use crate::constants::{MIN_CONTOUR_VERTICES_COUNT, MIN_MULTISEGMENT_SEGMENTS_COU
 use crate::contracts::are_contour_vertices_non_degenerate;
 use crate::operations::Orient;
 use crate::relatable::Relation;
-use crate::traits::{Contour, Multisegment, Segment};
+use crate::traits::{Contoural, Multisegmental, Segmental};
 
 use super::event::{is_left_event, Event};
 use super::events_registry::EventsRegistry;
 use super::sweep::{Intersection, Sweep};
 
 pub(crate) fn is_contour_valid<
-    Endpoint: Ord + Orient,
-    Segment: self::Segment<Point = Endpoint>,
-    Contour: self::Contour<Point = Endpoint, Segment = Segment>,
+    Contour: Contoural<Vertex = Point, Segment = Segment>,
+    Point: Ord + Orient,
+    Segment: Segmental<Endpoint = Point>,
 >(
     contour: &Contour,
 ) -> bool
 where
-    for<'a> Sweep<Endpoint>: From<&'a [Segment]> + Iterator<Item = Intersection<Endpoint>>,
+    for<'a> Sweep<Point>: From<&'a [Segment]> + Iterator<Item = Intersection<Point>>,
 {
     are_contour_vertices_non_degenerate(&contour.vertices()) && {
         let segments = contour.segments();
@@ -66,14 +66,14 @@ where
 }
 
 pub(crate) fn is_multisegment_valid<
-    Endpoint: PartialEq,
-    Segment: self::Segment<Point = Endpoint>,
-    Multisegment: self::Multisegment<Point = Endpoint, Segment = Segment>,
+    Multisegment: Multisegmental<Segment = Segment>,
+    Point: PartialEq,
+    Segment: Segmental<Endpoint = Point>,
 >(
     multisegment: &Multisegment,
 ) -> bool
 where
-    for<'a> Sweep<Endpoint>: From<&'a [Segment]> + Iterator<Item = Intersection<Endpoint>>,
+    for<'a> Sweep<Point>: From<&'a [Segment]> + Iterator<Item = Intersection<Point>>,
 {
     let segments = multisegment.segments();
     segments.len() >= MIN_MULTISEGMENT_SEGMENTS_COUNT
@@ -85,17 +85,17 @@ where
 }
 
 pub(crate) fn to_unique_non_crossing_or_overlapping_segments<
+    Point: Clone,
     Scalar,
-    Endpoint: Clone,
-    Segment: From<(Endpoint, Endpoint)> + self::Segment<Point = Endpoint>,
+    Segment: From<(Point, Point)> + Segmental<Endpoint = Point>,
 >(
     segments: &[Segment],
 ) -> Vec<Segment>
 where
-    for<'a> EventsRegistry<Endpoint, true>: From<&'a [Segment]> + Iterator<Item = Event>,
+    for<'a> EventsRegistry<Point, true>: From<&'a [Segment]> + Iterator<Item = Event>,
 {
     let mut result = Vec::with_capacity(segments.len());
-    let mut events_registry = EventsRegistry::<Endpoint, true>::from(segments);
+    let mut events_registry = EventsRegistry::<Point, true>::from(segments);
     while let Some(event) = events_registry.next() {
         if !is_left_event(event) {
             result.push(Segment::from((

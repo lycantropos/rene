@@ -2,18 +2,18 @@ use std::cmp::Ordering;
 
 use crate::operations::Orient;
 use crate::oriented::Orientation;
-use crate::traits::Point;
+use crate::traits::Elemental;
 
 use super::event::Event;
 
-pub(super) struct SweepLineKey<Endpoint> {
+pub(super) struct SweepLineKey<Point> {
     pub(super) event: Event,
-    endpoints: *const Vec<Endpoint>,
+    endpoints: *const Vec<Point>,
     opposites: *const Vec<Event>,
 }
 
-impl<Endpoint> SweepLineKey<Endpoint> {
-    pub(super) fn new(event: Event, endpoints: &Vec<Endpoint>, opposites: &Vec<Event>) -> Self {
+impl<Point> SweepLineKey<Point> {
+    pub(super) fn new(event: Event, endpoints: &Vec<Point>, opposites: &Vec<Event>) -> Self {
         Self {
             event,
             endpoints,
@@ -22,8 +22,8 @@ impl<Endpoint> SweepLineKey<Endpoint> {
     }
 }
 
-impl<Endpoint> SweepLineKey<Endpoint> {
-    fn get_endpoints(&self) -> &[Endpoint] {
+impl<Point> SweepLineKey<Point> {
+    fn get_endpoints(&self) -> &[Point] {
         unsafe { &(*self.endpoints) }
     }
 
@@ -32,16 +32,15 @@ impl<Endpoint> SweepLineKey<Endpoint> {
     }
 }
 
-impl<Endpoint: PartialEq> PartialEq for SweepLineKey<Endpoint> {
+impl<Point: PartialEq> PartialEq for SweepLineKey<Point> {
     fn eq(&self, other: &Self) -> bool {
         self.event == other.event
     }
 }
 
-impl<Endpoint: Eq> Eq for SweepLineKey<Endpoint> {}
+impl<Point: Eq> Eq for SweepLineKey<Point> {}
 
-impl<Scalar: Ord, Endpoint: Orient + Point<Coordinate = Scalar>> PartialOrd
-    for SweepLineKey<Endpoint>
+impl<Scalar: Ord, Point: Orient + Elemental<Coordinate = Scalar>> PartialOrd for SweepLineKey<Point>
 where
     Self: PartialEq,
 {
@@ -55,7 +54,7 @@ where
     }
 }
 
-impl<Scalar: Ord, Endpoint: Orient + Point<Coordinate = Scalar>> Ord for SweepLineKey<Endpoint>
+impl<Scalar: Ord, Point: Orient + Elemental<Coordinate = Scalar>> Ord for SweepLineKey<Point>
 where
     Self: Eq + PartialOrd,
 {
@@ -69,10 +68,10 @@ where
     }
 }
 
-fn compare_sweep_line_keys<Scalar: Ord, Endpoint: Orient + Point<Coordinate = Scalar>>(
+fn compare_sweep_line_keys<Scalar: Ord, Point: Orient + Elemental<Coordinate = Scalar>>(
     left_event: Event,
     right_event: Event,
-    endpoints: &[Endpoint],
+    endpoints: &[Point],
     opposites: &[Event],
 ) -> Ordering {
     compare_segments_position(
@@ -83,11 +82,11 @@ fn compare_sweep_line_keys<Scalar: Ord, Endpoint: Orient + Point<Coordinate = Sc
     )
 }
 
-fn compare_segments_position<Scalar: Ord, Endpoint: Orient + Point<Coordinate = Scalar>>(
-    first_start: &Endpoint,
-    first_end: &Endpoint,
-    second_start: &Endpoint,
-    second_end: &Endpoint,
+fn compare_segments_position<Scalar: Ord, Point: Orient + Elemental<Coordinate = Scalar>>(
+    first_start: &Point,
+    first_end: &Point,
+    second_start: &Point,
+    second_end: &Point,
 ) -> Ordering {
     let other_start_orientation = first_start.orient(first_end, second_start);
     let other_end_orientation = first_start.orient(first_end, second_end);
