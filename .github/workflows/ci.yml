@@ -60,6 +60,7 @@ jobs:
         with:
           components: rustfmt
           default: true
+          profile: minimal
           target: ${{ matrix.platform.rust_target }}
           toolchain: nightly
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
@@ -148,6 +149,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           default: true
+          profile: minimal
           toolchain: nightly
       - name: 'Upload'
         run: cargo publish --no-verify
@@ -316,6 +318,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           default: true
+          profile: minimal
           target: ${{ matrix.platform.rust_target }}
           toolchain: nightly
         if: ${{ runner.os != 'Linux' }}
@@ -336,6 +339,8 @@ jobs:
             [net]
             git-fetch-with-cli = true
             EOF
+          CIBW_BEFORE_BUILD: >
+            python -m pip install -U pip setuptools -r requirements-setup.txt
           CIBW_BUILD: ${{ matrix.python_tag }}-${{ matrix.platform.tag }}
           CIBW_BUILD_VERBOSITY: 1
           CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
