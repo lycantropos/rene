@@ -1,6 +1,7 @@
 use super::event::Event;
 
 pub(crate) trait EventsQueue {
+    fn peek(&mut self) -> Option<Event>;
     fn pop(&mut self) -> Option<Event>;
     fn push(&mut self, event: Event);
 }

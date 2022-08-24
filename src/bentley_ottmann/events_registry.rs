@@ -359,6 +359,10 @@ impl<Point: Clone, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
 }
 
 impl<Point: Ord, const UNIQUE: bool> EventsQueue for EventsRegistry<Point, UNIQUE> {
+    fn peek(&mut self) -> Option<Event> {
+        self.events_queue_data.peek().map(|key| key.0.event)
+    }
+
     fn pop(&mut self) -> Option<Event> {
         self.events_queue_data.pop().map(|key| key.0.event)
     }
