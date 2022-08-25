@@ -69,6 +69,12 @@ impl IntoPy<PyObject> for ExactPoint {
     }
 }
 
+impl IntoPy<PyObject> for ExactPolygon {
+    fn into_py(self, py: Python<'_>) -> PyObject {
+        PyExactPolygon(self).into_py(py)
+    }
+}
+
 impl IntoPy<PyObject> for ExactSegment {
     fn into_py(self, py: Python<'_>) -> PyObject {
         PyExactSegment(self).into_py(py)
