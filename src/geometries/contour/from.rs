@@ -13,3 +13,9 @@ impl<Scalar: Clone> From<&[Point<Scalar>]> for Contour<Scalar> {
         Self::new(vertices.to_vec())
     }
 }
+
+impl<Scalar> From<Vec<Point<Scalar>>> for Contour<Scalar> {
+    fn from(vertices: Vec<Point<Scalar>>) -> Self {
+        Self::new(vertices)
+    }
+}
