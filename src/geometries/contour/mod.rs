@@ -1,4 +1,4 @@
-pub use types::Contour;
+pub use self::types::Contour;
 
 mod contoural;
 mod eq;

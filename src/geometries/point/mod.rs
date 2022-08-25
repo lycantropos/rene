@@ -1,4 +1,4 @@
-pub use types::Point;
+pub use self::types::Point;
 
 mod display;
 mod elemental;

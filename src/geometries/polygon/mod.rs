@@ -1,4 +1,4 @@
-pub use types::Polygon;
+pub use self::types::Polygon;
 
 mod eq;
 mod hash;

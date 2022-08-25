@@ -1,5 +1,6 @@
 pub use contour::Contour;
 pub use multisegment::Multisegment;
+pub use multipolygon::Multipolygon;
 pub use point::Point;
 pub use polygon::Polygon;
 pub use segment::Segment;

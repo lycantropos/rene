@@ -1,4 +1,4 @@
-pub use types::Multisegment;
+pub use self::types::Multisegment;
 
 mod eq;
 mod hash;
