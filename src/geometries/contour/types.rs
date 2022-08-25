@@ -6,7 +6,7 @@ pub struct Contour<Scalar> {
     pub(super) vertices: Vec<Point<Scalar>>,
 }
 
-impl<Scalar: Clone> Contour<Scalar> {
+impl<Scalar> Contour<Scalar> {
     pub fn new(vertices: Vec<Point<Scalar>>) -> Self {
         Self { vertices }
     }
