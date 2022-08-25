@@ -46,6 +46,7 @@ type Digit = u16;
 type Digit = u32;
 
 const BINARY_SHIFT: usize = (Digit::BITS - 1) as usize;
+const _: () = assert!(big_int::is_valid_shift::<Digit, BINARY_SHIFT>());
 
 type BigInt = big_int::BigInt<Digit, '_', BINARY_SHIFT>;
 type Fraction = fraction::Fraction<BigInt>;
