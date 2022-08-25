@@ -29,6 +29,7 @@ use crate::triangulation::{
 };
 
 mod bentley_ottmann;
+pub mod bounded;
 mod constants;
 mod contracts;
 pub mod geometries;
