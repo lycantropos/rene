@@ -1,12 +1,14 @@
-pub use contour::Contour;
-pub use multipolygon::Multipolygon;
-pub use multisegment::Multisegment;
-pub use point::Point;
-pub use polygon::Polygon;
-pub use segment::Segment;
+pub use self::contour::Contour;
+pub use self::empty::Empty;
+pub use self::multipolygon::Multipolygon;
+pub use self::multisegment::Multisegment;
+pub use self::point::Point;
+pub use self::polygon::Polygon;
+pub use self::segment::Segment;
 
 mod contour;
 mod contracts;
+mod empty;
 mod multipolygon;
 mod multisegment;
 mod point;
