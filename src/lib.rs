@@ -55,6 +55,7 @@ const _: () = assert!(big_int::is_valid_shift::<Digit, BINARY_SHIFT>());
 
 type BigInt = big_int::BigInt<Digit, '_', BINARY_SHIFT>;
 type Fraction = fraction::Fraction<BigInt>;
+type Empty = geometries::Empty;
 type ExactConstrainedDelaunayTriangulation = ConstrainedDelaunayTriangulation<ExactPoint>;
 type ExactContour = geometries::Contour<Fraction>;
 type ExactDelaunayTriangulation = DelaunayTriangulation<ExactPoint>;
@@ -303,6 +304,10 @@ struct PyExactContour(ExactContour);
 #[derive(Clone)]
 struct PyExactDelaunayTriangulation(ExactDelaunayTriangulation);
 
+#[pyclass(name = "Empty", module = "rene.exact")]
+#[derive(Clone)]
+struct PyExactEmpty(Empty);
+
 #[pyclass(name = "Multipolygon", module = "rene.exact", subclass)]
 #[pyo3(text_signature = "(polygons, /)")]
 #[derive(Clone)]
@@ -470,6 +475,40 @@ impl PyExactDelaunayTriangulation {
 
     fn __bool__(&self) -> bool {
         !self.0.is_empty()
+    }
+}
+
+#[pymethods]
+impl PyExactEmpty {
+    #[new]
+    fn new() -> Self {
+        PyExactEmpty(Empty::new())
+    }
+
+    fn __hash__(&self) -> ffi::Py_hash_t {
+        0
+    }
+
+    fn __repr__(&self) -> &'static str {
+        "rene.exact.Empty()"
+    }
+
+    fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactEmpty::type_object(py))? {
+            let other = other.extract::<PyExactEmpty>()?;
+            match op {
+                CompareOp::Eq => Ok((self.0 == other.0).into_py(py)),
+                CompareOp::Ne => Ok((self.0 != other.0).into_py(py)),
+                _ => Ok(py.NotImplemented()),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
+
+    fn __str__(&self) -> &'static str {
+        "Empty()"
     }
 }
 
@@ -918,6 +957,7 @@ fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactConstrainedDelaunayTriangulation>()?;
     module.add_class::<PyExactContour>()?;
     module.add_class::<PyExactDelaunayTriangulation>()?;
+    module.add_class::<PyExactEmpty>()?;
     module.add_class::<PyExactMultipolygon>()?;
     module.add_class::<PyExactMultisegment>()?;
     module.add_class::<PyExactPoint>()?;

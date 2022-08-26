@@ -52,6 +52,28 @@ class Contour:
         ...
 
 
+class Empty:
+    def __new__(cls) -> 'Empty':
+        ...
+
+    @_overload
+    def __eq__(self, other: 'Empty') -> bool:
+        ...
+
+    @_overload
+    def __eq__(self, other: _Any) -> _Any:
+        ...
+
+    def __hash__(self) -> int:
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+    def __str__(self) -> str:
+        ...
+
+
 class Multipolygon:
     @property
     def polygons(self) -> _Sequence[Polygon]:
