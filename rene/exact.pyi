@@ -52,6 +52,32 @@ class Contour:
         ...
 
 
+class Multipolygon:
+    @property
+    def polygons(self) -> _Sequence[Polygon]:
+        ...
+
+    def __new__(cls, polygons: _Sequence[Polygon]) -> 'Multipolygon':
+        ...
+
+    @_overload
+    def __eq__(self, other: 'Multipolygon') -> bool:
+        ...
+
+    @_overload
+    def __eq__(self, other: _Any) -> _Any:
+        ...
+
+    def __hash__(self) -> int:
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+    def __str__(self) -> str:
+        ...
+
+
 class Multisegment:
     @property
     def segments(self) -> _Sequence[Segment]:

@@ -18,12 +18,16 @@ use traiter::numbers::{Endianness, FromBytes, ToBytes, Zeroable};
 use crate::bentley_ottmann::{
     is_contour_valid, is_multisegment_valid, to_unique_non_crossing_or_overlapping_segments,
 };
-use crate::constants::{MIN_CONTOUR_VERTICES_COUNT, MIN_MULTISEGMENT_SEGMENTS_COUNT};
+use crate::constants::{
+    MIN_CONTOUR_VERTICES_COUNT, MIN_MULTIPOLYGON_POLYGONS_COUNT, MIN_MULTISEGMENT_SEGMENTS_COUNT,
+};
 use crate::locatable::Location;
 use crate::operations::to_arg_min;
 use crate::oriented::{Orientation, Oriented};
 use crate::relatable::Relation;
-use crate::traits::{Elemental, Multisegmental, Multivertexal, Polygonal, Segmental};
+use crate::traits::{
+    Elemental, Multipolygonal, Multisegmental, Multivertexal, Polygonal, Segmental,
+};
 use crate::triangulation::{
     BoundaryEndpoints, ConstrainedDelaunayTriangulation, DelaunayTriangulation,
 };
@@ -54,6 +58,7 @@ type Fraction = fraction::Fraction<BigInt>;
 type ExactConstrainedDelaunayTriangulation = ConstrainedDelaunayTriangulation<ExactPoint>;
 type ExactContour = geometries::Contour<Fraction>;
 type ExactDelaunayTriangulation = DelaunayTriangulation<ExactPoint>;
+type ExactMultipolygon = geometries::Multipolygon<Fraction>;
 type ExactMultisegment = geometries::Multisegment<Fraction>;
 type ExactPoint = geometries::Point<Fraction>;
 type ExactPolygon = geometries::Polygon<Fraction>;
@@ -298,6 +303,11 @@ struct PyExactContour(ExactContour);
 #[derive(Clone)]
 struct PyExactDelaunayTriangulation(ExactDelaunayTriangulation);
 
+#[pyclass(name = "Multipolygon", module = "rene.exact", subclass)]
+#[pyo3(text_signature = "(polygons, /)")]
+#[derive(Clone)]
+struct PyExactMultipolygon(ExactMultipolygon);
+
 #[pyclass(name = "Multisegment", module = "rene.exact", subclass)]
 #[pyo3(text_signature = "(segments, /)")]
 #[derive(Clone)]
@@ -460,6 +470,61 @@ impl PyExactDelaunayTriangulation {
 
     fn __bool__(&self) -> bool {
         !self.0.is_empty()
+    }
+}
+
+#[pymethods]
+impl PyExactMultipolygon {
+    #[new]
+    fn new(polygons: &PySequence, py: Python) -> PyResult<Self> {
+        try_polygons_to_py_exact_multipolygon(
+            extract_from_sequence::<PyExactPolygon, ExactPolygon>(polygons)?,
+        )
+    }
+
+    #[getter]
+    fn polygons(&self) -> Vec<ExactPolygon> {
+        self.0.polygons()
+    }
+
+    fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
+        PyFrozenSet::new(py, &self.polygons())?.hash()
+    }
+
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        Ok(format!(
+            "rene.exact.Multipolygon({})",
+            self.polygons()
+                .into_py(py)
+                .as_ref(py)
+                .repr()?
+                .extract::<String>()?
+        ))
+    }
+
+    fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactMultipolygon::type_object(py))? {
+            let other = other.extract::<PyExactMultipolygon>()?;
+            match op {
+                CompareOp::Eq => Ok((self.0 == other.0).into_py(py)),
+                CompareOp::Ne => Ok((self.0 != other.0).into_py(py)),
+                _ => Ok(py.NotImplemented()),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!(
+            "Multipolygon([{}])",
+            self.polygons()
+                .into_iter()
+                .flat_map(|polygon| PyExactPolygon(polygon).__str__())
+                .collect::<Vec<String>>()
+                .join(", ")
+        ))
     }
 }
 
@@ -807,6 +872,20 @@ fn try_vertices_to_py_exact_contour(vertices: Vec<ExactPoint>) -> PyResult<PyExa
     }
 }
 
+fn try_polygons_to_py_exact_multipolygon(
+    polygons: Vec<ExactPolygon>,
+) -> PyResult<PyExactMultipolygon> {
+    if polygons.len() < MIN_MULTIPOLYGON_POLYGONS_COUNT {
+        Err(PyValueError::new_err(format!(
+            "Multipolygon should have at least {} polygons, but found {}.",
+            MIN_MULTIPOLYGON_POLYGONS_COUNT,
+            polygons.len()
+        )))
+    } else {
+        Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)))
+    }
+}
+
 fn try_segments_to_py_exact_multisegment(
     segments: Vec<ExactSegment>,
 ) -> PyResult<PyExactMultisegment> {
@@ -839,6 +918,7 @@ fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactConstrainedDelaunayTriangulation>()?;
     module.add_class::<PyExactContour>()?;
     module.add_class::<PyExactDelaunayTriangulation>()?;
+    module.add_class::<PyExactMultipolygon>()?;
     module.add_class::<PyExactMultisegment>()?;
     module.add_class::<PyExactPoint>()?;
     module.add_class::<PyExactPolygon>()?;
@@ -857,6 +937,10 @@ fn _crene(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyOrientation>()?;
     module.add_class::<PyRelation>()?;
     module.add("MIN_CONTOUR_VERTICES_COUNT", MIN_CONTOUR_VERTICES_COUNT)?;
+    module.add(
+        "MIN_MULTIPOLYGON_POLYGONS_COUNT",
+        MIN_MULTIPOLYGON_POLYGONS_COUNT,
+    )?;
     module.add(
         "MIN_MULTISEGMENT_SEGMENTS_COUNT",
         MIN_MULTISEGMENT_SEGMENTS_COUNT,

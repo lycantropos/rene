@@ -2,6 +2,7 @@ from enum import (IntEnum,
                   unique)
 
 MIN_CONTOUR_VERTICES_COUNT = 3
+MIN_MULTIPOLYGON_POLYGONS_COUNT = 2
 MIN_MULTISEGMENT_SEGMENTS_COUNT = 2
 
 

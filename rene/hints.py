@@ -134,8 +134,9 @@ class Multisegment(_Protocol[Scalar]):
     def is_valid(self) -> bool:
         ...
 
-    def __new__(cls, vertices: _Sequence[Segment[Scalar]]
-                ) -> 'Multisegment[Scalar]':
+    def __new__(
+            cls, vertices: _Sequence[Segment[Scalar]]
+    ) -> 'Multisegment[Scalar]':
         ...
 
     @_overload
@@ -172,6 +173,34 @@ class Polygon(_Protocol[Scalar]):
 
     @_overload
     def __eq__(self, other: 'Polygon[Scalar]') -> bool:
+        ...
+
+    @_overload
+    def __eq__(self, other: _Any) -> _Any:
+        ...
+
+    def __hash__(self) -> int:
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+    def __str__(self) -> str:
+        ...
+
+
+class Multipolygon(_Protocol[Scalar]):
+    @property
+    def polygons(self) -> _Sequence[Polygon[Scalar]]:
+        ...
+
+    def __new__(
+            cls, vertices: _Sequence[Polygon[Scalar]]
+    ) -> 'Multipolygon[Scalar]':
+        ...
+
+    @_overload
+    def __eq__(self, other: 'Multipolygon[Scalar]') -> bool:
         ...
 
     @_overload
