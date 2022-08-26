@@ -5,6 +5,7 @@ from hypothesis import strategies
 from hypothesis_geometry import planar
 
 from rene.exact import (Contour,
+                        Multipolygon,
                         Multisegment,
                         Point,
                         Polygon,
@@ -65,3 +66,14 @@ def to_polygon(raw_polygon: hints.Polygon) -> Polygon:
 
 polygons = scalars_strategies.flatmap(planar.polygons).map(to_polygon)
 polygons_components = polygons.map(attrgetter('border', 'holes'))
+
+
+def to_multipolygon(raw_multipolygon: hints.Multipolygon) -> Multipolygon:
+    return Multipolygon([to_polygon(polygon)
+                         for polygon in raw_multipolygon.polygons])
+
+
+multipolygons = (scalars_strategies
+                 .flatmap(planar.multipolygons)
+                 .map(to_multipolygon))
+multipolygons_polygons = multipolygons.map(attrgetter('polygons'))

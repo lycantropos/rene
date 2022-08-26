@@ -12,6 +12,7 @@ from rene._utils import (deduplicate,
                          locate_point_in_point_point_point_circle,
                          orient)
 from rene.hints import (Contour,
+                        Multipolygon,
                         Multisegment,
                         Point,
                         Polygon,
@@ -59,6 +60,10 @@ def reverse_each_polygon_hole(polygon: Polygon) -> Polygon:
                          [reverse_contour(hole) for hole in polygon.holes])
 
 
+def reverse_multipolygon(multipolygon: Multipolygon) -> Multipolygon:
+    return type(multipolygon)(multipolygon.polygons[::-1])
+
+
 def reverse_multisegment(multisegment: Multisegment) -> Multisegment:
     return type(multisegment)(multisegment.segments[::-1])
 
@@ -85,8 +90,13 @@ def rotate_each_polygon_hole(polygon: Polygon, offset: int) -> Polygon:
                           for hole in polygon.holes])
 
 
-def rotate_multisegment(multisegment: Multisegment, offset: int
-                        ) -> Multisegment:
+def rotate_multipolygon(multipolygon: Multipolygon,
+                        offset: int) -> Multipolygon:
+    return type(multipolygon)(rotate_sequence(multipolygon.polygons, offset))
+
+
+def rotate_multisegment(multisegment: Multisegment,
+                        offset: int) -> Multisegment:
     return type(multisegment)(rotate_sequence(multisegment.segments, offset))
 
 
