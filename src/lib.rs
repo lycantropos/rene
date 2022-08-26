@@ -95,6 +95,12 @@ impl ToPyObject for ExactPoint {
     }
 }
 
+impl ToPyObject for ExactPolygon {
+    fn to_object(&self, py: Python<'_>) -> PyObject {
+        self.clone().into_py(py)
+    }
+}
+
 impl ToPyObject for ExactSegment {
     fn to_object(&self, py: Python<'_>) -> PyObject {
         self.clone().into_py(py)
