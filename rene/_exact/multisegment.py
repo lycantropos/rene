@@ -12,14 +12,17 @@ class Multisegment:
 
     def is_valid(self):
         segments = self.segments
-        return (len(segments) >= MIN_MULTISEGMENT_SEGMENTS_COUNT
-                and all(intersection.relation is Relation.TOUCH
-                        for intersection in sweep(segments)))
+        return all(intersection.relation is Relation.TOUCH
+                   for intersection in sweep(segments))
 
     __module__ = 'rene.exact'
     __slots__ = '_segments',
 
     def __new__(cls, segments):
+        if len(segments) < MIN_MULTISEGMENT_SEGMENTS_COUNT:
+            raise ValueError('Multisegment should have at least '
+                             f'{MIN_MULTISEGMENT_SEGMENTS_COUNT} segments, '
+                             f'but found {len(segments)}.')
         self = super().__new__(cls)
         self._segments = list(segments)
         return self

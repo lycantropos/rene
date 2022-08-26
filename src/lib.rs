@@ -467,9 +467,9 @@ impl PyExactDelaunayTriangulation {
 impl PyExactMultisegment {
     #[new]
     fn new(segments: &PySequence) -> PyResult<Self> {
-        Ok(PyExactMultisegment(ExactMultisegment::new(
+        try_segments_to_py_exact_multisegment(
             extract_from_sequence::<PyExactSegment, ExactSegment>(segments)?,
-        )))
+        )
     }
 
     #[getter]
@@ -804,6 +804,20 @@ fn try_vertices_to_py_exact_contour(vertices: Vec<ExactPoint>) -> PyResult<PyExa
         )))
     } else {
         Ok(PyExactContour(ExactContour::new(vertices)))
+    }
+}
+
+fn try_segments_to_py_exact_multisegment(
+    segments: Vec<ExactSegment>,
+) -> PyResult<PyExactMultisegment> {
+    if segments.len() < MIN_MULTISEGMENT_SEGMENTS_COUNT {
+        Err(PyValueError::new_err(format!(
+            "Multisegment should have at least {} segments, but found {}.",
+            MIN_MULTISEGMENT_SEGMENTS_COUNT,
+            segments.len()
+        )))
+    } else {
+        Ok(PyExactMultisegment(ExactMultisegment::new(segments)))
     }
 }
 
