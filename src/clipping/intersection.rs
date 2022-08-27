@@ -1,8 +1,7 @@
 use crate::bounded::Bounded;
 use crate::operations::Orient;
 use crate::traits::{
-    Elemental, Intersection, Multivertexal, Polygonal, PolygonalContour, PolygonalCoordinate,
-    PolygonalVertex,
+    Elemental, Intersection, Polygonal, PolygonalContour, PolygonalCoordinate, PolygonalVertex,
 };
 
 use super::event::Event;
@@ -27,10 +26,8 @@ where
 
     fn intersection(self, other: Self) -> Self::Output {
         let min_max_x = self.to_max_x().min(other.to_max_x());
-        let mut operation = Operation::<
-            <<Polygon as Polygonal>::Contour as Multivertexal>::Vertex,
-            INTERSECTION,
-        >::from((self, other));
+        let mut operation =
+            Operation::<PolygonalVertex<Polygon>, INTERSECTION>::from((self, other));
         let mut events = Vec::new();
         while let Some(event) = operation.next() {
             if operation.get_event_start(event).x() > min_max_x {
