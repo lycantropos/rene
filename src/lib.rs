@@ -515,7 +515,7 @@ impl PyExactEmpty {
 #[pymethods]
 impl PyExactMultipolygon {
     #[new]
-    fn new(polygons: &PySequence, py: Python) -> PyResult<Self> {
+    fn new(polygons: &PySequence) -> PyResult<Self> {
         try_polygons_to_py_exact_multipolygon(
             extract_from_sequence::<PyExactPolygon, ExactPolygon>(polygons)?,
         )
