@@ -1,4 +1,4 @@
-use crate::bounded::{Bounded, BoundingBox};
+use crate::bounded::{Bounded, Box};
 use crate::geometries;
 use crate::Elemental;
 
@@ -48,7 +48,7 @@ where
         }
     }
 
-    fn to_bounding_box(&self) -> BoundingBox<Scalar> {
+    fn to_bounding_box(&self) -> Box<Scalar> {
         let mut min_x = self.vertices[0].x();
         let mut max_x = self.vertices[0].x();
         let mut min_y = self.vertices[0].y();
@@ -67,6 +67,6 @@ where
                 max_y = y;
             }
         }
-        BoundingBox::new(max_x, max_y, min_x, min_y)
+        Box::new(max_x, max_y, min_x, min_y)
     }
 }

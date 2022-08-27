@@ -1,4 +1,4 @@
-use crate::bounded::{Bounded, BoundingBox};
+use crate::bounded::{Bounded, Box};
 use crate::geometries::Point;
 use crate::Elemental;
 
@@ -24,7 +24,7 @@ where
         self.border.to_min_y()
     }
 
-    fn to_bounding_box(&self) -> BoundingBox<Scalar> {
+    fn to_bounding_box(&self) -> Box<Scalar> {
         self.border.to_bounding_box()
     }
 }
