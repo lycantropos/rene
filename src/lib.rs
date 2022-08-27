@@ -638,13 +638,13 @@ impl PyExactPoint {
     }
 
     #[getter]
-    fn x<'a>(&self) -> PyResult<&'a PyAny> {
-        try_fraction_to_py_fraction(self.0.x())
+    fn x(&self) -> PyResult<&PyAny> {
+        try_fraction_to_py_fraction(&self.0.x())
     }
 
     #[getter]
-    fn y<'a>(&self) -> PyResult<&'a PyAny> {
-        try_fraction_to_py_fraction(self.0.y())
+    fn y(&self) -> PyResult<&PyAny> {
+        try_fraction_to_py_fraction(&self.0.y())
     }
 
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
@@ -810,7 +810,7 @@ impl PyExactSegment {
     }
 }
 
-fn try_fraction_to_py_fraction<'a>(value: Fraction) -> PyResult<&'a PyAny> {
+fn try_fraction_to_py_fraction<'a>(value: &Fraction) -> PyResult<&'a PyAny> {
     let fraction_cls = unsafe { MAYBE_FRACTION_CLS.unwrap_unchecked() };
     fraction_cls.call(
         (
