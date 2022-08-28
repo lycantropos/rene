@@ -90,6 +90,12 @@ impl IntoPy<PyObject> for ExactSegment {
     }
 }
 
+impl IntoPy<PyObject> for Relation {
+    fn into_py(self, py: Python<'_>) -> PyObject {
+        PyRelation(self).into_py(py)
+    }
+}
+
 impl ToPyObject for ExactContour {
     fn to_object(&self, py: Python<'_>) -> PyObject {
         self.clone().into_py(py)
