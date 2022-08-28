@@ -4,7 +4,7 @@ use crate::relatable::{Relatable, Relation};
 
 use super::types::Segment;
 
-impl<Scalar> Relatable for Segment<Scalar>
+impl<Scalar> Relatable for &Segment<Scalar>
 where
     Point<Scalar>: Orient + PartialOrd,
 {
