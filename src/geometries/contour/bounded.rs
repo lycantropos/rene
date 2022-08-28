@@ -67,6 +67,6 @@ where
                 max_y = y;
             }
         }
-        Box::new(max_x, max_y, min_x, min_y)
+        Box::new(min_x, max_x, min_y, max_y)
     }
 }
