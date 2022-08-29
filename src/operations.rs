@@ -62,83 +62,83 @@ where
     }
 }
 
-pub(crate) fn relate_segments<Point: Orient + PartialOrd>(
-    goal_start: &Point,
-    goal_end: &Point,
-    test_start: &Point,
-    test_end: &Point,
+pub(crate) fn segment_in_segment<Point: Orient + PartialOrd>(
+    first_start: &Point,
+    first_end: &Point,
+    second_start: &Point,
+    second_end: &Point,
 ) -> Relation {
-    let (goal_start, goal_end) = to_sorted_pair((goal_start, goal_end));
-    let (test_start, test_end) = to_sorted_pair((test_start, test_end));
-    let starts_equal = test_start == goal_start;
-    let ends_equal = test_end == goal_end;
+    let (first_start, first_end) = to_sorted_pair((first_start, first_end));
+    let (second_start, second_end) = to_sorted_pair((second_start, second_end));
+    let starts_equal = second_start == first_start;
+    let ends_equal = second_end == first_end;
     if starts_equal && ends_equal {
         return Relation::Equal;
     }
-    let test_start_orientation = goal_end.orient(goal_start, test_start);
-    let test_end_orientation = goal_end.orient(goal_start, test_end);
-    if test_start_orientation != Orientation::Collinear
-        && test_end_orientation != Orientation::Collinear
+    let second_start_orientation = first_end.orient(first_start, second_start);
+    let second_end_orientation = first_end.orient(first_start, second_end);
+    if second_start_orientation != Orientation::Collinear
+        && second_end_orientation != Orientation::Collinear
     {
-        if test_start_orientation == test_end_orientation {
+        if second_start_orientation == second_end_orientation {
             Relation::Disjoint
         } else {
-            let goal_start_orientation = test_start.orient(test_end, goal_start);
-            let goal_end_orientation = test_start.orient(test_end, goal_end);
-            if goal_start_orientation != Orientation::Collinear
-                && goal_end_orientation != Orientation::Collinear
+            let first_start_orientation = second_start.orient(second_end, first_start);
+            let first_end_orientation = second_start.orient(second_end, first_end);
+            if first_start_orientation != Orientation::Collinear
+                && first_end_orientation != Orientation::Collinear
             {
-                if goal_start_orientation == goal_end_orientation {
+                if first_start_orientation == first_end_orientation {
                     Relation::Disjoint
                 } else {
                     Relation::Cross
                 }
-            } else if goal_start_orientation != Orientation::Collinear {
-                if test_start < goal_end && goal_end < test_end {
+            } else if first_start_orientation != Orientation::Collinear {
+                if second_start < first_end && first_end < second_end {
                     Relation::Touch
                 } else {
                     Relation::Disjoint
                 }
-            } else if test_start < goal_start && goal_start < test_end {
+            } else if second_start < first_start && first_start < second_end {
                 Relation::Touch
             } else {
                 Relation::Disjoint
             }
         }
-    } else if test_start_orientation != Orientation::Collinear {
-        if goal_start <= test_end && test_end <= goal_end {
+    } else if second_start_orientation != Orientation::Collinear {
+        if first_start <= second_end && second_end <= first_end {
             Relation::Touch
         } else {
             Relation::Disjoint
         }
-    } else if test_end_orientation != Orientation::Collinear {
-        if goal_start <= test_start && test_start <= goal_end {
+    } else if second_end_orientation != Orientation::Collinear {
+        if first_start <= second_start && second_start <= first_end {
             Relation::Touch
         } else {
             Relation::Disjoint
         }
     } else if starts_equal {
-        if test_end < goal_end {
+        if second_end < first_end {
             Relation::Composite
         } else {
             Relation::Component
         }
     } else if ends_equal {
-        if test_start < goal_start {
+        if second_start < first_start {
             Relation::Component
         } else {
             Relation::Composite
         }
-    } else if test_start == goal_end || test_end == goal_start {
+    } else if second_start == first_end || second_end == first_start {
         Relation::Touch
-    } else if goal_start < test_start && test_start < goal_end {
-        if test_end < goal_end {
+    } else if first_start < second_start && second_start < first_end {
+        if second_end < first_end {
             Relation::Composite
         } else {
             Relation::Overlap
         }
-    } else if test_start < goal_start && goal_start < test_end {
-        if goal_end < test_end {
+    } else if second_start < first_start && first_start < second_end {
+        if first_end < second_end {
             Relation::Component
         } else {
             Relation::Overlap

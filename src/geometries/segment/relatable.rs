@@ -1,5 +1,5 @@
 use crate::geometries::Point;
-use crate::operations::{relate_segments, Orient};
+use crate::operations::{segment_in_segment, Orient};
 use crate::relatable::{Relatable, Relation};
 
 use super::types::Segment;
@@ -9,6 +9,6 @@ where
     Point<Scalar>: Orient + PartialOrd,
 {
     fn relate(self, other: Self) -> Relation {
-        relate_segments(&self.start, &self.end, &other.start, &other.end)
+        segment_in_segment(&self.start, &self.end, &other.start, &other.end)
     }
 }

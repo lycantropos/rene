@@ -4,7 +4,7 @@ use std::collections::VecDeque;
 use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 use crate::locatable::Location;
 use crate::operations::{
-    relate_segments, shrink_collinear_vertices, LocatePointInPointPointPointCircle, Orient,
+    segment_in_segment, shrink_collinear_vertices, LocatePointInPointPointPointCircle, Orient,
 };
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
@@ -364,7 +364,7 @@ fn detect_crossings<Endpoint: Orient + PartialEq + PartialOrd>(
     while mesh.get_start(candidate).ne(constraint_end) {
         let last_crossing = candidate;
         debug_assert_eq!(
-            relate_segments(
+            segment_in_segment(
                 mesh.get_start(last_crossing),
                 mesh.get_end(last_crossing),
                 constraint_start,
@@ -572,7 +572,7 @@ fn resolve_crossings<Endpoint: Orient + PartialOrd>(
     while let Some(edge) = crossings_queue.pop_back() {
         if is_convex_quadrilateral_diagonal(mesh, edge) {
             mesh.swap_diagonal(edge);
-            match relate_segments(
+            match segment_in_segment(
                 mesh.get_start(edge),
                 mesh.get_end(edge),
                 constraint_start,
