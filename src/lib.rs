@@ -96,6 +96,12 @@ impl IntoPy<PyObject> for Relation {
     }
 }
 
+impl ToPyObject for Relation {
+    fn to_object(&self, py: Python<'_>) -> PyObject {
+        self.into_py(py)
+    }
+}
+
 impl ToPyObject for ExactContour {
     fn to_object(&self, py: Python<'_>) -> PyObject {
         self.clone().into_py(py)
@@ -258,6 +264,27 @@ impl PyRelation {
 
     #[classattr]
     const WITHIN: PyRelation = PyRelation(Relation::Within);
+
+    #[getter]
+    fn complement<'a>(&self, py: Python<'a>) -> PyResult<&'a PyAny> {
+        self.0
+            .to_object(py)
+            .into_ref(py)
+            .get_type()
+            .getattr(match self.0 {
+                Relation::Component => intern!(py, "COMPOSITE"),
+                Relation::Composite => intern!(py, "COMPONENT"),
+                Relation::Cover => intern!(py, "WITHIN"),
+                Relation::Cross => intern!(py, "CROSS"),
+                Relation::Disjoint => intern!(py, "DISJOINT"),
+                Relation::Enclosed => intern!(py, "ENCLOSES"),
+                Relation::Encloses => intern!(py, "ENCLOSED"),
+                Relation::Equal => intern!(py, "EQUAL"),
+                Relation::Overlap => intern!(py, "OVERLAP"),
+                Relation::Touch => intern!(py, "TOUCH"),
+                Relation::Within => intern!(py, "COVER"),
+            })
+    }
 
     fn __repr__(&self) -> String {
         format!(

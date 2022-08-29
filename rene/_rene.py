@@ -79,3 +79,25 @@ class Relation(Base):
     ENCLOSED = 9
     #: geometry is a subset of the interior of the other
     WITHIN = 10
+
+    @property
+    def complement(self):
+        cls = type(self)
+        if (self is cls.CROSS
+                or self is cls.DISJOINT
+                or self is cls.EQUAL
+                or self is cls.OVERLAP
+                or self is cls.TOUCH):
+            return self
+        elif self is cls.COMPONENT:
+            return cls.COMPOSITE
+        elif self is cls.COMPOSITE:
+            return cls.COMPONENT
+        elif self is cls.COVER:
+            return cls.WITHIN
+        elif self is cls.ENCLOSED:
+            return cls.ENCLOSES
+        elif self is cls.ENCLOSES:
+            return cls.ENCLOSED
+        elif self is cls.WITHIN:
+            return cls.COVER
