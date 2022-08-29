@@ -7,7 +7,7 @@ use std::convert::TryFrom;
 use pyo3::basic::CompareOp;
 use pyo3::exceptions::{PyOverflowError, PyTypeError, PyValueError, PyZeroDivisionError};
 use pyo3::prelude::{pyclass, pymethods, pymodule, PyModule, PyResult, Python};
-use pyo3::type_object::PyTypeObject;
+use pyo3::type_object::PyTypeInfo;
 use pyo3::types::{PyFloat, PyFrozenSet, PyLong, PySequence, PyTuple, PyType};
 use pyo3::{
     ffi, intern, AsPyPointer, FromPyObject, IntoPy, Py, PyAny, PyErr, PyObject, ToPyObject,
