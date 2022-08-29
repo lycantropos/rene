@@ -8,7 +8,7 @@ impl<Scalar> Relatable for &Segment<Scalar>
 where
     Point<Scalar>: Orient + PartialOrd,
 {
-    fn relate(self, other: Self) -> Relation {
+    fn relate_to(self, other: Self) -> Relation {
         segment_in_segment(&self.start, &self.end, &other.start, &other.end)
     }
 }

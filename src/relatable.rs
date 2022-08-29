@@ -39,5 +39,5 @@ pub enum Relation {
 }
 
 pub trait Relatable<Other = Self> {
-    fn relate(self, other: Other) -> Relation;
+    fn relate_to(self, other: Other) -> Relation;
 }

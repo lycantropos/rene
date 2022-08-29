@@ -4,7 +4,7 @@ use crate::bounded::Box;
 use crate::relatable::{Relatable, Relation};
 
 impl<Scalar: Ord> Relatable for &Box<Scalar> {
-    fn relate(self, other: Self) -> Relation {
+    fn relate_to(self, other: Self) -> Relation {
         match self.get_max_x().cmp(other.get_max_x()) {
             Ordering::Equal => match self.get_min_x().cmp(other.get_min_x()) {
                 Ordering::Equal => match self.get_max_y().cmp(other.get_max_y()) {
