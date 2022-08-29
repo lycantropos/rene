@@ -57,7 +57,7 @@ class Point(_Protocol[Scalar]):
         ...
 
 
-class Empty:
+class Empty(_Protocol):
     def __new__(cls) -> 'Empty':
         ...
 

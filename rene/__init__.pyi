@@ -1,5 +1,11 @@
+import sys
 from typing import (Any as _Any,
                     overload as _overload)
+
+if sys.version_info < (3, 8):
+    from typing_extensions import final as _final
+else:
+    from typing import final as _final
 
 __version__: str
 
@@ -8,6 +14,7 @@ MIN_MULTIPOLYGON_POLYGONS_COUNT: int = ...
 MIN_MULTISEGMENT_SEGMENTS_COUNT: int = ...
 
 
+@_final
 class Location:
     BOUNDARY: 'Location' = ...
     EXTERIOR: 'Location' = ...
@@ -28,6 +35,7 @@ class Location:
         ...
 
 
+@_final
 class Orientation:
     CLOCKWISE: 'Orientation' = ...
     COLLINEAR: 'Orientation' = ...
@@ -48,6 +56,7 @@ class Orientation:
         ...
 
 
+@_final
 class Relation:
     COMPONENT: 'Relation' = ...
     COMPOSITE: 'Relation' = ...
