@@ -6,3 +6,4 @@ mod operation;
 mod operation_kind;
 mod sweep_line_key;
 mod types;
+mod union;
