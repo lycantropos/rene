@@ -1,5 +1,6 @@
 use crate::bounded::Bounded;
 use crate::operations::Orient;
+use crate::relatable::{Relatable, Relation};
 use crate::traits::{
     Elemental, Intersection, Polygonal, PolygonalContour, PolygonalCoordinate, PolygonalVertex,
 };
@@ -25,12 +26,24 @@ where
     type Output = Vec<Polygon>;
 
     fn intersection(self, other: Self) -> Self::Output {
-        let min_max_x = self.to_max_x().min(other.to_max_x());
+        let bounding_box = self.to_bounding_box();
+        let other_bounding_box = other.to_bounding_box();
+        if matches!(
+            bounding_box.relate_to(&other_bounding_box),
+            Relation::Disjoint | Relation::Touch
+        ) {
+            return vec![];
+        }
+        let min_max_x = bounding_box.get_max_x().min(other_bounding_box.get_max_x());
         let mut operation =
             Operation::<PolygonalVertex<Polygon>, INTERSECTION>::from((self, other));
-        let mut events = Vec::new();
+        let mut events = {
+            let (_, maybe_events_count) = operation.size_hint();
+            debug_assert!(maybe_events_count.is_some());
+            Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
+        };
         while let Some(event) = operation.next() {
-            if operation.get_event_start(event).x() > min_max_x {
+            if operation.get_event_start(event).x().gt(min_max_x) {
                 break;
             }
             events.push(event)
