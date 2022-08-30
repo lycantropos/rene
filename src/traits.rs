@@ -43,12 +43,6 @@ pub trait Multipolygonal {
     fn polygons_count(&self) -> usize;
 }
 
-pub trait Intersection<Other = Self> {
-    type Output;
-
-    fn intersection(self, other: Other) -> Self::Output;
-}
-
 pub type ElementalCoordinate<T> = <T as Elemental>::Coordinate;
 pub type SegmentalCoordinate<T> = ElementalCoordinate<SegmentalEndpoint<T>>;
 pub type SegmentalEndpoint<T> = <T as Segmental>::Endpoint;
@@ -63,3 +57,15 @@ pub type MultipolygonalCoordinate<T> = PolygonalCoordinate<MultipolygonalPolygon
 pub type MultipolygonalVertex<T> = PolygonalVertex<MultipolygonalPolygon<T>>;
 pub type MultipolygonalContour<T> = PolygonalContour<MultipolygonalPolygon<T>>;
 pub type MultipolygonalPolygon<T> = <T as Multipolygonal>::Polygon;
+
+pub trait Intersection<Other = Self> {
+    type Output;
+
+    fn intersection(self, other: Other) -> Self::Output;
+}
+
+pub trait Union<Other = Self> {
+    type Output;
+
+    fn union(self, other: Other) -> Self::Output;
+}
