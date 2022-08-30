@@ -1,7 +1,8 @@
 use std::cmp::Ordering;
 
-use crate::bounded::Box;
 use crate::relatable::{Relatable, Relation};
+
+use super::types::Box;
 
 impl<Scalar: Ord> Relatable for &Box<Scalar> {
     fn component_of(self, _other: Self) -> bool {
