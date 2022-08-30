@@ -4,6 +4,14 @@ use crate::bounded::Box;
 use crate::relatable::{Relatable, Relation};
 
 impl<Scalar: Ord> Relatable for &Box<Scalar> {
+    fn component_of(self, _other: Self) -> bool {
+        false
+    }
+
+    fn composite_with(self, _other: Self) -> bool {
+        false
+    }
+
     fn crosses(self, _other: Self) -> bool {
         false
     }
