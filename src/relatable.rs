@@ -39,5 +39,82 @@ pub enum Relation {
 }
 
 pub trait Relatable<Other = Self> {
+    fn component_of(self, other: Other) -> bool
+    where
+        Self: Sized,
+    {
+        matches!(self.relate_to(other), Relation::Component)
+    }
+
+    fn composite_with(self, other: Other) -> bool
+    where
+        Self: Sized,
+    {
+        matches!(self.relate_to(other), Relation::Composite)
+    }
+
+    fn covers(self, other: Other) -> bool
+    where
+        Self: Sized,
+    {
+        matches!(self.relate_to(other), Relation::Cover)
+    }
+
+    fn crosses(self, other: Other) -> bool
+    where
+        Self: Sized,
+    {
+        matches!(self.relate_to(other), Relation::Cross)
+    }
+
+    fn enclosed_by(self, other: Other) -> bool
+    where
+        Self: Sized,
+    {
+        matches!(self.relate_to(other), Relation::Enclosed)
+    }
+
+    fn encloses(self, other: Other) -> bool
+    where
+        Self: Sized,
+    {
+        matches!(self.relate_to(other), Relation::Encloses)
+    }
+
+    fn equals_to(self, other: Other) -> bool
+    where
+        Self: Sized,
+    {
+        matches!(self.relate_to(other), Relation::Equal)
+    }
+
+    fn disjoint_with(self, other: Other) -> bool
+    where
+        Self: Sized,
+    {
+        matches!(self.relate_to(other), Relation::Disjoint)
+    }
+
+    fn overlaps(self, other: Other) -> bool
+    where
+        Self: Sized,
+    {
+        matches!(self.relate_to(other), Relation::Overlap)
+    }
+
+    fn touches(self, other: Other) -> bool
+    where
+        Self: Sized,
+    {
+        matches!(self.relate_to(other), Relation::Touch)
+    }
+
+    fn within(self, other: Other) -> bool
+    where
+        Self: Sized,
+    {
+        matches!(self.relate_to(other), Relation::Within)
+    }
+
     fn relate_to(self, other: Other) -> Relation;
 }
