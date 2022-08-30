@@ -24,7 +24,7 @@ use crate::constants::{
 use crate::locatable::Location;
 use crate::operations::to_arg_min;
 use crate::oriented::{Orientation, Oriented};
-use crate::relatable::Relation;
+use crate::relatable::{Relatable, Relation};
 use crate::traits::{
     Elemental, Multipolygonal, Multisegmental, Multivertexal, Polygonal, Segmental,
 };
@@ -57,6 +57,7 @@ const _: () = assert!(big_int::is_valid_shift::<Digit, BINARY_SHIFT>());
 type BigInt = big_int::BigInt<Digit, '_', BINARY_SHIFT>;
 type Fraction = fraction::Fraction<BigInt>;
 type Empty = geometries::Empty;
+type ExactBox = bounded::Box<Fraction>;
 type ExactConstrainedDelaunayTriangulation = ConstrainedDelaunayTriangulation<ExactPoint>;
 type ExactContour = geometries::Contour<Fraction>;
 type ExactDelaunayTriangulation = DelaunayTriangulation<ExactPoint>;
@@ -325,6 +326,11 @@ impl PyRelation {
     }
 }
 
+#[pyclass(name = "Box", module = "rene.exact", subclass)]
+#[pyo3(text_signature = "(min_x, max_x, min_y, max_y, /)")]
+#[derive(Clone)]
+struct PyExactBox(ExactBox);
+
 #[pyclass(name = "ConstrainedDelaunayTriangulation", module = "rene.exact")]
 #[derive(Clone)]
 struct PyExactConstrainedDelaunayTriangulation(ExactConstrainedDelaunayTriangulation);
@@ -366,6 +372,67 @@ struct PyExactPolygon(ExactPolygon);
 #[pyo3(text_signature = "(start, end, /)")]
 #[derive(Clone)]
 struct PyExactSegment(ExactSegment);
+
+#[pymethods]
+impl PyExactBox {
+    #[new]
+    fn new(min_x: &PyAny, max_x: &PyAny, min_y: &PyAny, max_y: &PyAny) -> PyResult<Self> {
+        Ok(PyExactBox(ExactBox::new(
+            try_scalar_to_fraction(min_x)?,
+            try_scalar_to_fraction(max_x)?,
+            try_scalar_to_fraction(min_y)?,
+            try_scalar_to_fraction(max_y)?,
+        )))
+    }
+
+    fn is_valid(&self) -> bool {
+        self.0.get_min_x().le(self.0.get_max_x()) && self.0.get_min_y().le(self.0.get_max_y())
+    }
+
+    #[getter]
+    fn max_x(&self) -> PyResult<&PyAny> {
+        try_fraction_to_py_fraction(self.0.get_max_x())
+    }
+
+    #[getter]
+    fn max_y(&self) -> PyResult<&PyAny> {
+        try_fraction_to_py_fraction(self.0.get_max_y())
+    }
+
+    #[getter]
+    fn min_x(&self) -> PyResult<&PyAny> {
+        try_fraction_to_py_fraction(self.0.get_min_x())
+    }
+
+    #[getter]
+    fn min_y(&self) -> PyResult<&PyAny> {
+        try_fraction_to_py_fraction(self.0.get_min_y())
+    }
+
+    fn relate_to(&self, other: &Self) -> Relation {
+        self.0.relate_to(&other.0)
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!(
+            "rene.exact.Box({}, {}, {}, {})",
+            self.min_x()?.repr()?.extract::<String>()?,
+            self.max_x()?.repr()?.extract::<String>()?,
+            self.min_y()?.repr()?.extract::<String>()?,
+            self.max_y()?.repr()?.extract::<String>()?,
+        ))
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!(
+            "Box({}, {}, {}, {})",
+            self.min_x()?.str()?.extract::<String>()?,
+            self.max_x()?.str()?.extract::<String>()?,
+            self.min_y()?.str()?.extract::<String>()?,
+            self.max_y()?.str()?.extract::<String>()?,
+        ))
+    }
+}
 
 #[pymethods]
 impl PyExactConstrainedDelaunayTriangulation {
@@ -988,6 +1055,7 @@ fn extract_from_sequence<'a, Wrapper: FromPyObject<'a>, Wrapped: From<Wrapper>>(
 
 #[pymodule]
 fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
+    module.add_class::<PyExactBox>()?;
     module.add_class::<PyExactConstrainedDelaunayTriangulation>()?;
     module.add_class::<PyExactContour>()?;
     module.add_class::<PyExactDelaunayTriangulation>()?;

@@ -1,5 +1,6 @@
 try:
-    from ._cexact import (ConstrainedDelaunayTriangulation,
+    from ._cexact import (Box,
+                          ConstrainedDelaunayTriangulation,
                           Contour,
                           DelaunayTriangulation,
                           Empty,
@@ -9,7 +10,8 @@ try:
                           Polygon,
                           Segment)
 except ImportError:
-    from ._exact import (ConstrainedDelaunayTriangulation,
+    from ._exact import (Box,
+                         ConstrainedDelaunayTriangulation,
                          Contour,
                          DelaunayTriangulation,
                          Empty,

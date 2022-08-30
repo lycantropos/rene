@@ -15,6 +15,31 @@ from rithm import Fraction as _Fraction
 from rene import Orientation as _Orientation
 
 
+class Box:
+    def __new__(cls,
+                min_x: _Union[_Rational, float],
+                max_x: _Union[_Rational, float],
+                min_y: _Union[_Rational, float],
+                max_y: _Union[_Rational, float]) -> 'Box':
+        ...
+
+    @property
+    def max_x(self) -> _Fraction:
+        ...
+
+    @property
+    def max_y(self) -> _Fraction:
+        ...
+
+    @property
+    def min_x(self) -> _Fraction:
+        ...
+
+    @property
+    def min_y(self) -> _Fraction:
+        ...
+
+
 class Contour:
     @property
     def orientation(self) -> _Orientation:
@@ -138,8 +163,9 @@ class Point:
     def y(self) -> _Fraction:
         ...
 
-    def __new__(cls, x: _Union[_Rational, float], y: _Union[_Rational, float]
-                ) -> 'Point':
+    def __new__(cls,
+                x: _Union[_Rational, float],
+                y: _Union[_Rational, float]) -> 'Point':
         ...
 
     @_overload

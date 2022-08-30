@@ -1,3 +1,4 @@
+from .box import Box
 from .contour import Contour
 from .empty import Empty
 from .multipolygon import Multipolygon
