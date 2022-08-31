@@ -197,6 +197,9 @@ class Box(_Protocol[Scalar]):
     def min_y(self) -> Scalar:
         ...
 
+    def is_valid(self, other: 'Box[Scalar]') -> bool:
+        ...
+
     def relate_to(self, other: 'Box[Scalar]') -> _Relation:
         ...
 

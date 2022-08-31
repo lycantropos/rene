@@ -36,6 +36,9 @@ class Box:
     def relate_to(self, other: 'Box') -> _Relation:
         ...
 
+    def is_valid(self, other: 'Box') -> bool:
+        ...
+
     def __new__(cls,
                 min_x: _Union[_Rational, float],
                 max_x: _Union[_Rational, float],
