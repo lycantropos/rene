@@ -39,6 +39,9 @@ class Box:
     def is_valid(self) -> bool:
         ...
 
+    def within(self, other: 'Box') -> bool:
+        ...
+
     def __new__(cls,
                 min_x: _Union[_Rational, float],
                 max_x: _Union[_Rational, float],

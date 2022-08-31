@@ -283,6 +283,12 @@ class Box:
                 assert self.max_x < other.min_x
                 return Relation.DISJOINT
 
+    def within(self, other):
+        return (self.max_x < other.max_x
+                and self.max_y < other.max_y
+                and other.min_x < self.min_x
+                and other.min_y < self.min_y)
+
     __module__ = 'rene.exact'
     __slots__ = '_min_x', '_max_x', '_min_y', '_max_y'
 

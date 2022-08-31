@@ -413,6 +413,10 @@ impl PyExactBox {
         self.0.relate_to(&other.0)
     }
 
+    fn within(&self, other: &Self) -> bool {
+        self.0.within(&other.0)
+    }
+
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!(
             "rene.exact.Box({}, {}, {}, {})",
