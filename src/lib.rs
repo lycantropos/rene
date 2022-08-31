@@ -417,6 +417,14 @@ impl PyExactBox {
         self.0.within(&other.0)
     }
 
+    fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
+        PyTuple::new(
+            py,
+            &[self.min_x()?, self.max_x()?, self.min_y()?, self.max_y()?],
+        )
+        .hash()
+    }
+
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!(
             "rene.exact.Box({}, {}, {}, {})",
