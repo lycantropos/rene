@@ -179,6 +179,48 @@ class Multisegment(_Protocol[Scalar]):
         ...
 
 
+class Box(_Protocol[Scalar]):
+    @property
+    def max_x(self) -> Scalar:
+        ...
+
+    @property
+    def max_y(self) -> Scalar:
+        ...
+
+    @property
+    def min_x(self) -> Scalar:
+        ...
+
+    @property
+    def min_y(self) -> Scalar:
+        ...
+
+    def __new__(cls,
+                min_x: Scalar,
+                max_x: Scalar,
+                min_y: Scalar,
+                max_y: Scalar) -> 'Box[Scalar]':
+        ...
+
+    @_overload
+    def __eq__(self, other: 'Box[Scalar]') -> bool:
+        ...
+
+    @_overload
+    def __eq__(self, other: _Any) -> _Any:
+        ...
+
+    def __eq__(self, other):
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+    def __str__(self) -> str:
+        ...
+
+
 class Polygon(_Protocol[Scalar]):
     @property
     def border(self) -> Contour[Scalar]:

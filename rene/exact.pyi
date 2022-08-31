@@ -16,13 +16,6 @@ from rene import Orientation as _Orientation
 
 
 class Box:
-    def __new__(cls,
-                min_x: _Union[_Rational, float],
-                max_x: _Union[_Rational, float],
-                min_y: _Union[_Rational, float],
-                max_y: _Union[_Rational, float]) -> 'Box':
-        ...
-
     @property
     def max_x(self) -> _Fraction:
         ...
@@ -37,6 +30,13 @@ class Box:
 
     @property
     def min_y(self) -> _Fraction:
+        ...
+
+    def __new__(cls,
+                min_x: _Union[_Rational, float],
+                max_x: _Union[_Rational, float],
+                min_y: _Union[_Rational, float],
+                max_y: _Union[_Rational, float]) -> 'Box':
         ...
 
 
