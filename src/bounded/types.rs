@@ -1,8 +1,8 @@
 pub struct Box<Scalar> {
-    max_x: Scalar,
-    max_y: Scalar,
-    min_x: Scalar,
-    min_y: Scalar,
+    pub(super) max_x: Scalar,
+    pub(super) max_y: Scalar,
+    pub(super) min_x: Scalar,
+    pub(super) min_y: Scalar,
 }
 
 impl<Scalar: Clone> Clone for Box<Scalar> {
