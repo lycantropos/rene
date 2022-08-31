@@ -14,10 +14,10 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
     }
 
     fn covers(self, other: Self) -> bool {
-        other.get_max_x() < self.get_max_x()
-            && other.get_max_y() < self.get_max_y()
-            && self.get_min_x() < other.get_min_x()
-            && self.get_min_y() < other.get_min_y()
+        other.max_x < self.max_x
+            && other.max_y < self.max_y
+            && self.min_x < other.min_x
+            && self.min_y < other.min_y
     }
 
     fn crosses(self, _other: Self) -> bool {
@@ -25,27 +25,27 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
     }
 
     fn disjoint_with(self, other: Self) -> bool {
-        self.get_max_x() < other.get_min_x()
-            || self.get_max_y() < other.get_min_y()
-            || other.get_max_x() < self.get_min_x()
-            || other.get_max_y() < self.get_min_y()
+        self.max_x < other.min_x
+            || self.max_y < other.min_y
+            || other.max_x < self.min_x
+            || other.max_y < self.min_y
     }
 
     fn enclosed_by(self, other: Self) -> bool {
         (2..=8).contains(
-            &((match self.get_max_x().cmp(other.get_max_x()) {
+            &((match self.max_x.cmp(&other.max_x) {
                 Ordering::Equal => 1,
                 Ordering::Greater => 0,
                 Ordering::Less => 2,
-            }) * (match self.get_max_y().cmp(other.get_max_y()) {
+            }) * (match self.max_y.cmp(&other.max_y) {
                 Ordering::Equal => 1,
                 Ordering::Greater => 0,
                 Ordering::Less => 2,
-            }) * (match self.get_min_x().cmp(other.get_min_x()) {
+            }) * (match self.min_x.cmp(&other.min_x) {
                 Ordering::Equal => 1,
                 Ordering::Greater => 2,
                 Ordering::Less => 0,
-            }) * (match self.get_min_y().cmp(other.get_min_y()) {
+            }) * (match self.min_y.cmp(&other.min_y) {
                 Ordering::Equal => 1,
                 Ordering::Greater => 2,
                 Ordering::Less => 0,
@@ -55,19 +55,19 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
 
     fn encloses(self, other: Self) -> bool {
         (2..=8).contains(
-            &((match self.get_max_x().cmp(other.get_max_x()) {
+            &((match self.max_x.cmp(&other.max_x) {
                 Ordering::Equal => 1,
                 Ordering::Greater => 2,
                 Ordering::Less => 0,
-            }) * (match self.get_max_y().cmp(other.get_max_y()) {
+            }) * (match self.max_y.cmp(&other.max_y) {
                 Ordering::Equal => 1,
                 Ordering::Greater => 2,
                 Ordering::Less => 0,
-            }) * (match self.get_min_x().cmp(other.get_min_x()) {
+            }) * (match self.min_x.cmp(&other.min_x) {
                 Ordering::Equal => 1,
                 Ordering::Greater => 0,
                 Ordering::Less => 2,
-            }) * (match self.get_min_y().cmp(other.get_min_y()) {
+            }) * (match self.min_y.cmp(&other.min_y) {
                 Ordering::Equal => 1,
                 Ordering::Greater => 0,
                 Ordering::Less => 2,
@@ -76,31 +76,31 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
     }
 
     fn equals_to(self, other: Self) -> bool {
-        self.get_max_x() == other.get_max_x()
-            && self.get_max_y() == other.get_max_y()
-            && self.get_min_x() == other.get_min_x()
-            && self.get_min_y() == other.get_min_y()
+        self.max_x == other.max_x
+            && self.max_y == other.max_y
+            && self.min_x == other.min_x
+            && self.min_y == other.min_y
     }
 
     fn overlaps(self, other: Self) -> bool {
-        self.get_min_x() < other.get_max_x()
-            && other.get_min_x() < self.get_max_x()
-            && self.get_min_y() < other.get_max_y()
-            && other.get_min_y() < self.get_max_y()
+        self.min_x < other.max_x
+            && other.min_x < self.max_x
+            && self.min_y < other.max_y
+            && other.min_y < self.max_y
     }
 
     fn touches(self, other: Self) -> bool {
-        ((self.get_min_x() == other.get_max_x() || self.get_max_x() == other.get_min_x())
-            && (self.get_min_y() <= other.get_max_y() && other.get_min_y() <= self.get_max_y()))
-            || ((self.get_min_x() <= other.get_max_x() && other.get_min_x() <= self.get_max_x())
-                && (self.get_min_y() == other.get_max_y() || other.get_min_y() == self.get_max_y()))
+        ((self.min_x == other.max_x || self.max_x == other.min_x)
+            && (self.min_y <= other.max_y && other.min_y <= self.max_y))
+            || ((self.min_x <= other.max_x && other.min_x <= self.max_x)
+                && (self.min_y == other.max_y || other.min_y == self.max_y))
     }
 
     fn within(self, other: Self) -> bool {
-        self.get_max_x() < other.get_max_x()
-            && self.get_max_y() < other.get_max_y()
-            && other.get_min_x() < self.get_min_x()
-            && other.get_min_y() < self.get_min_y()
+        self.max_x < other.max_x
+            && self.max_y < other.max_y
+            && other.min_x < self.min_x
+            && other.min_y < self.min_y
     }
 
     fn relate_to(self, other: Self) -> Relation {
@@ -117,10 +117,10 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
             - "‡": intersection of borders
 
         */
-        match self.get_max_x().cmp(other.get_max_x()) {
-            Ordering::Equal => match self.get_min_x().cmp(other.get_min_x()) {
-                Ordering::Equal => match self.get_max_y().cmp(other.get_max_y()) {
-                    Ordering::Equal => match self.get_min_y().cmp(other.get_min_y()) {
+        match self.max_x.cmp(&other.max_x) {
+            Ordering::Equal => match self.min_x.cmp(&other.min_x) {
+                Ordering::Equal => match self.max_y.cmp(&other.max_y) {
+                    Ordering::Equal => match self.min_y.cmp(&other.min_y) {
                         Ordering::Equal => {
                             /*
 
@@ -158,7 +158,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             Relation::Encloses
                         }
                     },
-                    Ordering::Greater => match self.get_min_y().cmp(other.get_max_y()) {
+                    Ordering::Greater => match self.min_y.cmp(&other.max_y) {
                         Ordering::Equal => {
                             /*
 
@@ -192,7 +192,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             */
                             Relation::Disjoint
                         }
-                        Ordering::Less => match self.get_min_y().cmp(other.get_min_y()) {
+                        Ordering::Less => match self.min_y.cmp(&other.min_y) {
                             Ordering::Greater => {
                                 /*
 
@@ -230,7 +230,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             }
                         },
                     },
-                    Ordering::Less => match self.get_max_y().cmp(other.get_min_y()) {
+                    Ordering::Less => match self.max_y.cmp(&other.min_y) {
                         Ordering::Equal => {
                             /*
 
@@ -245,7 +245,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             */
                             Relation::Touch
                         }
-                        Ordering::Greater => match self.get_min_y().cmp(other.get_min_y()) {
+                        Ordering::Greater => match self.min_y.cmp(&other.min_y) {
                             Ordering::Less => {
                                 /*
 
@@ -295,8 +295,8 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                         }
                     },
                 },
-                Ordering::Greater => match self.get_max_y().cmp(other.get_max_y()) {
-                    Ordering::Equal => match self.get_min_y().cmp(other.get_min_y()) {
+                Ordering::Greater => match self.max_y.cmp(&other.max_y) {
+                    Ordering::Equal => match self.min_y.cmp(&other.min_y) {
                         Ordering::Less => {
                             /*
 
@@ -328,7 +328,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             Relation::Enclosed
                         }
                     },
-                    Ordering::Greater => match self.get_min_y().cmp(other.get_max_y()) {
+                    Ordering::Greater => match self.min_y.cmp(&other.max_y) {
                         Ordering::Equal => {
                             /*
 
@@ -386,7 +386,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             Relation::Overlap
                         }
                     },
-                    Ordering::Less => match self.get_max_y().cmp(other.get_min_y()) {
+                    Ordering::Less => match self.max_y.cmp(&other.min_y) {
                         Ordering::Equal => {
                             /*
 
@@ -400,7 +400,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             */
                             Relation::Touch
                         }
-                        Ordering::Greater => match self.get_min_y().cmp(other.get_min_y()) {
+                        Ordering::Greater => match self.min_y.cmp(&other.min_y) {
                             Ordering::Less => {
                                 /*
 
@@ -448,8 +448,8 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                         }
                     },
                 },
-                Ordering::Less => match self.get_max_y().cmp(other.get_max_y()) {
-                    Ordering::Equal => match self.get_min_y().cmp(other.get_min_y()) {
+                Ordering::Less => match self.max_y.cmp(&other.max_y) {
+                    Ordering::Equal => match self.min_y.cmp(&other.min_y) {
                         Ordering::Greater => {
                             /*
 
@@ -481,7 +481,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             Relation::Encloses
                         }
                     },
-                    Ordering::Greater => match self.get_min_y().cmp(other.get_max_y()) {
+                    Ordering::Greater => match self.min_y.cmp(&other.max_y) {
                         Ordering::Equal => {
                             /*
 
@@ -509,7 +509,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             */
                             Relation::Disjoint
                         }
-                        Ordering::Less => match self.get_min_y().cmp(other.get_min_y()) {
+                        Ordering::Less => match self.min_y.cmp(&other.min_y) {
                             Ordering::Greater => {
                                 /*
 
@@ -544,7 +544,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             }
                         },
                     },
-                    Ordering::Less => match self.get_max_y().cmp(other.get_min_y()) {
+                    Ordering::Less => match self.max_y.cmp(&other.min_y) {
                         Ordering::Equal => {
                             /*
 
@@ -590,8 +590,8 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                     },
                 },
             },
-            Ordering::Greater => match self.get_min_x().cmp(other.get_max_x()) {
-                Ordering::Equal => match self.get_max_y().cmp(other.get_max_y()) {
+            Ordering::Greater => match self.min_x.cmp(&other.max_x) {
+                Ordering::Equal => match self.max_y.cmp(&other.max_y) {
                     Ordering::Equal => {
                         /*
 
@@ -621,7 +621,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                         */
                         Relation::Touch
                     }
-                    Ordering::Greater => match self.get_min_y().cmp(other.get_max_y()) {
+                    Ordering::Greater => match self.min_y.cmp(&other.max_y) {
                         Ordering::Greater => {
                             /*
 
@@ -681,7 +681,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             Relation::Touch
                         }
                     },
-                    Ordering::Less => match self.get_max_y().cmp(other.get_min_y()) {
+                    Ordering::Less => match self.max_y.cmp(&other.min_y) {
                         Ordering::Less => {
                             /*
 
@@ -755,9 +755,9 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                     */
                     Relation::Disjoint
                 }
-                Ordering::Less => match self.get_min_x().cmp(other.get_min_x()) {
-                    Ordering::Equal => match self.get_max_y().cmp(other.get_max_y()) {
-                        Ordering::Equal => match self.get_min_y().cmp(other.get_min_y()) {
+                Ordering::Less => match self.min_x.cmp(&other.min_x) {
+                    Ordering::Equal => match self.max_y.cmp(&other.max_y) {
+                        Ordering::Equal => match self.min_y.cmp(&other.min_y) {
                             Ordering::Greater => {
                                 /*
 
@@ -790,7 +790,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 Relation::Encloses
                             }
                         },
-                        Ordering::Greater => match self.get_min_y().cmp(other.get_max_y()) {
+                        Ordering::Greater => match self.min_y.cmp(&other.max_y) {
                             Ordering::Equal => {
                                 /*
 
@@ -818,7 +818,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 */
                                 Relation::Disjoint
                             }
-                            Ordering::Less => match self.get_min_y().cmp(other.get_min_y()) {
+                            Ordering::Less => match self.min_y.cmp(&other.min_y) {
                                 Ordering::Greater => {
                                     /*
 
@@ -851,7 +851,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 }
                             },
                         },
-                        Ordering::Less => match self.get_max_y().cmp(other.get_min_y()) {
+                        Ordering::Less => match self.max_y.cmp(&other.min_y) {
                             Ordering::Equal => {
                                 /*
 
@@ -910,7 +910,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             }
                         },
                     },
-                    Ordering::Greater => match self.get_max_y().cmp(other.get_max_y()) {
+                    Ordering::Greater => match self.max_y.cmp(&other.max_y) {
                         Ordering::Equal => {
                             /*
 
@@ -937,7 +937,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             */
                             Relation::Overlap
                         }
-                        Ordering::Greater => match self.get_min_y().cmp(other.get_max_y()) {
+                        Ordering::Greater => match self.min_y.cmp(&other.max_y) {
                             Ordering::Equal => {
                                 /*
 
@@ -995,7 +995,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 Relation::Overlap
                             }
                         },
-                        Ordering::Less => match self.get_max_y().cmp(other.get_min_y()) {
+                        Ordering::Less => match self.max_y.cmp(&other.min_y) {
                             Ordering::Equal => {
                                 /*
 
@@ -1037,8 +1037,8 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             }
                         },
                     },
-                    Ordering::Less => match self.get_max_y().cmp(other.get_max_y()) {
-                        Ordering::Equal => match self.get_min_y().cmp(other.get_min_y()) {
+                    Ordering::Less => match self.max_y.cmp(&other.max_y) {
+                        Ordering::Equal => match self.min_y.cmp(&other.min_y) {
                             Ordering::Greater => {
                                 /*
 
@@ -1070,7 +1070,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 Relation::Encloses
                             }
                         },
-                        Ordering::Greater => match self.get_min_y().cmp(other.get_max_y()) {
+                        Ordering::Greater => match self.min_y.cmp(&other.max_y) {
                             Ordering::Equal => {
                                 /*
 
@@ -1098,7 +1098,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 */
                                 Relation::Disjoint
                             }
-                            Ordering::Less => match self.get_min_y().cmp(other.get_min_y()) {
+                            Ordering::Less => match self.min_y.cmp(&other.min_y) {
                                 Ordering::Equal => {
                                     /*
 
@@ -1135,7 +1135,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 }
                             },
                         },
-                        Ordering::Less => match self.get_max_y().cmp(other.get_min_y()) {
+                        Ordering::Less => match self.max_y.cmp(&other.min_y) {
                             Ordering::Equal => {
                                 /*
 
@@ -1196,8 +1196,8 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                     },
                 },
             },
-            Ordering::Less => match self.get_max_x().cmp(other.get_min_x()) {
-                Ordering::Equal => match self.get_max_y().cmp(other.get_max_y()) {
+            Ordering::Less => match self.max_x.cmp(&other.min_x) {
+                Ordering::Equal => match self.max_y.cmp(&other.max_y) {
                     Ordering::Equal => {
                         /*
 
@@ -1224,7 +1224,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                         */
                         Relation::Touch
                     }
-                    Ordering::Greater => match self.get_min_y().cmp(other.get_max_y()) {
+                    Ordering::Greater => match self.min_y.cmp(&other.max_y) {
                         Ordering::Greater => {
                             /*
 
@@ -1264,7 +1264,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             Relation::Touch
                         }
                     },
-                    Ordering::Less => match self.get_max_y().cmp(other.get_min_y()) {
+                    Ordering::Less => match self.max_y.cmp(&other.min_y) {
                         Ordering::Less => {
                             /*
 
@@ -1325,9 +1325,9 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                         }
                     },
                 },
-                Ordering::Greater => match self.get_min_x().cmp(other.get_min_x()) {
-                    Ordering::Equal => match self.get_max_y().cmp(other.get_max_y()) {
-                        Ordering::Equal => match self.get_min_y().cmp(other.get_min_y()) {
+                Ordering::Greater => match self.min_x.cmp(&other.min_x) {
+                    Ordering::Equal => match self.max_y.cmp(&other.max_y) {
+                        Ordering::Equal => match self.min_y.cmp(&other.min_y) {
                             Ordering::Less => {
                                 /*
 
@@ -1359,7 +1359,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 Relation::Enclosed
                             }
                         },
-                        Ordering::Greater => match self.get_min_y().cmp(other.get_max_y()) {
+                        Ordering::Greater => match self.min_y.cmp(&other.max_y) {
                             Ordering::Equal => {
                                 /*
 
@@ -1417,7 +1417,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 Relation::Overlap
                             }
                         },
-                        Ordering::Less => match self.get_max_y().cmp(other.get_min_y()) {
+                        Ordering::Less => match self.max_y.cmp(&other.min_y) {
                             Ordering::Equal => {
                                 /*
 
@@ -1431,7 +1431,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 */
                                 Relation::Touch
                             }
-                            Ordering::Greater => match self.get_min_y().cmp(other.get_min_y()) {
+                            Ordering::Greater => match self.min_y.cmp(&other.min_y) {
                                 Ordering::Less => {
                                     /*
 
@@ -1479,8 +1479,8 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             }
                         },
                     },
-                    Ordering::Greater => match self.get_max_y().cmp(other.get_max_y()) {
-                        Ordering::Equal => match self.get_min_y().cmp(other.get_min_y()) {
+                    Ordering::Greater => match self.max_y.cmp(&other.max_y) {
+                        Ordering::Equal => match self.min_y.cmp(&other.min_y) {
                             Ordering::Less => {
                                 /*
 
@@ -1512,7 +1512,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 Relation::Enclosed
                             }
                         },
-                        Ordering::Greater => match self.get_min_y().cmp(other.get_max_y()) {
+                        Ordering::Greater => match self.min_y.cmp(&other.max_y) {
                             Ordering::Equal => {
                                 /*
 
@@ -1570,7 +1570,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 Relation::Overlap
                             }
                         },
-                        Ordering::Less => match self.get_max_y().cmp(other.get_min_y()) {
+                        Ordering::Less => match self.max_y.cmp(&other.min_y) {
                             Ordering::Equal => {
                                 /*
 
@@ -1584,7 +1584,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 */
                                 Relation::Touch
                             }
-                            Ordering::Greater => match self.get_min_y().cmp(other.get_min_y()) {
+                            Ordering::Greater => match self.min_y.cmp(&other.min_y) {
                                 Ordering::Equal => {
                                     /*
 
@@ -1636,7 +1636,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             }
                         },
                     },
-                    Ordering::Less => match self.get_max_y().cmp(other.get_max_y()) {
+                    Ordering::Less => match self.max_y.cmp(&other.max_y) {
                         Ordering::Equal => {
                             /*
 
@@ -1663,7 +1663,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             */
                             Relation::Overlap
                         }
-                        Ordering::Greater => match self.get_min_y().cmp(other.get_max_y()) {
+                        Ordering::Greater => match self.min_y.cmp(&other.max_y) {
                             Ordering::Equal => {
                                 /*
 
@@ -1727,7 +1727,7 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 Relation::Overlap
                             }
                         },
-                        Ordering::Less => match self.get_max_y().cmp(other.get_min_y()) {
+                        Ordering::Less => match self.max_y.cmp(&other.min_y) {
                             Ordering::Equal => {
                                 /*
 
