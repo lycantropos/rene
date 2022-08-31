@@ -21,10 +21,10 @@ class Box:
     def min_y(self):
         return self._min_y
 
-    def is_valid(self) -> bool:
+    def is_valid(self):
         return self.min_x <= self.max_x and self.min_y <= self.max_y
 
-    def relate_to(self, other: 'Box') -> Relation:
+    def relate_to(self, other):
         if self.max_x == other.max_x:
             if self.min_x == other.min_x:
                 if self.max_y == other.max_y:

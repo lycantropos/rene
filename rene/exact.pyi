@@ -36,7 +36,7 @@ class Box:
     def relate_to(self, other: 'Box') -> _Relation:
         ...
 
-    def is_valid(self, other: 'Box') -> bool:
+    def is_valid(self) -> bool:
         ...
 
     def __new__(cls,
