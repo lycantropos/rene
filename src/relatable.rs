@@ -67,6 +67,13 @@ pub trait Relatable<Other = Self> {
         matches!(self.relate_to(other), Relation::Cross)
     }
 
+    fn disjoint_with(self, other: Other) -> bool
+    where
+        Self: Sized,
+    {
+        matches!(self.relate_to(other), Relation::Disjoint)
+    }
+
     fn enclosed_by(self, other: Other) -> bool
     where
         Self: Sized,
@@ -86,13 +93,6 @@ pub trait Relatable<Other = Self> {
         Self: Sized,
     {
         matches!(self.relate_to(other), Relation::Equal)
-    }
-
-    fn disjoint_with(self, other: Other) -> bool
-    where
-        Self: Sized,
-    {
-        matches!(self.relate_to(other), Relation::Disjoint)
     }
 
     fn overlaps(self, other: Other) -> bool
