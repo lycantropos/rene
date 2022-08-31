@@ -4,7 +4,8 @@ from ground import hints
 from hypothesis import strategies
 from hypothesis_geometry import planar
 
-from rene.exact import (Contour,
+from rene.exact import (Box,
+                        Contour,
                         Multipolygon,
                         Multisegment,
                         Point,
@@ -24,6 +25,14 @@ scalars_strategies = strategies.sampled_from([
                       allow_infinity=False,
                       allow_nan=False)
 ])
+
+
+def to_box(raw_box: hints.Box) -> Box:
+    return Box(raw_box.min_x, raw_box.max_x, raw_box.min_y, raw_box.max_y)
+
+
+boxes = scalars_strategies.flatmap(planar.boxes).map(to_box)
+boxes_limits = boxes.map(attrgetter('min_x', 'max_x', 'min_x', 'max_x'))
 
 
 def to_point(raw_point: hints.Point) -> Point:
