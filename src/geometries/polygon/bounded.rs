@@ -1,12 +1,11 @@
 use crate::bounded::{Bounded, Box};
-use crate::geometries::Point;
-use crate::Elemental;
+use crate::geometries::Contour;
 
 use super::types::Polygon;
 
-impl<Scalar: Ord> Bounded<Scalar> for Polygon<Scalar>
+impl<Scalar> Bounded<Scalar> for Polygon<Scalar>
 where
-    Point<Scalar>: Elemental<Coordinate = Scalar>,
+    Contour<Scalar>: Bounded<Scalar>,
 {
     fn to_max_x(&self) -> Scalar {
         self.border.to_max_x()
