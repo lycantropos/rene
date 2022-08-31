@@ -49,6 +49,20 @@ class Box:
                 max_y: _Union[_Rational, float]) -> 'Box':
         ...
 
+    @_overload
+    def __eq__(self, other: 'Box') -> bool:
+        ...
+
+    @_overload
+    def __eq__(self, other: _Any) -> _Any:
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+    def __str__(self) -> str:
+        ...
+
 
 class Contour:
     @property
