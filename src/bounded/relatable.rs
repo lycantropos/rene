@@ -17,6 +17,27 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
         false
     }
 
+    fn disjoint_with(self, other: Self) -> bool {
+        self.get_max_x().lt(other.get_min_x())
+            || self.get_max_y().lt(other.get_min_y())
+            || self.get_min_x().gt(other.get_max_x())
+            || self.get_min_y().gt(other.get_max_y())
+    }
+
+    fn touches(self, other: Self) -> bool {
+        (self.get_max_x().eq(other.get_min_x()) || self.get_min_x().eq(other.get_max_x()))
+            && (self.get_max_y().ge(other.get_min_y()) && self.get_max_y().le(other.get_max_y())
+                || self.get_min_y().ge(other.get_min_y()) && self.get_min_y().le(other.get_max_y())
+                || self.get_max_y().gt(other.get_max_y()) && self.get_min_y().lt(other.get_min_y()))
+            || (self.get_max_y().eq(other.get_min_y()) || self.get_min_y().eq(other.get_max_y()))
+                && (self.get_max_x().ge(other.get_min_x())
+                    && self.get_max_x().le(other.get_max_x())
+                    || self.get_min_x().ge(other.get_min_x())
+                        && self.get_min_x().le(other.get_max_x())
+                    || self.get_max_x().gt(other.get_max_x())
+                        && self.get_min_x().lt(other.get_min_x()))
+    }
+
     fn relate_to(self, other: Self) -> Relation {
         /*
 
