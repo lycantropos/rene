@@ -299,6 +299,14 @@ class Box:
         )
         return self
 
+    def __eq__(self, other):
+        return ((self.min_x == other.min_x
+                 and self.max_x == other.max_x
+                 and self.min_y == other.min_y
+                 and self.max_y == other.max_y)
+                if isinstance(other, Box)
+                else NotImplemented)
+
     def __hash__(self):
         return hash((self.min_x, self.max_x, self.min_y, self.max_y))
 
