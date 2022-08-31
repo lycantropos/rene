@@ -1,6 +1,6 @@
 use crate::bounded::Bounded;
 use crate::operations::Orient;
-use crate::relatable::{Relatable, Relation};
+use crate::relatable::Relatable;
 use crate::traits::{
     Elemental, Intersection, Polygonal, PolygonalContour, PolygonalCoordinate, PolygonalVertex,
 };
@@ -28,10 +28,9 @@ where
     fn intersection(self, other: Self) -> Self::Output {
         let bounding_box = self.to_bounding_box();
         let other_bounding_box = other.to_bounding_box();
-        if matches!(
-            bounding_box.relate_to(&other_bounding_box),
-            Relation::Disjoint | Relation::Touch
-        ) {
+        if bounding_box.disjoint_with(&other_bounding_box)
+            || bounding_box.touches(&other_bounding_box)
+        {
             return vec![];
         }
         let min_max_x = bounding_box.get_max_x().min(other_bounding_box.get_max_x());
