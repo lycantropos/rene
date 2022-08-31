@@ -6,7 +6,8 @@ from typing import (Any as _Any,
 
 from typing_extensions import Protocol as _Protocol
 
-from rene import Orientation as _Orientation
+from rene import (Orientation as _Orientation,
+                  Relation as _Relation)
 
 Scalar = _TypeVar('Scalar',
                   bound=_Rational)
@@ -194,6 +195,9 @@ class Box(_Protocol[Scalar]):
 
     @property
     def min_y(self) -> Scalar:
+        ...
+
+    def relate_to(self, other: 'Box[Scalar]') -> _Relation:
         ...
 
     def __new__(cls,

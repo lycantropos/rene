@@ -12,7 +12,8 @@ else:
 
 from rithm import Fraction as _Fraction
 
-from rene import Orientation as _Orientation
+from rene import (Orientation as _Orientation,
+                  Relation as _Relation)
 
 
 class Box:
@@ -30,6 +31,9 @@ class Box:
 
     @property
     def min_y(self) -> _Fraction:
+        ...
+
+    def relate_to(self, other: 'Box') -> _Relation:
         ...
 
     def __new__(cls,
