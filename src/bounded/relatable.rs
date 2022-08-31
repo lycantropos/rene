@@ -14,10 +14,10 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
     }
 
     fn covers(self, other: Self) -> bool {
-        self.get_max_x().gt(other.get_max_x())
-            && self.get_max_y().gt(other.get_max_y())
-            && self.get_min_x().lt(other.get_min_x())
-            && self.get_min_y().lt(other.get_min_y())
+        other.get_max_x() < self.get_max_x()
+            && other.get_max_y() < self.get_max_y()
+            && self.get_min_x() < other.get_min_x()
+            && self.get_min_y() < other.get_min_y()
     }
 
     fn crosses(self, _other: Self) -> bool {
@@ -25,38 +25,82 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
     }
 
     fn disjoint_with(self, other: Self) -> bool {
-        self.get_max_x().lt(other.get_min_x())
-            || self.get_max_y().lt(other.get_min_y())
-            || self.get_min_x().gt(other.get_max_x())
-            || self.get_min_y().gt(other.get_max_y())
+        self.get_max_x() < other.get_min_x()
+            || self.get_max_y() < other.get_min_y()
+            || other.get_max_x() < self.get_min_x()
+            || other.get_max_y() < self.get_min_y()
+    }
+
+    fn enclosed_by(self, other: Self) -> bool {
+        (2..=8).contains(
+            &((match self.get_max_x().cmp(other.get_max_x()) {
+                Ordering::Equal => 1,
+                Ordering::Greater => 0,
+                Ordering::Less => 2,
+            }) * (match self.get_max_y().cmp(other.get_max_y()) {
+                Ordering::Equal => 1,
+                Ordering::Greater => 0,
+                Ordering::Less => 2,
+            }) * (match self.get_min_x().cmp(other.get_min_x()) {
+                Ordering::Equal => 1,
+                Ordering::Greater => 2,
+                Ordering::Less => 0,
+            }) * (match self.get_min_y().cmp(other.get_min_y()) {
+                Ordering::Equal => 1,
+                Ordering::Greater => 2,
+                Ordering::Less => 0,
+            })),
+        )
+    }
+
+    fn encloses(self, other: Self) -> bool {
+        (2..=8).contains(
+            &((match self.get_max_x().cmp(other.get_max_x()) {
+                Ordering::Equal => 1,
+                Ordering::Greater => 2,
+                Ordering::Less => 0,
+            }) * (match self.get_max_y().cmp(other.get_max_y()) {
+                Ordering::Equal => 1,
+                Ordering::Greater => 2,
+                Ordering::Less => 0,
+            }) * (match self.get_min_x().cmp(other.get_min_x()) {
+                Ordering::Equal => 1,
+                Ordering::Greater => 0,
+                Ordering::Less => 2,
+            }) * (match self.get_min_y().cmp(other.get_min_y()) {
+                Ordering::Equal => 1,
+                Ordering::Greater => 0,
+                Ordering::Less => 2,
+            })),
+        )
     }
 
     fn equals_to(self, other: Self) -> bool {
-        self.get_max_x().eq(other.get_max_x())
-            && self.get_max_y().eq(other.get_max_y())
-            && self.get_min_x().eq(other.get_min_x())
-            && self.get_min_y().eq(other.get_min_y())
+        self.get_max_x() == other.get_max_x()
+            && self.get_max_y() == other.get_max_y()
+            && self.get_min_x() == other.get_min_x()
+            && self.get_min_y() == other.get_min_y()
+    }
+
+    fn overlaps(self, other: Self) -> bool {
+        self.get_min_x() < other.get_max_x()
+            && other.get_min_x() < self.get_max_x()
+            && self.get_min_y() < other.get_max_y()
+            && other.get_min_y() < self.get_max_y()
     }
 
     fn touches(self, other: Self) -> bool {
-        (self.get_max_x().eq(other.get_min_x()) || self.get_min_x().eq(other.get_max_x()))
-            && (self.get_max_y().ge(other.get_min_y()) && self.get_max_y().le(other.get_max_y())
-                || self.get_min_y().ge(other.get_min_y()) && self.get_min_y().le(other.get_max_y())
-                || self.get_max_y().gt(other.get_max_y()) && self.get_min_y().lt(other.get_min_y()))
-            || (self.get_max_y().eq(other.get_min_y()) || self.get_min_y().eq(other.get_max_y()))
-                && (self.get_max_x().ge(other.get_min_x())
-                    && self.get_max_x().le(other.get_max_x())
-                    || self.get_min_x().ge(other.get_min_x())
-                        && self.get_min_x().le(other.get_max_x())
-                    || self.get_max_x().gt(other.get_max_x())
-                        && self.get_min_x().lt(other.get_min_x()))
+        ((self.get_min_x() == other.get_max_x() || self.get_max_x() == other.get_min_x())
+            && (self.get_min_y() <= other.get_max_y() && other.get_min_y() <= self.get_max_y()))
+            || ((self.get_min_x() <= other.get_max_x() && other.get_min_x() <= self.get_max_x())
+                && (self.get_min_y() == other.get_max_y() || other.get_min_y() == self.get_max_y()))
     }
 
     fn within(self, other: Self) -> bool {
-        self.get_max_x().lt(other.get_max_x())
-            && self.get_max_y().lt(other.get_max_y())
-            && self.get_min_x().gt(other.get_min_x())
-            && self.get_min_y().gt(other.get_min_y())
+        self.get_max_x() < other.get_max_x()
+            && self.get_max_y() < other.get_max_y()
+            && other.get_min_x() < self.get_min_x()
+            && other.get_min_y() < self.get_min_y()
     }
 
     fn relate_to(self, other: Self) -> Relation {
