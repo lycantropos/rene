@@ -1,3 +1,4 @@
+from reprit.base import generate_repr
 from rithm import Fraction
 
 from rene._rene import Relation
@@ -279,6 +280,7 @@ class Box:
                 assert self.max_x < other.min_x
                 return Relation.DISJOINT
 
+    __module__ = 'rene.exact'
     __slots__ = '_min_x', '_max_x', '_min_y', '_max_y'
 
     def __new__(cls, min_x, max_x, min_y, max_y):
@@ -287,3 +289,10 @@ class Box:
             Fraction(max_x), Fraction(max_y), Fraction(min_x), Fraction(min_y)
         )
         return self
+
+    __repr__ = generate_repr(__new__,
+                             with_module_name=True)
+
+    def __str__(self):
+        return (f'{type(self).__qualname__}'
+                f'({self.min_x}, {self.max_x}, {self.min_y}, {self.max_y})')
