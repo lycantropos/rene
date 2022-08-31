@@ -13,6 +13,13 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
         false
     }
 
+    fn covers(self, other: Self) -> bool {
+        self.get_max_x().gt(other.get_max_x())
+            && self.get_max_y().gt(other.get_max_y())
+            && self.get_min_x().lt(other.get_min_x())
+            && self.get_min_y().lt(other.get_min_y())
+    }
+
     fn crosses(self, _other: Self) -> bool {
         false
     }
@@ -22,6 +29,13 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
             || self.get_max_y().lt(other.get_min_y())
             || self.get_min_x().gt(other.get_max_x())
             || self.get_min_y().gt(other.get_max_y())
+    }
+
+    fn equals_to(self, other: Self) -> bool {
+        self.get_max_x().eq(other.get_max_x())
+            && self.get_max_y().eq(other.get_max_y())
+            && self.get_min_x().eq(other.get_min_x())
+            && self.get_min_y().eq(other.get_min_y())
     }
 
     fn touches(self, other: Self) -> bool {
@@ -36,6 +50,13 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                         && self.get_min_x().le(other.get_max_x())
                     || self.get_max_x().gt(other.get_max_x())
                         && self.get_min_x().lt(other.get_min_x()))
+    }
+
+    fn within(self, other: Self) -> bool {
+        self.get_max_x().lt(other.get_max_x())
+            && self.get_max_y().lt(other.get_max_y())
+            && self.get_min_x().gt(other.get_min_x())
+            && self.get_min_y().gt(other.get_min_y())
     }
 
     fn relate_to(self, other: Self) -> Relation {
