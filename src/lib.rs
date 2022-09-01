@@ -152,7 +152,6 @@ impl From<PyExactSegment> for ExactSegment {
 }
 
 #[pyclass(name = "Location", module = "rene")]
-#[derive(Clone)]
 struct PyLocation(Location);
 
 #[pymethods]
@@ -190,7 +189,6 @@ impl PyLocation {
 }
 
 #[pyclass(name = "Orientation", module = "rene")]
-#[derive(Clone)]
 struct PyOrientation(Orientation);
 
 #[pymethods]
@@ -228,7 +226,6 @@ impl PyOrientation {
 }
 
 #[pyclass(name = "Relation", module = "rene")]
-#[derive(Clone)]
 struct PyRelation(Relation);
 
 #[pymethods]
