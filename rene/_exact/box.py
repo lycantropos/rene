@@ -21,6 +21,20 @@ class Box:
     def min_y(self):
         return self._min_y
 
+    def encloses(self, other):
+        return 2 <= ((1
+                      if self.max_x == other.max_x
+                      else (2 if self.max_x > other.max_x else 0))
+                     * (1
+                        if self.max_y == other.max_y
+                        else (2 if self.max_y > other.max_y else 0))
+                     * (1
+                        if self.min_x == other.min_x
+                        else (2 if self.min_x < other.min_x else 0))
+                     * (1
+                        if self.min_y == other.min_y
+                        else (2 if self.min_y < other.min_y else 0))) <= 8
+
     def equals_to(self, other):
         return (self.min_x == other.min_x and self.max_x == other.max_x
                 and self.min_y == other.min_y and self.max_y == other.max_y)
