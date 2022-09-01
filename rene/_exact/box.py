@@ -21,6 +21,10 @@ class Box:
     def min_y(self):
         return self._min_y
 
+    def covers(self, other):
+        return (other.max_x < self.max_x and other.max_y < self.max_y
+                and self.min_x < other.min_x and self.min_y < other.min_y)
+
     def disjoint_with(self, other):
         return (self.max_x < other.min_x or self.max_y < other.min_y
                 or other.max_x < self.min_x or other.max_y < self.min_y)

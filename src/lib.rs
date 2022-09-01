@@ -398,6 +398,10 @@ impl PyExactBox {
         try_fraction_to_py_fraction(self.0.get_min_y())
     }
 
+    fn covers(&self, other: &Self) -> bool {
+        self.0.covers(&other.0)
+    }
+
     fn disjoint_with(&self, other: &Self) -> bool {
         self.0.disjoint_with(&other.0)
     }

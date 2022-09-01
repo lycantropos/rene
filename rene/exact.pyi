@@ -33,6 +33,9 @@ class Box:
     def min_y(self) -> _Fraction:
         ...
 
+    def covers(self, other: 'Box') -> bool:
+        ...
+
     def disjoint_with(self, other: 'Box') -> bool:
         ...
 

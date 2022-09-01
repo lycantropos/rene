@@ -197,6 +197,9 @@ class Box(_Protocol[Scalar]):
     def min_y(self) -> Scalar:
         ...
 
+    def covers(self, other: 'Box[Scalar]') -> bool:
+        ...
+
     def disjoint_with(self, other: 'Box[Scalar]') -> bool:
         ...
 
