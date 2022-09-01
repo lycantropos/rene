@@ -33,6 +33,9 @@ class Box:
     def min_y(self) -> _Fraction:
         ...
 
+    def disjoint_with(self, other: 'Box') -> bool:
+        ...
+
     def enclosed_by(self, other: 'Box') -> bool:
         ...
 
