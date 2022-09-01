@@ -16,12 +16,7 @@ class Point:
 
     def __new__(cls, x, y):
         self = super().__new__(cls)
-        self._x, self._y = (Fraction(x)
-                            if isinstance(x, float)
-                            else Fraction(x.numerator, x.denominator),
-                            Fraction(y)
-                            if isinstance(y, float)
-                            else Fraction(y.numerator, y.denominator))
+        self._x, self._y = Fraction(x), Fraction(y)
         return self
 
     def __eq__(self, other):
