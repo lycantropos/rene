@@ -401,6 +401,10 @@ impl PyExactBox {
         self.0.get_min_x() <= self.0.get_max_x() && self.0.get_min_y() <= self.0.get_max_y()
     }
 
+    fn overlaps(&self, other: &Self) -> bool {
+        self.0.overlaps(&other.0)
+    }
+
     fn relate_to(&self, other: &Self) -> PyResult<&PyAny> {
         try_relation_to_py_relation(self.0.relate_to(&other.0))
     }

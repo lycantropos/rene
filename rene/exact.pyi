@@ -36,6 +36,9 @@ class Box:
     def is_valid(self) -> bool:
         ...
 
+    def overlaps(self, other: 'Box') -> bool:
+        ...
+
     def relate_to(self, other: 'Box') -> _Relation:
         ...
 

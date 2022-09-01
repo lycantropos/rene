@@ -24,6 +24,10 @@ class Box:
     def is_valid(self):
         return self.min_x <= self.max_x and self.min_y <= self.max_y
 
+    def overlaps(self, other):
+        return (self.min_x < other.max_x and other.min_x < self.max_x
+                and self.min_y < other.max_y and other.min_y < self.max_y)
+
     def relate_to(self, other):
         if self.max_x == other.max_x:
             if self.min_x == other.min_x:

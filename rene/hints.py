@@ -200,6 +200,9 @@ class Box(_Protocol[Scalar]):
     def is_valid(self) -> bool:
         ...
 
+    def overlaps(self, other: 'Box[Scalar]') -> bool:
+        ...
+
     def relate_to(self, other: 'Box[Scalar]') -> _Relation:
         ...
 
