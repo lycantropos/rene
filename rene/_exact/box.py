@@ -283,6 +283,13 @@ class Box:
                 assert self.max_x < other.min_x
                 return Relation.DISJOINT
 
+    def touches(self, other):
+        return (((self.min_x == other.max_x or self.max_x == other.min_x)
+                 and (self.min_y <= other.max_y and other.min_y <= self.max_y))
+                or
+                ((self.min_x <= other.max_x and other.min_x <= self.max_x)
+                 and (self.min_y == other.max_y or other.min_y == self.max_y)))
+
     def within(self, other):
         return (self.max_x < other.max_x
                 and self.max_y < other.max_y

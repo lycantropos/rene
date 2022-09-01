@@ -405,6 +405,10 @@ impl PyExactBox {
         try_relation_to_py_relation(self.0.relate_to(&other.0))
     }
 
+    fn touches(&self, other: &Self) -> bool {
+        self.0.touches(&other.0)
+    }
+
     fn within(&self, other: &Self) -> bool {
         self.0.within(&other.0)
     }

@@ -203,6 +203,9 @@ class Box(_Protocol[Scalar]):
     def relate_to(self, other: 'Box[Scalar]') -> _Relation:
         ...
 
+    def touches(self, other: 'Box[Scalar]') -> bool:
+        ...
+
     def within(self, other: 'Box[Scalar]') -> bool:
         ...
 

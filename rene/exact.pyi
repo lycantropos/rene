@@ -39,6 +39,9 @@ class Box:
     def is_valid(self) -> bool:
         ...
 
+    def touches(self, other: 'Box') -> bool:
+        ...
+
     def within(self, other: 'Box') -> bool:
         ...
 
