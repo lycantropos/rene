@@ -382,10 +382,6 @@ impl PyExactBox {
         )))
     }
 
-    fn is_valid(&self) -> bool {
-        self.0.get_min_x().le(self.0.get_max_x()) && self.0.get_min_y().le(self.0.get_max_y())
-    }
-
     #[getter]
     fn max_x(&self) -> PyResult<&PyAny> {
         try_fraction_to_py_fraction(self.0.get_max_x())
@@ -405,9 +401,12 @@ impl PyExactBox {
     fn min_y(&self) -> PyResult<&PyAny> {
         try_fraction_to_py_fraction(self.0.get_min_y())
     }
+    fn is_valid(&self) -> bool {
+        self.0.get_min_x() <= self.0.get_max_x() && self.0.get_min_y() <= self.0.get_max_y()
+    }
 
-    fn relate_to(&self, other: &Self) -> Relation {
-        self.0.relate_to(&other.0)
+    fn relate_to(&self, other: &Self) -> PyResult<&PyAny> {
+        try_relation_to_py_relation(self.0.relate_to(&other.0))
     }
 
     fn within(&self, other: &Self) -> bool {
@@ -944,6 +943,24 @@ fn try_fraction_to_py_fraction<'a>(value: &Fraction) -> PyResult<&'a PyAny> {
     )
 }
 
+fn try_relation_to_py_relation<'a>(value: Relation) -> PyResult<&'a PyAny> {
+    let relation_cls = unsafe { MAYBE_RELATION_CLS.unwrap_unchecked() };
+    let py = relation_cls.py();
+    relation_cls.getattr(match value {
+        Relation::Component => intern!(py, "COMPONENT"),
+        Relation::Composite => intern!(py, "COMPOSITE"),
+        Relation::Cover => intern!(py, "COVER"),
+        Relation::Cross => intern!(py, "CROSS"),
+        Relation::Disjoint => intern!(py, "DISJOINT"),
+        Relation::Enclosed => intern!(py, "ENCLOSED"),
+        Relation::Encloses => intern!(py, "ENCLOSES"),
+        Relation::Equal => intern!(py, "EQUAL"),
+        Relation::Overlap => intern!(py, "OVERLAP"),
+        Relation::Touch => intern!(py, "TOUCH"),
+        Relation::Within => intern!(py, "WITHIN"),
+    })
+}
+
 #[inline]
 fn big_int_to_py_long(value: &BigInt) -> PyObject {
     let buffer = value.to_bytes(Endianness::Little);
@@ -1065,6 +1082,7 @@ fn try_segments_to_py_exact_multisegment(
 
 static mut MAYBE_FRACTION_CLS: Option<&PyAny> = None;
 static mut MAYBE_ORIENTATION_CLS: Option<&PyAny> = None;
+static mut MAYBE_RELATION_CLS: Option<&PyAny> = None;
 
 fn extract_from_sequence<'a, Wrapper: FromPyObject<'a>, Wrapped: From<Wrapper>>(
     sequence: &'a PySequence,
@@ -1092,6 +1110,7 @@ fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
         let py = Python::assume_gil_acquired();
         MAYBE_FRACTION_CLS = Some(py.import("rithm")?.getattr(intern!(py, "Fraction"))?);
         MAYBE_ORIENTATION_CLS = Some(py.import("rene")?.getattr(intern!(py, "Orientation"))?);
+        MAYBE_RELATION_CLS = Some(py.import("rene")?.getattr(intern!(py, "Relation"))?);
     }
     Ok(())
 }
