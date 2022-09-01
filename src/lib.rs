@@ -397,6 +397,10 @@ impl PyExactBox {
     fn min_y(&self) -> PyResult<&PyAny> {
         try_fraction_to_py_fraction(self.0.get_min_y())
     }
+    fn equals_to(&self, other: &Self) -> bool {
+        self.0.equals_to(&other.0)
+    }
+
     fn is_valid(&self) -> bool {
         self.0.get_min_x() <= self.0.get_max_x() && self.0.get_min_y() <= self.0.get_max_y()
     }

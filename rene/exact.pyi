@@ -33,6 +33,9 @@ class Box:
     def min_y(self) -> _Fraction:
         ...
 
+    def equals_to(self, other: 'Box') -> bool:
+        ...
+
     def is_valid(self) -> bool:
         ...
 

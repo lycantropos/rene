@@ -21,6 +21,10 @@ class Box:
     def min_y(self):
         return self._min_y
 
+    def equals_to(self, other):
+        return (self.min_x == other.min_x and self.max_x == other.max_x
+                and self.min_y == other.min_y and self.max_y == other.max_y)
+
     def is_valid(self):
         return self.min_x <= self.max_x and self.min_y <= self.max_y
 
