@@ -11,7 +11,7 @@ name = "rene"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-rithm = "^10.2.1"
+rithm = "^10.3.0"
 
 [dependencies.traiter]
 version = "^0.1.0"
