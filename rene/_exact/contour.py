@@ -58,10 +58,13 @@ class Contour:
         return self
 
     def __eq__(self, other):
-        return (_are_non_empty_unique_sequences_rotationally_equivalent(
-                self.vertices, other.vertices)
-                if isinstance(other, Contour)
-                else NotImplemented)
+        return (
+            _are_non_empty_unique_sequences_rotationally_equivalent(
+                    self.vertices, other.vertices
+            )
+            if isinstance(other, Contour)
+            else NotImplemented
+        )
 
     def __hash__(self):
         vertices = self.vertices
