@@ -197,6 +197,9 @@ class Box(_Protocol[Scalar]):
     def min_y(self) -> Scalar:
         ...
 
+    def enclosed_by(self, other: 'Box[Scalar]') -> bool:
+        ...
+
     def encloses(self, other: 'Box[Scalar]') -> bool:
         ...
 

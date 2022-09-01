@@ -397,6 +397,10 @@ impl PyExactBox {
     fn min_y(&self) -> PyResult<&PyAny> {
         try_fraction_to_py_fraction(self.0.get_min_y())
     }
+    fn enclosed_by(&self, other: &Self) -> bool {
+        self.0.enclosed_by(&other.0)
+    }
+
     fn encloses(&self, other: &Self) -> bool {
         self.0.encloses(&other.0)
     }
