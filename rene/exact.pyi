@@ -33,10 +33,10 @@ class Box:
     def min_y(self) -> _Fraction:
         ...
 
-    def relate_to(self, other: 'Box') -> _Relation:
+    def is_valid(self) -> bool:
         ...
 
-    def is_valid(self) -> bool:
+    def relate_to(self, other: 'Box') -> _Relation:
         ...
 
     def touches(self, other: 'Box') -> bool:
