@@ -25,8 +25,10 @@ from .utils import intersect_crossing_segments
 
 class EventsRegistry:
     @classmethod
-    def from_segments(cls, segments: Sequence[Segment], *, unique: bool
-                      ) -> 'EventsRegistry':
+    def from_segments(cls,
+                      segments: Sequence[Segment],
+                      *,
+                      unique: bool) -> 'EventsRegistry':
         result = cls(unique=unique)
         for segment_id, segment in enumerate(segments):
             left_event = segment_id_to_left_event(segment_id)
