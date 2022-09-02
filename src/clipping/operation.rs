@@ -24,7 +24,7 @@ use super::operation_kind::{DIFFERENCE, INTERSECTION, SYMMETRIC_DIFFERENCE, UNIO
 use super::sweep_line_key::SweepLineKey;
 use super::types::OverlapKind;
 
-pub(super) struct Operation<Point, const KIND: u8> {
+pub(crate) struct Operation<Point, const KIND: u8> {
     are_from_first_operand: Vec<bool>,
     are_from_result: Vec<bool>,
     have_interior_to_left: Vec<bool>,
@@ -171,20 +171,23 @@ where
     }
 }
 
-impl<Point: Clone + Elemental + Orient + PartialEq, const KIND: u8> Operation<Point, KIND> {
-    pub(super) fn events_to_polygons<
+pub(crate) trait ReduceEvents<Point, const KIND: u8>: Sized {
+    fn reduce_events(events: Vec<Event>, operation: &mut Operation<Point, KIND>) -> Vec<Self>;
+}
+
+impl<
+        Point: Clone + Elemental + Orient + PartialEq,
         Polygon: From<(PolygonalContour<Polygon>, Vec<PolygonalContour<Polygon>>)> + Polygonal,
-    >(
-        &mut self,
-        events: Vec<Event>,
-    ) -> Vec<Polygon>
-    where
-        PolygonalContour<Polygon>: Multivertexal<Vertex = Point> + From<Vec<Point>>,
-        EventsQueueKey<PolygonalVertex<Polygon>>: Ord,
-    {
+        const KIND: u8,
+    > ReduceEvents<Point, KIND> for Polygon
+where
+    PolygonalContour<Polygon>: Multivertexal<Vertex = Point> + From<Vec<Point>>,
+    EventsQueueKey<PolygonalVertex<Polygon>>: Ord,
+{
+    fn reduce_events(events: Vec<Event>, operation: &mut Operation<Point, KIND>) -> Vec<Self> {
         let mut events = events
             .into_iter()
-            .filter(|&event| self.is_from_result_event(event))
+            .filter(|&event| operation.is_from_result_event(event))
             .collect::<Vec<Event>>();
         if events.is_empty() {
             return vec![];
@@ -192,20 +195,20 @@ impl<Point: Clone + Elemental + Orient + PartialEq, const KIND: u8> Operation<Po
         events.sort_by_cached_key(|&event| {
             EventsQueueKey::new(
                 event,
-                self.is_from_first_operand_event(event),
-                self.get_endpoints(),
-                self.get_opposites(),
+                operation.is_from_first_operand_event(event),
+                operation.get_endpoints(),
+                operation.get_opposites(),
             )
         });
-        let mut events_ids = vec![UNDEFINED_INDEX; self.events_count()];
+        let mut events_ids = vec![UNDEFINED_INDEX; operation.events_count()];
         for (event_id, &event) in events.iter().enumerate() {
             events_ids[event] = event_id;
         }
-        let unique_visited_endpoints_count = self.to_unique_visited_endpoints_count();
+        let unique_visited_endpoints_count = operation.to_unique_visited_endpoints_count();
         debug_assert!(events
             .iter()
-            .all(|&event| self.to_start_id(event) < unique_visited_endpoints_count));
-        let connectivity = self.events_to_connectivity(&events);
+            .all(|&event| operation.to_start_id(event) < unique_visited_endpoints_count));
+        let connectivity = operation.events_to_connectivity(&events);
         let mut are_internal = Vec::<bool>::new();
         let mut depths = Vec::<usize>::new();
         let mut holes = Vec::<Vec<usize>>::new();
@@ -220,7 +223,7 @@ impl<Point: Clone + Elemental + Orient + PartialEq, const KIND: u8> Operation<Po
                 continue;
             }
             let contour_id = contours_vertices.len();
-            self.compute_relations(
+            operation.compute_relations(
                 event,
                 contour_id,
                 &mut are_internal,
@@ -231,7 +234,7 @@ impl<Point: Clone + Elemental + Orient + PartialEq, const KIND: u8> Operation<Po
                 &contours_ids,
                 &events_ids,
             );
-            let contour_events = self.to_contour_events(
+            let contour_events = operation.to_contour_events(
                 event,
                 &events,
                 &events_ids,
@@ -239,7 +242,7 @@ impl<Point: Clone + Elemental + Orient + PartialEq, const KIND: u8> Operation<Po
                 &are_events_processed,
                 &mut visited_endpoints_positions,
             );
-            self.process_contour_events(
+            operation.process_contour_events(
                 &contour_events,
                 contour_id,
                 &mut are_events_processed,
@@ -247,7 +250,7 @@ impl<Point: Clone + Elemental + Orient + PartialEq, const KIND: u8> Operation<Po
                 &mut contours_ids,
                 &events_ids,
             );
-            let mut vertices = self.contour_events_to_vertices(&contour_events);
+            let mut vertices = operation.contour_events_to_vertices(&contour_events);
             if depths[contour_id].is_odd() {
                 vertices[1..].reverse()
             }
@@ -287,6 +290,14 @@ impl<Point: Clone + Elemental + Orient + PartialEq, const KIND: u8> Operation<Po
 }
 
 impl<Point, const KIND: u8> Operation<Point, KIND> {
+    pub(crate) fn get_event_end(&self, event: Event) -> &Point {
+        &self.endpoints[self.to_opposite_event(event)]
+    }
+
+    pub(crate) fn get_event_start(&self, event: Event) -> &Point {
+        &self.endpoints[event]
+    }
+
     pub(super) fn compute_relations(
         &self,
         event: Event,
@@ -397,14 +408,6 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
 
     pub(super) fn get_endpoints(&self) -> &Vec<Point> {
         &self.endpoints
-    }
-
-    pub(super) fn get_event_end(&self, event: Event) -> &Point {
-        &self.endpoints[self.to_opposite_event(event)]
-    }
-
-    pub(super) fn get_event_start(&self, event: Event) -> &Point {
-        &self.endpoints[event]
     }
 
     pub(super) fn get_opposites(&self) -> &Vec<Event> {
