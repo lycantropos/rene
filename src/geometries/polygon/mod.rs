@@ -7,5 +7,6 @@ mod hash;
 mod intersection;
 mod partial_eq;
 mod polygonal;
+mod symmetric_difference;
 mod types;
 mod union;
