@@ -98,7 +98,15 @@ class Contour:
         ...
 
     @property
+    def segments_count(self) -> int:
+        ...
+
+    @property
     def vertices(self) -> _Sequence[Point]:
+        ...
+
+    @property
+    def vertices_count(self) -> int:
         ...
 
     def is_valid(self) -> bool:

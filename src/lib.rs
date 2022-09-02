@@ -527,8 +527,18 @@ impl PyExactContour {
     }
 
     #[getter]
+    fn segments_count(&self) -> usize {
+        self.0.segments_count()
+    }
+
+    #[getter]
     fn vertices(&self) -> Vec<ExactPoint> {
         self.0.vertices()
+    }
+
+    #[getter]
+    fn vertices_count(&self) -> usize {
+        self.0.vertices_count()
     }
 
     #[getter]

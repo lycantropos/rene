@@ -122,7 +122,15 @@ class Contour(_Protocol[Scalar]):
         ...
 
     @property
+    def segments_count(self) -> int:
+        ...
+
+    @property
     def vertices(self) -> _Sequence[Point[Scalar]]:
+        ...
+
+    @property
+    def vertices_count(self) -> int:
         ...
 
     def is_valid(self) -> bool:

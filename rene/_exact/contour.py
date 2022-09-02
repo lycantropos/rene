@@ -29,8 +29,16 @@ class Contour:
         return result
 
     @property
+    def segments_count(self):
+        return len(self._vertices)
+
+    @property
     def vertices(self):
         return self._vertices[:]
+
+    @property
+    def vertices_count(self):
+        return len(self._vertices)
 
     def is_valid(self):
         if not _are_contour_vertices_non_degenerate(self.vertices):
