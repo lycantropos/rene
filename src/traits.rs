@@ -70,6 +70,12 @@ pub trait Difference<Other = Self> {
     fn difference(self, other: Other) -> Self::Output;
 }
 
+pub trait SymmetricDifference<Other = Self> {
+    type Output;
+
+    fn symmetric_difference(self, other: Other) -> Self::Output;
+}
+
 pub trait Union<Other = Self> {
     type Output;
 
