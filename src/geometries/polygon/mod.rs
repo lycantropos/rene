@@ -1,6 +1,7 @@
 pub use self::types::Polygon;
 
 mod bounded;
+mod difference;
 mod eq;
 mod from;
 mod hash;
