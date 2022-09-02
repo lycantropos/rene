@@ -64,6 +64,12 @@ pub trait Intersection<Other = Self> {
     fn intersection(self, other: Other) -> Self::Output;
 }
 
+pub trait Difference<Other = Self> {
+    type Output;
+
+    fn difference(self, other: Other) -> Self::Output;
+}
+
 pub trait Union<Other = Self> {
     type Output;
 
