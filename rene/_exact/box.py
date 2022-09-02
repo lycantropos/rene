@@ -65,8 +65,24 @@ class Box:
         return self.min_x <= self.max_x and self.min_y <= self.max_y
 
     def overlaps(self, other):
-        return (self.min_x < other.max_x and other.min_x < self.max_x
-                and self.min_y < other.max_y and other.min_y < self.max_y)
+        if not (self.min_x < other.max_x and other.min_x < self.max_x
+                and self.min_y < other.max_y and other.min_y < self.max_y):
+            return False
+        elif self.max_x > other.max_x:
+            return (other.min_x < self.min_x
+                    or other.min_y < self.min_y
+                    or self.max_y < other.max_y)
+        elif self.max_x < other.max_x:
+            return (self.min_x < other.min_x
+                    or self.min_y < other.min_y
+                    or other.max_y < self.max_y)
+        elif self.min_x > other.min_x:
+            return self.min_y < other.min_y or other.max_y < self.max_y
+        elif self.min_x < other.min_x:
+            return other.min_y < self.min_y or self.max_y < other.max_y
+        else:
+            return ((other.min_y < self.min_y and other.max_y < self.max_y)
+                    or (self.min_y < other.min_y and self.max_y < other.max_y))
 
     def relate_to(self, other):
         if self.max_x == other.max_x:
