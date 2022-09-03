@@ -274,7 +274,7 @@ class Polygon(_Protocol[Scalar]):
         ...
 
     @property
-    def bounding_box(self) -> Box:
+    def bounding_box(self) -> Box[Scalar]:
         ...
 
     @property
