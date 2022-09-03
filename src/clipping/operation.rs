@@ -118,9 +118,8 @@ where
 
     fn next(&mut self) -> Option<Self::Item> {
         while let Some(event) = self.pop() {
-            if self
-                .get_event_start(self.current_endpoint_first_event)
-                .ne(self.get_event_start(event))
+            if self.get_event_start(self.current_endpoint_first_event)
+                != self.get_event_start(event)
             {
                 self.current_endpoint_first_event = event;
                 self.current_endpoint_id += 1;
@@ -192,22 +191,15 @@ where
         if events.is_empty() {
             return vec![];
         }
-        events.sort_by_cached_key(|&event| {
-            EventsQueueKey::new(
-                event,
-                operation.is_from_first_operand_event(event),
-                operation.get_endpoints(),
-                operation.get_opposites(),
-            )
-        });
+        events.sort_by_cached_key(|&event| operation.to_events_queue_key(event));
         let mut events_ids = vec![UNDEFINED_INDEX; operation.events_count()];
         for (event_id, &event) in events.iter().enumerate() {
             events_ids[event] = event_id;
         }
-        let unique_visited_endpoints_count = operation.to_unique_visited_endpoints_count();
         debug_assert!(events
             .iter()
-            .all(|&event| operation.to_start_id(event) < unique_visited_endpoints_count));
+            .all(|&event| operation.to_start_id(event)
+                < operation.to_unique_visited_endpoints_count()));
         let connectivity = operation.events_to_connectivity(&events);
         let mut are_internal = Vec::<bool>::new();
         let mut depths = Vec::<usize>::new();
@@ -217,7 +209,8 @@ where
         let mut are_from_in_to_out = vec![false; events.len()];
         let mut contours_ids = vec![UNDEFINED_INDEX; events.len()];
         let mut contours_vertices = Vec::<Vec<&PolygonalVertex<Polygon>>>::new();
-        let mut visited_endpoints_positions = vec![UNDEFINED_INDEX; unique_visited_endpoints_count];
+        let mut visited_endpoints_positions =
+            vec![UNDEFINED_INDEX; operation.to_unique_visited_endpoints_count()];
         for (event_id, &event) in events.iter().enumerate() {
             if are_events_processed[event_id] {
                 continue;
@@ -260,14 +253,14 @@ where
         for (contour_id, contour_vertices) in contours_vertices.iter().enumerate() {
             if are_internal[contour_id] {
                 // hole of a hole is an external polygon
-                result.extend(holes[contour_id].iter().map(|&hole_index| {
+                result.extend(holes[contour_id].iter().map(|&hole_id| {
                     Polygon::from((
-                        multivertex_from_vertices_references(&contours_vertices[hole_index]),
-                        holes[hole_index]
+                        multivertex_from_vertices_references(&contours_vertices[hole_id]),
+                        holes[hole_id]
                             .iter()
-                            .map(|&hole_hole_index| {
+                            .map(|&hole_hole_id| {
                                 multivertex_from_vertices_references(
-                                    &contours_vertices[hole_hole_index],
+                                    &contours_vertices[hole_hole_id],
                                 )
                             })
                             .collect(),
@@ -278,8 +271,8 @@ where
                     multivertex_from_vertices_references(contour_vertices),
                     holes[contour_id]
                         .iter()
-                        .map(|&hole_index| {
-                            multivertex_from_vertices_references(&contours_vertices[hole_index])
+                        .map(|&hole_id| {
+                            multivertex_from_vertices_references(&contours_vertices[hole_id])
                         })
                         .collect(),
                 )))
@@ -342,10 +335,10 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
     ) {
         debug_assert!(is_left_event(event));
         let mut depth = 0;
-        let mut parent = usize::MAX;
+        let mut parent = UNDEFINED_INDEX;
         let mut is_internal = false;
         let below_event_from_result = self.below_event_from_result[left_event_to_position(event)];
-        if below_event_from_result != usize::MAX {
+        if below_event_from_result != UNDEFINED_EVENT {
             let below_event_from_result_id = events_ids[below_event_from_result];
             let below_contour_id = contours_ids[below_event_from_result_id];
             if !are_from_in_to_out[below_event_from_result_id] {
@@ -396,14 +389,13 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
             let current_start = self.get_event_start(events[event_id]);
             let right_start_event_id = event_id;
             while event_id < events_count
-                && self.get_event_start(events[event_id]).eq(current_start)
+                && self.get_event_start(events[event_id]) == current_start
                 && !is_left_event(events[event_id])
             {
                 event_id += 1;
             }
             let left_start_event_id = event_id;
-            while event_id < events_count
-                && self.get_event_start(events[event_id]).eq(current_start)
+            while event_id < events_count && self.get_event_start(events[event_id]) == current_start
             {
                 event_id += 1;
             }
@@ -533,7 +525,7 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
         let mut opposite_event_id = events_ids[self.to_opposite_event(event)];
         let mut cursor = event;
         let contour_start = self.get_event_start(event);
-        while self.get_event_end(cursor).ne(contour_start) {
+        while self.get_event_end(cursor) != contour_start {
             let previous_endpoint_position = visited_endpoints_positions[self.to_end_id(cursor)];
             if previous_endpoint_position == UNDEFINED_INDEX {
                 visited_endpoints_positions[self.to_end_id(cursor)] = result.len();
@@ -559,12 +551,21 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
         }
         debug_assert!(visited_endpoints_positions
             .iter()
-            .all(|position| position.eq(&UNDEFINED_INDEX)));
+            .all(|&position| position == UNDEFINED_INDEX));
         result
     }
 
     fn to_end_id(&self, event: Event) -> usize {
         self.starts_ids[self.to_opposite_event(event)]
+    }
+
+    fn to_events_queue_key(&self, event: Event) -> EventsQueueKey<Point> {
+        EventsQueueKey::new(
+            event,
+            self.is_from_first_operand_event(event),
+            self.get_endpoints(),
+            self.get_opposites(),
+        )
     }
 
     fn to_left_event(&self, event: Event) -> Event {
@@ -584,10 +585,9 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
     }
 
     fn to_sweep_line_key(&self, event: Event) -> SweepLineKey<Point> {
-        debug_assert!(is_left_event(event));
         SweepLineKey::new(
             event,
-            self.is_from_first_operand_event(event),
+            self.is_left_event_from_first_operand(event),
             &self.endpoints,
             &self.opposites,
         )
@@ -821,12 +821,8 @@ impl<Point: Ord + Orient, const KIND: u8> EventsQueue for Operation<Point, KIND>
     }
 
     fn push(&mut self, event: Event) {
-        self.events_queue_data.push(Reverse(EventsQueueKey::new(
-            event,
-            self.is_from_first_operand_event(event),
-            &self.endpoints,
-            &self.opposites,
-        )))
+        self.events_queue_data
+            .push(Reverse(self.to_events_queue_key(event)))
     }
 }
 
