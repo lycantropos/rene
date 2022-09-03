@@ -9,11 +9,29 @@ from rene._rene import (MIN_CONTOUR_VERTICES_COUNT,
                         Orientation,
                         Relation)
 from rene._utils import orient
+from .box import Box
 from .point import Point
 from .segment import Segment
 
 
 class Contour:
+    @property
+    def bounding_box(self):
+        vertices = iter(self._vertices)
+        first_vertex = next(vertices)
+        min_x = max_x = first_vertex.x
+        min_y = max_y = first_vertex.y
+        for vertex in vertices:
+            if vertex.x > max_x:
+                max_x = vertex.x
+            elif vertex.x < min_x:
+                min_x = vertex.x
+            if vertex.y > max_y:
+                max_y = vertex.y
+            elif vertex.y < min_y:
+                min_y = vertex.y
+        return Box(min_x, max_x, min_y, max_y)
+
     @property
     def orientation(self):
         vertices = self.vertices

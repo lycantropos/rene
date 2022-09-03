@@ -18,6 +18,7 @@ use traiter::numbers::{Endianness, FromBytes, ToBytes, Zeroable};
 use crate::bentley_ottmann::{
     is_contour_valid, is_multisegment_valid, to_unique_non_crossing_or_overlapping_segments,
 };
+use crate::bounded::Bounded;
 use crate::constants::{
     MIN_CONTOUR_VERTICES_COUNT, MIN_MULTIPOLYGON_POLYGONS_COUNT, MIN_MULTISEGMENT_SEGMENTS_COUNT,
 };
@@ -519,6 +520,11 @@ impl PyExactContour {
         try_vertices_to_py_exact_contour(extract_from_sequence::<PyExactPoint, ExactPoint>(
             vertices,
         )?)
+    }
+
+    #[getter]
+    fn bounding_box(&self) -> ExactBox {
+        self.0.to_bounding_box()
     }
 
     #[getter]

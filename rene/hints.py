@@ -80,114 +80,6 @@ class Empty(_Protocol):
         ...
 
 
-class Segment(_Protocol[Scalar]):
-    @property
-    def end(self) -> Point[Scalar]:
-        ...
-
-    @property
-    def start(self) -> Point[Scalar]:
-        ...
-
-    def __new__(cls,
-                start: Point[Scalar],
-                end: Point[Scalar]) -> 'Segment[Scalar]':
-        ...
-
-    @_overload
-    def __eq__(self, other: 'Segment[Scalar]') -> bool:
-        ...
-
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
-        ...
-
-    def __hash__(self) -> int:
-        ...
-
-    def __repr__(self) -> str:
-        ...
-
-    def __str__(self) -> str:
-        ...
-
-
-class Contour(_Protocol[Scalar]):
-    @property
-    def orientation(self) -> _Orientation:
-        ...
-
-    @property
-    def segments(self) -> _Sequence[Segment[Scalar]]:
-        ...
-
-    @property
-    def segments_count(self) -> int:
-        ...
-
-    @property
-    def vertices(self) -> _Sequence[Point[Scalar]]:
-        ...
-
-    @property
-    def vertices_count(self) -> int:
-        ...
-
-    def is_valid(self) -> bool:
-        ...
-
-    def __new__(cls, vertices: _Sequence[Point[Scalar]]) -> 'Contour[Scalar]':
-        ...
-
-    @_overload
-    def __eq__(self, other: 'Contour[Scalar]') -> bool:
-        ...
-
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
-        ...
-
-    def __hash__(self) -> int:
-        ...
-
-    def __repr__(self) -> str:
-        ...
-
-    def __str__(self) -> str:
-        ...
-
-
-class Multisegment(_Protocol[Scalar]):
-    @property
-    def segments(self) -> _Sequence[Segment[Scalar]]:
-        ...
-
-    def is_valid(self) -> bool:
-        ...
-
-    def __new__(
-            cls, vertices: _Sequence[Segment[Scalar]]
-    ) -> 'Multisegment[Scalar]':
-        ...
-
-    @_overload
-    def __eq__(self, other: 'Multisegment[Scalar]') -> bool:
-        ...
-
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
-        ...
-
-    def __hash__(self) -> int:
-        ...
-
-    def __repr__(self) -> str:
-        ...
-
-    def __str__(self) -> str:
-        ...
-
-
 class Box(_Protocol[Scalar]):
     @property
     def max_x(self) -> Scalar:
@@ -251,6 +143,118 @@ class Box(_Protocol[Scalar]):
         ...
 
     def __eq__(self, other):
+        ...
+
+    def __hash__(self) -> int:
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+    def __str__(self) -> str:
+        ...
+
+
+class Segment(_Protocol[Scalar]):
+    @property
+    def end(self) -> Point[Scalar]:
+        ...
+
+    @property
+    def start(self) -> Point[Scalar]:
+        ...
+
+    def __new__(cls,
+                start: Point[Scalar],
+                end: Point[Scalar]) -> 'Segment[Scalar]':
+        ...
+
+    @_overload
+    def __eq__(self, other: 'Segment[Scalar]') -> bool:
+        ...
+
+    @_overload
+    def __eq__(self, other: _Any) -> _Any:
+        ...
+
+    def __hash__(self) -> int:
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+    def __str__(self) -> str:
+        ...
+
+
+class Contour(_Protocol[Scalar]):
+    @property
+    def bounding_box(self) -> Box:
+        ...
+
+    @property
+    def orientation(self) -> _Orientation:
+        ...
+
+    @property
+    def segments(self) -> _Sequence[Segment[Scalar]]:
+        ...
+
+    @property
+    def segments_count(self) -> int:
+        ...
+
+    @property
+    def vertices(self) -> _Sequence[Point[Scalar]]:
+        ...
+
+    @property
+    def vertices_count(self) -> int:
+        ...
+
+    def is_valid(self) -> bool:
+        ...
+
+    def __new__(cls, vertices: _Sequence[Point[Scalar]]) -> 'Contour[Scalar]':
+        ...
+
+    @_overload
+    def __eq__(self, other: 'Contour[Scalar]') -> bool:
+        ...
+
+    @_overload
+    def __eq__(self, other: _Any) -> _Any:
+        ...
+
+    def __hash__(self) -> int:
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+    def __str__(self) -> str:
+        ...
+
+
+class Multisegment(_Protocol[Scalar]):
+    @property
+    def segments(self) -> _Sequence[Segment[Scalar]]:
+        ...
+
+    def is_valid(self) -> bool:
+        ...
+
+    def __new__(
+            cls, vertices: _Sequence[Segment[Scalar]]
+    ) -> 'Multisegment[Scalar]':
+        ...
+
+    @_overload
+    def __eq__(self, other: 'Multisegment[Scalar]') -> bool:
+        ...
+
+    @_overload
+    def __eq__(self, other: _Any) -> _Any:
         ...
 
     def __hash__(self) -> int:

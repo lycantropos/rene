@@ -90,6 +90,10 @@ class Box:
 
 class Contour:
     @property
+    def bounding_box(self) -> Box:
+        ...
+
+    @property
     def orientation(self) -> _Orientation:
         ...
 
