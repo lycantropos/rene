@@ -177,6 +177,7 @@ class Operation(ABC):
                     != self.to_event_start(event)):
                 self._current_endpoint_first_event = event
                 self._current_endpoint_id += 1
+            self._starts_ids[event] = self._current_endpoint_id
             if is_right_event(event):
                 opposite_event = self._to_opposite_event(event)
                 assert is_left_event(opposite_event)
@@ -209,7 +210,7 @@ class Operation(ABC):
 
     @property
     def _events_count(self) -> int:
-        return len(self._endpoints) // 2
+        return len(self._endpoints)
 
     @property
     def _unique_visited_endpoints_count(self) -> int:
@@ -422,15 +423,27 @@ class Operation(ABC):
     def _divide(self, event: Event, mid_point: Point) -> Tuple[Event, Event]:
         assert is_left_event(event)
         opposite_event = self._to_opposite_event(event)
-        mid_point_to_event_end_event = Event(len(self._endpoints))
+        mid_point_to_event_end_event: Event = len(self._endpoints)
         self._segments_ids.append(self._left_event_to_segment_id(event))
         self._endpoints.append(mid_point)
         self._opposites.append(opposite_event)
         self._opposites[opposite_event] = mid_point_to_event_end_event
+        self._are_other_interior_to_left.append(False)
+        self._are_from_result.append(False)
+        self._below_event_from_result.append(UNDEFINED_EVENT)
+        self._overlap_kinds.append(OverlapKind.NONE)
+        self._starts_ids.append(UNDEFINED_INDEX)
         mid_point_to_event_start_event = Event(len(self._endpoints))
         self._endpoints.append(mid_point)
         self._opposites.append(event)
         self._opposites[event] = mid_point_to_event_start_event
+        self._starts_ids.append(UNDEFINED_INDEX)
+        assert (
+            self._is_left_event_from_first_operand(event)
+            is self._is_from_first_operand_event(mid_point_to_event_start_event)
+        )
+        assert (self._is_left_event_from_first_operand(event)
+                is self._is_left_event_from_first_operand(mid_point_to_event_end_event))
         return mid_point_to_event_start_event, mid_point_to_event_end_event
 
     def _divide_event_by_mid_segment_event_endpoints(
