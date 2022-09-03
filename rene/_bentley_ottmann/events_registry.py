@@ -10,7 +10,8 @@ from prioq.base import PriorityQueue
 from reprit.base import generate_repr
 
 from rene._rene import Orientation
-from rene._utils import (orient,
+from rene._utils import (intersect_crossing_segments,
+                         orient,
                          to_sorted_pair)
 from rene.hints import (Point,
                         Segment)
@@ -20,7 +21,6 @@ from .event import (Event,
                     segment_id_to_right_event)
 from .events_queue_key import EventsQueueKey
 from .sweep_line_key import SweepLineKey
-from .utils import intersect_crossing_segments
 
 
 class EventsRegistry:

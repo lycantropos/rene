@@ -44,6 +44,20 @@ def deduplicate(values: List[_T]) -> List[_T]:
     return [value for value, _ in groupby(values)]
 
 
+def intersect_crossing_segments(first_start: Point,
+                                first_end: Point,
+                                second_start: Point,
+                                second_end: Point) -> Point:
+    scale = (cross_multiply(first_start, second_start, second_start,
+                            second_end)
+             / cross_multiply(first_start, first_end, second_start,
+                              second_end))
+    return type(first_start)(
+            first_start.x + (first_end.x - first_start.x) * scale,
+            first_start.y + (first_end.y - first_start.y) * scale
+    )
+
+
 def is_even(value: int) -> bool:
     return value & 1 == 0
 
@@ -164,17 +178,3 @@ def to_sign(value: Fraction) -> int:
 def to_sorted_pair(start: _Ordered, end: _Ordered
                    ) -> Tuple[_Ordered, _Ordered]:
     return (start, end) if start < end else (end, start)
-
-
-def intersect_crossing_segments(first_start: Point,
-                                first_end: Point,
-                                second_start: Point,
-                                second_end: Point) -> Point:
-    scale = (cross_multiply(first_start, second_start, second_start,
-                            second_end)
-             / cross_multiply(first_start, first_end, second_start,
-                              second_end))
-    return type(first_start)(
-            first_start.x + (first_end.x - first_start.x) * scale,
-            first_start.y + (first_end.y - first_start.y) * scale
-    )
