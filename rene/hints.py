@@ -2,6 +2,7 @@ from numbers import Rational as _Rational
 from typing import (Any as _Any,
                     Sequence as _Sequence,
                     TypeVar as _TypeVar,
+                    Union as _Union,
                     overload as _overload)
 
 from typing_extensions import Protocol as _Protocol
@@ -283,6 +284,11 @@ class Polygon(_Protocol[Scalar]):
     def __new__(cls,
                 border: Contour[Scalar],
                 holes: _Sequence[Contour[Scalar]]) -> 'Polygon[Scalar]':
+        ...
+
+    def __and__(
+            self, other: 'Polygon[Scalar]'
+    ) -> _Union[Empty, 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
         ...
 
     @_overload

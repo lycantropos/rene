@@ -1,4 +1,11 @@
+from typing import (Sequence,
+                    Union)
+
 from reprit.base import generate_repr
+
+from rene._clipping.intersection import intersect_polygons
+from .empty import Empty
+from .multipolygon import Multipolygon
 
 
 class Polygon:
@@ -22,6 +29,11 @@ class Polygon:
         self._border, self._holes = border, list(holes)
         return self
 
+    def __and__(self, other):
+        return (collect_maybe_empty_polygons(intersect_polygons(self, other))
+                if isinstance(other, Polygon)
+                else NotImplemented)
+
     def __eq__(self, other):
         return ((self.border == other.border
                  and len(self.holes) == len(other.holes)
@@ -38,3 +50,16 @@ class Polygon:
     def __str__(self):
         return (f'{type(self).__qualname__}({self.border}, [{{}}])'
                 .format(', '.join(map(str, self.holes))))
+
+
+def collect_maybe_empty_polygons(
+        polygons: Sequence[Polygon]
+) -> Union[Empty, Multipolygon, Polygon]:
+    return collect_non_empty_polygons(polygons) if polygons else Empty()
+
+
+def collect_non_empty_polygons(
+        polygons: Sequence[Polygon]
+) -> Union[Empty, Multipolygon, Polygon]:
+    assert len(polygons) > 1
+    return polygons[0] if len(polygons) == 1 else Multipolygon(polygons)

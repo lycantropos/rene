@@ -274,6 +274,10 @@ class Polygon:
     def __new__(cls, border: Contour, holes: _Sequence[Contour]) -> 'Polygon':
         ...
 
+    def __and__(self,
+                other: 'Polygon') -> _Union[Empty, Multipolygon, 'Polygon']:
+        ...
+
     @_overload
     def __eq__(self, other: 'Polygon') -> bool:
         ...

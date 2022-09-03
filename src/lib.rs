@@ -27,7 +27,7 @@ use crate::operations::to_arg_min;
 use crate::oriented::{Orientation, Oriented};
 use crate::relatable::{Relatable, Relation};
 use crate::traits::{
-    Elemental, Multipolygonal, Multisegmental, Multivertexal, Polygonal, Segmental,
+    Elemental, Intersection, Multipolygonal, Multisegmental, Multivertexal, Polygonal, Segmental,
 };
 use crate::triangulation::{
     BoundaryEndpoints, ConstrainedDelaunayTriangulation, DelaunayTriangulation,
@@ -871,6 +871,21 @@ impl PyExactPolygon {
     #[getter]
     fn holes(&self) -> Vec<ExactContour> {
         self.0.holes()
+    }
+
+    fn __and__(&self, other: &PyAny) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactPolygon::type_object(py))? {
+            let other = other.extract::<PyExactPolygon>()?;
+            let polygons = self.0.intersection(&other.0);
+            match polygons.len() {
+                0 => Ok(PyExactEmpty::new().into_py(py)),
+                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
     }
 
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
