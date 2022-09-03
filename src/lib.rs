@@ -68,6 +68,12 @@ type ExactPoint = geometries::Point<Fraction>;
 type ExactPolygon = geometries::Polygon<Fraction>;
 type ExactSegment = geometries::Segment<Fraction>;
 
+impl IntoPy<PyObject> for ExactBox {
+    fn into_py(self, py: Python<'_>) -> PyObject {
+        PyExactBox(self).into_py(py)
+    }
+}
+
 impl IntoPy<PyObject> for ExactContour {
     fn into_py(self, py: Python<'_>) -> PyObject {
         PyExactContour(self).into_py(py)
