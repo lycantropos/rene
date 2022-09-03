@@ -190,7 +190,7 @@ class Segment(_Protocol[Scalar]):
 
 class Contour(_Protocol[Scalar]):
     @property
-    def bounding_box(self) -> Box:
+    def bounding_box(self) -> Box[Scalar]:
         ...
 
     @property
