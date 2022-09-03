@@ -101,8 +101,8 @@ impl<Point> DetectIfLeftEventFromResult for Operation<Point, SYMMETRIC_DIFFERENC
 impl<Point> DetectIfLeftEventFromResult for Operation<Point, UNION> {
     fn detect_if_left_event_from_result(&self, event: Event) -> bool {
         self.is_outside_left_event(event)
-            || !self.is_left_event_from_first_operand(event)
-                && self.is_common_region_boundary_left_event(event)
+            || (!self.is_left_event_from_first_operand(event)
+                && self.is_common_region_boundary_left_event(event))
     }
 }
 
