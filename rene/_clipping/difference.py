@@ -1,3 +1,5 @@
+from typing import List
+
 from rene.hints import Polygon
 from .event import Event
 from .operation import Operation
