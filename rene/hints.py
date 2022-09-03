@@ -246,7 +246,7 @@ class Multisegment(_Protocol[Scalar]):
         ...
 
     def __new__(
-            cls, vertices: _Sequence[Segment[Scalar]]
+            cls, segments: _Sequence[Segment[Scalar]]
     ) -> 'Multisegment[Scalar]':
         ...
 
