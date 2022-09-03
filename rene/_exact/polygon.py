@@ -61,5 +61,5 @@ def collect_maybe_empty_polygons(
 def collect_non_empty_polygons(
         polygons: Sequence[Polygon]
 ) -> Union[Empty, Multipolygon, Polygon]:
-    assert len(polygons) > 1
+    assert len(polygons) >= 1
     return polygons[0] if len(polygons) == 1 else Multipolygon(polygons)
