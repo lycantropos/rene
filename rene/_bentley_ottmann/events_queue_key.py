@@ -1,9 +1,9 @@
 from reprit.base import generate_repr
 
+from rene._hints import Map
 from rene.hints import Point
 from .event import (Event,
                     is_left_event)
-from .hints import Map
 
 
 class EventsQueueKey:

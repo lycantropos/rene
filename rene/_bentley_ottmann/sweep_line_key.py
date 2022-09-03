@@ -1,10 +1,10 @@
 from reprit.base import generate_repr
 
+from rene._hints import Map
 from rene._rene import Orientation
 from rene._utils import orient
 from rene.hints import Point
 from .event import Event
-from .hints import Map
 
 
 class SweepLineKey:
