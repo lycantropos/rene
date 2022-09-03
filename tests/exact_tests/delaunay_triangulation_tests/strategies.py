@@ -1,6 +1,6 @@
 from hypothesis import strategies
 
-from tests.strategies import points
+from tests.exact_tests.strategies import points
 
 points = points
 points_lists = strategies.lists(points,

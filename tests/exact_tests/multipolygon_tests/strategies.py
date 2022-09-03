@@ -2,10 +2,10 @@ from hypothesis import strategies
 
 from rene import MIN_MULTIPOLYGON_POLYGONS_COUNT
 from rene.exact import Multipolygon
-from tests.strategies import (multipolygons,
-                              multipolygons_polygons,
-                              non_zero_integers,
-                              polygons)
+from tests.exact_tests.strategies import (multipolygons,
+                                          multipolygons_polygons,
+                                          non_zero_integers,
+                                          polygons)
 
 non_zero_integers = non_zero_integers
 multipolygons_polygons = multipolygons_polygons

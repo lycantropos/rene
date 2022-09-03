@@ -2,10 +2,10 @@ from hypothesis import strategies
 
 from rene import MIN_CONTOUR_VERTICES_COUNT
 from rene.exact import Contour
-from tests.strategies import (contours,
-                              contours_vertices,
-                              non_zero_integers,
-                              points)
+from tests.exact_tests.strategies import (contours,
+                                          contours_vertices,
+                                          non_zero_integers,
+                                          points)
 
 non_zero_integers = non_zero_integers
 contours_vertices = contours_vertices

@@ -1,7 +1,7 @@
 from hypothesis import strategies
 
-from tests.strategies import (points,
-                              polygons)
+from tests.exact_tests.strategies import (points,
+                                          polygons)
 
 points = points
 points_lists = strategies.lists(points,

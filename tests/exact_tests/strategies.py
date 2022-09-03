@@ -47,6 +47,7 @@ def to_segment(raw_segment: hints.Segment) -> Segment:
 
 
 segments = scalars_strategies.flatmap(planar.segments).map(to_segment)
+segments_endpoints = segments.map(attrgetter('start', 'end'))
 
 
 def to_multisegment(raw_multisegment: hints.Multisegment) -> Multisegment:

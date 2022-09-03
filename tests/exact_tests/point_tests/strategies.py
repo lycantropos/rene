@@ -1,12 +1,9 @@
 from hypothesis import strategies
-from rithm import Fraction
 
-from rene.exact import Point
+from tests.exact_tests.strategies import (points,
+                                          scalars_strategies)
 
 integers = strategies.integers()
 non_zero_integers = integers.filter(bool)
-scalars = (integers | strategies.fractions()
-           | strategies.builds(Fraction, integers, non_zero_integers)
-           | strategies.floats(allow_infinity=False,
-                               allow_nan=False))
-points = strategies.builds(Point, scalars, scalars)
+scalars = scalars_strategies.flatmap(lambda strategy: strategy)
+points = points

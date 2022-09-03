@@ -2,8 +2,8 @@ from hypothesis import strategies
 from rithm import Fraction
 
 from rene.exact import Point
-from tests.strategies import (polygons,
-                              polygons_components)
+from tests.exact_tests.strategies import (polygons,
+                                          polygons_components)
 
 integers = strategies.integers()
 non_zero_integers = integers.filter(bool)
