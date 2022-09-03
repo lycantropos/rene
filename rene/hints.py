@@ -273,6 +273,10 @@ class Polygon(_Protocol[Scalar]):
         ...
 
     @property
+    def bounding_box(self) -> Box:
+        ...
+
+    @property
     def holes(self) -> _Sequence[Contour[Scalar]]:
         ...
 

@@ -864,6 +864,11 @@ impl PyExactPolygon {
     }
 
     #[getter]
+    fn bounding_box(&self) -> ExactBox {
+        self.0.to_bounding_box()
+    }
+
+    #[getter]
     fn holes(&self) -> Vec<ExactContour> {
         self.0.holes()
     }

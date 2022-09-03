@@ -7,6 +7,10 @@ class Polygon:
         return self._border
 
     @property
+    def bounding_box(self):
+        return self.border.bounding_box
+
+    @property
     def holes(self):
         return self._holes[:]
 

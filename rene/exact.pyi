@@ -264,6 +264,10 @@ class Polygon:
         ...
 
     @property
+    def bounding_box(self) -> Box:
+        ...
+
+    @property
     def holes(self) -> _Sequence[Contour]:
         ...
 
