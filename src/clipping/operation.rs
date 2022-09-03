@@ -298,7 +298,37 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
         &self.endpoints[event]
     }
 
-    pub(super) fn compute_relations(
+    fn compute_left_event_fields(&mut self, event: Event, maybe_below_event: Option<Event>)
+    where
+        Point: self::Elemental,
+        <Point as self::Elemental>::Coordinate: PartialEq,
+        Self: DetectIfLeftEventFromResult,
+    {
+        let event_position = left_event_to_position(event);
+        if let Some(below_event) = maybe_below_event {
+            let below_event_position = left_event_to_position(below_event);
+            self.are_other_interior_to_left[event_position] = {
+                if self.is_left_event_from_first_operand(event)
+                    == self.is_left_event_from_first_operand(below_event)
+                {
+                    self.are_other_interior_to_left[below_event_position]
+                } else {
+                    self.have_interior_to_left[self.left_event_to_segment_id(below_event)]
+                }
+            };
+            self.below_event_from_result[event_position] = if !self
+                .detect_if_left_event_from_result(below_event)
+                || self.is_vertical_left_event(below_event)
+            {
+                self.below_event_from_result[below_event_position]
+            } else {
+                below_event
+            };
+        }
+        self.are_from_result[event_position] = self.detect_if_left_event_from_result(event);
+    }
+
+    fn compute_relations(
         &self,
         event: Event,
         contour_id: usize,
@@ -339,7 +369,7 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
         are_internal.push(is_internal);
     }
 
-    pub(super) fn contour_events_to_vertices(&self, events: &[Event]) -> Vec<&Point>
+    fn contour_events_to_vertices(&self, events: &[Event]) -> Vec<&Point>
     where
         Point: Orient,
     {
@@ -351,11 +381,11 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
         shrink_collinear_vertices(&result)
     }
 
-    pub(super) fn events_count(&self) -> usize {
+    fn events_count(&self) -> usize {
         self.endpoints.len()
     }
 
-    pub(super) fn events_to_connectivity(&self, events: &[Event]) -> Vec<usize>
+    fn events_to_connectivity(&self, events: &[Event]) -> Vec<usize>
     where
         Point: PartialEq,
     {
@@ -406,20 +436,61 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
         result
     }
 
-    pub(super) fn get_endpoints(&self) -> &Vec<Point> {
+    fn get_endpoints(&self) -> &Vec<Point> {
         &self.endpoints
     }
 
-    pub(super) fn get_opposites(&self) -> &Vec<Event> {
+    fn get_opposites(&self) -> &Vec<Event> {
         &self.opposites
+    }
+
+    fn is_common_polyline_component_left_event(&self, event: Event) -> bool {
+        self.overlap_kinds[left_event_to_position(event)] == OverlapKind::DifferentOrientation
+    }
+
+    fn is_common_region_boundary_left_event(&self, event: Event) -> bool {
+        self.overlap_kinds[left_event_to_position(event)] == OverlapKind::SameOrientation
+    }
+
+    fn is_from_first_operand_event(&self, event: Event) -> bool {
+        self.is_left_event_from_first_operand(self.to_left_event(event))
     }
 
     fn is_from_result_event(&self, event: Event) -> bool {
         self.are_from_result[left_event_to_position(self.to_left_event(event))]
     }
 
-    fn is_from_first_operand_event(&self, event: Event) -> bool {
-        self.is_left_event_from_first_operand(self.to_left_event(event))
+    fn is_inside_left_event(&self, event: Event) -> bool {
+        let event_position = left_event_to_position(event);
+        self.are_other_interior_to_left[event_position]
+            && self.overlap_kinds[event_position] == OverlapKind::None
+    }
+
+    fn is_left_event_from_first_operand(&self, event: Event) -> bool {
+        self.are_from_first_operand[self.left_event_to_segment_id(event)]
+    }
+
+    fn is_outside_left_event(&self, event: Event) -> bool {
+        let event_position = left_event_to_position(event);
+        !self.are_other_interior_to_left[event_position]
+            && self.overlap_kinds[event_position] == OverlapKind::None
+    }
+
+    fn is_overlap_left_event(&self, event: Event) -> bool {
+        self.overlap_kinds[left_event_to_position(event)] != OverlapKind::None
+    }
+
+    fn is_vertical_left_event(&self, event: Event) -> bool
+    where
+        Point: self::Elemental,
+        <Point as self::Elemental>::Coordinate: PartialEq,
+    {
+        debug_assert!(is_left_event(event));
+        self.get_event_start(event).x() == self.get_event_end(event).x()
+    }
+
+    fn left_event_to_segment_id(&self, event: Event) -> usize {
+        self.segments_ids[left_event_to_position(event)]
     }
 
     fn process_contour_events(
@@ -496,85 +567,6 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
         self.starts_ids[self.to_opposite_event(event)]
     }
 
-    fn to_start_id(&self, event: Event) -> usize {
-        self.starts_ids[event]
-    }
-
-    fn to_unique_visited_endpoints_count(&self) -> usize {
-        self.current_endpoint_id + 1
-    }
-
-    fn compute_left_event_fields(&mut self, event: Event, maybe_below_event: Option<Event>)
-    where
-        Point: self::Elemental,
-        <Point as self::Elemental>::Coordinate: PartialEq,
-        Self: DetectIfLeftEventFromResult,
-    {
-        let event_position = left_event_to_position(event);
-        if let Some(below_event) = maybe_below_event {
-            let below_event_position = left_event_to_position(below_event);
-            self.are_other_interior_to_left[event_position] = {
-                if self.is_left_event_from_first_operand(event)
-                    == self.is_left_event_from_first_operand(below_event)
-                {
-                    self.are_other_interior_to_left[below_event_position]
-                } else {
-                    self.have_interior_to_left[self.left_event_to_segment_id(below_event)]
-                }
-            };
-            self.below_event_from_result[event_position] = if !self
-                .detect_if_left_event_from_result(below_event)
-                || self.is_vertical_left_event(below_event)
-            {
-                self.below_event_from_result[below_event_position]
-            } else {
-                below_event
-            };
-        }
-        self.are_from_result[event_position] = self.detect_if_left_event_from_result(event);
-    }
-
-    fn is_common_polyline_component_left_event(&self, event: Event) -> bool {
-        self.overlap_kinds[left_event_to_position(event)] == OverlapKind::DifferentOrientation
-    }
-
-    fn is_common_region_boundary_left_event(&self, event: Event) -> bool {
-        self.overlap_kinds[left_event_to_position(event)] == OverlapKind::SameOrientation
-    }
-
-    fn is_left_event_from_first_operand(&self, event: Event) -> bool {
-        self.are_from_first_operand[self.left_event_to_segment_id(event)]
-    }
-
-    fn is_inside_left_event(&self, event: Event) -> bool {
-        let event_position = left_event_to_position(event);
-        self.are_other_interior_to_left[event_position]
-            && self.overlap_kinds[event_position] == OverlapKind::None
-    }
-
-    fn is_outside_left_event(&self, event: Event) -> bool {
-        let event_position = left_event_to_position(event);
-        !self.are_other_interior_to_left[event_position]
-            && self.overlap_kinds[event_position] == OverlapKind::None
-    }
-
-    fn is_overlap_left_event(&self, event: Event) -> bool {
-        self.overlap_kinds[left_event_to_position(event)] != OverlapKind::None
-    }
-
-    fn is_vertical_left_event(&self, event: Event) -> bool
-    where
-        Point: self::Elemental,
-        <Point as self::Elemental>::Coordinate: PartialEq,
-    {
-        debug_assert!(is_left_event(event));
-        self.get_event_start(event).x() == self.get_event_end(event).x()
-    }
-
-    fn left_event_to_segment_id(&self, event: Event) -> usize {
-        self.segments_ids[left_event_to_position(event)]
-    }
-
     fn to_left_event(&self, event: Event) -> Event {
         if is_left_event(event) {
             event
@@ -587,6 +579,10 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
         self.opposites[event]
     }
 
+    fn to_start_id(&self, event: Event) -> usize {
+        self.starts_ids[event]
+    }
+
     fn to_sweep_line_key(&self, event: Event) -> SweepLineKey<Point> {
         debug_assert!(is_left_event(event));
         SweepLineKey::new(
@@ -595,6 +591,10 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
             &self.endpoints,
             &self.opposites,
         )
+    }
+
+    fn to_unique_visited_endpoints_count(&self) -> usize {
+        self.current_endpoint_id + 1
     }
 }
 
@@ -752,10 +752,7 @@ where
         min_end: Point,
     ) {
         self.divide_event_by_midpoint(max_start_event, min_end);
-        let (max_start_to_min_start_event, max_start_to_min_end_event) =
-            self.divide(min_start_event, max_start);
-        self.push(max_start_to_min_start_event);
-        self.push(max_start_to_min_end_event);
+        self.divide_event_by_midpoint(min_start_event, max_start);
     }
 
     fn divide_event_by_mid_segment_event_endpoints(
@@ -773,12 +770,7 @@ where
         debug_assert!(mid_segment_event_end.ne(self.get_event_end(event)));
 
         self.divide_event_by_midpoint(event, mid_segment_event_end);
-        let (
-            mid_segment_event_start_to_event_start_event,
-            mid_segment_event_start_to_mid_segment_event_end_event,
-        ) = self.divide(event, mid_segment_event_start);
-        self.push(mid_segment_event_start_to_event_start_event);
-        self.push(mid_segment_event_start_to_mid_segment_event_end_event);
+        self.divide_event_by_midpoint(event, mid_segment_event_start);
     }
 
     fn divide_event_by_midpoint(&mut self, event: Event, point: Point) {
@@ -808,12 +800,12 @@ impl<Point: Clone, const KIND: u8> Operation<Point, KIND> {
         self.opposites[event] = mid_point_to_event_start_event;
         self.starts_ids.push(UNDEFINED_INDEX);
         debug_assert_eq!(
-            self.is_from_first_operand_event(event),
+            self.is_left_event_from_first_operand(event),
             self.is_from_first_operand_event(mid_point_to_event_start_event)
         );
         debug_assert_eq!(
-            self.is_from_first_operand_event(event),
-            self.is_from_first_operand_event(mid_point_to_event_end_event)
+            self.is_left_event_from_first_operand(event),
+            self.is_left_event_from_first_operand(mid_point_to_event_end_event)
         );
         (mid_point_to_event_start_event, mid_point_to_event_end_event)
     }
