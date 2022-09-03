@@ -299,6 +299,13 @@ class Operation(ABC):
         depths.append(depth)
         are_internal.append(is_internal)
 
+    def _contour_events_to_vertices(self,
+                                    events: Sequence[Event]) -> List[Point]:
+        result = [self.to_event_start(events[0])]
+        for event in events[:-1]:
+            result.append(self.to_event_end(event))
+        return shrink_collinear_vertices(result)
+
     def _detect_intersection(self, below_event: Event, event: Event) -> bool:
         event_start = self.to_event_start(event)
         event_end = self.to_event_end(event)
@@ -450,6 +457,40 @@ class Operation(ABC):
         self._divide_event_by_midpoint(max_start_event, min_end)
         self._divide_event_by_midpoint(min_start_event, max_start)
 
+    def _events_to_connectivity(self, events: Sequence[Event]) -> List[int]:
+        events_count = len(events)
+        result = [0] * events_count
+        event_id = 0
+        while event_id < events_count:
+            current_start = self.to_event_start(events[event_id])
+            right_start_event_id = event_id
+            while (event_id < events_count
+                   and self.to_event_start(events[event_id]) == current_start
+                   and not is_left_event(events[event_id])):
+                event_id += 1
+            left_start_event_id = event_id
+            while (event_id < events_count
+                   and self.to_event_start(events[event_id]) == current_start):
+                event_id += 1
+            left_stop_event_id = event_id - 1
+            has_right_events = left_start_event_id >= right_start_event_id + 1
+            has_left_events = left_stop_event_id >= left_start_event_id
+            if has_right_events:
+                result[right_start_event_id:left_start_event_id - 1] = range(
+                        right_start_event_id + 1, left_start_event_id - 1 + 1
+                )
+                result[left_start_event_id - 1] = (left_stop_event_id
+                                                   if has_left_events
+                                                   else right_start_event_id)
+            if has_left_events:
+                result[left_start_event_id] = (right_start_event_id
+                                               if has_right_events
+                                               else left_stop_event_id)
+                result[left_start_event_id + 1:left_stop_event_id + 1] = range(
+                        left_start_event_id, left_stop_event_id
+                )
+        return result
+
     def _extend(self, segments: Iterable[Segment]) -> None:
         segment_id_offset = len(self._endpoints) // 2
         for segment_id, segment in enumerate(segments,
@@ -538,60 +579,35 @@ class Operation(ABC):
     def _pop(self) -> Event:
         return self._events_queue_data.pop()
 
+    def _process_contour_events(self,
+                                contour_events: Sequence[Event],
+                                contour_id: int,
+                                are_events_processed: List[bool],
+                                are_from_in_to_out: List[bool],
+                                contours_ids: List[int],
+                                events_ids: Sequence[int]) -> None:
+        for event in contour_events:
+            are_events_processed[events_ids[event]] = True
+            are_events_processed[
+                events_ids[self._to_opposite_event(event)]
+            ] = True
+            if is_left_event(event):
+                are_from_in_to_out[events_ids[event]] = False
+                contours_ids[events_ids[event]] = contour_id
+            else:
+                are_from_in_to_out[
+                    events_ids[self._to_opposite_event(event)]
+                ] = True
+                contours_ids[
+                    events_ids[self._to_opposite_event(event)]
+                ] = contour_id
+
     def _push(self, event: Event) -> None:
         self._events_queue_data.push(event)
 
     def _remove(self, event: Event) -> None:
         assert is_left_event(event)
         self._sweep_line_data.remove(event)
-
-    def _to_end_id(self, event: Event) -> int:
-        return self._starts_ids[self._to_opposite_event(event)]
-
-    def _to_left_event(self, event: Event) -> Event:
-        return (event
-                if is_left_event(event)
-                else self._to_opposite_event(event))
-
-    def _to_opposite_event(self, event: Event) -> Event:
-        return self._opposites[event]
-
-    def _to_start_id(self, event: Event) -> int:
-        return self._starts_ids[event]
-
-    def _events_to_connectivity(self, events: Sequence[Event]) -> List[int]:
-        events_count = len(events)
-        result = [0] * events_count
-        event_id = 0
-        while event_id < events_count:
-            current_start = self.to_event_start(events[event_id])
-            right_start_event_id = event_id
-            while (event_id < events_count
-                   and self.to_event_start(events[event_id]) == current_start
-                   and not is_left_event(events[event_id])):
-                event_id += 1
-            left_start_event_id = event_id
-            while (event_id < events_count
-                   and self.to_event_start(events[event_id]) == current_start):
-                event_id += 1
-            left_stop_event_id = event_id - 1
-            has_right_events = left_start_event_id >= right_start_event_id + 1
-            has_left_events = left_stop_event_id >= left_start_event_id
-            if has_right_events:
-                result[right_start_event_id:left_start_event_id - 1] = range(
-                        right_start_event_id + 1, left_start_event_id - 1 + 1
-                )
-                result[left_start_event_id - 1] = (left_stop_event_id
-                                                   if has_left_events
-                                                   else right_start_event_id)
-            if has_left_events:
-                result[left_start_event_id] = (right_start_event_id
-                                               if has_right_events
-                                               else left_stop_event_id)
-                result[left_start_event_id + 1:left_stop_event_id + 1] = range(
-                        left_start_event_id, left_stop_event_id
-                )
-        return result
 
     def _to_contour_events(
             self,
@@ -640,35 +656,19 @@ class Operation(ABC):
                    for position in visited_endpoints_positions)
         return result
 
-    def _process_contour_events(self,
-                                contour_events: Sequence[Event],
-                                contour_id: int,
-                                are_events_processed: List[bool],
-                                are_from_in_to_out: List[bool],
-                                contours_ids: List[int],
-                                events_ids: Sequence[int]) -> None:
-        for event in contour_events:
-            are_events_processed[events_ids[event]] = True
-            are_events_processed[
-                events_ids[self._to_opposite_event(event)]
-            ] = True
-            if is_left_event(event):
-                are_from_in_to_out[events_ids[event]] = False
-                contours_ids[events_ids[event]] = contour_id
-            else:
-                are_from_in_to_out[
-                    events_ids[self._to_opposite_event(event)]
-                ] = True
-                contours_ids[
-                    events_ids[self._to_opposite_event(event)]
-                ] = contour_id
+    def _to_end_id(self, event: Event) -> int:
+        return self._starts_ids[self._to_opposite_event(event)]
 
-    def _contour_events_to_vertices(self,
-                                    events: Sequence[Event]) -> List[Point]:
-        result = [self.to_event_start(events[0])]
-        for event in events[:-1]:
-            result.append(self.to_event_end(event))
-        return shrink_collinear_vertices(result)
+    def _to_left_event(self, event: Event) -> Event:
+        return (event
+                if is_left_event(event)
+                else self._to_opposite_event(event))
+
+    def _to_opposite_event(self, event: Event) -> Event:
+        return self._opposites[event]
+
+    def _to_start_id(self, event: Event) -> int:
+        return self._starts_ids[event]
 
 
 def _to_next_event_id(event_id: int,
