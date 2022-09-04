@@ -9,10 +9,10 @@ use crate::bentley_ottmann::traits::{EventsQueue, SweepLine};
 use crate::clipping::constants::UNDEFINED_INDEX;
 use crate::clipping::event::is_right_event;
 use crate::operations::{shrink_collinear_vertices, IntersectCrossingSegments, Orient};
-use crate::oriented::Orientation;
+use crate::oriented::{Orientation, Oriented};
 use crate::traits::{
     Contoural, Elemental, Multisegmental, Multivertexal, MultivertexalVertex, Polygonal,
-    PolygonalContour, PolygonalVertex, Segmental,
+    PolygonalContour, PolygonalSegment, PolygonalVertex, Segmental,
 };
 
 use super::event::{
@@ -44,7 +44,8 @@ pub(crate) struct Operation<Point, const KIND: u8> {
 impl<Point: Ord + Orient, Polygon: Polygonal, const KIND: u8> From<(&Polygon, &Polygon)>
     for Operation<Point, KIND>
 where
-    <<Polygon as Polygonal>::Contour as Multisegmental>::Segment: Segmental<Endpoint = Point>,
+    PolygonalContour<Polygon>: Oriented,
+    PolygonalSegment<Polygon>: Segmental<Endpoint = Point>,
 {
     fn from((first, second): (&Polygon, &Polygon)) -> Self {
         let first_border = first.border();
@@ -885,12 +886,17 @@ impl<'a, Point: Ord + Orient, const KIND: u8> Operation<Point, KIND> {
         }
     }
 
-    fn extend_with_polygon<Contour: Contoural>(&mut self, border: Contour, holes: &[Contour])
-    where
+    fn extend_with_polygon<Contour: Contoural + Oriented>(
+        &mut self,
+        border: Contour,
+        holes: &[Contour],
+    ) where
         <Contour as Multisegmental>::Segment: Segmental<Endpoint = Point>,
     {
+        debug_assert_eq!(border.to_orientation(), Orientation::Counterclockwise);
         self.extend(border.segments().iter());
         for hole in holes {
+            debug_assert_eq!(hole.to_orientation(), Orientation::Clockwise);
             self.extend(hole.segments().iter())
         }
     }
