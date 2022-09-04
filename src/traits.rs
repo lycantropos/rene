@@ -51,6 +51,7 @@ pub type MultisegmentalSegment<T> = <T as Multisegmental>::Segment;
 pub type MultivertexalCoordinate<T> = ElementalCoordinate<MultivertexalVertex<T>>;
 pub type MultivertexalVertex<T> = <T as Multivertexal>::Vertex;
 pub type PolygonalCoordinate<T> = MultivertexalCoordinate<PolygonalContour<T>>;
+pub type PolygonalSegment<T> = MultisegmentalSegment<PolygonalContour<T>>;
 pub type PolygonalVertex<T> = MultivertexalVertex<PolygonalContour<T>>;
 pub type PolygonalContour<T> = <T as Polygonal>::Contour;
 pub type MultipolygonalCoordinate<T> = PolygonalCoordinate<MultipolygonalPolygon<T>>;
