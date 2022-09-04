@@ -348,13 +348,13 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
                     parent = below_contour_id;
                     depth = depths[below_contour_id] + 1;
                     is_internal = true;
-                } else if are_internal[below_contour_id] {
-                    let below_contour_parent = parents[below_contour_id];
-                    holes[below_contour_parent].push(contour_id);
-                    parent = below_contour_parent;
-                    depth = depths[below_contour_id];
-                    is_internal = true;
                 }
+            } else if are_internal[below_contour_id] {
+                let below_contour_parent = parents[below_contour_id];
+                holes[below_contour_parent].push(contour_id);
+                parent = below_contour_parent;
+                depth = depths[below_contour_id];
+                is_internal = true;
             }
         }
         holes.push(vec![]);
