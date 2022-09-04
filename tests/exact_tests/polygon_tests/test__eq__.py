@@ -3,7 +3,6 @@ from hypothesis import given
 from rene.exact import Polygon
 from tests.utils import (equivalence,
                          implication,
-                         reverse_each_polygon_hole,
                          reverse_polygon_border,
                          reverse_polygon_holes,
                          rotate_each_polygon_hole,
@@ -40,11 +39,6 @@ def test_border_reversal(polygon: Polygon) -> None:
 @given(strategies.polygons, strategies.non_zero_integers)
 def test_border_rotations(polygon: Polygon, offset: int) -> None:
     assert polygon == rotate_polygon_border(polygon, offset)
-
-
-@given(strategies.polygons)
-def test_each_hole_reversal(polygon: Polygon) -> None:
-    assert polygon == reverse_each_polygon_hole(polygon)
 
 
 @given(strategies.polygons, strategies.non_zero_integers)
