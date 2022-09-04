@@ -526,6 +526,7 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
         let mut opposite_event_id = events_ids[self.to_opposite_event(event)];
         let mut cursor = event;
         let contour_start = self.get_event_start(event);
+        let mut visited_endpoints_ids = vec![self.to_start_id(event)];
         while self.get_event_end(cursor) != contour_start {
             let previous_endpoint_position = visited_endpoints_positions[self.to_end_id(cursor)];
             if previous_endpoint_position == UNDEFINED_INDEX {
@@ -533,11 +534,9 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
             } else {
                 // vertices loop found, i.e. contour has self-intersection
                 debug_assert_ne!(previous_endpoint_position, 0);
-                for &event in &result[previous_endpoint_position..] {
-                    visited_endpoints_positions[self.to_end_id(event)] = UNDEFINED_INDEX;
-                }
                 result.drain(previous_endpoint_position..);
             }
+            visited_endpoints_ids.push(self.to_end_id(cursor));
             let event_id = to_next_event_id(opposite_event_id, are_events_processed, connectivity);
             if event_id == UNDEFINED_INDEX {
                 break;
@@ -546,9 +545,8 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
             opposite_event_id = events_ids[self.to_opposite_event(cursor)];
             result.push(cursor);
         }
-        visited_endpoints_positions[self.to_start_id(event)] = UNDEFINED_INDEX;
-        for &event in &result {
-            visited_endpoints_positions[self.to_end_id(event)] = UNDEFINED_INDEX;
+        for endpoint_id in visited_endpoints_ids {
+            visited_endpoints_positions[endpoint_id] = UNDEFINED_INDEX;
         }
         debug_assert!(visited_endpoints_positions
             .iter()
