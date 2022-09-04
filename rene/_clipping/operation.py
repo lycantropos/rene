@@ -294,12 +294,12 @@ class Operation(ABC):
                     parent = below_contour_id
                     depth = depths[below_contour_id] + 1
                     is_internal = True
-                elif are_internal[below_contour_id]:
-                    below_contour_parent = parents[below_contour_id]
-                    holes[below_contour_parent].append(contour_id)
-                    parent = below_contour_parent
-                    depth = depths[below_contour_id]
-                    is_internal = True
+            elif are_internal[below_contour_id]:
+                below_contour_parent = parents[below_contour_id]
+                holes[below_contour_parent].append(contour_id)
+                parent = below_contour_parent
+                depth = depths[below_contour_id]
+                is_internal = True
         holes.append([])
         parents.append(parent)
         depths.append(depth)
