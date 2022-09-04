@@ -54,10 +54,14 @@ class Operation(ABC):
         self._current_endpoint_first_event = first_event
         return self
 
+    @property
+    def segments_count(self) -> int:
+        return len(self._have_interior_to_left)
+
     def reduce_events(self, events: List[Event]) -> List[Polygon]:
         events = [event
                   for event in events
-                  if self._is_from_first_operand_event(event)]
+                  if self._is_from_result_event(event)]
         if not events:
             return []
         events.sort(key=self._events_queue_data.key)
@@ -126,7 +130,7 @@ class Operation(ABC):
         return self._endpoints[event]
 
     __slots__ = ('_are_from_first_operand', '_are_from_result',
-                 '_are_other_interior_to_left', '_below_event_from_result',
+                 '_other_have_interior_to_left', '_below_event_from_result',
                  '_contour_cls', '_current_endpoint_first_event',
                  '_current_endpoint_id', '_endpoints', '_events_queue_data',
                  '_have_interior_to_left', '_opposites', '_overlap_kinds',
@@ -134,15 +138,15 @@ class Operation(ABC):
                  '_sweep_line_data')
 
     def __init__(self,
-                 contour_cls: Type[Contour],
-                 polygon_cls: Type[Polygon],
+                 _contour_cls: Type[Contour],
+                 _polygon_cls: Type[Polygon],
                  segments_count: int) -> None:
         initial_events_count = 2 * segments_count
         self._are_from_first_operand: List[bool] = []
         self._are_from_result = [False] * segments_count
-        self._are_other_interior_to_left = [False] * segments_count
+        self._other_have_interior_to_left = [False] * segments_count
         self._below_event_from_result = [UNDEFINED_EVENT] * segments_count
-        self._contour_cls = contour_cls
+        self._contour_cls = _contour_cls
         self._current_endpoint_first_event = UNDEFINED_EVENT
         self._current_endpoint_id = 0
         self._endpoints: List[Point] = []
@@ -155,7 +159,7 @@ class Operation(ABC):
         self._have_interior_to_left = [True] * segments_count
         self._opposites: List[Event] = []
         self._overlap_kinds = [OverlapKind.NONE] * segments_count
-        self._polygon_cls = polygon_cls
+        self._polygon_cls = _polygon_cls
         self._segments_ids = list(range(segments_count))
         self._starts_ids: List[int] = [UNDEFINED_INDEX] * initial_events_count
         self._sweep_line_data = red_black.set_(
@@ -244,12 +248,13 @@ class Operation(ABC):
         event_position = left_event_to_position(event)
         if below_event is not None:
             below_event_position = left_event_to_position(below_event)
-            self._are_other_interior_to_left[event_position] = (
-                self._are_other_interior_to_left[below_event_position]
+            self._other_have_interior_to_left[event_position] = (
+                self._other_have_interior_to_left[below_event_position]
                 if (self._is_left_event_from_first_operand(event)
                     is self._is_left_event_from_first_operand(below_event))
                 else self._have_interior_to_left[
-                    self._left_event_to_segment_id(below_event)]
+                    self._left_event_to_segment_id(below_event)
+                ]
             )
             self._below_event_from_result[event_position] = (
                 self._below_event_from_result[below_event_position]
@@ -281,8 +286,8 @@ class Operation(ABC):
             left_event_to_position(event)
         ]
         if below_event_from_result != UNDEFINED_EVENT:
-            below_event_from_result_id = events_ids[below_event_from_result];
-            below_contour_id = contours_ids[below_event_from_result_id];
+            below_event_from_result_id = events_ids[below_event_from_result]
+            below_contour_id = contours_ids[below_event_from_result_id]
             if not are_from_in_to_out[below_event_from_result_id]:
                 if not are_internal[below_contour_id]:
                     holes[below_contour_id].append(contour_id)
@@ -428,7 +433,7 @@ class Operation(ABC):
         self._endpoints.append(mid_point)
         self._opposites.append(opposite_event)
         self._opposites[opposite_event] = mid_point_to_event_end_event
-        self._are_other_interior_to_left.append(False)
+        self._other_have_interior_to_left.append(False)
         self._are_from_result.append(False)
         self._below_event_from_result.append(UNDEFINED_EVENT)
         self._overlap_kinds.append(OverlapKind.NONE)
@@ -438,12 +443,14 @@ class Operation(ABC):
         self._opposites.append(event)
         self._opposites[event] = mid_point_to_event_start_event
         self._starts_ids.append(UNDEFINED_INDEX)
-        assert (
-            self._is_left_event_from_first_operand(event)
-            is self._is_from_first_operand_event(mid_point_to_event_start_event)
-        )
         assert (self._is_left_event_from_first_operand(event)
-                is self._is_left_event_from_first_operand(mid_point_to_event_end_event))
+                is self._is_from_first_operand_event(
+                        mid_point_to_event_start_event
+                ))
+        assert (self._is_left_event_from_first_operand(event)
+                is self._is_left_event_from_first_operand(
+                        mid_point_to_event_end_event
+                ))
         return mid_point_to_event_start_event, mid_point_to_event_end_event
 
     def _divide_event_by_mid_segment_event_endpoints(
@@ -524,8 +531,10 @@ class Operation(ABC):
     def _extend_with_polygon(self,
                              border: Contour,
                              holes: Sequence[Contour]) -> None:
+        assert border.orientation is Orientation.COUNTERCLOCKWISE
         self._extend(border.segments)
         for hole in holes:
+            assert hole.orientation is Orientation.CLOCKWISE
             self._extend(hole.segments)
 
     def _find(self, event: Event) -> Optional[Event]:
@@ -562,7 +571,7 @@ class Operation(ABC):
 
     def _is_inside_left_event(self, event: Event) -> bool:
         event_position = left_event_to_position(event)
-        return (self._are_other_interior_to_left[event_position]
+        return (self._other_have_interior_to_left[event_position]
                 and self._overlap_kinds[event_position] is OverlapKind.NONE)
 
     def _is_left_event_from_first_operand(self, event: Event) -> bool:
@@ -572,7 +581,7 @@ class Operation(ABC):
 
     def _is_outside_left_event(self, event: Event) -> bool:
         event_position = left_event_to_position(event)
-        return (not self._are_other_interior_to_left[event_position]
+        return (not self._other_have_interior_to_left[event_position]
                 and self._overlap_kinds[event_position] is OverlapKind.NONE)
 
     def _is_overlap_left_event(self, event: Event) -> bool:
