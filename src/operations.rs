@@ -264,8 +264,6 @@ pub(crate) fn shrink_collinear_vertices<'a, Point: Orient>(
         != Orientation::Collinear
     {
         result.push(vertices[vertices.len() - 1])
-    } else if result.len() > 2 {
-        result[0] = unsafe { result.pop().unwrap_unchecked() }
     }
     result
 }
