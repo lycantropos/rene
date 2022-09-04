@@ -307,9 +307,8 @@ class Operation(ABC):
 
     def _contour_events_to_vertices(self,
                                     events: Sequence[Event]) -> List[Point]:
-        result = [self.to_event_start(events[0])]
-        for event in events[:-1]:
-            result.append(self.to_event_end(event))
+        result = ([self.to_event_start(events[0])]
+                  + [self.to_event_end(event) for event in events[:-1]])
         return shrink_collinear_vertices(result)
 
     def _detect_intersection(self, below_event: Event, event: Event) -> bool:
