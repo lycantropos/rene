@@ -645,6 +645,7 @@ class Operation(ABC):
         opposite_event_id = events_ids[self._to_opposite_event(event)]
         cursor = event
         contour_start = self.to_event_start(event)
+        visited_endpoints_ids = [self._to_start_id(event)]
         while self.to_event_end(cursor) != contour_start:
             previous_endpoint_position = visited_endpoints_positions[
                 self._to_end_id(cursor)
@@ -656,11 +657,8 @@ class Operation(ABC):
             else:
                 # vertices loop found, i.e. contour has self-intersection
                 assert previous_endpoint_position != 0
-                for event in result[previous_endpoint_position:]:
-                    visited_endpoints_positions[
-                        self._to_end_id(event)
-                    ] = UNDEFINED_INDEX
                 del result[previous_endpoint_position:]
+            visited_endpoints_ids.append(self._to_end_id(cursor))
             event_id = _to_next_event_id(opposite_event_id,
                                          are_events_processed, connectivity)
             if event_id == UNDEFINED_INDEX:
@@ -669,10 +667,8 @@ class Operation(ABC):
             opposite_event_id = events_ids[self._to_opposite_event(cursor)]
             result.append(cursor)
         visited_endpoints_positions[self._to_start_id(event)] = UNDEFINED_INDEX
-        for event in result:
-            visited_endpoints_positions[
-                self._to_end_id(event)
-            ] = UNDEFINED_INDEX
+        for endpoint_id in visited_endpoints_ids:
+            visited_endpoints_positions[endpoint_id] = UNDEFINED_INDEX
         assert all(position == UNDEFINED_INDEX
                    for position in visited_endpoints_positions)
         return result
