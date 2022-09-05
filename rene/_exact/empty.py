@@ -14,6 +14,13 @@ class Empty:
     def __new__(cls):
         return super().__new__(cls)
 
+    def __and__(self, other):
+        return (self
+                if isinstance(other, (self._context.empty_cls,
+                                      self._context.polygon_cls,
+                                      self._context.multipolygon_cls))
+                else NotImplemented)
+
     def __eq__(self, other):
         return (True
                 if isinstance(other, self._context.empty_cls)

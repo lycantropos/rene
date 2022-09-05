@@ -656,6 +656,22 @@ impl PyExactEmpty {
         PyExactEmpty(Empty::new())
     }
 
+    fn __and__(&self, other: &PyAny) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactEmpty::type_object(py))? {
+            let other = other.extract::<PyExactEmpty>()?;
+            Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
+            let other = other.extract::<PyExactMultipolygon>()?;
+            PyExactEmpty((&self.0).intersection(&other.0)).into_py(py)
+        } else if other.is_instance(PyExactPolygon::type_object(py))? {
+            let other = other.extract::<PyExactPolygon>()?;
+            PyExactEmpty((&self.0).intersection(&other.0)).into_py(py)
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
+
     fn __hash__(&self) -> ffi::Py_hash_t {
         0
     }
