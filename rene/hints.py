@@ -302,6 +302,11 @@ class Polygon(_Protocol[Scalar]):
     def __hash__(self) -> int:
         ...
 
+    def __or__(
+            self, other: 'Polygon[Scalar]'
+    ) -> _Union['Multipolygon[Scalar]', 'Polygon[Scalar]']:
+        ...
+
     def __repr__(self) -> str:
         ...
 

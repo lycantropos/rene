@@ -28,6 +28,7 @@ use crate::oriented::{Orientation, Oriented};
 use crate::relatable::{Relatable, Relation};
 use crate::traits::{
     Elemental, Intersection, Multipolygonal, Multisegmental, Multivertexal, Polygonal, Segmental,
+    Union,
 };
 use crate::triangulation::{
     BoundaryEndpoints, ConstrainedDelaunayTriangulation, DelaunayTriangulation,
@@ -903,6 +904,21 @@ impl PyExactPolygon {
             ],
         )
         .hash()
+    }
+
+    fn __or__(&self, other: &PyAny) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactPolygon::type_object(py))? {
+            let other = other.extract::<PyExactPolygon>()?;
+            let polygons = self.0.union(&other.0);
+            debug_assert!(!polygons.is_empty());
+            match polygons.len() {
+                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {

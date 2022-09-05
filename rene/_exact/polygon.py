@@ -4,6 +4,7 @@ from typing import (Sequence,
 from reprit.base import generate_repr
 
 from rene._clipping.intersection import intersect_polygons
+from rene._clipping.union import unite_polygons
 from .empty import Empty
 from .multipolygon import Multipolygon
 
@@ -43,6 +44,11 @@ class Polygon:
 
     def __hash__(self):
         return hash((self.border, frozenset(self.holes)))
+
+    def __or__(self, other):
+        return (collect_non_empty_polygons(unite_polygons(self, other))
+                if isinstance(other, Polygon)
+                else NotImplemented)
 
     __repr__ = generate_repr(__new__,
                              with_module_name=True)
