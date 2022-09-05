@@ -4,26 +4,42 @@ use rithm::big_int::BigInt;
 use rithm::fraction::Fraction;
 use traiter::numbers::{BitLength, IsPowerOfTwo, Sign, Signed, Unitary};
 
-use crate::bounded;
+use crate::bounded::Box;
 use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 use crate::locatable::Location;
 use crate::oriented::Orientation;
 use crate::relatable::{Relatable, Relation};
 use crate::traits::Elemental;
 
-pub(crate) fn boxes_ids_coupled_with_box<Scalar>(
-    boxes: &[bounded::Box<Scalar>],
-    target_box: &bounded::Box<Scalar>,
-) -> Vec<usize>
+pub(crate) fn are_boxes_coupled_with_box<Scalar>(
+    boxes: &[Box<Scalar>],
+    target_box: &Box<Scalar>,
+) -> Vec<bool>
 where
-    for<'a> &'a bounded::Box<Scalar>: Relatable,
+    for<'a> &'a Box<Scalar>: Relatable,
 {
     (0..boxes.len())
-        .filter(|&index| {
-            let box_ = &boxes[index];
-            !box_.disjoint_with(&target_box) && !box_.touches(&target_box)
-        })
+        .map(|index| are_boxes_coupled(&boxes[index], &target_box))
         .collect::<Vec<_>>()
+}
+
+pub(crate) fn boxes_ids_coupled_with_box<Scalar>(
+    boxes: &[Box<Scalar>],
+    target_box: &Box<Scalar>,
+) -> Vec<usize>
+where
+    for<'a> &'a Box<Scalar>: Relatable,
+{
+    (0..boxes.len())
+        .filter(|&index| are_boxes_coupled(&boxes[index], &target_box))
+        .collect::<Vec<_>>()
+}
+
+fn are_boxes_coupled<Scalar>(first: &Box<Scalar>, second: &Box<Scalar>) -> bool
+where
+    for<'a> &'a Box<Scalar>: Relatable,
+{
+    !first.disjoint_with(&second) && !first.touches(&second)
 }
 
 pub(crate) trait CrossMultiply {
@@ -251,9 +267,7 @@ where
     }
 }
 
-pub(crate) fn merge_boxes<Scalar: Clone + PartialOrd>(
-    boxes: &[bounded::Box<Scalar>],
-) -> bounded::Box<Scalar> {
+pub(crate) fn merge_boxes<Scalar: Clone + PartialOrd>(boxes: &[Box<Scalar>]) -> Box<Scalar> {
     debug_assert!(!boxes.is_empty());
     let first_box = &boxes[0];
     let mut max_x = first_box.get_max_x();
@@ -274,7 +288,7 @@ pub(crate) fn merge_boxes<Scalar: Clone + PartialOrd>(
             min_y = box_.get_min_y();
         }
     }
-    bounded::Box::new(min_x.clone(), max_x.clone(), min_y.clone(), max_y.clone())
+    Box::new(min_x.clone(), max_x.clone(), min_y.clone(), max_y.clone())
 }
 
 pub(crate) fn to_arg_min<Value: Ord>(values: &[Value]) -> Option<usize> {
