@@ -41,21 +41,20 @@ pub(crate) struct Operation<Point, const KIND: u8> {
     sweep_line_data: BTreeSet<SweepLineKey<Point>>,
 }
 
-impl<Point: Ord + Orient, Polygon: Polygonal, const KIND: u8> From<(&Polygon, &Polygon)>
-    for Operation<Point, KIND>
+impl<
+        Point: Ord + Orient,
+        Polygon: Multisegmental<Segment = PolygonalSegment<Polygon>> + Polygonal,
+        const KIND: u8,
+    > From<(&Polygon, &Polygon)> for Operation<Point, KIND>
 where
     PolygonalContour<Polygon>: Oriented,
     PolygonalSegment<Polygon>: Segmental<Endpoint = Point>,
 {
     fn from((first, second): (&Polygon, &Polygon)) -> Self {
-        let first_border = first.border();
-        let first_holes = first.holes();
-        let second_border = second.border();
-        let second_holes = second.holes();
-        let first_segments_count =
-            first_border.segments_count() + contours_segments_count(&first_holes);
-        let second_segments_count =
-            second_border.segments_count() + contours_segments_count(&second_holes);
+        debug_assert!(is_polygon_valid(first));
+        debug_assert!(is_polygon_valid(second));
+        let first_segments_count = first.segments_count();
+        let second_segments_count = second.segments_count();
         let mut result = Self::with_capacity(first_segments_count + second_segments_count);
         result
             .are_from_first_operand
@@ -63,8 +62,8 @@ where
         result
             .are_from_first_operand
             .append(&mut vec![false; second_segments_count]);
-        result.extend_with_polygon(first_border, &first_holes);
-        result.extend_with_polygon(second_border, &second_holes);
+        result.extend(first.segments().into_iter());
+        result.extend(second.segments().into_iter());
         let first_event = unsafe { result.peek().unwrap_unchecked() };
         result.current_endpoint_first_event = first_event;
         result
@@ -859,9 +858,9 @@ where
 }
 
 impl<'a, Point: Ord + Orient, const KIND: u8> Operation<Point, KIND> {
-    fn extend<Segment: Segmental<Endpoint = Point> + 'a>(
-        &'a mut self,
-        segments: impl Iterator<Item = &'a Segment>,
+    fn extend<Segment: Segmental<Endpoint = Point>>(
+        &mut self,
+        segments: impl Iterator<Item = Segment>,
     ) {
         let segment_id_offset = self.endpoints.len() / 2;
         for (segment_index, segment) in segments.enumerate() {
@@ -881,21 +880,6 @@ impl<'a, Point: Ord + Orient, const KIND: u8> Operation<Point, KIND> {
             self.opposites.push(left_event);
             self.push(left_event);
             self.push(right_event);
-        }
-    }
-
-    fn extend_with_polygon<Contour: Contoural + Oriented>(
-        &mut self,
-        border: Contour,
-        holes: &[Contour],
-    ) where
-        <Contour as Multisegmental>::Segment: Segmental<Endpoint = Point>,
-    {
-        debug_assert_eq!(border.to_orientation(), Orientation::Counterclockwise);
-        self.extend(border.segments().iter());
-        for hole in holes {
-            debug_assert_eq!(hole.to_orientation(), Orientation::Clockwise);
-            self.extend(hole.segments().iter())
         }
     }
 
@@ -920,11 +904,22 @@ impl<'a, Point: Ord + Orient, const KIND: u8> Operation<Point, KIND> {
     }
 }
 
-fn contours_segments_count<Contour: self::Contoural>(contours: &[Contour]) -> usize {
+fn contours_segments_count<Contour: Contoural>(contours: &[Contour]) -> usize {
     contours
         .iter()
         .map(|contour| contour.segments_count())
         .sum()
+}
+
+fn is_polygon_valid<Polygon: Polygonal>(polygon: &Polygon) -> bool
+where
+    PolygonalContour<Polygon>: Oriented,
+{
+    polygon.border().to_orientation() == Orientation::Counterclockwise
+        && polygon
+            .holes()
+            .into_iter()
+            .all(|hole| hole.to_orientation() == Orientation::Clockwise)
 }
 
 #[inline]
