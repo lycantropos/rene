@@ -885,6 +885,11 @@ impl PyExactPolygon {
         self.0.holes()
     }
 
+    #[getter]
+    fn segments_count(&self) -> usize {
+        self.0.segments_count()
+    }
+
     fn __and__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactPolygon::type_object(py))? {

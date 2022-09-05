@@ -24,6 +24,11 @@ class Polygon:
     def holes(self):
         return self._holes[:]
 
+    @property
+    def segments_count(self):
+        return sum([hole.segments_count for hole in self.holes],
+                   self.border.segments_count)
+
     __module__ = 'rene.exact'
     __slots__ = '_border', '_holes'
 

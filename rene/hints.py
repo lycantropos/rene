@@ -285,6 +285,10 @@ class Polygon(_Protocol[Scalar]):
     def holes(self) -> _Sequence[Contour[Scalar]]:
         ...
 
+    @property
+    def segments_count(self) -> int:
+        ...
+
     def __new__(cls,
                 border: Contour[Scalar],
                 holes: _Sequence[Contour[Scalar]]) -> 'Polygon[Scalar]':

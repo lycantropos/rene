@@ -275,6 +275,10 @@ class Polygon:
     def holes(self) -> _Sequence[Contour]:
         ...
 
+    @property
+    def segments_count(self) -> int:
+        ...
+
     def __new__(cls, border: Contour, holes: _Sequence[Contour]) -> 'Polygon':
         ...
 
