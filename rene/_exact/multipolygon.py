@@ -5,6 +5,8 @@ from reprit.base import generate_repr
 
 from rene._clipping import (intersect_multipolygon_with_polygon,
                             intersect_multipolygons,
+                            subtract_multipolygons,
+                            subtract_polygon_from_multipolygon,
                             symmetric_subtract_multipolygon_with_polygon,
                             symmetric_subtract_multipolygons,
                             unite_multipolygon_with_polygon,
@@ -95,6 +97,30 @@ class Multipolygon:
 
     __repr__ = generate_repr(__new__,
                              with_module_name=True)
+
+    def __sub__(self, other):
+        return (
+            self
+            if isinstance(other, self._context.empty_cls)
+            else (
+                collect_maybe_empty_polygons(subtract_multipolygons(self,
+                                                                    other),
+                                             self._context.empty_cls,
+                                             self._context.multipolygon_cls)
+                if isinstance(other, self._context.multipolygon_cls)
+                else (
+                    collect_maybe_empty_polygons(
+                            subtract_polygon_from_multipolygon(
+                                    self, other
+                            ),
+                            self._context.empty_cls,
+                            self._context.multipolygon_cls
+                    )
+                    if isinstance(other, self._context.polygon_cls)
+                    else NotImplemented
+                )
+            )
+        )
 
     def __str__(self):
         return (f'{type(self).__qualname__}([{{}}])'

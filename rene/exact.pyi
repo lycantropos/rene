@@ -213,6 +213,21 @@ class Multipolygon:
     def __repr__(self) -> str:
         ...
 
+    @_overload
+    def __sub__(self, other: 'Empty') -> 'Multipolygon':
+        ...
+
+    @_overload
+    def __sub__(
+            self, other: 'Multipolygon'
+    ) -> _Union[Empty, Multipolygon, 'Polygon']:
+        ...
+
+    @_overload
+    def __sub__(self,
+                other: 'Polygon') -> _Union[Empty, Multipolygon, 'Polygon']:
+        ...
+
     def __str__(self) -> str:
         ...
 
