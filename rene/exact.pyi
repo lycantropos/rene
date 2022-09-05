@@ -152,6 +152,18 @@ class Empty:
     def __hash__(self) -> int:
         ...
 
+    @_overload
+    def __or__(self, other: 'Empty') -> 'Empty':
+        ...
+
+    @_overload
+    def __or__(self, other: 'Multipolygon') -> 'Multipolygon':
+        ...
+
+    @_overload
+    def __or__(self, other: 'Polygon') -> 'Polygon':
+        ...
+
     def __repr__(self) -> str:
         ...
 

@@ -81,6 +81,12 @@ impl IntoPy<PyObject> for ExactContour {
     }
 }
 
+impl IntoPy<PyObject> for ExactMultipolygon {
+    fn into_py(self, py: Python<'_>) -> PyObject {
+        PyExactMultipolygon(self).into_py(py)
+    }
+}
+
 impl IntoPy<PyObject> for ExactPoint {
     fn into_py(self, py: Python<'_>) -> PyObject {
         PyExactPoint(self).into_py(py)
@@ -674,6 +680,22 @@ impl PyExactEmpty {
 
     fn __hash__(&self) -> ffi::Py_hash_t {
         0
+    }
+
+    fn __or__(&self, other: &PyAny) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactEmpty::type_object(py))? {
+            let other = other.extract::<PyExactEmpty>()?;
+            Ok(PyExactEmpty((&self.0).union(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
+            let other = other.extract::<PyExactMultipolygon>()?;
+            Ok((&self.0).union(&other.0).into_py(py))
+        } else if other.is_instance(PyExactPolygon::type_object(py))? {
+            let other = other.extract::<PyExactPolygon>()?;
+            Ok((&self.0).union(&other.0).into_py(py))
+        } else {
+            Ok(py.NotImplemented())
+        }
     }
 
     fn __repr__(&self) -> &'static str {

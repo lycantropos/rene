@@ -67,6 +67,18 @@ class Empty(_SelfComparable, _Protocol):
     def __hash__(self) -> int:
         ...
 
+    @_overload
+    def __or__(self, other: 'Empty') -> 'Empty':
+        ...
+
+    @_overload
+    def __or__(self, other: 'Multipolygon[Scalar]') -> 'Multipolygon[Scalar]':
+        ...
+
+    @_overload
+    def __or__(self, other: 'Polygon[Scalar]') -> 'Polygon[Scalar]':
+        ...
+
     def __repr__(self) -> str:
         ...
 

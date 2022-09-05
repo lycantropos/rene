@@ -29,6 +29,13 @@ class Empty:
     def __hash__(self):
         return 0
 
+    def __or__(self, other):
+        return (other
+                if isinstance(other, (self._context.empty_cls,
+                                      self._context.polygon_cls,
+                                      self._context.multipolygon_cls))
+                else NotImplemented)
+
     __repr__ = generate_repr(__new__,
                              with_module_name=True)
 
