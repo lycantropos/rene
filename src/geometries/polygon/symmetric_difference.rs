@@ -3,11 +3,49 @@ use rithm::fraction::Fraction;
 
 use crate::bounded::{Bounded, Box};
 use crate::clipping::{Event, Operation, ReduceEvents, SYMMETRIC_DIFFERENCE};
-use crate::geometries::Point;
+use crate::geometries::{Empty, Point};
 use crate::relatable::Relatable;
 use crate::traits::{Elemental, SymmetricDifference};
 
 use super::types::Polygon;
+
+impl<Scalar> SymmetricDifference<Empty> for Polygon<Scalar> {
+    type Output = Self;
+
+    fn symmetric_difference(self, _other: Empty) -> Self::Output {
+        self
+    }
+}
+
+impl<Scalar> SymmetricDifference<&Empty> for Polygon<Scalar> {
+    type Output = Self;
+
+    fn symmetric_difference(self, _other: &Empty) -> Self::Output {
+        self
+    }
+}
+
+impl<Scalar> SymmetricDifference<Empty> for &Polygon<Scalar>
+where
+    Polygon<Scalar>: Clone,
+{
+    type Output = Polygon<Scalar>;
+
+    fn symmetric_difference(self, _other: Empty) -> Self::Output {
+        self.clone()
+    }
+}
+
+impl<Scalar> SymmetricDifference<&Empty> for &Polygon<Scalar>
+where
+    Polygon<Scalar>: Clone,
+{
+    type Output = Polygon<Scalar>;
+
+    fn symmetric_difference(self, _other: &Empty) -> Self::Output {
+        self.clone()
+    }
+}
 
 impl<Digit, const SEPARATOR: char, const SHIFT: usize> SymmetricDifference
     for &Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
