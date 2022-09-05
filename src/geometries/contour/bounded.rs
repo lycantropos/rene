@@ -1,12 +1,12 @@
 use crate::bounded::{Bounded, Box};
-use crate::geometries;
+use crate::geometries::Point;
 use crate::Elemental;
 
 use super::types::Contour;
 
 impl<Scalar: Ord> Bounded<Scalar> for Contour<Scalar>
 where
-    geometries::Point<Scalar>: Elemental<Coordinate = Scalar>,
+    Point<Scalar>: Elemental<Coordinate = Scalar>,
 {
     fn to_max_x(&self) -> Scalar {
         unsafe {
