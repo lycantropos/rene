@@ -186,10 +186,10 @@ pub(crate) fn merge_boxes<Scalar: Clone + PartialOrd>(boxes: &[Box<Scalar>]) -> 
     let mut min_x = first_box.get_min_x();
     let mut min_y = first_box.get_min_y();
     for box_ in &boxes[1..] {
-        if box_.get_max_x() < max_x {
+        if box_.get_max_x() > max_x {
             max_x = box_.get_max_x();
         }
-        if box_.get_max_y() < max_y {
+        if box_.get_max_y() > max_y {
             max_y = box_.get_max_y();
         }
         if box_.get_min_x() < min_x {
