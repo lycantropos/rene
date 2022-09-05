@@ -51,6 +51,64 @@ class Operation(ABC):
         self._current_endpoint_first_event = first_event
         return self
 
+    @classmethod
+    def from_multisegmentals_sequences(
+            cls,
+            first: Sequence[Multisegmental],
+            second: Sequence[Multisegmental]
+    ) -> 'Operation':
+        first_segments_count = _multisegmentals_to_segments_count(first)
+        second_segments_count = _multisegmentals_to_segments_count(second)
+        segments_count = first_segments_count + second_segments_count
+        self = cls(segments_count)
+        self._are_from_first_operand.extend([True] * first_segments_count)
+        self._are_from_first_operand.extend([False] * second_segments_count)
+        for multisegmental in first:
+            self._extend(multisegmental.segments)
+        for multisegmental in second:
+            self._extend(multisegmental.segments)
+        first_event = self._peek()
+        self._current_endpoint_first_event = first_event
+        return self
+
+    @classmethod
+    def from_multisegmental_multisegmentals_sequence(
+            cls,
+            first: Multisegmental,
+            second: Sequence[Multisegmental]
+    ) -> 'Operation':
+        first_segments_count = first.segments_count
+        second_segments_count = _multisegmentals_to_segments_count(second)
+        segments_count = first_segments_count + second_segments_count
+        self = cls(segments_count)
+        self._are_from_first_operand.extend([True] * first_segments_count)
+        self._are_from_first_operand.extend([False] * second_segments_count)
+        self._extend(first.segments)
+        for multisegmental in second:
+            self._extend(multisegmental.segments)
+        first_event = self._peek()
+        self._current_endpoint_first_event = first_event
+        return self
+
+    @classmethod
+    def from_multisegmentals_sequence_multisegmental(
+            cls,
+            first: Sequence[Multisegmental],
+            second: Multisegmental
+    ) -> 'Operation':
+        first_segments_count = _multisegmentals_to_segments_count(first)
+        second_segments_count = second.segments_count
+        segments_count = first_segments_count + second_segments_count
+        self = cls(segments_count)
+        self._are_from_first_operand.extend([True] * first_segments_count)
+        self._are_from_first_operand.extend([False] * second_segments_count)
+        for multisegmental in first:
+            self._extend(multisegmental.segments)
+        self._extend(second.segments)
+        first_event = self._peek()
+        self._current_endpoint_first_event = first_event
+        return self
+
     @property
     def segments_count(self) -> int:
         return len(self._have_interior_to_left)
@@ -670,6 +728,12 @@ class Operation(ABC):
 
     def _to_start_id(self, event: Event) -> int:
         return self._starts_ids[event]
+
+
+def _multisegmentals_to_segments_count(
+        multisegmentals: Sequence[Multisegmental]
+) -> int:
+    return sum(multisegment.segments_count for multisegment in multisegmentals)
 
 
 def _to_next_event_id(event_id: int,
