@@ -333,8 +333,9 @@ pub(crate) fn to_are_boxes_coupled_with_box<Scalar>(
 where
     for<'a> &'a Box<Scalar>: Relatable,
 {
-    (0..boxes.len())
-        .map(|index| are_boxes_coupled(&boxes[index], &target_box))
+    boxes
+        .iter()
+        .map(|box_| are_boxes_coupled(box_, &target_box))
         .collect::<Vec<_>>()
 }
 
