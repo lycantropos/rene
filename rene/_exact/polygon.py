@@ -1,3 +1,4 @@
+from itertools import chain
 from typing import (Sequence,
                     Union)
 
@@ -23,6 +24,12 @@ class Polygon:
     @property
     def holes(self):
         return self._holes[:]
+
+    @property
+    def segments(self):
+        return list(chain(self.border.segments,
+                          chain.from_iterable(hole.segments
+                                              for hole in self.holes)))
 
     @property
     def segments_count(self):

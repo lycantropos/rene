@@ -886,6 +886,11 @@ impl PyExactPolygon {
     }
 
     #[getter]
+    fn segments(&self) -> Vec<ExactSegment> {
+        self.0.segments()
+    }
+
+    #[getter]
     fn segments_count(&self) -> usize {
         self.0.segments_count()
     }
