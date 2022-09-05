@@ -56,7 +56,7 @@ def test_distribution_over_union(first: Polygon,
 
 
 @given(strategies.polygons, strategies.polygons)
-def test_equivalents(first: Polygon, second: Polygon) -> None:
+def test_alternatives(first: Polygon, second: Polygon) -> None:
     result = first & second
 
     assert result == first - (first - second)
