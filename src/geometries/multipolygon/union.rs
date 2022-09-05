@@ -100,20 +100,6 @@ where
             result.extend_from_slice(&other.polygons);
             return result;
         }
-        let min_max_x = unsafe {
-            coupled_polygons_ids
-                .iter()
-                .map(|&index| bounding_boxes[index].get_max_x())
-                .max()
-                .unwrap_unchecked()
-        }
-        .min(unsafe {
-            other_coupled_polygons_ids
-                .iter()
-                .map(|&index| other_bounding_boxes[index].get_max_x())
-                .max()
-                .unwrap_unchecked()
-        });
         let coupled_polygons = coupled_polygons_ids
             .into_iter()
             .map(|index| &self.polygons[index])
@@ -130,9 +116,6 @@ where
             Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
         };
         while let Some(event) = operation.next() {
-            if operation.get_event_start(event).x().gt(min_max_x) {
-                break;
-            }
             events.push(event)
         }
         let mut result = Multipolygon::<_>::reduce_events(events, &mut operation);
@@ -200,14 +183,6 @@ where
             result.push(other.clone());
             return result;
         }
-        let min_max_x = unsafe {
-            coupled_polygons_ids
-                .iter()
-                .map(|&index| bounding_boxes[index].get_max_x())
-                .max()
-                .unwrap_unchecked()
-        }
-        .min(other_bounding_box.get_max_x());
         let coupled_polygons = coupled_polygons_ids
             .into_iter()
             .map(|index| &self.polygons[index])
@@ -219,9 +194,6 @@ where
             Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
         };
         while let Some(event) = operation.next() {
-            if operation.get_event_start(event).x().gt(min_max_x) {
-                break;
-            }
             events.push(event)
         }
         let mut result = Multipolygon::<_>::reduce_events(events, &mut operation);
@@ -285,13 +257,6 @@ where
             result.push(self.clone());
             return result;
         }
-        let min_max_x = bounding_box.get_max_x().min(unsafe {
-            other_coupled_polygons_ids
-                .iter()
-                .map(|&index| other_bounding_boxes[index].get_max_x())
-                .max()
-                .unwrap_unchecked()
-        });
         let other_coupled_polygons = other_coupled_polygons_ids
             .into_iter()
             .map(|index| &other.polygons[index])
@@ -303,9 +268,6 @@ where
             Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
         };
         while let Some(event) = operation.next() {
-            if operation.get_event_start(event).x().gt(min_max_x) {
-                break;
-            }
             events.push(event)
         }
         let mut result = Polygon::<_>::reduce_events(events, &mut operation);
