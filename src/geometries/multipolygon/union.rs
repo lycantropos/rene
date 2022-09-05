@@ -4,7 +4,10 @@ use rithm::fraction::Fraction;
 use crate::bounded::{Bounded, Box};
 use crate::clipping::{Event, Operation, ReduceEvents, UNION};
 use crate::geometries::{Empty, Point, Polygon};
-use crate::operations::{are_boxes_uncoupled, merge_boxes, to_are_boxes_coupled_with_box};
+use crate::operations::{
+    are_boxes_uncoupled, flags_to_false_indices, flags_to_true_indices, merge_boxes,
+    to_are_boxes_coupled_with_box,
+};
 use crate::relatable::Relatable;
 use crate::traits::{Elemental, Union};
 
@@ -280,22 +283,4 @@ where
         );
         result
     }
-}
-
-fn flags_to_false_indices(flags: &[bool]) -> Vec<usize> {
-    flags
-        .iter()
-        .enumerate()
-        .filter(|(_, &flag)| !flag)
-        .map(|(index, _)| index)
-        .collect::<Vec<_>>()
-}
-
-fn flags_to_true_indices(flags: &[bool]) -> Vec<usize> {
-    flags
-        .iter()
-        .enumerate()
-        .filter(|(_, &flag)| flag)
-        .map(|(index, _)| index)
-        .collect::<Vec<_>>()
 }

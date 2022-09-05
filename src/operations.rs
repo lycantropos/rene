@@ -11,30 +11,6 @@ use crate::oriented::Orientation;
 use crate::relatable::{Relatable, Relation};
 use crate::traits::Elemental;
 
-pub(crate) fn to_are_boxes_coupled_with_box<Scalar>(
-    boxes: &[Box<Scalar>],
-    target_box: &Box<Scalar>,
-) -> Vec<bool>
-where
-    for<'a> &'a Box<Scalar>: Relatable,
-{
-    (0..boxes.len())
-        .map(|index| are_boxes_coupled(&boxes[index], &target_box))
-        .collect::<Vec<_>>()
-}
-
-pub(crate) fn to_boxes_ids_coupled_with_box<Scalar>(
-    boxes: &[Box<Scalar>],
-    target_box: &Box<Scalar>,
-) -> Vec<usize>
-where
-    for<'a> &'a Box<Scalar>: Relatable,
-{
-    (0..boxes.len())
-        .filter(|&index| are_boxes_coupled(&boxes[index], &target_box))
-        .collect::<Vec<_>>()
-}
-
 pub(crate) fn are_boxes_coupled<Scalar>(first: &Box<Scalar>, second: &Box<Scalar>) -> bool
 where
     for<'a> &'a Box<Scalar>: Relatable,
@@ -47,6 +23,19 @@ where
     for<'a> &'a Box<Scalar>: Relatable,
 {
     first.disjoint_with(&second) || first.touches(&second)
+}
+
+pub(crate) fn ceil_log2<
+    Number: Copy + BitLength<Output = Value> + IsPowerOfTwo,
+    Value: Sub<Output = Value> + Unitary,
+>(
+    number: Number,
+) -> Value {
+    if number.is_power_of_two() {
+        number.bit_length() - <Number as BitLength>::Output::one()
+    } else {
+        number.bit_length()
+    }
 }
 
 pub(crate) trait CrossMultiply {
@@ -82,6 +71,24 @@ where
         (first_end.x() - first_start.x()) * (second_end.y() - second_start.y())
             - (first_end.y() - first_start.y()) * (second_end.x() - second_start.x())
     }
+}
+
+pub(crate) fn flags_to_false_indices(flags: &[bool]) -> Vec<usize> {
+    flags
+        .iter()
+        .enumerate()
+        .filter(|(_, &flag)| !flag)
+        .map(|(index, _)| index)
+        .collect::<Vec<_>>()
+}
+
+pub(crate) fn flags_to_true_indices(flags: &[bool]) -> Vec<usize> {
+    flags
+        .iter()
+        .enumerate()
+        .filter(|(_, &flag)| flag)
+        .map(|(index, _)| index)
+        .collect::<Vec<_>>()
 }
 
 pub(crate) trait Orient {
@@ -331,15 +338,26 @@ pub(crate) fn shrink_collinear_vertices<'a, Point: Orient>(
     result
 }
 
-pub(crate) fn ceil_log2<
-    Number: Copy + BitLength<Output = Value> + IsPowerOfTwo,
-    Value: Sub<Output = Value> + Unitary,
->(
-    number: Number,
-) -> Value {
-    if number.is_power_of_two() {
-        number.bit_length() - <Number as BitLength>::Output::one()
-    } else {
-        number.bit_length()
-    }
+pub(crate) fn to_are_boxes_coupled_with_box<Scalar>(
+    boxes: &[Box<Scalar>],
+    target_box: &Box<Scalar>,
+) -> Vec<bool>
+where
+    for<'a> &'a Box<Scalar>: Relatable,
+{
+    (0..boxes.len())
+        .map(|index| are_boxes_coupled(&boxes[index], &target_box))
+        .collect::<Vec<_>>()
+}
+
+pub(crate) fn to_boxes_ids_coupled_with_box<Scalar>(
+    boxes: &[Box<Scalar>],
+    target_box: &Box<Scalar>,
+) -> Vec<usize>
+where
+    for<'a> &'a Box<Scalar>: Relatable,
+{
+    (0..boxes.len())
+        .filter(|&index| are_boxes_coupled(&boxes[index], &target_box))
+        .collect::<Vec<_>>()
 }
