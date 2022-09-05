@@ -226,18 +226,18 @@ where
         self,
         other: &Multipolygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>,
     ) -> Self::Output {
+        let bounding_box = self.to_bounding_box();
         let other_bounding_boxes = other
             .polygons
             .iter()
             .map(Bounded::to_bounding_box)
             .collect::<Vec<_>>();
-        let bounding_box = self.to_bounding_box();
         let other_bounding_box = merge_boxes(&other_bounding_boxes);
         if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
             return vec![];
         }
         let other_coupled_polygons_ids =
-            to_boxes_ids_coupled_with_box(&other_bounding_boxes, &other_bounding_box);
+            to_boxes_ids_coupled_with_box(&other_bounding_boxes, &bounding_box);
         if other_coupled_polygons_ids.is_empty() {
             return vec![];
         }
