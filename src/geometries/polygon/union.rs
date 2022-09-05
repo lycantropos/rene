@@ -3,11 +3,49 @@ use rithm::fraction::Fraction;
 
 use crate::bounded::{Bounded, Box};
 use crate::clipping::{Event, Operation, ReduceEvents, UNION};
-use crate::geometries::Point;
+use crate::geometries::{Empty, Point};
 use crate::relatable::Relatable;
 use crate::traits::{Elemental, Union};
 
 use super::types::Polygon;
+
+impl<Scalar> Union<Empty> for Polygon<Scalar> {
+    type Output = Self;
+
+    fn union(self, _other: Empty) -> Self::Output {
+        self
+    }
+}
+
+impl<Scalar> Union<&Empty> for Polygon<Scalar> {
+    type Output = Self;
+
+    fn union(self, _other: &Empty) -> Self::Output {
+        self
+    }
+}
+
+impl<Scalar> Union<Empty> for &Polygon<Scalar>
+where
+    Polygon<Scalar>: Clone,
+{
+    type Output = Polygon<Scalar>;
+
+    fn union(self, _other: Empty) -> Self::Output {
+        self.clone()
+    }
+}
+
+impl<Scalar> Union<&Empty> for &Polygon<Scalar>
+where
+    Polygon<Scalar>: Clone,
+{
+    type Output = Polygon<Scalar>;
+
+    fn union(self, _other: &Empty) -> Self::Output {
+        self.clone()
+    }
+}
 
 impl<Digit, const SEPARATOR: char, const SHIFT: usize> Union
     for &Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
