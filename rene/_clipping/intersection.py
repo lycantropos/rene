@@ -1,8 +1,8 @@
 from typing import List
 
 from rene._utils import (are_boxes_uncoupled,
-                         to_boxes_ids_coupled_with_box,
-                         merge_boxes)
+                         merge_boxes,
+                         to_boxes_ids_coupled_with_box)
 from rene.hints import (Multipolygon,
                         Polygon)
 from .event import Event
