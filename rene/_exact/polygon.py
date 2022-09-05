@@ -29,11 +29,11 @@ class Polygon:
     def segments(self):
         return list(chain(self.border.segments,
                           chain.from_iterable(hole.segments
-                                              for hole in self.holes)))
+                                              for hole in self._holes)))
 
     @property
     def segments_count(self):
-        return sum([hole.segments_count for hole in self.holes],
+        return sum([hole.segments_count for hole in self._holes],
                    self.border.segments_count)
 
     __module__ = 'rene.exact'
