@@ -1,3 +1,5 @@
+from itertools import chain
+
 from reprit.base import generate_repr
 
 from rene._rene import MIN_MULTIPOLYGON_POLYGONS_COUNT
@@ -7,6 +9,11 @@ class Multipolygon:
     @property
     def polygons(self):
         return self._polygons[:]
+
+    @property
+    def segments(self):
+        return list(chain.from_iterable(polygon.segments
+                                        for polygon in self._polygons))
 
     @property
     def segments_count(self):

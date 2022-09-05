@@ -340,6 +340,10 @@ class Multipolygon(_Protocol[Scalar]):
         ...
 
     @property
+    def segments(self) -> _Sequence[Segment[Scalar]]:
+        ...
+
+    @property
     def segments_count(self) -> int:
         ...
 
