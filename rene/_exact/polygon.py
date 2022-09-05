@@ -3,10 +3,10 @@ from typing import (Sequence,
 
 from reprit.base import generate_repr
 
-from rene._clipping.difference import subtract_polygons
-from rene._clipping.intersection import intersect_polygons
-from rene._clipping.symmetric_difference import symmetric_subtract_polygons
-from rene._clipping.union import unite_polygons
+from rene._clipping import (intersect_polygons,
+                            subtract_polygons,
+                            symmetric_subtract_polygons,
+                            unite_polygons)
 from .empty import Empty
 from .multipolygon import Multipolygon
 
