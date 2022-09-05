@@ -1,11 +1,13 @@
-from functools import partial
+from functools import (partial,
+                       singledispatch)
 from typing import (Callable,
                     Iterable,
                     List,
                     Sequence,
                     TypeVar)
 
-from rene import MIN_CONTOUR_VERTICES_COUNT
+from rene import (MIN_CONTOUR_VERTICES_COUNT,
+                  exact)
 from rene._rene import (Location,
                         Orientation)
 from rene._utils import (deduplicate,
@@ -51,25 +53,66 @@ def pack(function: Callable[..., _T2]) -> Callable[[Iterable[_T1]], _T2]:
     return partial(apply, function)
 
 
+_T = TypeVar('_T')
+
+
+@singledispatch
+def reverse_compound_coordinates(compound: _T) -> _T:
+    raise TypeError(f'Unsupported type: {type(compound):!r}.')
+
+
+@reverse_compound_coordinates.register(exact.Empty)
+def _(compound: exact.Empty) -> exact.Empty:
+    return compound
+
+
+@reverse_compound_coordinates.register(exact.Contour)
+def _(compound: exact.Contour) -> exact.Contour:
+    return reverse_contour_coordinates(compound)
+
+
+@reverse_compound_coordinates.register(exact.Multipolygon)
+def _(compound: exact.Multipolygon) -> exact.Multipolygon:
+    return reverse_multipolygon_coordinates(compound)
+
+
+@reverse_compound_coordinates.register(exact.Polygon)
+def _(compound: exact.Polygon) -> exact.Polygon:
+    return reverse_polygon_coordinates(compound)
+
+
 def reverse_contour(contour: Contour) -> Contour:
     return type(contour)(contour.vertices[::-1])
 
 
-def reverse_each_polygon_hole(polygon: Polygon) -> Polygon:
-    return type(polygon)(polygon.border,
-                         [reverse_contour(hole) for hole in polygon.holes])
+def reverse_contour_coordinates(contour: Contour) -> Contour:
+    return reverse_contour(type(contour)([reverse_point_coordinates(vertex)
+                                          for vertex in contour.vertices]))
 
 
 def reverse_multipolygon(multipolygon: Multipolygon) -> Multipolygon:
     return type(multipolygon)(multipolygon.polygons[::-1])
 
 
+def reverse_multipolygon_coordinates(
+        multipolygon: Multipolygon
+) -> Multipolygon:
+    return type(multipolygon)([reverse_polygon_coordinates(polygon)
+                               for polygon in multipolygon.polygons])
+
+
 def reverse_multisegment(multisegment: Multisegment) -> Multisegment:
     return type(multisegment)(multisegment.segments[::-1])
 
 
-def reverse_polygon_border(polygon: Polygon) -> Polygon:
-    return type(polygon)(reverse_contour(polygon.border), polygon.holes)
+def reverse_point_coordinates(point: Point) -> Point:
+    return type(point)(point.y, point.x)
+
+
+def reverse_polygon_coordinates(polygon: Polygon) -> Polygon:
+    return type(polygon)(reverse_contour_coordinates(polygon.border),
+                         [reverse_contour_coordinates(hole)
+                          for hole in polygon.holes])
 
 
 def reverse_polygon_holes(polygon: Polygon) -> Polygon:
