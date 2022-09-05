@@ -13,8 +13,20 @@ from rene import (Orientation as _Orientation,
 Scalar = _TypeVar('Scalar',
                   bound=_Rational)
 
+_Self = _TypeVar('_Self')
 
-class Point(_Protocol[Scalar]):
+
+class _SelfComparable(_Protocol):
+    @_overload
+    def __eq__(self: _Self, other: _Self) -> bool:
+        ...
+
+    @_overload
+    def __eq__(self, other: _Any) -> _Any:
+        ...
+
+
+class Point(_SelfComparable, _Protocol[Scalar]):
     @property
     def x(self) -> Scalar:
         ...
@@ -24,17 +36,6 @@ class Point(_Protocol[Scalar]):
         ...
 
     def __new__(cls, x: Scalar, y: Scalar) -> 'Point[Scalar]':
-        ...
-
-    @_overload
-    def __eq__(self, other: 'Point[Scalar]') -> bool:
-        ...
-
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
-        ...
-
-    def __eq__(self, other):
         ...
 
     def __ge__(self, other: 'Point[Scalar]') -> bool:
@@ -59,16 +60,8 @@ class Point(_Protocol[Scalar]):
         ...
 
 
-class Empty(_Protocol):
+class Empty(_SelfComparable, _Protocol):
     def __new__(cls) -> 'Empty':
-        ...
-
-    @_overload
-    def __eq__(self, other: 'Empty') -> bool:
-        ...
-
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
         ...
 
     def __hash__(self) -> int:
@@ -81,7 +74,7 @@ class Empty(_Protocol):
         ...
 
 
-class Box(_Protocol[Scalar]):
+class Box(_SelfComparable, _Protocol[Scalar]):
     @property
     def max_x(self) -> Scalar:
         ...
@@ -135,17 +128,6 @@ class Box(_Protocol[Scalar]):
                 max_y: Scalar) -> 'Box[Scalar]':
         ...
 
-    @_overload
-    def __eq__(self, other: 'Box[Scalar]') -> bool:
-        ...
-
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
-        ...
-
-    def __eq__(self, other):
-        ...
-
     def __hash__(self) -> int:
         ...
 
@@ -156,7 +138,7 @@ class Box(_Protocol[Scalar]):
         ...
 
 
-class Segment(_Protocol[Scalar]):
+class Segment(_SelfComparable, _Protocol[Scalar]):
     @property
     def end(self) -> Point[Scalar]:
         ...
@@ -170,14 +152,6 @@ class Segment(_Protocol[Scalar]):
                 end: Point[Scalar]) -> 'Segment[Scalar]':
         ...
 
-    @_overload
-    def __eq__(self, other: 'Segment[Scalar]') -> bool:
-        ...
-
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
-        ...
-
     def __hash__(self) -> int:
         ...
 
@@ -188,7 +162,7 @@ class Segment(_Protocol[Scalar]):
         ...
 
 
-class Contour(_Protocol[Scalar]):
+class Contour(_SelfComparable, _Protocol[Scalar]):
     @property
     def bounding_box(self) -> Box[Scalar]:
         ...
@@ -219,14 +193,6 @@ class Contour(_Protocol[Scalar]):
     def __new__(cls, vertices: _Sequence[Point[Scalar]]) -> 'Contour[Scalar]':
         ...
 
-    @_overload
-    def __eq__(self, other: 'Contour[Scalar]') -> bool:
-        ...
-
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
-        ...
-
     def __hash__(self) -> int:
         ...
 
@@ -251,21 +217,13 @@ class Multisegmental(_Protocol[_Segmental]):
         ...
 
 
-class Multisegment(Multisegmental[Segment[Scalar]]):
+class Multisegment(_SelfComparable, Multisegmental[Segment[Scalar]]):
     def is_valid(self) -> bool:
         ...
 
     def __new__(
             cls, segments: _Sequence[Segment[Scalar]]
     ) -> 'Multisegment[Scalar]':
-        ...
-
-    @_overload
-    def __eq__(self, other: 'Multisegment[Scalar]') -> bool:
-        ...
-
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
         ...
 
     def __hash__(self) -> int:
@@ -278,7 +236,7 @@ class Multisegment(Multisegmental[Segment[Scalar]]):
         ...
 
 
-class Polygon(Multisegmental[Segment[Scalar]]):
+class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]]):
     @property
     def border(self) -> Contour[Scalar]:
         ...
@@ -299,14 +257,6 @@ class Polygon(Multisegmental[Segment[Scalar]]):
     def __and__(
             self, other: 'Polygon[Scalar]'
     ) -> _Union[Empty, 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
-        ...
-
-    @_overload
-    def __eq__(self, other: 'Polygon[Scalar]') -> bool:
-        ...
-
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
         ...
 
     def __hash__(self) -> int:
@@ -334,7 +284,7 @@ class Polygon(Multisegmental[Segment[Scalar]]):
         ...
 
 
-class Multipolygon(Multisegmental[Segment[Scalar]]):
+class Multipolygon(_SelfComparable, Multisegmental[Segment[Scalar]]):
     @property
     def polygons(self) -> _Sequence[Polygon[Scalar]]:
         ...
@@ -342,14 +292,6 @@ class Multipolygon(Multisegmental[Segment[Scalar]]):
     def __new__(
             cls, vertices: _Sequence[Polygon[Scalar]]
     ) -> 'Multipolygon[Scalar]':
-        ...
-
-    @_overload
-    def __eq__(self, other: 'Multipolygon[Scalar]') -> bool:
-        ...
-
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
         ...
 
     def __hash__(self) -> int:
