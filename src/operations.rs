@@ -11,32 +11,6 @@ use crate::oriented::Orientation;
 use crate::relatable::{Relatable, Relation};
 use crate::traits::Elemental;
 
-pub(crate) fn merge_boxes<Scalar: Clone + PartialOrd>(
-    boxes: &[bounded::Box<Scalar>],
-) -> bounded::Box<Scalar> {
-    debug_assert!(!boxes.is_empty());
-    let first_box = &boxes[0];
-    let mut max_x = first_box.get_max_x();
-    let mut max_y = first_box.get_max_y();
-    let mut min_x = first_box.get_min_x();
-    let mut min_y = first_box.get_min_y();
-    for box_ in &boxes[1..] {
-        if box_.get_max_x() < max_x {
-            max_x = box_.get_max_x();
-        }
-        if box_.get_max_y() < max_y {
-            max_y = box_.get_max_y();
-        }
-        if box_.get_min_x() < min_x {
-            min_x = box_.get_min_x();
-        }
-        if box_.get_min_y() < min_y {
-            min_y = box_.get_min_y();
-        }
-    }
-    bounded::Box::new(min_x.clone(), max_x.clone(), min_y.clone(), max_y.clone())
-}
-
 pub(crate) fn boxes_ids_coupled_with_box<Scalar>(
     boxes: &[bounded::Box<Scalar>],
     target_box: &bounded::Box<Scalar>,
@@ -275,6 +249,32 @@ where
             Sign::Zero => Location::Boundary,
         }
     }
+}
+
+pub(crate) fn merge_boxes<Scalar: Clone + PartialOrd>(
+    boxes: &[bounded::Box<Scalar>],
+) -> bounded::Box<Scalar> {
+    debug_assert!(!boxes.is_empty());
+    let first_box = &boxes[0];
+    let mut max_x = first_box.get_max_x();
+    let mut max_y = first_box.get_max_y();
+    let mut min_x = first_box.get_min_x();
+    let mut min_y = first_box.get_min_y();
+    for box_ in &boxes[1..] {
+        if box_.get_max_x() < max_x {
+            max_x = box_.get_max_x();
+        }
+        if box_.get_max_y() < max_y {
+            max_y = box_.get_max_y();
+        }
+        if box_.get_min_x() < min_x {
+            min_x = box_.get_min_x();
+        }
+        if box_.get_min_y() < min_y {
+            min_y = box_.get_min_y();
+        }
+    }
+    bounded::Box::new(min_x.clone(), max_x.clone(), min_y.clone(), max_y.clone())
 }
 
 pub(crate) fn to_arg_min<Value: Ord>(values: &[Value]) -> Option<usize> {
