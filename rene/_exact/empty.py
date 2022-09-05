@@ -48,3 +48,10 @@ class Empty:
                                       self._context.polygon_cls,
                                       self._context.multipolygon_cls))
                 else NotImplemented)
+
+    def __xor__(self, other):
+        return (other
+                if isinstance(other, (self._context.empty_cls,
+                                      self._context.polygon_cls,
+                                      self._context.multipolygon_cls))
+                else NotImplemented)

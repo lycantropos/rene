@@ -174,6 +174,18 @@ class Empty:
                 other: _Union['Empty', 'Multipolygon', 'Polygon']) -> 'Empty':
         ...
 
+    @_overload
+    def __xor__(self, other: 'Empty') -> 'Empty':
+        ...
+
+    @_overload
+    def __xor__(self, other: 'Multipolygon') -> 'Multipolygon':
+        ...
+
+    @_overload
+    def __xor__(self, other: 'Polygon') -> 'Polygon':
+        ...
+
 
 class Multipolygon:
     @property

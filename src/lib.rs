@@ -735,6 +735,22 @@ impl PyExactEmpty {
             Ok(py.NotImplemented())
         }
     }
+
+    fn __xor__(&self, other: &PyAny) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactEmpty::type_object(py))? {
+            let other = other.extract::<PyExactEmpty>()?;
+            Ok(PyExactEmpty((&self.0).symmetric_difference(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
+            let other = other.extract::<PyExactMultipolygon>()?;
+            Ok((&self.0).symmetric_difference(&other.0).into_py(py))
+        } else if other.is_instance(PyExactPolygon::type_object(py))? {
+            let other = other.extract::<PyExactPolygon>()?;
+            Ok((&self.0).symmetric_difference(&other.0).into_py(py))
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
 }
 
 #[pymethods]

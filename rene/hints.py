@@ -91,6 +91,18 @@ class Empty(_SelfComparable, _Protocol):
     ) -> 'Empty':
         ...
 
+    @_overload
+    def __xor__(self, other: 'Empty') -> 'Empty':
+        ...
+
+    @_overload
+    def __xor__(self, other: 'Multipolygon[Scalar]') -> 'Multipolygon[Scalar]':
+        ...
+
+    @_overload
+    def __xor__(self, other: 'Polygon[Scalar]') -> 'Polygon[Scalar]':
+        ...
+
 
 class Box(_SelfComparable, _Protocol[Scalar]):
     @property
