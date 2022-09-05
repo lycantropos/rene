@@ -6,6 +6,7 @@ mod eq;
 mod from;
 mod hash;
 mod intersection;
+mod multisegmental;
 mod partial_eq;
 mod polygonal;
 mod symmetric_difference;
