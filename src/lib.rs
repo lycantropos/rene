@@ -752,6 +752,11 @@ impl PyExactMultisegment {
         self.0.segments()
     }
 
+    #[getter]
+    fn segments_count(&self) -> usize {
+        self.0.segments_count()
+    }
+
     fn is_valid(&self) -> bool {
         is_multisegment_valid(&self.0)
     }

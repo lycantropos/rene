@@ -190,6 +190,10 @@ class Multisegment:
     def segments(self) -> _Sequence[Segment]:
         ...
 
+    @property
+    def segments_count(self) -> int:
+        ...
+
     def is_valid(self) -> bool:
         ...
 

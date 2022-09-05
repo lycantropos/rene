@@ -10,6 +10,10 @@ class Multisegment:
     def segments(self):
         return self._segments[:]
 
+    @property
+    def segments_count(self):
+        return len(self._segments)
+
     def is_valid(self):
         segments = self.segments
         return all(intersection.relation is Relation.TOUCH
