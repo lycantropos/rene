@@ -3,6 +3,7 @@ from typing import (Sequence,
 
 from reprit.base import generate_repr
 
+from rene._clipping.difference import subtract_polygons
 from rene._clipping.intersection import intersect_polygons
 from rene._clipping.union import unite_polygons
 from .empty import Empty
@@ -56,6 +57,11 @@ class Polygon:
     def __str__(self):
         return (f'{type(self).__qualname__}({self.border}, [{{}}])'
                 .format(', '.join(map(str, self.holes))))
+
+    def __sub__(self, other):
+        return (collect_maybe_empty_polygons(subtract_polygons(self, other))
+                if isinstance(other, Polygon)
+                else NotImplemented)
 
 
 def collect_maybe_empty_polygons(

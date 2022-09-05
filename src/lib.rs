@@ -27,8 +27,8 @@ use crate::operations::to_arg_min;
 use crate::oriented::{Orientation, Oriented};
 use crate::relatable::{Relatable, Relation};
 use crate::traits::{
-    Elemental, Intersection, Multipolygonal, Multisegmental, Multivertexal, Polygonal, Segmental,
-    Union,
+    Difference, Elemental, Intersection, Multipolygonal, Multisegmental, Multivertexal, Polygonal,
+    Segmental, Union,
 };
 use crate::triangulation::{
     BoundaryEndpoints, ConstrainedDelaunayTriangulation, DelaunayTriangulation,
@@ -941,6 +941,21 @@ impl PyExactPolygon {
                 CompareOp::Eq => Ok((self.0 == other.0).into_py(py)),
                 CompareOp::Ne => Ok((self.0 != other.0).into_py(py)),
                 _ => Ok(py.NotImplemented()),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
+
+    fn __sub__(&self, other: &PyAny) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactPolygon::type_object(py))? {
+            let other = other.extract::<PyExactPolygon>()?;
+            let polygons = self.0.difference(&other.0);
+            match polygons.len() {
+                0 => Ok(PyExactEmpty::new().into_py(py)),
+                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
             }
         } else {
             Ok(py.NotImplemented())

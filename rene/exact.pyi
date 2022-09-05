@@ -298,6 +298,10 @@ class Polygon:
     def __str__(self) -> str:
         ...
 
+    def __sub__(self,
+                other: 'Polygon') -> _Union[Empty, Multipolygon, 'Polygon']:
+        ...
+
 
 class Segment:
     @property

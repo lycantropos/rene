@@ -313,6 +313,11 @@ class Polygon(_Protocol[Scalar]):
     def __str__(self) -> str:
         ...
 
+    def __sub__(
+            self, other: 'Polygon[Scalar]'
+    ) -> _Union[Empty, 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+        ...
+
 
 class Multipolygon(_Protocol[Scalar]):
     @property
