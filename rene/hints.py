@@ -334,17 +334,9 @@ class Polygon(_Protocol[Scalar], Multisegmental[Segment[Scalar]]):
         ...
 
 
-class Multipolygon(_Protocol[Scalar]):
+class Multipolygon(_Protocol[Scalar], Multisegmental[Segment[Scalar]]):
     @property
     def polygons(self) -> _Sequence[Polygon[Scalar]]:
-        ...
-
-    @property
-    def segments(self) -> _Sequence[Segment[Scalar]]:
-        ...
-
-    @property
-    def segments_count(self) -> int:
         ...
 
     def __new__(
