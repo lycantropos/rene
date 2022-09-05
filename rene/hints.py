@@ -217,7 +217,8 @@ class Multisegmental(_Protocol[_Segmental]):
         ...
 
 
-class Multisegment(_SelfComparable, Multisegmental[Segment[Scalar]]):
+class Multisegment(_SelfComparable, Multisegmental[Segment[Scalar]],
+                   _Protocol[Scalar]):
     def is_valid(self) -> bool:
         ...
 
@@ -236,7 +237,8 @@ class Multisegment(_SelfComparable, Multisegmental[Segment[Scalar]]):
         ...
 
 
-class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]]):
+class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]],
+              _Protocol[Scalar]):
     @property
     def border(self) -> Contour[Scalar]:
         ...
@@ -284,7 +286,8 @@ class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]]):
         ...
 
 
-class Multipolygon(_SelfComparable, Multisegmental[Segment[Scalar]]):
+class Multipolygon(_SelfComparable, Multisegmental[Segment[Scalar]],
+                   _Protocol[Scalar]):
     @property
     def polygons(self) -> _Sequence[Polygon[Scalar]]:
         ...
