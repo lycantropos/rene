@@ -40,18 +40,23 @@ class Multipolygon:
 
     def __and__(self, other):
         return (
-            collect_maybe_empty_polygons(intersect_multipolygons(self,
-                                                                 other),
-                                         self._context.empty_cls,
-                                         self._context.multipolygon_cls)
-            if isinstance(other, self._context.multipolygon_cls)
+            self._context.empty_cls()
+            if isinstance(other, self._context.empty_cls)
             else (
-                collect_maybe_empty_polygons(
-                        intersect_multipolygon_with_polygon(self, other),
-                        self._context.empty_cls, self._context.multipolygon_cls
+                collect_maybe_empty_polygons(intersect_multipolygons(self,
+                                                                     other),
+                                             self._context.empty_cls,
+                                             self._context.multipolygon_cls)
+                if isinstance(other, self._context.multipolygon_cls)
+                else (
+                    collect_maybe_empty_polygons(
+                            intersect_multipolygon_with_polygon(self, other),
+                            self._context.empty_cls,
+                            self._context.multipolygon_cls
+                    )
+                    if isinstance(other, self._context.polygon_cls)
+                    else NotImplemented
                 )
-                if isinstance(other, self._context.polygon_cls)
-                else NotImplemented
             )
         )
 
