@@ -85,6 +85,14 @@ def deduplicate(values: List[_T]) -> List[_T]:
     return [value for value, _ in groupby(values)]
 
 
+def flags_to_false_indices(flags: Sequence[bool]) -> List[int]:
+    return [index for index, flag in enumerate(flags) if not flag]
+
+
+def flags_to_true_indices(flags: Sequence[bool]) -> List[int]:
+    return [index for index, flag in enumerate(flags) if flag]
+
+
 def intersect_crossing_segments(first_start: Point,
                                 first_end: Point,
                                 second_start: Point,
@@ -225,6 +233,11 @@ def shrink_collinear_vertices(vertices: Sequence[Point]) -> List[Point]:
             is not Orientation.COLLINEAR):
         result.append(vertices[-1])
     return result
+
+
+def to_are_boxes_coupled_with_box(boxes: Sequence[Box],
+                                  target_box: Box) -> List[bool]:
+    return [are_boxes_coupled(box, target_box) for box in boxes]
 
 
 def to_sign(value: Fraction) -> int:

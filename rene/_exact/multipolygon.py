@@ -4,9 +4,12 @@ from typing import Optional
 from reprit.base import generate_repr
 
 from rene._clipping import (intersect_multipolygon_with_polygon,
-                            intersect_multipolygons)
+                            intersect_multipolygons,
+                            unite_multipolygon_with_polygon,
+                            unite_multipolygons)
 from rene._rene import MIN_MULTIPOLYGON_POLYGONS_COUNT
-from rene._utils import collect_maybe_empty_polygons
+from rene._utils import (collect_maybe_empty_polygons,
+                         collect_non_empty_polygons)
 from .context import Context
 
 
@@ -67,6 +70,26 @@ class Multipolygon:
 
     def __hash__(self):
         return hash(frozenset(self.polygons))
+
+    def __or__(self, other):
+        return (
+            self
+            if isinstance(other, self._context.empty_cls)
+            else (
+                collect_non_empty_polygons(unite_multipolygons(self, other),
+                                           self._context.multipolygon_cls)
+                if isinstance(other, self._context.multipolygon_cls)
+                else (
+                    collect_non_empty_polygons(
+                            unite_multipolygon_with_polygon(self, other),
+                            self._context.empty_cls,
+                            self._context.multipolygon_cls
+                    )
+                    if isinstance(other, self._context.polygon_cls)
+                    else NotImplemented
+                )
+            )
+        )
 
     __repr__ = generate_repr(__new__,
                              with_module_name=True)
