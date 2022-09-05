@@ -19,10 +19,10 @@ def intersect_polygons(first: Polygon, second: Polygon) -> List[Polygon]:
             or first_bounding_box.touches(second_bounding_box)):
         return []
     min_max_x = min(first_bounding_box.max_x, second_bounding_box.max_x)
-    operation = Intersection.from_polygons(first, second)
+    operation = Intersection.from_multisegmentals(first, second)
     events = []
     for event in operation:
         if operation.to_event_start(event).x > min_max_x:
             break
         events.append(event)
-    return operation.reduce_events(events)
+    return operation.reduce_events(events, type(first.border), type(first))

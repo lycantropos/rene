@@ -17,6 +17,7 @@ from rene._utils import (intersect_crossing_segments,
                          orient,
                          shrink_collinear_vertices)
 from rene.hints import (Contour,
+                        Multisegmental,
                         Point,
                         Polygon,
                         Segment)
@@ -35,21 +36,17 @@ from .sweep_line_key import SweepLineKey
 
 class Operation(ABC):
     @classmethod
-    def from_polygons(cls,
-                      first: Polygon,
-                      second: Polygon) -> 'Operation':
-        first_segments_count = sum([hole.segments_count
-                                    for hole in first.holes],
-                                   first.border.segments_count)
-        second_segments_count = sum([hole.segments_count
-                                     for hole in second.holes],
-                                    second.border.segments_count)
+    def from_multisegmentals(cls,
+                             first: Multisegmental,
+                             second: Multisegmental) -> 'Operation':
+        first_segments_count = first.segments_count
+        second_segments_count = second.segments_count
         segments_count = first_segments_count + second_segments_count
-        self = cls(type(first.border), type(first), segments_count)
+        self = cls(segments_count)
         self._are_from_first_operand.extend([True] * first_segments_count)
         self._are_from_first_operand.extend([False] * second_segments_count)
-        self._extend_with_polygon(first.border, first.holes)
-        self._extend_with_polygon(second.border, second.holes)
+        self._extend(first.segments)
+        self._extend(second.segments)
         first_event = self._peek()
         self._current_endpoint_first_event = first_event
         return self
@@ -58,7 +55,10 @@ class Operation(ABC):
     def segments_count(self) -> int:
         return len(self._have_interior_to_left)
 
-    def reduce_events(self, events: List[Event]) -> List[Polygon]:
+    def reduce_events(self,
+                      events: List[Event],
+                      contour_cls: Type[Contour],
+                      polygon_cls: Type[Polygon]) -> List[Polygon]:
         events = [event
                   for event in events
                   if self._is_from_result_event(event)]
@@ -99,7 +99,6 @@ class Operation(ABC):
                 vertices = vertices[:1] + vertices[:0:-1]
             contours_vertices.append(vertices)
         result: List[Polygon] = []
-        contour_cls, polygon_cls = self._contour_cls, self._polygon_cls
         for contour_id, contour_vertices in enumerate(contours_vertices):
             if are_internal[contour_id]:
                 # hole of a hole is an external polygon
@@ -131,22 +130,17 @@ class Operation(ABC):
 
     __slots__ = ('_are_from_first_operand', '_are_from_result',
                  '_other_have_interior_to_left', '_below_event_from_result',
-                 '_contour_cls', '_current_endpoint_first_event',
-                 '_current_endpoint_id', '_endpoints', '_events_queue_data',
-                 '_have_interior_to_left', '_opposites', '_overlap_kinds',
-                 '_polygon_cls', '_segments_ids', '_starts_ids',
-                 '_sweep_line_data')
+                 '_current_endpoint_first_event', '_current_endpoint_id',
+                 '_endpoints', '_events_queue_data', '_have_interior_to_left',
+                 '_opposites', '_overlap_kinds', '_segments_ids',
+                 '_starts_ids', '_sweep_line_data')
 
-    def __init__(self,
-                 _contour_cls: Type[Contour],
-                 _polygon_cls: Type[Polygon],
-                 segments_count: int) -> None:
+    def __init__(self, segments_count: int) -> None:
         initial_events_count = 2 * segments_count
         self._are_from_first_operand: List[bool] = []
         self._are_from_result = [False] * segments_count
         self._other_have_interior_to_left = [False] * segments_count
         self._below_event_from_result = [UNDEFINED_EVENT] * segments_count
-        self._contour_cls = _contour_cls
         self._current_endpoint_first_event = UNDEFINED_EVENT
         self._current_endpoint_id = 0
         self._endpoints: List[Point] = []
@@ -159,7 +153,6 @@ class Operation(ABC):
         self._have_interior_to_left = [True] * segments_count
         self._opposites: List[Event] = []
         self._overlap_kinds = [OverlapKind.NONE] * segments_count
-        self._polygon_cls = _polygon_cls
         self._segments_ids = list(range(segments_count))
         self._starts_ids: List[int] = [UNDEFINED_INDEX] * initial_events_count
         self._sweep_line_data = red_black.set_(
@@ -427,7 +420,7 @@ class Operation(ABC):
     def _divide(self, event: Event, mid_point: Point) -> Tuple[Event, Event]:
         assert is_left_event(event)
         opposite_event = self._to_opposite_event(event)
-        mid_point_to_event_end_event: Event = len(self._endpoints)
+        mid_point_to_event_end_event: Event = Event(len(self._endpoints))
         self._segments_ids.append(self._left_event_to_segment_id(event))
         self._endpoints.append(mid_point)
         self._opposites.append(opposite_event)
@@ -526,15 +519,6 @@ class Operation(ABC):
             self._opposites.append(left_event)
             self._push(left_event)
             self._push(right_event)
-
-    def _extend_with_polygon(self,
-                             border: Contour,
-                             holes: Sequence[Contour]) -> None:
-        assert border.orientation is Orientation.COUNTERCLOCKWISE
-        self._extend(border.segments)
-        for hole in holes:
-            assert hole.orientation is Orientation.CLOCKWISE
-            self._extend(hole.segments)
 
     def _find(self, event: Event) -> Optional[Event]:
         assert is_left_event(event)

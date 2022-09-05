@@ -237,15 +237,21 @@ class Contour(_Protocol[Scalar]):
         ...
 
 
-class Multisegment(_Protocol[Scalar]):
+_Segmental = _TypeVar('_Segmental',
+                      covariant=True)
+
+
+class Multisegmental(_Protocol[_Segmental]):
     @property
-    def segments(self) -> _Sequence[Segment[Scalar]]:
+    def segments(self) -> _Sequence[_Segmental]:
         ...
 
     @property
     def segments_count(self) -> int:
         ...
 
+
+class Multisegment(_Protocol[Scalar], Multisegmental[Segment[Scalar]]):
     def is_valid(self) -> bool:
         ...
 
@@ -272,7 +278,7 @@ class Multisegment(_Protocol[Scalar]):
         ...
 
 
-class Polygon(_Protocol[Scalar]):
+class Polygon(_Protocol[Scalar], Multisegmental[Segment[Scalar]]):
     @property
     def border(self) -> Contour[Scalar]:
         ...
@@ -283,14 +289,6 @@ class Polygon(_Protocol[Scalar]):
 
     @property
     def holes(self) -> _Sequence[Contour[Scalar]]:
-        ...
-
-    @property
-    def segments(self) -> _Sequence[Segment[Scalar]]:
-        ...
-
-    @property
-    def segments_count(self) -> int:
         ...
 
     def __new__(cls,

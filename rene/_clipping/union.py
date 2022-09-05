@@ -18,5 +18,6 @@ def unite_polygons(first: Polygon, second: Polygon) -> List[Polygon]:
     if (first_bounding_box.touches(second_bounding_box)
             or first_bounding_box.touches(second_bounding_box)):
         return [first, second]
-    operation = Union.from_polygons(first, second)
-    return operation.reduce_events(list(operation))
+    operation = Union.from_multisegmentals(first, second)
+    return operation.reduce_events(list(operation), type(first.border),
+                                   type(first))
