@@ -141,8 +141,7 @@ def subtract_multipolygon_from_polygon(first: Polygon,
 def subtract_polygons(first: Polygon, second: Polygon) -> List[Polygon]:
     first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)
-    if (first_bounding_box.touches(second_bounding_box)
-            or first_bounding_box.touches(second_bounding_box)):
+    if are_boxes_uncoupled(first_bounding_box, second_bounding_box):
         return [first]
     operation = Difference.from_multisegmentals(first, second)
     max_x = first_bounding_box.max_x
@@ -151,5 +150,4 @@ def subtract_polygons(first: Polygon, second: Polygon) -> List[Polygon]:
         if operation.to_event_start(event).x > max_x:
             break
         events.append(event)
-    return operation.reduce_events(list(operation), type(first.border),
-                                   type(first))
+    return operation.reduce_events(events, type(first.border), type(first))
