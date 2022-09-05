@@ -1,6 +1,7 @@
 from typing import List
 
-from rene._utils import (boxes_ids_coupled_with_box,
+from rene._utils import (are_boxes_uncoupled,
+                         boxes_ids_coupled_with_box,
                          merge_boxes)
 from rene.hints import (Multipolygon,
                         Polygon)
@@ -24,8 +25,7 @@ def intersect_multipolygons(first: Multipolygon,
     first_bounding_box, second_bounding_box = (
         merge_boxes(first_bounding_boxes), merge_boxes(second_bounding_boxes)
     )
-    if (first_bounding_box.disjoint_with(second_bounding_box)
-            or first_bounding_box.touches(second_bounding_box)):
+    if are_boxes_uncoupled(first_bounding_box, second_bounding_box):
         return []
     first_coupled_polygons_ids = boxes_ids_coupled_with_box(
             first_bounding_boxes, second_bounding_box
@@ -64,8 +64,7 @@ def intersect_multipolygon_with_polygon(first: Multipolygon,
     first_bounding_box, second_bounding_box = (
         merge_boxes(first_bounding_boxes), second.bounding_box
     )
-    if (first_bounding_box.disjoint_with(second_bounding_box)
-            or first_bounding_box.touches(second_bounding_box)):
+    if are_boxes_uncoupled(first_bounding_box, second_bounding_box):
         return []
     first_coupled_polygons_ids = boxes_ids_coupled_with_box(
             first_bounding_boxes, second_bounding_box
@@ -97,8 +96,7 @@ def intersect_polygon_with_multipolygon(first: Polygon,
     first_bounding_box, second_bounding_box = (
         first.bounding_box, merge_boxes(second_bounding_boxes)
     )
-    if (first_bounding_box.disjoint_with(second_bounding_box)
-            or first_bounding_box.touches(second_bounding_box)):
+    if are_boxes_uncoupled(first_bounding_box, second_bounding_box):
         return []
     second_coupled_polygons_ids = boxes_ids_coupled_with_box(
             second_bounding_boxes, first_bounding_box
@@ -124,8 +122,7 @@ def intersect_polygon_with_multipolygon(first: Polygon,
 def intersect_polygons(first: Polygon, second: Polygon) -> List[Polygon]:
     first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)
-    if (first_bounding_box.disjoint_with(second_bounding_box)
-            or first_bounding_box.touches(second_bounding_box)):
+    if are_boxes_uncoupled(first_bounding_box, second_bounding_box):
         return []
     min_max_x = min(first_bounding_box.max_x, second_bounding_box.max_x)
     operation = Intersection.from_multisegmentals(first, second)
