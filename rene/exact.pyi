@@ -170,6 +170,10 @@ class Empty:
     def __str__(self) -> str:
         ...
 
+    def __sub__(self,
+                other: _Union['Empty', 'Multipolygon', 'Polygon']) -> 'Empty':
+        ...
+
 
 class Multipolygon:
     @property

@@ -719,6 +719,22 @@ impl PyExactEmpty {
     fn __str__(&self) -> &'static str {
         "Empty()"
     }
+
+    fn __sub__(&self, other: &PyAny) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactEmpty::type_object(py))? {
+            let other = other.extract::<PyExactEmpty>()?;
+            Ok(PyExactEmpty((&self.0).difference(other.0)).into_py(py))
+        } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
+            let other = other.extract::<PyExactMultipolygon>()?;
+            Ok(PyExactEmpty((&self.0).difference(other.0)).into_py(py))
+        } else if other.is_instance(PyExactPolygon::type_object(py))? {
+            let other = other.extract::<PyExactPolygon>()?;
+            Ok(PyExactEmpty((&self.0).difference(other.0)).into_py(py))
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
 }
 
 #[pymethods]

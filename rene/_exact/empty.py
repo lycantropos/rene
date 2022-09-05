@@ -41,3 +41,10 @@ class Empty:
 
     def __str__(self):
         return f'{type(self).__qualname__}()'
+
+    def __sub__(self, other):
+        return (self
+                if isinstance(other, (self._context.empty_cls,
+                                      self._context.polygon_cls,
+                                      self._context.multipolygon_cls))
+                else NotImplemented)

@@ -85,6 +85,12 @@ class Empty(_SelfComparable, _Protocol):
     def __str__(self) -> str:
         ...
 
+    def __sub__(
+            self,
+            other: _Union['Empty', 'Multipolygon[Scalar]', 'Polygon[Scalar]']
+    ) -> 'Empty':
+        ...
+
 
 class Box(_SelfComparable, _Protocol[Scalar]):
     @property
