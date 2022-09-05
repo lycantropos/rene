@@ -15,22 +15,6 @@ class Intersection(Operation):
                 and self._is_common_region_boundary_left_event(event))
 
 
-def intersect_polygons(first: Polygon, second: Polygon) -> List[Polygon]:
-    first_bounding_box, second_bounding_box = (first.bounding_box,
-                                               second.bounding_box)
-    if (first_bounding_box.disjoint_with(second_bounding_box)
-            or first_bounding_box.touches(second_bounding_box)):
-        return []
-    min_max_x = min(first_bounding_box.max_x, second_bounding_box.max_x)
-    operation = Intersection.from_multisegmentals(first, second)
-    events = []
-    for event in operation:
-        if operation.to_event_start(event).x > min_max_x:
-            break
-        events.append(event)
-    return operation.reduce_events(events, type(first.border), type(first))
-
-
 def intersect_multipolygons(first: Multipolygon,
                             second: Multipolygon) -> List[Polygon]:
     first_polygons = first.polygons
@@ -101,3 +85,50 @@ def intersect_multipolygon_with_polygon(first: Multipolygon,
         events.append(event)
     return operation.reduce_events(events, type(first_polygons[0].border),
                                    type(first_polygons[0]))
+
+
+def intersect_polygon_with_multipolygon(first: Polygon,
+                                        second: Multipolygon) -> List[Polygon]:
+    second_polygons = second.polygons
+    second_bounding_boxes = [polygon.bounding_box
+                             for polygon in second_polygons]
+    first_bounding_box, second_bounding_box = (
+        first.bounding_box, merge_boxes(second_bounding_boxes)
+    )
+    if (first_bounding_box.disjoint_with(second_bounding_box)
+            or first_bounding_box.touches(second_bounding_box)):
+        return []
+    second_polygons_ids = boxes_ids_coupled_with_box(second_bounding_boxes,
+                                                     first_bounding_box)
+    if not second_polygons_ids:
+        return []
+    second_polygons = [second_polygons[polygon_id]
+                       for polygon_id in second_polygons_ids]
+    min_max_x = min(first_bounding_box.max_x,
+                    max(second_bounding_boxes[polygon_id].max_x
+                        for polygon_id in second_polygons_ids))
+    operation = Intersection.from_multisegmental_multisegmentals_sequence(
+            first, second_polygons
+    )
+    events = []
+    for event in operation:
+        if operation.to_event_start(event).x > min_max_x:
+            break
+        events.append(event)
+    return operation.reduce_events(events, type(first.border), type(first))
+
+
+def intersect_polygons(first: Polygon, second: Polygon) -> List[Polygon]:
+    first_bounding_box, second_bounding_box = (first.bounding_box,
+                                               second.bounding_box)
+    if (first_bounding_box.disjoint_with(second_bounding_box)
+            or first_bounding_box.touches(second_bounding_box)):
+        return []
+    min_max_x = min(first_bounding_box.max_x, second_bounding_box.max_x)
+    operation = Intersection.from_multisegmentals(first, second)
+    events = []
+    for event in operation:
+        if operation.to_event_start(event).x > min_max_x:
+            break
+        events.append(event)
+    return operation.reduce_events(events, type(first.border), type(first))

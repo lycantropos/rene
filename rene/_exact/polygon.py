@@ -3,7 +3,8 @@ from typing import Any
 
 from reprit.base import generate_repr
 
-from rene._clipping import (intersect_polygons,
+from rene._clipping import (intersect_polygon_with_multipolygon,
+                            intersect_polygons,
                             subtract_polygons,
                             symmetric_subtract_polygons,
                             unite_polygons)
@@ -48,10 +49,19 @@ class Polygon:
         return self
 
     def __and__(self, other):
-        return (collect_maybe_empty_polygons(intersect_polygons(self, other),
-                                             Empty, self._multipolygon_cls)
-                if isinstance(other, Polygon)
-                else NotImplemented)
+        return (
+            collect_maybe_empty_polygons(intersect_polygons(self, other),
+                                         Empty, self._multipolygon_cls)
+            if isinstance(other, Polygon)
+            else (
+                collect_maybe_empty_polygons(
+                        intersect_polygon_with_multipolygon(self, other),
+                        Empty, self._multipolygon_cls
+                )
+                if isinstance(other, self._multipolygon_cls)
+                else NotImplemented
+            )
+        )
 
     def __eq__(self, other):
         return ((self.border == other.border
