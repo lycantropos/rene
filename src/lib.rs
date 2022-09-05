@@ -663,10 +663,10 @@ impl PyExactEmpty {
             Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
             let other = other.extract::<PyExactMultipolygon>()?;
-            PyExactEmpty((&self.0).intersection(&other.0)).into_py(py)
+            Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyExactPolygon>()?;
-            PyExactEmpty((&self.0).intersection(&other.0)).into_py(py)
+            Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
         } else {
             Ok(py.NotImplemented())
         }
