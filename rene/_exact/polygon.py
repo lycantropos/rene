@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import Any
+from typing import Optional
 
 from reprit.base import generate_repr
 
@@ -10,12 +10,11 @@ from rene._clipping import (intersect_polygon_with_multipolygon,
                             unite_polygons)
 from rene._utils import (collect_maybe_empty_polygons,
                          collect_non_empty_polygons)
-from .empty import Empty
+from .context import Context
 
 
 class Polygon:
-    # to avoid circular imports
-    _multipolygon_cls: Any = None
+    _context: Optional[Context] = None
 
     @property
     def border(self):
@@ -51,14 +50,16 @@ class Polygon:
     def __and__(self, other):
         return (
             collect_maybe_empty_polygons(intersect_polygons(self, other),
-                                         Empty, self._multipolygon_cls)
+                                         self._context.empty_cls,
+                                         self._context.multipolygon_cls)
             if isinstance(other, Polygon)
             else (
                 collect_maybe_empty_polygons(
                         intersect_polygon_with_multipolygon(self, other),
-                        Empty, self._multipolygon_cls
+                        self._context.empty_cls,
+                        self._context.multipolygon_cls
                 )
-                if isinstance(other, self._multipolygon_cls)
+                if isinstance(other, self._context)
                 else NotImplemented
             )
         )
@@ -75,7 +76,7 @@ class Polygon:
 
     def __or__(self, other):
         return (collect_non_empty_polygons(unite_polygons(self, other),
-                                           self._multipolygon_cls)
+                                           self._context.multipolygon_cls)
                 if isinstance(other, Polygon)
                 else NotImplemented)
 
@@ -88,15 +89,16 @@ class Polygon:
 
     def __sub__(self, other):
         return (collect_maybe_empty_polygons(subtract_polygons(self, other),
-                                             Empty, self._multipolygon_cls)
+                                             self._context.empty_cls,
+                                             self._context.multipolygon_cls)
                 if isinstance(other, Polygon)
                 else NotImplemented)
 
     def __xor__(self, other):
         return (
             collect_maybe_empty_polygons(
-                    symmetric_subtract_polygons(self, other), Empty,
-                    self._multipolygon_cls
+                    symmetric_subtract_polygons(self, other),
+                    self._context.empty_cls, self._context.multipolygon_cls
             )
             if isinstance(other, Polygon)
             else NotImplemented

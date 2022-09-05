@@ -1,7 +1,13 @@
+from typing import Optional
+
 from reprit.base import generate_repr
+
+from .context import Context
 
 
 class Segment:
+    _context: Optional[Context] = None
+
     @property
     def end(self):
         return self._end

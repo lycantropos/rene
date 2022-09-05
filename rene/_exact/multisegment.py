@@ -1,11 +1,16 @@
+from typing import Optional
+
 from reprit.base import generate_repr
 
 from rene._bentley_ottmann.base import sweep
 from rene._rene import (MIN_MULTISEGMENT_SEGMENTS_COUNT,
                         Relation)
+from .context import Context
 
 
 class Multisegment:
+    _context: Optional[Context] = None
+
     @property
     def segments(self):
         return self._segments[:]

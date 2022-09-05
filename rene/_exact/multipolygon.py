@@ -1,4 +1,5 @@
 from itertools import chain
+from typing import Optional
 
 from reprit.base import generate_repr
 
@@ -6,11 +7,12 @@ from rene._clipping import (intersect_multipolygon_with_polygon,
                             intersect_multipolygons)
 from rene._rene import MIN_MULTIPOLYGON_POLYGONS_COUNT
 from rene._utils import collect_maybe_empty_polygons
-from rene.exact import (Empty,
-                        Polygon)
+from .context import Context
 
 
 class Multipolygon:
+    _context: Optional[Context] = None
+
     @property
     def polygons(self):
         return self._polygons[:]
@@ -40,21 +42,22 @@ class Multipolygon:
         return (
             collect_maybe_empty_polygons(intersect_multipolygons(self,
                                                                  other),
-                                         Empty, Multipolygon)
-            if isinstance(other, Multipolygon)
+                                         self._context.empty_cls,
+                                         self._context.multipolygon_cls)
+            if isinstance(other, self._context.multipolygon_cls)
             else (
                 collect_maybe_empty_polygons(
                         intersect_multipolygon_with_polygon(self, other),
-                        Empty, Multipolygon
+                        self._context.empty_cls, self._context.multipolygon_cls
                 )
-                if isinstance(other, Polygon)
+                if isinstance(other, self._context.polygon_cls)
                 else NotImplemented
             )
         )
 
     def __eq__(self, other):
         return (frozenset(self.polygons) == frozenset(other.polygons)
-                if isinstance(other, Multipolygon)
+                if isinstance(other, self._context.multipolygon_cls)
                 else NotImplemented)
 
     def __hash__(self):

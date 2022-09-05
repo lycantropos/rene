@@ -1,7 +1,13 @@
+from typing import Optional
+
 from reprit.base import generate_repr
+
+from .context import Context
 
 
 class Empty:
+    _context: Optional[Context] = None
+
     __module__ = 'rene.exact'
     __slots__ = ()
 
@@ -10,7 +16,7 @@ class Empty:
 
     def __eq__(self, other):
         return (True
-                if isinstance(other, Empty)
+                if isinstance(other, self._context.empty_cls)
                 else NotImplemented)
 
     def __hash__(self):

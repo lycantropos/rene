@@ -1,4 +1,5 @@
 from typing import (Any,
+                    Optional,
                     Sequence)
 
 from reprit.base import generate_repr
@@ -10,11 +11,14 @@ from rene._rene import (MIN_CONTOUR_VERTICES_COUNT,
                         Relation)
 from rene._utils import orient
 from .box import Box
+from .context import Context
 from .point import Point
 from .segment import Segment
 
 
 class Contour:
+    _context: Optional[Context] = None
+
     @property
     def bounding_box(self):
         vertices = iter(self._vertices)
