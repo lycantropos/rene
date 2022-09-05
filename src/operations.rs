@@ -91,109 +91,6 @@ pub(crate) fn flags_to_true_indices(flags: &[bool]) -> Vec<usize> {
         .collect::<Vec<_>>()
 }
 
-pub(crate) trait Orient {
-    fn orient(&self, first_ray_point: &Self, second_ray_point: &Self) -> Orientation;
-}
-
-impl<Point: CrossMultiply> Orient for Point
-where
-    <Self as CrossMultiply>::Output: Signed,
-{
-    fn orient(&self, first_ray_point: &Self, second_ray_point: &Self) -> Orientation {
-        match Self::cross_multiply(self, first_ray_point, self, second_ray_point).sign() {
-            Sign::Negative => Orientation::Clockwise,
-            Sign::Positive => Orientation::Counterclockwise,
-            Sign::Zero => Orientation::Collinear,
-        }
-    }
-}
-
-pub(crate) fn segment_in_segment<Point: Orient + PartialOrd>(
-    first_start: &Point,
-    first_end: &Point,
-    second_start: &Point,
-    second_end: &Point,
-) -> Relation {
-    let (first_start, first_end) = to_sorted_pair((first_start, first_end));
-    let (second_start, second_end) = to_sorted_pair((second_start, second_end));
-    let starts_equal = second_start == first_start;
-    let ends_equal = second_end == first_end;
-    if starts_equal && ends_equal {
-        return Relation::Equal;
-    }
-    let second_start_orientation = first_end.orient(first_start, second_start);
-    let second_end_orientation = first_end.orient(first_start, second_end);
-    if second_start_orientation != Orientation::Collinear
-        && second_end_orientation != Orientation::Collinear
-    {
-        if second_start_orientation == second_end_orientation {
-            Relation::Disjoint
-        } else {
-            let first_start_orientation = second_start.orient(second_end, first_start);
-            let first_end_orientation = second_start.orient(second_end, first_end);
-            if first_start_orientation != Orientation::Collinear
-                && first_end_orientation != Orientation::Collinear
-            {
-                if first_start_orientation == first_end_orientation {
-                    Relation::Disjoint
-                } else {
-                    Relation::Cross
-                }
-            } else if first_start_orientation != Orientation::Collinear {
-                if second_start < first_end && first_end < second_end {
-                    Relation::Touch
-                } else {
-                    Relation::Disjoint
-                }
-            } else if second_start < first_start && first_start < second_end {
-                Relation::Touch
-            } else {
-                Relation::Disjoint
-            }
-        }
-    } else if second_start_orientation != Orientation::Collinear {
-        if first_start <= second_end && second_end <= first_end {
-            Relation::Touch
-        } else {
-            Relation::Disjoint
-        }
-    } else if second_end_orientation != Orientation::Collinear {
-        if first_start <= second_start && second_start <= first_end {
-            Relation::Touch
-        } else {
-            Relation::Disjoint
-        }
-    } else if starts_equal {
-        if second_end < first_end {
-            Relation::Composite
-        } else {
-            Relation::Component
-        }
-    } else if ends_equal {
-        if second_start < first_start {
-            Relation::Component
-        } else {
-            Relation::Composite
-        }
-    } else if second_start == first_end || second_end == first_start {
-        Relation::Touch
-    } else if first_start < second_start && second_start < first_end {
-        if second_end < first_end {
-            Relation::Composite
-        } else {
-            Relation::Overlap
-        }
-    } else if second_start < first_start && first_start < second_end {
-        if first_end < second_end {
-            Relation::Component
-        } else {
-            Relation::Overlap
-        }
-    } else {
-        Relation::Disjoint
-    }
-}
-
 pub(crate) trait IntersectCrossingSegments {
     fn intersect_crossing_segments(
         first_start: &Self,
@@ -305,15 +202,106 @@ pub(crate) fn merge_boxes<Scalar: Clone + PartialOrd>(boxes: &[Box<Scalar>]) -> 
     Box::new(min_x.clone(), max_x.clone(), min_y.clone(), max_y.clone())
 }
 
-pub(crate) fn to_arg_min<Value: Ord>(values: &[Value]) -> Option<usize> {
-    (0..values.len()).min_by_key(|index| &values[*index])
+pub(crate) trait Orient {
+    fn orient(&self, first_ray_point: &Self, second_ray_point: &Self) -> Orientation;
 }
 
-pub(crate) fn to_sorted_pair<Value: PartialOrd>((left, right): (Value, Value)) -> (Value, Value) {
-    if left < right {
-        (left, right)
+impl<Point: CrossMultiply> Orient for Point
+where
+    <Self as CrossMultiply>::Output: Signed,
+{
+    fn orient(&self, first_ray_point: &Self, second_ray_point: &Self) -> Orientation {
+        match Self::cross_multiply(self, first_ray_point, self, second_ray_point).sign() {
+            Sign::Negative => Orientation::Clockwise,
+            Sign::Positive => Orientation::Counterclockwise,
+            Sign::Zero => Orientation::Collinear,
+        }
+    }
+}
+
+pub(crate) fn segment_in_segment<Point: Orient + PartialOrd>(
+    first_start: &Point,
+    first_end: &Point,
+    second_start: &Point,
+    second_end: &Point,
+) -> Relation {
+    let (first_start, first_end) = to_sorted_pair((first_start, first_end));
+    let (second_start, second_end) = to_sorted_pair((second_start, second_end));
+    let starts_equal = second_start == first_start;
+    let ends_equal = second_end == first_end;
+    if starts_equal && ends_equal {
+        return Relation::Equal;
+    }
+    let second_start_orientation = first_end.orient(first_start, second_start);
+    let second_end_orientation = first_end.orient(first_start, second_end);
+    if second_start_orientation != Orientation::Collinear
+        && second_end_orientation != Orientation::Collinear
+    {
+        if second_start_orientation == second_end_orientation {
+            Relation::Disjoint
+        } else {
+            let first_start_orientation = second_start.orient(second_end, first_start);
+            let first_end_orientation = second_start.orient(second_end, first_end);
+            if first_start_orientation != Orientation::Collinear
+                && first_end_orientation != Orientation::Collinear
+            {
+                if first_start_orientation == first_end_orientation {
+                    Relation::Disjoint
+                } else {
+                    Relation::Cross
+                }
+            } else if first_start_orientation != Orientation::Collinear {
+                if second_start < first_end && first_end < second_end {
+                    Relation::Touch
+                } else {
+                    Relation::Disjoint
+                }
+            } else if second_start < first_start && first_start < second_end {
+                Relation::Touch
+            } else {
+                Relation::Disjoint
+            }
+        }
+    } else if second_start_orientation != Orientation::Collinear {
+        if first_start <= second_end && second_end <= first_end {
+            Relation::Touch
+        } else {
+            Relation::Disjoint
+        }
+    } else if second_end_orientation != Orientation::Collinear {
+        if first_start <= second_start && second_start <= first_end {
+            Relation::Touch
+        } else {
+            Relation::Disjoint
+        }
+    } else if starts_equal {
+        if second_end < first_end {
+            Relation::Composite
+        } else {
+            Relation::Component
+        }
+    } else if ends_equal {
+        if second_start < first_start {
+            Relation::Component
+        } else {
+            Relation::Composite
+        }
+    } else if second_start == first_end || second_end == first_start {
+        Relation::Touch
+    } else if first_start < second_start && second_start < first_end {
+        if second_end < first_end {
+            Relation::Composite
+        } else {
+            Relation::Overlap
+        }
+    } else if second_start < first_start && first_start < second_end {
+        if first_end < second_end {
+            Relation::Component
+        } else {
+            Relation::Overlap
+        }
     } else {
-        (right, left)
+        Relation::Disjoint
     }
 }
 
@@ -350,6 +338,10 @@ where
         .collect::<Vec<_>>()
 }
 
+pub(crate) fn to_arg_min<Value: Ord>(values: &[Value]) -> Option<usize> {
+    (0..values.len()).min_by_key(|index| &values[*index])
+}
+
 pub(crate) fn to_boxes_ids_coupled_with_box<Scalar>(
     boxes: &[Box<Scalar>],
     target_box: &Box<Scalar>,
@@ -360,4 +352,12 @@ where
     (0..boxes.len())
         .filter(|&index| are_boxes_coupled(&boxes[index], &target_box))
         .collect::<Vec<_>>()
+}
+
+pub(crate) fn to_sorted_pair<Value: PartialOrd>((left, right): (Value, Value)) -> (Value, Value) {
+    if left < right {
+        (left, right)
+    } else {
+        (right, left)
+    }
 }
