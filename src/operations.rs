@@ -11,7 +11,7 @@ use crate::oriented::Orientation;
 use crate::relatable::{Relatable, Relation};
 use crate::traits::Elemental;
 
-pub(crate) fn are_boxes_coupled_with_box<Scalar>(
+pub(crate) fn to_are_boxes_coupled_with_box<Scalar>(
     boxes: &[Box<Scalar>],
     target_box: &Box<Scalar>,
 ) -> Vec<bool>
@@ -23,7 +23,7 @@ where
         .collect::<Vec<_>>()
 }
 
-pub(crate) fn boxes_ids_coupled_with_box<Scalar>(
+pub(crate) fn to_boxes_ids_coupled_with_box<Scalar>(
     boxes: &[Box<Scalar>],
     target_box: &Box<Scalar>,
 ) -> Vec<usize>
@@ -35,11 +35,18 @@ where
         .collect::<Vec<_>>()
 }
 
-fn are_boxes_coupled<Scalar>(first: &Box<Scalar>, second: &Box<Scalar>) -> bool
+pub(crate) fn are_boxes_coupled<Scalar>(first: &Box<Scalar>, second: &Box<Scalar>) -> bool
 where
     for<'a> &'a Box<Scalar>: Relatable,
 {
     !first.disjoint_with(&second) && !first.touches(&second)
+}
+
+pub(crate) fn are_boxes_uncoupled<Scalar>(first: &Box<Scalar>, second: &Box<Scalar>) -> bool
+where
+    for<'a> &'a Box<Scalar>: Relatable,
+{
+    first.disjoint_with(&second) || first.touches(&second)
 }
 
 pub(crate) trait CrossMultiply {

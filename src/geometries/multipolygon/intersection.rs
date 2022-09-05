@@ -4,7 +4,7 @@ use rithm::fraction::Fraction;
 use crate::bounded::{Bounded, Box};
 use crate::clipping::{Event, Operation, ReduceEvents, INTERSECTION};
 use crate::geometries::{Empty, Point, Polygon};
-use crate::operations::{boxes_ids_coupled_with_box, merge_boxes};
+use crate::operations::{are_boxes_uncoupled, merge_boxes, to_boxes_ids_coupled_with_box};
 use crate::relatable::Relatable;
 use crate::traits::{Elemental, Intersection};
 
@@ -77,12 +77,16 @@ where
             .collect::<Vec<_>>();
         let bounding_box = merge_boxes(&bounding_boxes);
         let other_bounding_box = merge_boxes(&other_bounding_boxes);
-        let coupled_polygons_ids = boxes_ids_coupled_with_box(&bounding_boxes, &other_bounding_box);
+        if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
+            return vec![];
+        }
+        let coupled_polygons_ids =
+            to_boxes_ids_coupled_with_box(&bounding_boxes, &other_bounding_box);
         if coupled_polygons_ids.is_empty() {
             return vec![];
         }
         let other_coupled_polygons_ids =
-            boxes_ids_coupled_with_box(&other_bounding_boxes, &bounding_box);
+            to_boxes_ids_coupled_with_box(&other_bounding_boxes, &bounding_box);
         if other_coupled_polygons_ids.is_empty() {
             return vec![];
         }
@@ -159,12 +163,11 @@ where
             .collect::<Vec<_>>();
         let bounding_box = merge_boxes(&bounding_boxes);
         let other_bounding_box = other.to_bounding_box();
-        if bounding_box.disjoint_with(&other_bounding_box)
-            || bounding_box.touches(&other_bounding_box)
-        {
+        if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
             return vec![];
         }
-        let coupled_polygons_ids = boxes_ids_coupled_with_box(&bounding_boxes, &other_bounding_box);
+        let coupled_polygons_ids =
+            to_boxes_ids_coupled_with_box(&bounding_boxes, &other_bounding_box);
         if coupled_polygons_ids.is_empty() {
             return vec![];
         }
@@ -230,13 +233,11 @@ where
             .collect::<Vec<_>>();
         let bounding_box = self.to_bounding_box();
         let other_bounding_box = merge_boxes(&other_bounding_boxes);
-        if bounding_box.disjoint_with(&other_bounding_box)
-            || bounding_box.touches(&other_bounding_box)
-        {
+        if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
             return vec![];
         }
         let other_coupled_polygons_ids =
-            boxes_ids_coupled_with_box(&other_bounding_boxes, &other_bounding_box);
+            to_boxes_ids_coupled_with_box(&other_bounding_boxes, &other_bounding_box);
         if other_coupled_polygons_ids.is_empty() {
             return vec![];
         }

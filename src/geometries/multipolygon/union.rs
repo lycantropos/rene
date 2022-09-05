@@ -4,9 +4,9 @@ use rithm::fraction::Fraction;
 use crate::bounded::{Bounded, Box};
 use crate::clipping::{Event, Operation, ReduceEvents, UNION};
 use crate::geometries::{Empty, Point, Polygon};
-use crate::operations::{are_boxes_coupled_with_box, boxes_ids_coupled_with_box, merge_boxes};
+use crate::operations::{are_boxes_uncoupled, merge_boxes, to_are_boxes_coupled_with_box};
 use crate::relatable::Relatable;
-use crate::traits::{Elemental, Multipolygonal, Union};
+use crate::traits::{Elemental, Union};
 
 use super::types::Multipolygon;
 
@@ -84,8 +84,13 @@ where
             .collect::<Vec<_>>();
         let bounding_box = merge_boxes(&bounding_boxes);
         let other_bounding_box = merge_boxes(&other_bounding_boxes);
+        if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
+            let mut result = self.polygons.clone();
+            result.extend_from_slice(&other.polygons);
+            return result;
+        }
         let are_bounding_boxes_coupled =
-            are_boxes_coupled_with_box(&bounding_boxes, &other_bounding_box);
+            to_are_boxes_coupled_with_box(&bounding_boxes, &other_bounding_box);
         let coupled_polygons_ids = flags_to_true_indices(&are_bounding_boxes_coupled);
         if coupled_polygons_ids.is_empty() {
             let mut result = self.polygons.clone();
@@ -93,7 +98,7 @@ where
             return result;
         }
         let are_other_bounding_boxes_coupled =
-            are_boxes_coupled_with_box(&other_bounding_boxes, &bounding_box);
+            to_are_boxes_coupled_with_box(&other_bounding_boxes, &bounding_box);
         let other_coupled_polygons_ids = flags_to_true_indices(&are_other_bounding_boxes_coupled);
         if other_coupled_polygons_ids.is_empty() {
             let mut result = self.polygons.clone();
@@ -168,15 +173,13 @@ where
             .collect::<Vec<_>>();
         let bounding_box = merge_boxes(&bounding_boxes);
         let other_bounding_box = other.to_bounding_box();
-        if bounding_box.disjoint_with(&other_bounding_box)
-            || bounding_box.touches(&other_bounding_box)
-        {
+        if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
             let mut result = self.polygons.clone();
             result.push(other.clone());
             return result;
         }
         let are_bounding_boxes_coupled =
-            are_boxes_coupled_with_box(&bounding_boxes, &other_bounding_box);
+            to_are_boxes_coupled_with_box(&bounding_boxes, &other_bounding_box);
         let coupled_polygons_ids = flags_to_true_indices(&are_bounding_boxes_coupled);
         if coupled_polygons_ids.is_empty() {
             let mut result = self.polygons.clone();
@@ -242,15 +245,13 @@ where
             .collect::<Vec<_>>();
         let bounding_box = self.to_bounding_box();
         let other_bounding_box = merge_boxes(&other_bounding_boxes);
-        if bounding_box.disjoint_with(&other_bounding_box)
-            || bounding_box.touches(&other_bounding_box)
-        {
+        if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
             let mut result = other.polygons.clone();
             result.push(self.clone());
             return result;
         }
         let are_other_bounding_boxes_coupled =
-            are_boxes_coupled_with_box(&other_bounding_boxes, &other_bounding_box);
+            to_are_boxes_coupled_with_box(&other_bounding_boxes, &other_bounding_box);
         let other_coupled_polygons_ids = flags_to_true_indices(&are_other_bounding_boxes_coupled);
         if other_coupled_polygons_ids.is_empty() {
             let mut result = other.polygons.clone();
