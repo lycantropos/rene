@@ -1139,9 +1139,20 @@ impl PyExactPolygon {
 
     fn __xor__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
-        if other.is_instance(PyExactPolygon::type_object(py))? {
+        if other.is_instance(PyExactEmpty::type_object(py))? {
+            let other = other.extract::<PyExactEmpty>()?;
+            Ok((&self.0).symmetric_difference(&other.0).into_py(py))
+        } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
+            let other = other.extract::<PyExactMultipolygon>()?;
+            let polygons = (&self.0).symmetric_difference(&other.0);
+            match polygons.len() {
+                0 => Ok(PyExactEmpty::new().into_py(py)),
+                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+            }
+        } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyExactPolygon>()?;
-            let polygons = self.0.symmetric_difference(&other.0);
+            let polygons = (&self.0).symmetric_difference(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
                 1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),

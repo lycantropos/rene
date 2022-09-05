@@ -6,6 +6,7 @@ from reprit.base import generate_repr
 from rene._clipping import (intersect_polygon_with_multipolygon,
                             intersect_polygons,
                             subtract_polygons,
+                            symmetric_subtract_polygon_with_multipolygon,
                             symmetric_subtract_polygons,
                             unite_polygon_with_multipolygon,
                             unite_polygons)
@@ -109,10 +110,23 @@ class Polygon:
 
     def __xor__(self, other):
         return (
-            collect_maybe_empty_polygons(
-                    symmetric_subtract_polygons(self, other),
-                    self._context.empty_cls, self._context.multipolygon_cls
+            self
+            if isinstance(other, self._context.empty_cls)
+            else (
+                collect_maybe_empty_polygons(
+                        symmetric_subtract_polygon_with_multipolygon(self,
+                                                                     other),
+                        self._context.empty_cls, self._context.multipolygon_cls
+                )
+                if isinstance(other, self._context.multipolygon_cls)
+                else (
+                    collect_maybe_empty_polygons(
+                            symmetric_subtract_polygons(self, other),
+                            self._context.empty_cls,
+                            self._context.multipolygon_cls
+                    )
+                    if isinstance(other, self._context.polygon_cls)
+                    else NotImplemented
+                )
             )
-            if isinstance(other, Polygon)
-            else NotImplemented
         )

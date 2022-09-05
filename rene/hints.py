@@ -303,6 +303,17 @@ class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]],
     ) -> _Union[Empty, 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
         ...
 
+    @_overload
+    def __xor__(self, other: 'Empty') -> 'Polygon[Scalar]':
+        ...
+
+    @_overload
+    def __xor__(
+            self, other: 'Multipolygon[Scalar]'
+    ) -> _Union['Empty', 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+        ...
+
+    @_overload
     def __xor__(
             self, other: 'Polygon[Scalar]'
     ) -> _Union[Empty, 'Multipolygon[Scalar]', 'Polygon[Scalar]']:

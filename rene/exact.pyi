@@ -370,6 +370,17 @@ class Polygon:
                 other: 'Polygon') -> _Union[Empty, Multipolygon, 'Polygon']:
         ...
 
+    @_overload
+    def __xor__(self, other: 'Empty') -> 'Polygon':
+        ...
+
+    @_overload
+    def __xor__(
+            self, other: 'Multipolygon'
+    ) -> _Union[Empty, Multipolygon, 'Polygon']:
+        ...
+
+    @_overload
     def __xor__(self,
                 other: 'Polygon') -> _Union[Empty, Multipolygon, 'Polygon']:
         ...
