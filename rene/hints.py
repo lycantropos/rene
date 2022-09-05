@@ -320,7 +320,39 @@ class Multipolygon(_SelfComparable, Multisegmental[Segment[Scalar]],
     ) -> 'Multipolygon[Scalar]':
         ...
 
+    @_overload
+    def __and__(self, other: 'Empty') -> 'Empty':
+        ...
+
+    @_overload
+    def __and__(
+            self, other: 'Multipolygon[Scalar]'
+    ) -> _Union['Empty', 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+        ...
+
+    @_overload
+    def __and__(
+            self, other: 'Polygon[Scalar]'
+    ) -> _Union['Empty', 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+        ...
+
     def __hash__(self) -> int:
+        ...
+
+    @_overload
+    def __or__(self, other: 'Empty') -> 'Polygon[Scalar]':
+        ...
+
+    @_overload
+    def __or__(
+            self, other: 'Multipolygon[Scalar]'
+    ) -> _Union['Multipolygon[Scalar]', 'Polygon[Scalar]']:
+        ...
+
+    @_overload
+    def __or__(
+            self, other: 'Polygon[Scalar]'
+    ) -> _Union['Multipolygon[Scalar]', 'Polygon[Scalar]']:
         ...
 
     def __repr__(self) -> str:
