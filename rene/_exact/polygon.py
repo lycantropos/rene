@@ -72,7 +72,7 @@ class Polygon:
         return ((self.border == other.border
                  and len(self.holes) == len(other.holes)
                  and frozenset(self.holes) == frozenset(other.holes))
-                if isinstance(other, Polygon)
+                if isinstance(other, self._context.polygon_cls)
                 else NotImplemented)
 
     def __hash__(self):
