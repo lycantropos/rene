@@ -381,6 +381,17 @@ class Polygon:
     def __str__(self) -> str:
         ...
 
+    @_overload
+    def __sub__(self, other: 'Empty') -> 'Polygon':
+        ...
+
+    @_overload
+    def __sub__(
+            self, other: 'Multipolygon'
+    ) -> _Union[Empty, Multipolygon, 'Polygon']:
+        ...
+
+    @_overload
     def __sub__(self,
                 other: 'Polygon') -> _Union[Empty, Multipolygon, 'Polygon']:
         ...

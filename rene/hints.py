@@ -298,6 +298,17 @@ class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]],
     def __str__(self) -> str:
         ...
 
+    @_overload
+    def __sub__(self, other: 'Empty') -> 'Polygon[Scalar]':
+        ...
+
+    @_overload
+    def __sub__(
+            self, other: 'Multipolygon[Scalar]'
+    ) -> _Union['Empty', 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+        ...
+
+    @_overload
     def __sub__(
             self, other: 'Polygon[Scalar]'
     ) -> _Union[Empty, 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
