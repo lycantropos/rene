@@ -39,7 +39,16 @@ def boxes_ids_coupled_with_box(boxes: Iterable[Box],
                                target_box: Box) -> List[int]:
     return [box_id
             for box_id, box in enumerate(boxes)
-            if box.touches(target_box) or box.touches(target_box)]
+            if are_boxes_coupled(box, target_box)]
+
+
+def are_boxes_coupled(box: Box, target_box: Box) -> bool:
+    return (not box.disjoint_with(target_box)
+            and not box.touches(target_box))
+
+
+def are_boxes_uncoupled(box: Box, target_box: Box) -> bool:
+    return box.disjoint_with(target_box) or box.touches(target_box)
 
 
 def ceil_log2(number: int) -> int:
