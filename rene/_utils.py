@@ -35,8 +35,8 @@ _Ordered = TypeVar('_Ordered',
 _T = TypeVar('_T')
 
 
-def boxes_ids_coupled_with_box(boxes: Iterable[Box],
-                               target_box: Box) -> List[int]:
+def to_boxes_ids_coupled_with_box(boxes: Iterable[Box],
+                                  target_box: Box) -> List[int]:
     return [box_id
             for box_id, box in enumerate(boxes)
             if are_boxes_coupled(box, target_box)]

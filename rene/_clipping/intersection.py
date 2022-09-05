@@ -1,7 +1,7 @@
 from typing import List
 
 from rene._utils import (are_boxes_uncoupled,
-                         boxes_ids_coupled_with_box,
+                         to_boxes_ids_coupled_with_box,
                          merge_boxes)
 from rene.hints import (Multipolygon,
                         Polygon)
@@ -27,12 +27,12 @@ def intersect_multipolygons(first: Multipolygon,
     )
     if are_boxes_uncoupled(first_bounding_box, second_bounding_box):
         return []
-    first_coupled_polygons_ids = boxes_ids_coupled_with_box(
+    first_coupled_polygons_ids = to_boxes_ids_coupled_with_box(
             first_bounding_boxes, second_bounding_box
     )
     if not first_coupled_polygons_ids:
         return []
-    second_coupled_polygons_ids = boxes_ids_coupled_with_box(
+    second_coupled_polygons_ids = to_boxes_ids_coupled_with_box(
             second_bounding_boxes, first_bounding_box
     )
     if not second_coupled_polygons_ids:
@@ -66,7 +66,7 @@ def intersect_multipolygon_with_polygon(first: Multipolygon,
     )
     if are_boxes_uncoupled(first_bounding_box, second_bounding_box):
         return []
-    first_coupled_polygons_ids = boxes_ids_coupled_with_box(
+    first_coupled_polygons_ids = to_boxes_ids_coupled_with_box(
             first_bounding_boxes, second_bounding_box
     )
     if not first_coupled_polygons_ids:
@@ -98,7 +98,7 @@ def intersect_polygon_with_multipolygon(first: Polygon,
     )
     if are_boxes_uncoupled(first_bounding_box, second_bounding_box):
         return []
-    second_coupled_polygons_ids = boxes_ids_coupled_with_box(
+    second_coupled_polygons_ids = to_boxes_ids_coupled_with_box(
             second_bounding_boxes, first_bounding_box
     )
     if not second_coupled_polygons_ids:
