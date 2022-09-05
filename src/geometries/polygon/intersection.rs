@@ -4,6 +4,7 @@ use rithm::fraction::Fraction;
 use crate::bounded::{Bounded, Box};
 use crate::clipping::{Event, Operation, ReduceEvents, INTERSECTION};
 use crate::geometries::{Empty, Point};
+use crate::operations::are_boxes_uncoupled;
 use crate::relatable::Relatable;
 use crate::traits::{Elemental, Intersection};
 
@@ -64,9 +65,7 @@ where
     fn intersection(self, other: Self) -> Self::Output {
         let bounding_box = self.to_bounding_box();
         let other_bounding_box = other.to_bounding_box();
-        if bounding_box.disjoint_with(&other_bounding_box)
-            || bounding_box.touches(&other_bounding_box)
-        {
+        if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
             return vec![];
         }
         let min_max_x = bounding_box.get_max_x().min(other_bounding_box.get_max_x());

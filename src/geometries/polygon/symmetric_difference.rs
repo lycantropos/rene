@@ -4,6 +4,7 @@ use rithm::fraction::Fraction;
 use crate::bounded::{Bounded, Box};
 use crate::clipping::{Event, Operation, ReduceEvents, SYMMETRIC_DIFFERENCE};
 use crate::geometries::{Empty, Point};
+use crate::operations::are_boxes_uncoupled;
 use crate::relatable::Relatable;
 use crate::traits::{Elemental, SymmetricDifference};
 
@@ -71,9 +72,7 @@ where
     fn symmetric_difference(self, other: Self) -> Self::Output {
         let bounding_box = self.to_bounding_box();
         let other_bounding_box = other.to_bounding_box();
-        if bounding_box.disjoint_with(&other_bounding_box)
-            || bounding_box.touches(&other_bounding_box)
-        {
+        if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
             return vec![self.clone(), other.clone()];
         }
         let mut operation = Operation::<Point<_>, SYMMETRIC_DIFFERENCE>::from((self, other));
