@@ -1,5 +1,6 @@
 from itertools import groupby
-from typing import (List,
+from typing import (Iterable,
+                    List,
                     Sequence,
                     Tuple,
                     TypeVar)
@@ -11,7 +12,8 @@ from rene._rene import (MIN_CONTOUR_VERTICES_COUNT,
                         Location,
                         Orientation,
                         Relation)
-from rene.hints import Point
+from rene.hints import (Box,
+                        Point)
 
 _Self = TypeVar('_Self',
                 contravariant=True)
@@ -26,6 +28,13 @@ _Ordered = TypeVar('_Ordered',
                    bound=Ordered)
 
 _T = TypeVar('_T')
+
+
+def boxes_ids_coupled_with_box(boxes: Iterable[Box],
+                               target_box: Box) -> List[int]:
+    return [box_id
+            for box_id, box in enumerate(boxes)
+            if box.touches(target_box) or box.touches(target_box)]
 
 
 def ceil_log2(number: int) -> int:
@@ -76,6 +85,23 @@ def locate_point_in_point_point_point_circle(
                     + ((third_dx * third_dx + third_dy * third_dy)
                        * (first_dx * second_dy - first_dy * second_dx)))
     )
+
+
+def merge_boxes(boxes: Iterable[Box]) -> Box:
+    boxes_iterator = iter(boxes)
+    first_box = next(boxes_iterator)
+    max_x, min_x = first_box.max_x, first_box.min_x
+    max_y, min_y = first_box.max_y, first_box.min_y
+    for box in boxes_iterator:
+        if box.max_x > max_x:
+            max_x = box.max_x
+        if box.min_x < min_x:
+            min_x = box.min_x
+        if box.max_y > max_y:
+            max_y = box.max_y
+        if box.min_y < min_y:
+            min_y = box.min_y
+    return type(first_box)(min_x, max_x, min_y, max_y)
 
 
 def orient(vertex: Point,
