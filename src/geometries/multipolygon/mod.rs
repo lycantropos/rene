@@ -1,5 +1,6 @@
 pub use self::types::Multipolygon;
 
+mod bounded;
 mod from;
 mod hash;
 mod multipolygonal;
