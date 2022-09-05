@@ -4,3 +4,4 @@ mod default;
 mod from;
 mod intersection;
 mod types;
+mod union;
