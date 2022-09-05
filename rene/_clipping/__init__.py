@@ -6,4 +6,5 @@ from .intersection import (intersect_multipolygon_with_polygon,
 from .symmetric_difference import symmetric_subtract_polygons
 from .union import (unite_multipolygon_with_polygon,
                     unite_multipolygons,
+                    unite_polygon_with_multipolygon,
                     unite_polygons)

@@ -7,6 +7,7 @@ from rene._clipping import (intersect_polygon_with_multipolygon,
                             intersect_polygons,
                             subtract_polygons,
                             symmetric_subtract_polygons,
+                            unite_polygon_with_multipolygon,
                             unite_polygons)
 from rene._utils import (collect_maybe_empty_polygons,
                          collect_non_empty_polygons)
@@ -79,10 +80,18 @@ class Polygon:
         return hash((self.border, frozenset(self.holes)))
 
     def __or__(self, other):
-        return (collect_non_empty_polygons(unite_polygons(self, other),
+        return (
+            collect_non_empty_polygons(unite_polygon_with_multipolygon(self,
+                                                                       other),
+                                       self._context.multipolygon_cls)
+            if isinstance(other, self._context.multipolygon_cls)
+            else (
+                collect_non_empty_polygons(unite_polygons(self, other),
                                            self._context.multipolygon_cls)
                 if isinstance(other, Polygon)
-                else NotImplemented)
+                else NotImplemented
+            )
+        )
 
     __repr__ = generate_repr(__new__,
                              with_module_name=True)

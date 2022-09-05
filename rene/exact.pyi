@@ -333,7 +333,16 @@ class Polygon:
     def __hash__(self) -> int:
         ...
 
-    def __or__(self, other: 'Polygon') -> _Union[Multipolygon, 'Polygon']:
+    @_overload
+    def __or__(self, other: 'Empty') -> 'Polygon':
+        ...
+
+    @_overload
+    def __or__(self, other: 'Multipolygon') -> _Union['Multipolygon', Polygon]:
+        ...
+
+    @_overload
+    def __or__(self, other: 'Polygon') -> _Union['Multipolygon', Polygon]:
         ...
 
     def __repr__(self) -> str:

@@ -276,6 +276,17 @@ class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]],
     def __hash__(self) -> int:
         ...
 
+    @_overload
+    def __or__(self, other: 'Empty') -> 'Polygon[Scalar]':
+        ...
+
+    @_overload
+    def __or__(
+            self, other: 'Multipolygon[Scalar]'
+    ) -> _Union['Multipolygon[Scalar]', 'Polygon[Scalar]']:
+        ...
+
+    @_overload
     def __or__(
             self, other: 'Polygon[Scalar]'
     ) -> _Union['Multipolygon[Scalar]', 'Polygon[Scalar]']:

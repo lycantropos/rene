@@ -89,6 +89,38 @@ def unite_multipolygons(first: Multipolygon,
     return result
 
 
+def unite_polygon_with_multipolygon(first: Polygon,
+                                    second: Multipolygon) -> List[Polygon]:
+    second_polygons = second.polygons
+    second_bounding_boxes = [polygon.bounding_box for polygon in
+                             second_polygons]
+    first_bounding_box, second_bounding_box = (
+        first.bounding_box, merge_boxes(second_bounding_boxes)
+    )
+    if are_boxes_uncoupled(first_bounding_box, second_bounding_box):
+        return [first, *second.polygons]
+    are_second_boxes_coupled = to_are_boxes_coupled_with_box(
+            second_bounding_boxes, first_bounding_box
+    )
+    second_coupled_polygons_ids = flags_to_true_indices(
+            are_second_boxes_coupled
+    )
+    if not second_coupled_polygons_ids:
+        return [first, *second.polygons]
+    second_coupled_polygons = [second_polygons[index]
+                               for index in second_coupled_polygons_ids]
+    operation = Union.from_multisegmental_multisegmentals_sequence(
+            second, second_coupled_polygons
+    )
+    result = operation.reduce_events(list(operation), type(first.border),
+                                     type(first))
+    result.extend(
+            second_polygons[index]
+            for index in flags_to_false_indices(are_second_boxes_coupled)
+    )
+    return result
+
+
 def unite_polygons(first: Polygon, second: Polygon) -> List[Polygon]:
     first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)
