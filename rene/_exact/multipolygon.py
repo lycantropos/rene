@@ -5,6 +5,8 @@ from reprit.base import generate_repr
 
 from rene._clipping import (intersect_multipolygon_with_polygon,
                             intersect_multipolygons,
+                            symmetric_subtract_multipolygon_with_polygon,
+                            symmetric_subtract_multipolygons,
                             unite_multipolygon_with_polygon,
                             unite_multipolygons)
 from rene._rene import MIN_MULTIPOLYGON_POLYGONS_COUNT
@@ -97,3 +99,28 @@ class Multipolygon:
     def __str__(self):
         return (f'{type(self).__qualname__}([{{}}])'
                 .format(', '.join(map(str, self.polygons))))
+
+    def __xor__(self, other):
+        return (
+            self
+            if isinstance(other, self._context.empty_cls)
+            else (
+                collect_maybe_empty_polygons(
+                        symmetric_subtract_multipolygons(self, other),
+                        self._context.empty_cls,
+                        self._context.multipolygon_cls
+                )
+                if isinstance(other, self._context.multipolygon_cls)
+                else (
+                    collect_maybe_empty_polygons(
+                            symmetric_subtract_multipolygon_with_polygon(
+                                    self, other
+                            ),
+                            self._context.empty_cls,
+                            self._context.multipolygon_cls
+                    )
+                    if isinstance(other, self._context.polygon_cls)
+                    else NotImplemented
+                )
+            )
+        )

@@ -216,6 +216,21 @@ class Multipolygon:
     def __str__(self) -> str:
         ...
 
+    @_overload
+    def __xor__(self, other: 'Empty') -> 'Multipolygon':
+        ...
+
+    @_overload
+    def __xor__(
+            self, other: 'Multipolygon'
+    ) -> _Union[Empty, Multipolygon, 'Polygon']:
+        ...
+
+    @_overload
+    def __xor__(self,
+                other: 'Polygon') -> _Union[Empty, Multipolygon, 'Polygon']:
+        ...
+
 
 class Multisegment:
     @property
