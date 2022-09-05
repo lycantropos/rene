@@ -3,11 +3,43 @@ use rithm::fraction::Fraction;
 
 use crate::bounded::{Bounded, Box};
 use crate::clipping::{Event, Operation, ReduceEvents, INTERSECTION};
-use crate::geometries::Point;
+use crate::geometries::{Empty, Point};
 use crate::relatable::Relatable;
 use crate::traits::{Elemental, Intersection};
 
 use super::types::Polygon;
+
+impl<Scalar> Intersection<Empty> for Polygon<Scalar> {
+    type Output = Empty;
+
+    fn intersection(self, other: Empty) -> Self::Output {
+        other
+    }
+}
+
+impl<Scalar> Intersection<&Empty> for Polygon<Scalar> {
+    type Output = Empty;
+
+    fn intersection(self, other: &Empty) -> Self::Output {
+        *other
+    }
+}
+
+impl<Scalar> Intersection<Empty> for &Polygon<Scalar> {
+    type Output = Empty;
+
+    fn intersection(self, other: Empty) -> Self::Output {
+        other
+    }
+}
+
+impl<Scalar> Intersection<&Empty> for &Polygon<Scalar> {
+    type Output = Empty;
+
+    fn intersection(self, other: &Empty) -> Self::Output {
+        *other
+    }
+}
 
 impl<Digit, const SEPARATOR: char, const SHIFT: usize> Intersection
     for &Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
