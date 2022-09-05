@@ -1,6 +1,5 @@
 from itertools import chain
-from typing import (Sequence,
-                    Union)
+from typing import Any
 
 from reprit.base import generate_repr
 
@@ -8,11 +7,15 @@ from rene._clipping import (intersect_polygons,
                             subtract_polygons,
                             symmetric_subtract_polygons,
                             unite_polygons)
+from rene._utils import (collect_maybe_empty_polygons,
+                         collect_non_empty_polygons)
 from .empty import Empty
-from .multipolygon import Multipolygon
 
 
 class Polygon:
+    # to avoid circular imports
+    _multipolygon_cls: Any = None
+
     @property
     def border(self):
         return self._border
@@ -45,7 +48,8 @@ class Polygon:
         return self
 
     def __and__(self, other):
-        return (collect_maybe_empty_polygons(intersect_polygons(self, other))
+        return (collect_maybe_empty_polygons(intersect_polygons(self, other),
+                                             Empty, self._multipolygon_cls)
                 if isinstance(other, Polygon)
                 else NotImplemented)
 
@@ -60,7 +64,8 @@ class Polygon:
         return hash((self.border, frozenset(self.holes)))
 
     def __or__(self, other):
-        return (collect_non_empty_polygons(unite_polygons(self, other))
+        return (collect_non_empty_polygons(unite_polygons(self, other),
+                                           self._multipolygon_cls)
                 if isinstance(other, Polygon)
                 else NotImplemented)
 
@@ -72,28 +77,17 @@ class Polygon:
                 .format(', '.join(map(str, self.holes))))
 
     def __sub__(self, other):
-        return (collect_maybe_empty_polygons(subtract_polygons(self, other))
+        return (collect_maybe_empty_polygons(subtract_polygons(self, other),
+                                             Empty, self._multipolygon_cls)
                 if isinstance(other, Polygon)
                 else NotImplemented)
 
     def __xor__(self, other):
         return (
             collect_maybe_empty_polygons(
-                    symmetric_subtract_polygons(self, other)
+                    symmetric_subtract_polygons(self, other), Empty,
+                    self._multipolygon_cls
             )
             if isinstance(other, Polygon)
             else NotImplemented
         )
-
-
-def collect_maybe_empty_polygons(
-        polygons: Sequence[Polygon]
-) -> Union[Empty, Multipolygon, Polygon]:
-    return collect_non_empty_polygons(polygons) if polygons else Empty()
-
-
-def collect_non_empty_polygons(
-        polygons: Sequence[Polygon]
-) -> Union[Empty, Multipolygon, Polygon]:
-    assert len(polygons) >= 1
-    return polygons[0] if len(polygons) == 1 else Multipolygon(polygons)

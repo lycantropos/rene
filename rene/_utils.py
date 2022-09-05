@@ -3,7 +3,9 @@ from typing import (Iterable,
                     List,
                     Sequence,
                     Tuple,
-                    TypeVar)
+                    Type,
+                    TypeVar,
+                    Union)
 
 from rithm import Fraction
 from typing_extensions import Protocol
@@ -13,7 +15,10 @@ from rene._rene import (MIN_CONTOUR_VERTICES_COUNT,
                         Orientation,
                         Relation)
 from rene.hints import (Box,
-                        Point)
+                        Empty,
+                        Multipolygon,
+                        Point,
+                        Polygon)
 
 _Self = TypeVar('_Self',
                 contravariant=True)
@@ -39,6 +44,24 @@ def boxes_ids_coupled_with_box(boxes: Iterable[Box],
 
 def ceil_log2(number: int) -> int:
     return number.bit_length() - (not (number & (number - 1)))
+
+
+def collect_maybe_empty_polygons(
+        polygons: Sequence[Polygon],
+        empty_cls: Type[Empty],
+        multipolygon_cls: Type[Multipolygon]
+) -> Union[Empty, Multipolygon, Polygon]:
+    return (collect_non_empty_polygons(polygons, multipolygon_cls)
+            if polygons
+            else empty_cls())
+
+
+def collect_non_empty_polygons(
+        polygons: Sequence[Polygon],
+        multipolygon_cls: Type[Multipolygon]
+) -> Union[Empty, Multipolygon, Polygon]:
+    assert len(polygons) >= 1
+    return polygons[0] if len(polygons) == 1 else multipolygon_cls(polygons)
 
 
 def cross_multiply(first_start: Point,

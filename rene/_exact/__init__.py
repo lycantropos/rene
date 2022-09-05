@@ -8,3 +8,5 @@ from .polygon import Polygon
 from .segment import Segment
 from .triangulation import (ConstrainedDelaunayTriangulation,
                             DelaunayTriangulation)
+
+Polygon._multipolygon_cls = Multipolygon
