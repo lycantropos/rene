@@ -725,7 +725,10 @@ impl PyExactMultipolygon {
 
     fn __and__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
-        if other.is_instance(PyExactMultipolygon::type_object(py))? {
+        if other.is_instance(PyExactEmpty::type_object(py))? {
+            let other = other.extract::<PyExactEmpty>()?;
+            Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
             let other = other.extract::<PyExactMultipolygon>()?;
             let polygons = (&self.0).intersection(&other.0);
             match polygons.len() {

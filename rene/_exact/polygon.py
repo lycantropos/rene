@@ -49,18 +49,22 @@ class Polygon:
 
     def __and__(self, other):
         return (
-            collect_maybe_empty_polygons(intersect_polygons(self, other),
-                                         self._context.empty_cls,
-                                         self._context.multipolygon_cls)
-            if isinstance(other, Polygon)
+            self._context.empty_cls
+            if isinstance(other, self._context.empty_cls)
             else (
                 collect_maybe_empty_polygons(
                         intersect_polygon_with_multipolygon(self, other),
-                        self._context.empty_cls,
-                        self._context.multipolygon_cls
+                        self._context.empty_cls, self._context.multipolygon_cls
                 )
-                if isinstance(other, self._context)
-                else NotImplemented
+                if isinstance(other, self._context.multipolygon_cls)
+                else (
+                    collect_maybe_empty_polygons(
+                            intersect_polygons(self, other),
+                            self._context.empty_cls,
+                            self._context.multipolygon_cls)
+                    if isinstance(other, self._context.polygon_cls)
+                    else NotImplemented
+                )
             )
         )
 
