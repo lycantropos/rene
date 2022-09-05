@@ -3,12 +3,44 @@ use rithm::fraction::Fraction;
 
 use crate::bounded::{Bounded, Box};
 use crate::clipping::{Event, Operation, ReduceEvents, INTERSECTION};
-use crate::geometries::{Point, Polygon};
+use crate::geometries::{Empty, Point, Polygon};
 use crate::operations::{boxes_ids_coupled_with_box, merge_boxes};
 use crate::relatable::Relatable;
 use crate::traits::{Elemental, Intersection};
 
 use super::types::Multipolygon;
+
+impl<Scalar> Intersection<Empty> for Multipolygon<Scalar> {
+    type Output = Empty;
+
+    fn intersection(self, other: Empty) -> Self::Output {
+        other
+    }
+}
+
+impl<Scalar> Intersection<&Empty> for Multipolygon<Scalar> {
+    type Output = Empty;
+
+    fn intersection(self, other: &Empty) -> Self::Output {
+        *other
+    }
+}
+
+impl<Scalar> Intersection<Empty> for &Multipolygon<Scalar> {
+    type Output = Empty;
+
+    fn intersection(self, other: Empty) -> Self::Output {
+        other
+    }
+}
+
+impl<Scalar> Intersection<&Empty> for &Multipolygon<Scalar> {
+    type Output = Empty;
+
+    fn intersection(self, other: &Empty) -> Self::Output {
+        *other
+    }
+}
 
 impl<Digit, const SEPARATOR: char, const SHIFT: usize> Intersection
     for &Multipolygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
