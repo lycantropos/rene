@@ -8,6 +8,10 @@ class Multipolygon:
     def polygons(self):
         return self._polygons[:]
 
+    @property
+    def segments_count(self):
+        return sum(polygon.segments_count for polygon in self._polygons)
+
     __module__ = 'rene.exact'
     __slots__ = '_polygons',
 

@@ -697,6 +697,11 @@ impl PyExactMultipolygon {
         self.0.polygons()
     }
 
+    #[getter]
+    fn segments_count(&self) -> usize {
+        self.0.segments_count()
+    }
+
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
         PyFrozenSet::new(py, &self.polygons())?.hash()
     }
