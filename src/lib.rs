@@ -28,7 +28,7 @@ use crate::oriented::{Orientation, Oriented};
 use crate::relatable::{Relatable, Relation};
 use crate::traits::{
     Difference, Elemental, Intersection, Multipolygonal, Multisegmental, Multivertexal, Polygonal,
-    Segmental, Union,
+    Segmental, SymmetricDifference, Union,
 };
 use crate::triangulation::{
     BoundaryEndpoints, ConstrainedDelaunayTriangulation, DelaunayTriangulation,
@@ -972,6 +972,21 @@ impl PyExactPolygon {
                 .collect::<Vec<String>>()
                 .join(", ")
         ))
+    }
+
+    fn __xor__(&self, other: &PyAny) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactPolygon::type_object(py))? {
+            let other = other.extract::<PyExactPolygon>()?;
+            let polygons = self.0.symmetric_difference(&other.0);
+            match polygons.len() {
+                0 => Ok(PyExactEmpty::new().into_py(py)),
+                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
     }
 }
 

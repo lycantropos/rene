@@ -5,6 +5,7 @@ from reprit.base import generate_repr
 
 from rene._clipping.difference import subtract_polygons
 from rene._clipping.intersection import intersect_polygons
+from rene._clipping.symmetric_difference import symmetric_subtract_polygons
 from rene._clipping.union import unite_polygons
 from .empty import Empty
 from .multipolygon import Multipolygon
@@ -62,6 +63,15 @@ class Polygon:
         return (collect_maybe_empty_polygons(subtract_polygons(self, other))
                 if isinstance(other, Polygon)
                 else NotImplemented)
+
+    def __xor__(self, other):
+        return (
+            collect_maybe_empty_polygons(
+                    symmetric_subtract_polygons(self, other)
+            )
+            if isinstance(other, Polygon)
+            else NotImplemented
+        )
 
 
 def collect_maybe_empty_polygons(

@@ -318,6 +318,11 @@ class Polygon(_Protocol[Scalar]):
     ) -> _Union[Empty, 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
         ...
 
+    def __xor__(
+            self, other: 'Polygon[Scalar]'
+    ) -> _Union[Empty, 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+        ...
+
 
 class Multipolygon(_Protocol[Scalar]):
     @property

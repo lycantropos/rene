@@ -302,6 +302,10 @@ class Polygon:
                 other: 'Polygon') -> _Union[Empty, Multipolygon, 'Polygon']:
         ...
 
+    def __xor__(self,
+                other: 'Polygon') -> _Union[Empty, Multipolygon, 'Polygon']:
+        ...
+
 
 class Segment:
     @property
