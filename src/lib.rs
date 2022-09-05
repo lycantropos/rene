@@ -826,6 +826,17 @@ impl PyExactMultipolygon {
         }
     }
 
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!(
+            "Multipolygon([{}])",
+            self.polygons()
+                .into_iter()
+                .flat_map(|polygon| PyExactPolygon(polygon).__str__())
+                .collect::<Vec<String>>()
+                .join(", ")
+        ))
+    }
+
     fn __sub__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactEmpty::type_object(py))? {
@@ -850,17 +861,6 @@ impl PyExactMultipolygon {
         } else {
             Ok(py.NotImplemented())
         }
-    }
-
-    fn __str__(&self) -> PyResult<String> {
-        Ok(format!(
-            "Multipolygon([{}])",
-            self.polygons()
-                .into_iter()
-                .flat_map(|polygon| PyExactPolygon(polygon).__str__())
-                .collect::<Vec<String>>()
-                .join(", ")
-        ))
     }
 
     fn __xor__(&self, other: &PyAny) -> PyResult<PyObject> {
@@ -1136,6 +1136,18 @@ impl PyExactPolygon {
         }
     }
 
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!(
+            "Polygon({}, [{}])",
+            PyExactContour(self.border()).__str__()?,
+            self.holes()
+                .into_iter()
+                .flat_map(|hole| PyExactContour(hole).__str__())
+                .collect::<Vec<String>>()
+                .join(", ")
+        ))
+    }
+
     fn __sub__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactEmpty::type_object(py))? {
@@ -1160,18 +1172,6 @@ impl PyExactPolygon {
         } else {
             Ok(py.NotImplemented())
         }
-    }
-
-    fn __str__(&self) -> PyResult<String> {
-        Ok(format!(
-            "Polygon({}, [{}])",
-            PyExactContour(self.border()).__str__()?,
-            self.holes()
-                .into_iter()
-                .flat_map(|hole| PyExactContour(hole).__str__())
-                .collect::<Vec<String>>()
-                .join(", ")
-        ))
     }
 
     fn __xor__(&self, other: &PyAny) -> PyResult<PyObject> {
