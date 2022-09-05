@@ -1,6 +1,7 @@
 pub use self::types::Multipolygon;
 
 mod bounded;
+mod difference;
 mod from;
 mod hash;
 mod intersection;
