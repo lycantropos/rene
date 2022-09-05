@@ -64,6 +64,12 @@ class Empty(_SelfComparable, _Protocol):
     def __new__(cls) -> 'Empty':
         ...
 
+    def __and__(
+            self,
+            other: _Union['Empty', 'Multipolygon[Scalar]', 'Polygon[Scalar]']
+    ) -> 'Empty':
+        ...
+
     def __hash__(self) -> int:
         ...
 

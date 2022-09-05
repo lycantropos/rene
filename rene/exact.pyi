@@ -141,6 +141,10 @@ class Empty:
     def __new__(cls) -> 'Empty':
         ...
 
+    def __and__(self,
+                other: _Union['Empty', 'Multipolygon', 'Polygon']) -> 'Empty':
+        ...
+
     @_overload
     def __eq__(self, other: 'Empty') -> bool:
         ...
