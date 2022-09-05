@@ -1,4 +1,7 @@
-from .difference import subtract_polygons
+from .difference import (subtract_multipolygon_from_polygon,
+                         subtract_multipolygons,
+                         subtract_polygon_from_multipolygon,
+                         subtract_polygons)
 from .intersection import (intersect_multipolygon_with_polygon,
                            intersect_multipolygons,
                            intersect_polygon_with_multipolygon,
