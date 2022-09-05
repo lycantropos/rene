@@ -21,7 +21,11 @@ where
     Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>:
         Elemental<Coordinate = Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>,
     Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
-        + ReduceEvents<Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>, INTERSECTION>,
+        + ReduceEvents<
+            Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>,
+            INTERSECTION,
+            Output = Vec<Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>>,
+        >,
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>>;
 
@@ -46,6 +50,6 @@ where
             }
             events.push(event)
         }
-        ReduceEvents::reduce_events(events, &mut operation)
+        Polygon::<_>::reduce_events(events, &mut operation)
     }
 }

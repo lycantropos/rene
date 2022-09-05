@@ -8,10 +8,12 @@ use traiter::numbers::Parity;
 use crate::bentley_ottmann::traits::{EventsQueue, SweepLine};
 use crate::clipping::constants::UNDEFINED_INDEX;
 use crate::clipping::event::is_right_event;
+use crate::geometries::{Multipolygon, Polygon};
 use crate::operations::{shrink_collinear_vertices, IntersectCrossingSegments, Orient};
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{
-    Contoural, Elemental, Multisegmental, Multivertexal, MultivertexalVertex, Polygonal,
+    Contoural, Elemental, Multipolygonal, MultipolygonalPolygon, MultipolygonalVertex,
+    Multisegmental, MultisegmentalSegment, Multivertexal, MultivertexalVertex, Polygonal,
     PolygonalContour, PolygonalSegment, PolygonalVertex, Segmental,
 };
 
@@ -171,19 +173,40 @@ where
 }
 
 pub(crate) trait ReduceEvents<Point, const KIND: u8>: Sized {
-    fn reduce_events(events: Vec<Event>, operation: &mut Operation<Point, KIND>) -> Vec<Self>;
+    type Output;
+
+    fn reduce_events(events: Vec<Event>, operation: &mut Operation<Point, KIND>) -> Self::Output;
 }
 
-impl<
-        Point: Clone + Elemental + Orient + PartialEq,
-        Polygon: From<(PolygonalContour<Polygon>, Vec<PolygonalContour<Polygon>>)> + Polygonal,
-        const KIND: u8,
-    > ReduceEvents<Point, KIND> for Polygon
+impl<Scalar, const KIND: u8> ReduceEvents<MultipolygonalVertex<Self>, KIND> for Multipolygon<Scalar>
 where
-    PolygonalContour<Polygon>: Multivertexal<Vertex = Point> + From<Vec<Point>>,
-    EventsQueueKey<PolygonalVertex<Polygon>>: Ord,
+    MultipolygonalPolygon<Self>:
+        ReduceEvents<MultipolygonalVertex<Self>, KIND, Output = Vec<MultipolygonalPolygon<Self>>>,
+    Self: Multipolygonal,
 {
-    fn reduce_events(events: Vec<Event>, operation: &mut Operation<Point, KIND>) -> Vec<Self> {
+    type Output = Vec<MultipolygonalPolygon<Self>>;
+
+    fn reduce_events(
+        events: Vec<usize>,
+        operation: &mut Operation<MultipolygonalVertex<Self>, KIND>,
+    ) -> Self::Output {
+        MultipolygonalPolygon::<Self>::reduce_events(events, operation)
+    }
+}
+
+impl<Scalar, const KIND: u8> ReduceEvents<PolygonalVertex<Self>, KIND> for Polygon<Scalar>
+where
+    EventsQueueKey<PolygonalVertex<Self>>: Ord,
+    PolygonalContour<Self>: Multivertexal + From<Vec<PolygonalVertex<Self>>>,
+    PolygonalVertex<Self>: Clone + Elemental + Orient + PartialEq,
+    Self: From<(PolygonalContour<Self>, Vec<PolygonalContour<Self>>)> + Polygonal,
+{
+    type Output = Vec<Self>;
+
+    fn reduce_events(
+        events: Vec<Event>,
+        operation: &mut Operation<PolygonalVertex<Self>, KIND>,
+    ) -> Self::Output {
         let mut events = events
             .into_iter()
             .filter(|&event| operation.is_from_result_event(event))
@@ -208,7 +231,7 @@ where
         let mut are_events_processed = vec![false; events.len()];
         let mut are_from_in_to_out = vec![false; events.len()];
         let mut contours_ids = vec![UNDEFINED_INDEX; events.len()];
-        let mut contours_vertices = Vec::<Vec<&PolygonalVertex<Polygon>>>::new();
+        let mut contours_vertices = Vec::<Vec<&PolygonalVertex<Self>>>::new();
         let mut visited_endpoints_positions =
             vec![UNDEFINED_INDEX; operation.to_unique_visited_endpoints_count()];
         for (event_id, &event) in events.iter().enumerate() {

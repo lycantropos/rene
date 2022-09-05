@@ -21,7 +21,11 @@ where
         Elemental<Coordinate = Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>,
     Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
         + Clone
-        + ReduceEvents<Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>, DIFFERENCE>,
+        + ReduceEvents<
+            Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>,
+            DIFFERENCE,
+            Output = Vec<Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>>,
+        >,
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>>;
 
@@ -42,6 +46,6 @@ where
         while let Some(event) = operation.next() {
             events.push(event)
         }
-        ReduceEvents::reduce_events(events, &mut operation)
+        Polygon::<_>::reduce_events(events, &mut operation)
     }
 }
