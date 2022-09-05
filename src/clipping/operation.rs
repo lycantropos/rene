@@ -12,9 +12,9 @@ use crate::geometries::{Multipolygon, Polygon};
 use crate::operations::{shrink_collinear_vertices, IntersectCrossingSegments, Orient};
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{
-    Contoural, Elemental, Multipolygonal, MultipolygonalPolygon, MultipolygonalVertex,
-    Multisegmental, MultisegmentalSegment, Multivertexal, MultivertexalVertex, Polygonal,
-    PolygonalContour, PolygonalSegment, PolygonalVertex, Segmental,
+    Elemental, Multipolygonal, MultipolygonalPolygon, MultipolygonalVertex, Multisegmental,
+    MultisegmentalSegment, Multivertexal, MultivertexalVertex, Polygonal, PolygonalContour,
+    PolygonalVertex, Segmental,
 };
 
 use super::event::{
@@ -44,17 +44,18 @@ pub(crate) struct Operation<Point, const KIND: u8> {
 }
 
 impl<
+        First: IsValid + Multisegmental,
         Point: Ord + Orient,
-        Polygon: Multisegmental<Segment = PolygonalSegment<Polygon>> + Polygonal,
+        Second: IsValid + Multisegmental,
         const KIND: u8,
-    > From<(&Polygon, &Polygon)> for Operation<Point, KIND>
+    > From<(&First, &Second)> for Operation<Point, KIND>
 where
-    PolygonalContour<Polygon>: Oriented,
-    PolygonalSegment<Polygon>: Segmental<Endpoint = Point>,
+    MultisegmentalSegment<First>: Segmental<Endpoint = Point>,
+    MultisegmentalSegment<Second>: Segmental<Endpoint = Point>,
 {
-    fn from((first, second): (&Polygon, &Polygon)) -> Self {
-        debug_assert!(is_polygon_valid(first));
-        debug_assert!(is_polygon_valid(second));
+    fn from((first, second): (&First, &Second)) -> Self {
+        debug_assert!(IsValid::is_valid(first));
+        debug_assert!(IsValid::is_valid(second));
         let first_segments_count = first.segments_count();
         let second_segments_count = second.segments_count();
         let mut result = Self::with_capacity(first_segments_count + second_segments_count);
@@ -66,6 +67,89 @@ where
             .append(&mut vec![false; second_segments_count]);
         result.extend(first.segments().into_iter());
         result.extend(second.segments().into_iter());
+        let first_event = unsafe { result.peek().unwrap_unchecked() };
+        result.current_endpoint_first_event = first_event;
+        result
+    }
+}
+
+impl<Element: IsValid + Multisegmental, Point: Ord + Orient, const KIND: u8>
+    From<(&[&Element], &[&Element])> for Operation<Point, KIND>
+where
+    MultisegmentalSegment<Element>: Segmental<Endpoint = Point>,
+{
+    fn from((first, second): (&[&Element], &[&Element])) -> Self {
+        debug_assert!(first.iter().all(|element| element.is_valid()));
+        debug_assert!(second.iter().all(|element| element.is_valid()));
+        let first_segments_count = multisegments_to_segments_count(first);
+        let second_segments_count = multisegments_to_segments_count(second);
+        let mut result = Self::with_capacity(first_segments_count + second_segments_count);
+        result
+            .are_from_first_operand
+            .append(&mut vec![true; first_segments_count]);
+        result
+            .are_from_first_operand
+            .append(&mut vec![false; second_segments_count]);
+        for element in first {
+            result.extend(element.segments().into_iter());
+        }
+        for element in second {
+            result.extend(element.segments().into_iter());
+        }
+        let first_event = unsafe { result.peek().unwrap_unchecked() };
+        result.current_endpoint_first_event = first_event;
+        result
+    }
+}
+
+impl<Element: IsValid + Multisegmental, Point: Ord + Orient, const KIND: u8>
+    From<(&[&Element], &Element)> for Operation<Point, KIND>
+where
+    MultisegmentalSegment<Element>: Segmental<Endpoint = Point>,
+{
+    fn from((first, second): (&[&Element], &Element)) -> Self {
+        debug_assert!(first.iter().all(|element| element.is_valid()));
+        debug_assert!(second.is_valid());
+        let first_segments_count = multisegments_to_segments_count(first);
+        let second_segments_count = second.segments_count();
+        let mut result = Self::with_capacity(first_segments_count + second_segments_count);
+        result
+            .are_from_first_operand
+            .append(&mut vec![true; first_segments_count]);
+        result
+            .are_from_first_operand
+            .append(&mut vec![false; second_segments_count]);
+        for element in first {
+            result.extend(element.segments().into_iter());
+        }
+        result.extend(second.segments().into_iter());
+        let first_event = unsafe { result.peek().unwrap_unchecked() };
+        result.current_endpoint_first_event = first_event;
+        result
+    }
+}
+
+impl<Element: IsValid + Multisegmental, Point: Ord + Orient, const KIND: u8>
+    From<(&Element, &[&Element])> for Operation<Point, KIND>
+where
+    MultisegmentalSegment<Element>: Segmental<Endpoint = Point>,
+{
+    fn from((first, second): (&Element, &[&Element])) -> Self {
+        debug_assert!(first.is_valid());
+        debug_assert!(second.iter().all(|element| element.is_valid()));
+        let first_segments_count = first.segments_count();
+        let second_segments_count = multisegments_to_segments_count(second);
+        let mut result = Self::with_capacity(first_segments_count + second_segments_count);
+        result
+            .are_from_first_operand
+            .append(&mut vec![true; first_segments_count]);
+        result
+            .are_from_first_operand
+            .append(&mut vec![false; second_segments_count]);
+        result.extend(first.segments().into_iter());
+        for element in second {
+            result.extend(element.segments().into_iter());
+        }
         let first_event = unsafe { result.peek().unwrap_unchecked() };
         result.current_endpoint_first_event = first_event;
         result
@@ -927,22 +1011,43 @@ impl<'a, Point: Ord + Orient, const KIND: u8> Operation<Point, KIND> {
     }
 }
 
-fn contours_segments_count<Contour: Contoural>(contours: &[Contour]) -> usize {
-    contours
-        .iter()
-        .map(|contour| contour.segments_count())
-        .sum()
+trait IsValid {
+    fn is_valid(&self) -> bool;
 }
 
-fn is_polygon_valid<Polygon: Polygonal>(polygon: &Polygon) -> bool
+impl<Scalar> IsValid for Multipolygon<Scalar>
 where
-    PolygonalContour<Polygon>: Oriented,
+    MultipolygonalPolygon<Self>: IsValid,
+    Self: Multipolygonal,
 {
-    polygon.border().to_orientation() == Orientation::Counterclockwise
-        && polygon
-            .holes()
+    fn is_valid(&self) -> bool {
+        self.polygons()
             .into_iter()
-            .all(|hole| hole.to_orientation() == Orientation::Clockwise)
+            .all(|polygon| polygon.is_valid())
+    }
+}
+
+impl<Scalar> IsValid for Polygon<Scalar>
+where
+    PolygonalContour<Self>: Oriented,
+    Self: Polygonal,
+{
+    fn is_valid(&self) -> bool {
+        self.border().to_orientation() == Orientation::Counterclockwise
+            && self
+                .holes()
+                .into_iter()
+                .all(|hole| hole.to_orientation() == Orientation::Clockwise)
+    }
+}
+
+fn multisegments_to_segments_count<Multisegment: Multisegmental>(
+    multisegments: &[&Multisegment],
+) -> usize {
+    multisegments
+        .iter()
+        .map(|&multisegment| multisegment.segments_count())
+        .sum()
 }
 
 #[inline]
