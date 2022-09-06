@@ -186,12 +186,13 @@ class Operation(ABC):
     def to_event_start(self, event: Event) -> Point:
         return self._endpoints[event]
 
-    __slots__ = ('_are_from_first_operand', '_are_from_result',
-                 '_other_have_interior_to_left', '_below_event_from_result',
-                 '_current_endpoint_first_event', '_current_endpoint_id',
-                 '_endpoints', '_events_queue_data', '_have_interior_to_left',
-                 '_opposites', '_overlap_kinds', '_segments_ids',
-                 '_starts_ids', '_sweep_line_data')
+    __slots__ = (
+        '_are_from_first_operand', '_are_from_result',
+        '_other_have_interior_to_left', '_below_event_from_result',
+        '_current_endpoint_first_event', '_current_endpoint_id', '_endpoints',
+        '_events_queue_data', '_have_interior_to_left', '_opposites',
+        '_overlap_kinds', '_segments_ids', '_starts_ids', '_sweep_line_data'
+    )
 
     def __init__(self, segments_count: int) -> None:
         initial_events_count = 2 * segments_count
