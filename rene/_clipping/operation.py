@@ -419,7 +419,6 @@ class Operation(ABC):
                         if event_end < below_event_end
                         else (event, below_event)
                     )
-                    self._remove(max_end_event)
                     min_end = self.to_event_end(min_end_event)
                     min_end_start_event, min_end_max_end_event = self._divide(
                             max_end_event, min_end
