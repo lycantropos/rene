@@ -103,6 +103,8 @@ jobs:
           && coverage run --append -m pytest --doctest-modules --ignore=tests
       - name: 'Run tests'
         run: coverage run --append -m pytest
+        env:
+          RUST_BACKTRACE: full
       - name: 'Collect Python coverage'
         run: coverage xml -o coverage_python.xml
       - name: 'Install Rust coverage dependencies'
