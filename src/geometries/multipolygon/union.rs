@@ -5,8 +5,8 @@ use crate::bounded::{Bounded, Box};
 use crate::clipping::{Event, Operation, ReduceEvents, UNION};
 use crate::geometries::{Empty, Point, Polygon};
 use crate::operations::{
-    are_boxes_uncoupled, flags_to_false_indices, flags_to_true_indices, merge_boxes,
-    to_are_boxes_coupled_with_box,
+    do_boxes_have_no_common_continuum, flags_to_false_indices, flags_to_true_indices, merge_boxes,
+    to_boxes_have_common_continuum_with_box,
 };
 use crate::relatable::Relatable;
 use crate::traits::{Elemental, Union};
@@ -87,37 +87,40 @@ where
             .collect::<Vec<_>>();
         let bounding_box = merge_boxes(&bounding_boxes);
         let other_bounding_box = merge_boxes(&other_bounding_boxes);
-        if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
+        if do_boxes_have_no_common_continuum(&bounding_box, &other_bounding_box) {
             let mut result = self.polygons.clone();
             result.extend_from_slice(&other.polygons);
             return result;
         }
-        let are_bounding_boxes_coupled =
-            to_are_boxes_coupled_with_box(&bounding_boxes, &other_bounding_box);
-        let coupled_polygons_ids = flags_to_true_indices(&are_bounding_boxes_coupled);
-        if coupled_polygons_ids.is_empty() {
+        let boxes_have_common_continuum =
+            to_boxes_have_common_continuum_with_box(&bounding_boxes, &other_bounding_box);
+        let common_continuum_polygons_ids = flags_to_true_indices(&boxes_have_common_continuum);
+        if common_continuum_polygons_ids.is_empty() {
             let mut result = self.polygons.clone();
             result.extend_from_slice(&other.polygons);
             return result;
         }
-        let are_other_bounding_boxes_coupled =
-            to_are_boxes_coupled_with_box(&other_bounding_boxes, &bounding_box);
-        let other_coupled_polygons_ids = flags_to_true_indices(&are_other_bounding_boxes_coupled);
-        if other_coupled_polygons_ids.is_empty() {
+        let other_boxes_have_common_continuum =
+            to_boxes_have_common_continuum_with_box(&other_bounding_boxes, &bounding_box);
+        let other_common_continuum_polygons_ids =
+            flags_to_true_indices(&other_boxes_have_common_continuum);
+        if other_common_continuum_polygons_ids.is_empty() {
             let mut result = self.polygons.clone();
             result.extend_from_slice(&other.polygons);
             return result;
         }
-        let coupled_polygons = coupled_polygons_ids
+        let common_continuum_polygons = common_continuum_polygons_ids
             .into_iter()
             .map(|index| &self.polygons[index])
             .collect::<Vec<_>>();
-        let other_coupled_polygons = other_coupled_polygons_ids
+        let other_common_continuum_polygons = other_common_continuum_polygons_ids
             .into_iter()
             .map(|index| &other.polygons[index])
             .collect::<Vec<_>>();
-        let mut operation =
-            Operation::<Point<_>, UNION>::from((&coupled_polygons, &other_coupled_polygons));
+        let mut operation = Operation::<Point<_>, UNION>::from((
+            &common_continuum_polygons,
+            &other_common_continuum_polygons,
+        ));
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
             debug_assert!(maybe_events_count.is_some());
@@ -128,16 +131,16 @@ where
         }
         let mut result = Multipolygon::<_>::reduce_events(events, &mut operation);
         result.reserve(
-            (self.polygons.len() - coupled_polygons.len())
-                + (other.polygons.len() - other_coupled_polygons.len()),
+            (self.polygons.len() - common_continuum_polygons.len())
+                + (other.polygons.len() - other_common_continuum_polygons.len()),
         );
         result.extend(
-            flags_to_false_indices(&are_bounding_boxes_coupled)
+            flags_to_false_indices(&boxes_have_common_continuum)
                 .into_iter()
                 .map(|index| self.polygons[index].clone()),
         );
         result.extend(
-            flags_to_false_indices(&are_other_bounding_boxes_coupled)
+            flags_to_false_indices(&other_boxes_have_common_continuum)
                 .into_iter()
                 .map(|index| other.polygons[index].clone()),
         );
@@ -176,24 +179,24 @@ where
             .collect::<Vec<_>>();
         let bounding_box = merge_boxes(&bounding_boxes);
         let other_bounding_box = other.to_bounding_box();
-        if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
+        if do_boxes_have_no_common_continuum(&bounding_box, &other_bounding_box) {
             let mut result = self.polygons.clone();
             result.push(other.clone());
             return result;
         }
-        let are_bounding_boxes_coupled =
-            to_are_boxes_coupled_with_box(&bounding_boxes, &other_bounding_box);
-        let coupled_polygons_ids = flags_to_true_indices(&are_bounding_boxes_coupled);
-        if coupled_polygons_ids.is_empty() {
+        let boxes_have_common_continuum =
+            to_boxes_have_common_continuum_with_box(&bounding_boxes, &other_bounding_box);
+        let common_continuum_polygons_ids = flags_to_true_indices(&boxes_have_common_continuum);
+        if common_continuum_polygons_ids.is_empty() {
             let mut result = self.polygons.clone();
             result.push(other.clone());
             return result;
         }
-        let coupled_polygons = coupled_polygons_ids
+        let common_continuum_polygons = common_continuum_polygons_ids
             .into_iter()
             .map(|index| &self.polygons[index])
             .collect::<Vec<_>>();
-        let mut operation = Operation::<Point<_>, UNION>::from((&coupled_polygons, other));
+        let mut operation = Operation::<Point<_>, UNION>::from((&common_continuum_polygons, other));
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
             debug_assert!(maybe_events_count.is_some());
@@ -203,9 +206,9 @@ where
             events.push(event)
         }
         let mut result = Multipolygon::<_>::reduce_events(events, &mut operation);
-        result.reserve(self.polygons.len() - coupled_polygons.len());
+        result.reserve(self.polygons.len() - common_continuum_polygons.len());
         result.extend(
-            flags_to_false_indices(&are_bounding_boxes_coupled)
+            flags_to_false_indices(&boxes_have_common_continuum)
                 .into_iter()
                 .map(|index| self.polygons[index].clone()),
         );
@@ -248,24 +251,26 @@ where
             .collect::<Vec<_>>();
         let bounding_box = self.to_bounding_box();
         let other_bounding_box = merge_boxes(&other_bounding_boxes);
-        if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
+        if do_boxes_have_no_common_continuum(&bounding_box, &other_bounding_box) {
             let mut result = other.polygons.clone();
             result.push(self.clone());
             return result;
         }
-        let are_other_bounding_boxes_coupled =
-            to_are_boxes_coupled_with_box(&other_bounding_boxes, &other_bounding_box);
-        let other_coupled_polygons_ids = flags_to_true_indices(&are_other_bounding_boxes_coupled);
-        if other_coupled_polygons_ids.is_empty() {
+        let other_boxes_have_common_continuum =
+            to_boxes_have_common_continuum_with_box(&other_bounding_boxes, &other_bounding_box);
+        let other_common_continuum_polygons_ids =
+            flags_to_true_indices(&other_boxes_have_common_continuum);
+        if other_common_continuum_polygons_ids.is_empty() {
             let mut result = other.polygons.clone();
             result.push(self.clone());
             return result;
         }
-        let other_coupled_polygons = other_coupled_polygons_ids
+        let other_common_continuum_polygons = other_common_continuum_polygons_ids
             .into_iter()
             .map(|index| &other.polygons[index])
             .collect::<Vec<_>>();
-        let mut operation = Operation::<Point<_>, UNION>::from((self, &other_coupled_polygons));
+        let mut operation =
+            Operation::<Point<_>, UNION>::from((self, &other_common_continuum_polygons));
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
             debug_assert!(maybe_events_count.is_some());
@@ -275,9 +280,9 @@ where
             events.push(event)
         }
         let mut result = Polygon::<_>::reduce_events(events, &mut operation);
-        result.reserve(other.polygons.len() - other_coupled_polygons.len());
+        result.reserve(other.polygons.len() - other_common_continuum_polygons.len());
         result.extend(
-            flags_to_false_indices(&are_other_bounding_boxes_coupled)
+            flags_to_false_indices(&other_boxes_have_common_continuum)
                 .into_iter()
                 .map(|index| other.polygons[index].clone()),
         );

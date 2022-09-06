@@ -11,20 +11,6 @@ use crate::oriented::Orientation;
 use crate::relatable::{Relatable, Relation};
 use crate::traits::Elemental;
 
-pub(crate) fn are_boxes_coupled<Scalar>(first: &Box<Scalar>, second: &Box<Scalar>) -> bool
-where
-    for<'a> &'a Box<Scalar>: Relatable,
-{
-    !first.disjoint_with(&second) && !first.touches(&second)
-}
-
-pub(crate) fn are_boxes_uncoupled<Scalar>(first: &Box<Scalar>, second: &Box<Scalar>) -> bool
-where
-    for<'a> &'a Box<Scalar>: Relatable,
-{
-    first.disjoint_with(&second) || first.touches(&second)
-}
-
 pub(crate) fn ceil_log2<
     Number: Copy + BitLength<Output = Value> + IsPowerOfTwo,
     Value: Sub<Output = Value> + Unitary,
@@ -71,6 +57,49 @@ where
         (first_end.x() - first_start.x()) * (second_end.y() - second_start.y())
             - (first_end.y() - first_start.y()) * (second_end.x() - second_start.x())
     }
+}
+
+pub(crate) fn do_boxes_have_common_area<Scalar>(first: &Box<Scalar>, second: &Box<Scalar>) -> bool
+where
+    for<'a> &'a Box<Scalar>: Relatable,
+{
+    !first.disjoint_with(&second) && !first.touches(&second)
+}
+
+pub(crate) fn do_boxes_have_common_continuum<Scalar: PartialEq>(
+    first: &Box<Scalar>,
+    second: &Box<Scalar>,
+) -> bool
+where
+    for<'a> &'a Box<Scalar>: Relatable,
+{
+    !first.disjoint_with(second)
+        && (!first.touches(second)
+            || (first.get_min_y() != second.get_max_y() && second.get_min_y() != first.get_max_y())
+            || (first.get_min_x() != second.get_max_x() && second.get_min_x() != first.get_max_x()))
+}
+
+pub(crate) fn do_boxes_have_no_common_area<Scalar>(
+    first: &Box<Scalar>,
+    second: &Box<Scalar>,
+) -> bool
+where
+    for<'a> &'a Box<Scalar>: Relatable,
+{
+    first.disjoint_with(&second) || first.touches(&second)
+}
+
+pub(crate) fn do_boxes_have_no_common_continuum<Scalar: PartialEq>(
+    first: &Box<Scalar>,
+    second: &Box<Scalar>,
+) -> bool
+where
+    for<'a> &'a Box<Scalar>: Relatable,
+{
+    first.disjoint_with(second)
+        || (first.touches(second)
+            && (first.get_min_y() == second.get_max_y() || second.get_min_y() == first.get_max_y())
+            && (first.get_min_x() != second.get_max_x() || second.get_min_x() == first.get_max_x()))
 }
 
 pub(crate) fn flags_to_false_indices(flags: &[bool]) -> Vec<usize> {
@@ -326,7 +355,7 @@ pub(crate) fn shrink_collinear_vertices<'a, Point: Orient>(
     result
 }
 
-pub(crate) fn to_are_boxes_coupled_with_box<Scalar>(
+pub(crate) fn to_boxes_have_common_area_with_box<Scalar>(
     boxes: &[Box<Scalar>],
     target_box: &Box<Scalar>,
 ) -> Vec<bool>
@@ -335,7 +364,20 @@ where
 {
     boxes
         .iter()
-        .map(|box_| are_boxes_coupled(box_, &target_box))
+        .map(|box_| do_boxes_have_common_area(box_, &target_box))
+        .collect::<Vec<_>>()
+}
+
+pub(crate) fn to_boxes_have_common_continuum_with_box<Scalar: PartialEq>(
+    boxes: &[Box<Scalar>],
+    target_box: &Box<Scalar>,
+) -> Vec<bool>
+where
+    for<'a> &'a Box<Scalar>: Relatable,
+{
+    boxes
+        .iter()
+        .map(|box_| do_boxes_have_common_continuum(box_, &target_box))
         .collect::<Vec<_>>()
 }
 
@@ -343,7 +385,7 @@ pub(crate) fn to_arg_min<Value: Ord>(values: &[Value]) -> Option<usize> {
     (0..values.len()).min_by_key(|index| &values[*index])
 }
 
-pub(crate) fn to_boxes_ids_coupled_with_box<Scalar>(
+pub(crate) fn to_boxes_ids_with_common_area_with_box<Scalar>(
     boxes: &[Box<Scalar>],
     target_box: &Box<Scalar>,
 ) -> Vec<usize>
@@ -351,7 +393,7 @@ where
     for<'a> &'a Box<Scalar>: Relatable,
 {
     (0..boxes.len())
-        .filter(|&index| are_boxes_coupled(&boxes[index], &target_box))
+        .filter(|&index| do_boxes_have_common_area(&boxes[index], &target_box))
         .collect::<Vec<_>>()
 }
 

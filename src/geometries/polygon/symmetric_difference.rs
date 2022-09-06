@@ -4,7 +4,7 @@ use rithm::fraction::Fraction;
 use crate::bounded::{Bounded, Box};
 use crate::clipping::{Event, Operation, ReduceEvents, SYMMETRIC_DIFFERENCE};
 use crate::geometries::{Empty, Point};
-use crate::operations::are_boxes_uncoupled;
+use crate::operations::do_boxes_have_no_common_continuum;
 use crate::relatable::Relatable;
 use crate::traits::{Elemental, SymmetricDifference};
 
@@ -52,6 +52,7 @@ impl<Digit, const SEPARATOR: char, const SHIFT: usize> SymmetricDifference
     for &Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
 where
     for<'a> &'a Box<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>: Relatable,
+    Fraction<BigInt<Digit, SEPARATOR, SHIFT>>: PartialEq,
     for<'a> Operation<Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>, SYMMETRIC_DIFFERENCE>:
         From<(
                 &'a Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>,
@@ -72,7 +73,7 @@ where
     fn symmetric_difference(self, other: Self) -> Self::Output {
         let bounding_box = self.to_bounding_box();
         let other_bounding_box = other.to_bounding_box();
-        if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
+        if do_boxes_have_no_common_continuum(&bounding_box, &other_bounding_box) {
             return vec![self.clone(), other.clone()];
         }
         let mut operation = Operation::<Point<_>, SYMMETRIC_DIFFERENCE>::from((self, other));

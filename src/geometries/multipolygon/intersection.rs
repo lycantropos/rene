@@ -4,7 +4,9 @@ use rithm::fraction::Fraction;
 use crate::bounded::{Bounded, Box};
 use crate::clipping::{Event, Operation, ReduceEvents, INTERSECTION};
 use crate::geometries::{Empty, Point, Polygon};
-use crate::operations::{are_boxes_uncoupled, merge_boxes, to_boxes_ids_coupled_with_box};
+use crate::operations::{
+    do_boxes_have_no_common_area, merge_boxes, to_boxes_ids_with_common_area_with_box,
+};
 use crate::relatable::Relatable;
 use crate::traits::{Elemental, Intersection};
 
@@ -77,43 +79,45 @@ where
             .collect::<Vec<_>>();
         let bounding_box = merge_boxes(&bounding_boxes);
         let other_bounding_box = merge_boxes(&other_bounding_boxes);
-        if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
+        if do_boxes_have_no_common_area(&bounding_box, &other_bounding_box) {
             return vec![];
         }
-        let coupled_polygons_ids =
-            to_boxes_ids_coupled_with_box(&bounding_boxes, &other_bounding_box);
-        if coupled_polygons_ids.is_empty() {
+        let common_area_polygons_ids =
+            to_boxes_ids_with_common_area_with_box(&bounding_boxes, &other_bounding_box);
+        if common_area_polygons_ids.is_empty() {
             return vec![];
         }
-        let other_coupled_polygons_ids =
-            to_boxes_ids_coupled_with_box(&other_bounding_boxes, &bounding_box);
-        if other_coupled_polygons_ids.is_empty() {
+        let other_common_area_polygons_ids =
+            to_boxes_ids_with_common_area_with_box(&other_bounding_boxes, &bounding_box);
+        if other_common_area_polygons_ids.is_empty() {
             return vec![];
         }
         let min_max_x = unsafe {
-            coupled_polygons_ids
+            common_area_polygons_ids
                 .iter()
                 .map(|&index| bounding_boxes[index].get_max_x())
                 .max()
                 .unwrap_unchecked()
         }
         .min(unsafe {
-            other_coupled_polygons_ids
+            other_common_area_polygons_ids
                 .iter()
                 .map(|&index| other_bounding_boxes[index].get_max_x())
                 .max()
                 .unwrap_unchecked()
         });
-        let coupled_polygons = coupled_polygons_ids
+        let common_area_polygons = common_area_polygons_ids
             .into_iter()
             .map(|index| &self.polygons[index])
             .collect::<Vec<_>>();
-        let other_coupled_polygons = other_coupled_polygons_ids
+        let other_common_area_polygons = other_common_area_polygons_ids
             .into_iter()
             .map(|index| &other.polygons[index])
             .collect::<Vec<_>>();
-        let mut operation =
-            Operation::<Point<_>, INTERSECTION>::from((&coupled_polygons, &other_coupled_polygons));
+        let mut operation = Operation::<Point<_>, INTERSECTION>::from((
+            &common_area_polygons,
+            &other_common_area_polygons,
+        ));
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
             debug_assert!(maybe_events_count.is_some());
@@ -163,27 +167,28 @@ where
             .collect::<Vec<_>>();
         let bounding_box = merge_boxes(&bounding_boxes);
         let other_bounding_box = other.to_bounding_box();
-        if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
+        if do_boxes_have_no_common_area(&bounding_box, &other_bounding_box) {
             return vec![];
         }
-        let coupled_polygons_ids =
-            to_boxes_ids_coupled_with_box(&bounding_boxes, &other_bounding_box);
-        if coupled_polygons_ids.is_empty() {
+        let common_area_polygons_ids =
+            to_boxes_ids_with_common_area_with_box(&bounding_boxes, &other_bounding_box);
+        if common_area_polygons_ids.is_empty() {
             return vec![];
         }
         let min_max_x = unsafe {
-            coupled_polygons_ids
+            common_area_polygons_ids
                 .iter()
                 .map(|&index| bounding_boxes[index].get_max_x())
                 .max()
                 .unwrap_unchecked()
         }
         .min(other_bounding_box.get_max_x());
-        let coupled_polygons = coupled_polygons_ids
+        let common_area_polygons = common_area_polygons_ids
             .into_iter()
             .map(|index| &self.polygons[index])
             .collect::<Vec<_>>();
-        let mut operation = Operation::<Point<_>, INTERSECTION>::from((&coupled_polygons, other));
+        let mut operation =
+            Operation::<Point<_>, INTERSECTION>::from((&common_area_polygons, other));
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
             debug_assert!(maybe_events_count.is_some());
@@ -233,27 +238,27 @@ where
             .map(Bounded::to_bounding_box)
             .collect::<Vec<_>>();
         let other_bounding_box = merge_boxes(&other_bounding_boxes);
-        if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
+        if do_boxes_have_no_common_area(&bounding_box, &other_bounding_box) {
             return vec![];
         }
-        let other_coupled_polygons_ids =
-            to_boxes_ids_coupled_with_box(&other_bounding_boxes, &bounding_box);
-        if other_coupled_polygons_ids.is_empty() {
+        let other_common_area_polygons_ids =
+            to_boxes_ids_with_common_area_with_box(&other_bounding_boxes, &bounding_box);
+        if other_common_area_polygons_ids.is_empty() {
             return vec![];
         }
         let min_max_x = bounding_box.get_max_x().min(unsafe {
-            other_coupled_polygons_ids
+            other_common_area_polygons_ids
                 .iter()
                 .map(|&index| other_bounding_boxes[index].get_max_x())
                 .max()
                 .unwrap_unchecked()
         });
-        let other_coupled_polygons = other_coupled_polygons_ids
+        let other_common_area_polygons = other_common_area_polygons_ids
             .into_iter()
             .map(|index| &other.polygons[index])
             .collect::<Vec<_>>();
         let mut operation =
-            Operation::<Point<_>, INTERSECTION>::from((self, &other_coupled_polygons));
+            Operation::<Point<_>, INTERSECTION>::from((self, &other_common_area_polygons));
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
             debug_assert!(maybe_events_count.is_some());

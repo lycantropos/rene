@@ -4,7 +4,7 @@ use rithm::fraction::Fraction;
 use crate::bounded::{Bounded, Box};
 use crate::clipping::{Event, Operation, ReduceEvents, DIFFERENCE};
 use crate::geometries::{Empty, Point};
-use crate::operations::are_boxes_uncoupled;
+use crate::operations::do_boxes_have_no_common_area;
 use crate::relatable::Relatable;
 use crate::traits::{Difference, Elemental};
 
@@ -72,7 +72,7 @@ where
     fn difference(self, other: Self) -> Self::Output {
         let bounding_box = self.to_bounding_box();
         let other_bounding_box = other.to_bounding_box();
-        if are_boxes_uncoupled(&bounding_box, &other_bounding_box) {
+        if do_boxes_have_no_common_area(&bounding_box, &other_bounding_box) {
             return vec![self.clone()];
         }
         let max_x = bounding_box.get_max_x();
