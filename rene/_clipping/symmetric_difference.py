@@ -93,8 +93,8 @@ def symmetric_subtract_polygon_with_multipolygon(
         first: Polygon, second: Multipolygon
 ) -> List[Polygon]:
     second_polygons = second.polygons
-    second_bounding_boxes = [polygon.bounding_box for polygon in
-                             second_polygons]
+    second_bounding_boxes = [polygon.bounding_box
+                             for polygon in second_polygons]
     first_bounding_box, second_bounding_box = (
         first.bounding_box, merge_boxes(second_bounding_boxes)
     )
@@ -112,7 +112,7 @@ def symmetric_subtract_polygon_with_multipolygon(
                                for index in second_coupled_polygons_ids]
     operation = (
         SymmetricDifference.from_multisegmental_multisegmentals_sequence(
-                second, second_coupled_polygons
+                first, second_coupled_polygons
         )
     )
     result = operation.reduce_events(list(operation), type(first.border),
