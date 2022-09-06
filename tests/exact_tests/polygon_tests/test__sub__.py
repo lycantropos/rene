@@ -12,16 +12,16 @@ from . import strategies
 
 @given(strategies.polygons, strategies.polygons)
 def test_basic(first: Polygon, second: Polygon) -> None:
-    result = (first - second)
+    result = first - second
 
     assert isinstance(result, (Empty, Multipolygon, Polygon))
 
 
 @given(strategies.polygons, strategies.polygons)
 def test_commutative_case(first: Polygon, second: Polygon) -> None:
-    result = (first - second)
+    result = first - second
 
-    assert equivalence(result == (second - first), first == second)
+    assert equivalence(result == second - first, first == second)
 
 
 @given(strategies.polygons, strategies.polygons, strategies.polygons)
