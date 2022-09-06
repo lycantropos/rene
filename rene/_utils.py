@@ -35,20 +35,42 @@ _Ordered = TypeVar('_Ordered',
 _T = TypeVar('_T')
 
 
-def to_boxes_ids_coupled_with_box(boxes: Iterable[Box],
+def to_boxes_ids_with_common_area(boxes: Iterable[Box],
                                   target_box: Box) -> List[int]:
     return [box_id
             for box_id, box in enumerate(boxes)
-            if are_boxes_coupled(box, target_box)]
+            if do_boxes_have_common_area(box, target_box)]
 
 
-def are_boxes_coupled(box: Box, target_box: Box) -> bool:
-    return (not box.disjoint_with(target_box)
-            and not box.touches(target_box))
+def to_boxes_ids_with_continuous_common_points(boxes: Iterable[Box],
+                                               target_box: Box) -> List[int]:
+    return [box_id
+            for box_id, box in enumerate(boxes)
+            if do_boxes_have_common_continuum(box, target_box)]
 
 
-def are_boxes_uncoupled(box: Box, target_box: Box) -> bool:
-    return box.disjoint_with(target_box) or box.touches(target_box)
+def do_boxes_have_common_area(first: Box, second: Box) -> bool:
+    return not first.disjoint_with(second) and not first.touches(second)
+
+
+def do_boxes_have_no_common_area(first: Box, second: Box) -> bool:
+    return first.disjoint_with(second) or first.touches(second)
+
+
+def do_boxes_have_common_continuum(first: Box, second: Box) -> bool:
+    return (not first.disjoint_with(second)
+            and
+            (not first.touches(second)
+             or (first.min_y != second.max_y and second.min_y != first.max_y)
+             or (first.min_x != second.max_x and second.min_x != first.max_x)))
+
+
+def do_boxes_have_no_common_continuum(first: Box, second: Box) -> bool:
+    return (first.disjoint_with(second)
+            or
+            (first.touches(second)
+             and (first.min_y == second.max_y or second.min_y == first.max_y)
+             and (first.min_x == second.max_x or second.min_x == first.max_x)))
 
 
 def ceil_log2(number: int) -> int:
@@ -222,6 +244,24 @@ def relate_segments(
         return Relation.DISJOINT
 
 
+def shrink_collinear_vertices2(vertices: Sequence[Point]) -> List[Point]:
+    vertices = list(vertices)
+    index = -len(vertices) + 1
+    while index < 0:
+        while (max(2, -index) < len(vertices)
+               and orient(vertices[index + 1], vertices[index + 2],
+                          vertices[index]) is Orientation.COLLINEAR):
+            del vertices[index + 1]
+        index += 1
+    while index < len(vertices):
+        while (max(2, index) < len(vertices)
+               and orient(vertices[index - 1], vertices[index - 2],
+                          vertices[index]) is Orientation.COLLINEAR):
+            del vertices[index - 1]
+        index += 1
+    return vertices
+
+
 def shrink_collinear_vertices(vertices: Sequence[Point]) -> List[Point]:
     assert len(vertices) >= MIN_CONTOUR_VERTICES_COUNT
     result = [vertices[0]]
@@ -232,12 +272,18 @@ def shrink_collinear_vertices(vertices: Sequence[Point]) -> List[Point]:
     if (orient(result[-1], vertices[-1], result[0])
             is not Orientation.COLLINEAR):
         result.append(vertices[-1])
+    assert result == shrink_collinear_vertices2(vertices)
     return result
 
 
-def to_are_boxes_coupled_with_box(boxes: Sequence[Box],
-                                  target_box: Box) -> List[bool]:
-    return [are_boxes_coupled(box, target_box) for box in boxes]
+def to_boxes_have_common_area(boxes: Sequence[Box],
+                              target_box: Box) -> List[bool]:
+    return [do_boxes_have_common_area(box, target_box) for box in boxes]
+
+
+def to_boxes_have_common_continuum(boxes: Sequence[Box],
+                                   target_box: Box) -> List[bool]:
+    return [do_boxes_have_common_continuum(box, target_box) for box in boxes]
 
 
 def to_sign(value: Fraction) -> int:

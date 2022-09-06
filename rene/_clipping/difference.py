@@ -1,11 +1,11 @@
 from typing import List
 
-from rene._utils import (are_boxes_uncoupled,
+from rene._utils import (do_boxes_have_no_common_area,
                          flags_to_false_indices,
                          flags_to_true_indices,
                          merge_boxes,
-                         to_are_boxes_coupled_with_box,
-                         to_boxes_ids_coupled_with_box)
+                         to_boxes_have_common_area,
+                         to_boxes_ids_with_common_area)
 from rene.hints import (Multipolygon,
                         Polygon)
 from .event import Event
@@ -23,35 +23,37 @@ class Difference(Operation):
 def subtract_multipolygons(first: Multipolygon,
                            second: Multipolygon) -> List[Polygon]:
     first_polygons, second_polygons = first.polygons, second.polygons
-    first_bounding_boxes = [polygon.bounding_box for polygon in first_polygons]
-    second_bounding_boxes = [polygon.bounding_box
-                             for polygon in second_polygons]
-    first_bounding_box, second_bounding_box = (
-        merge_boxes(first_bounding_boxes), merge_boxes(second_bounding_boxes)
-    )
-    if are_boxes_uncoupled(first_bounding_box, second_bounding_box):
+    first_boxes = [polygon.bounding_box for polygon in first_polygons]
+    second_boxes = [polygon.bounding_box for polygon in second_polygons]
+    first_bounding_box, second_bounding_box = (merge_boxes(first_boxes),
+                                               merge_boxes(second_boxes))
+    if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):
         return list(first.polygons)
-    are_first_bounding_boxes_coupled = to_are_boxes_coupled_with_box(
-            first_bounding_boxes, second_bounding_box
+    first_boxes_have_common_area = to_boxes_have_common_area(
+            first_boxes, second_bounding_box
     )
-    first_coupled_polygons_ids = flags_to_true_indices(
-            are_first_bounding_boxes_coupled
+    first_common_area_polygons_ids = flags_to_true_indices(
+            first_boxes_have_common_area
     )
-    if not first_coupled_polygons_ids:
+    if not first_common_area_polygons_ids:
         return list(first.polygons)
-    second_coupled_polygons_ids = to_boxes_ids_coupled_with_box(
-            second_bounding_boxes, first_bounding_box
+    second_common_area_polygons_ids = to_boxes_ids_with_common_area(
+            second_boxes, first_bounding_box
     )
-    if not second_coupled_polygons_ids:
+    if not second_common_area_polygons_ids:
         return list(first.polygons)
-    first_coupled_polygons = [first_polygons[polygon_id]
-                              for polygon_id in first_coupled_polygons_ids]
-    second_coupled_polygons = [second_polygons[polygon_id]
-                               for polygon_id in second_coupled_polygons_ids]
-    max_x = max(first_bounding_boxes[polygon_id].max_x
-                for polygon_id in first_coupled_polygons_ids)
+    first_common_area_polygons = [
+        first_polygons[polygon_id]
+        for polygon_id in first_common_area_polygons_ids
+    ]
+    second_common_area_polygons = [
+        second_polygons[polygon_id]
+        for polygon_id in second_common_area_polygons_ids
+    ]
+    max_x = max(first_boxes[polygon_id].max_x
+                for polygon_id in first_common_area_polygons_ids)
     operation = Difference.from_multisegmentals_sequences(
-            first_coupled_polygons, second_coupled_polygons
+            first_common_area_polygons, second_common_area_polygons
     )
     events = []
     for event in operation:
@@ -63,7 +65,7 @@ def subtract_multipolygons(first: Multipolygon,
     result.extend(
             first_polygons[index]
             for index in flags_to_false_indices(
-                    are_first_bounding_boxes_coupled
+                    first_boxes_have_common_area
             )
     )
     return result
@@ -72,26 +74,28 @@ def subtract_multipolygons(first: Multipolygon,
 def subtract_polygon_from_multipolygon(first: Multipolygon,
                                        second: Polygon) -> List[Polygon]:
     first_polygons = first.polygons
-    first_bounding_boxes = [polygon.bounding_box for polygon in first_polygons]
+    first_boxes = [polygon.bounding_box for polygon in first_polygons]
     first_bounding_box, second_bounding_box = (
-        merge_boxes(first_bounding_boxes), second.bounding_box
+        merge_boxes(first_boxes), second.bounding_box
     )
-    if are_boxes_uncoupled(first_bounding_box, second_bounding_box):
+    if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):
         return list(first.polygons)
-    are_first_bounding_boxes_coupled = to_are_boxes_coupled_with_box(
-            first_bounding_boxes, second_bounding_box
+    first_boxes_have_common_area = to_boxes_have_common_area(
+            first_boxes, second_bounding_box
     )
-    first_coupled_polygons_ids = flags_to_true_indices(
-            are_first_bounding_boxes_coupled
+    first_common_area_polygons_ids = flags_to_true_indices(
+            first_boxes_have_common_area
     )
-    if not first_coupled_polygons_ids:
+    if not first_common_area_polygons_ids:
         return list(first.polygons)
-    first_coupled_polygons = [first_polygons[polygon_id]
-                              for polygon_id in first_coupled_polygons_ids]
-    max_x = max(first_bounding_boxes[polygon_id].max_x
-                for polygon_id in first_coupled_polygons_ids)
+    first_common_area_polygons = [
+        first_polygons[polygon_id]
+        for polygon_id in first_common_area_polygons_ids
+    ]
+    max_x = max(first_boxes[polygon_id].max_x
+                for polygon_id in first_common_area_polygons_ids)
     operation = Difference.from_multisegmentals_sequence_multisegmental(
-            first_coupled_polygons, second
+            first_common_area_polygons, second
     )
     events = []
     for event in operation:
@@ -103,7 +107,7 @@ def subtract_polygon_from_multipolygon(first: Multipolygon,
     result.extend(
             first_polygons[index]
             for index in flags_to_false_indices(
-                    are_first_bounding_boxes_coupled
+                    first_boxes_have_common_area
             )
     )
     return result
@@ -112,23 +116,23 @@ def subtract_polygon_from_multipolygon(first: Multipolygon,
 def subtract_multipolygon_from_polygon(first: Polygon,
                                        second: Multipolygon) -> List[Polygon]:
     second_polygons = second.polygons
-    second_bounding_boxes = [polygon.bounding_box
-                             for polygon in second_polygons]
-    first_bounding_box, second_bounding_box = (
-        first.bounding_box, merge_boxes(second_bounding_boxes)
-    )
-    if are_boxes_uncoupled(first_bounding_box, second_bounding_box):
+    second_boxes = [polygon.bounding_box for polygon in second_polygons]
+    first_bounding_box, second_bounding_box = (first.bounding_box,
+                                               merge_boxes(second_boxes))
+    if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):
         return [first]
-    second_coupled_polygons_ids = to_boxes_ids_coupled_with_box(
-            second_bounding_boxes, first_bounding_box
+    second_common_area_polygons_ids = to_boxes_ids_with_common_area(
+            second_boxes, first_bounding_box
     )
-    if not second_coupled_polygons_ids:
+    if not second_common_area_polygons_ids:
         return [first]
-    second_coupled_polygons = [second_polygons[polygon_id]
-                               for polygon_id in second_coupled_polygons_ids]
+    second_common_area_polygons = [
+        second_polygons[polygon_id]
+        for polygon_id in second_common_area_polygons_ids
+    ]
     max_x = first_bounding_box.max_x
     operation = Difference.from_multisegmental_multisegmentals_sequence(
-            first, second_coupled_polygons
+            first, second_common_area_polygons
     )
     events = []
     for event in operation:
@@ -141,7 +145,7 @@ def subtract_multipolygon_from_polygon(first: Polygon,
 def subtract_polygons(first: Polygon, second: Polygon) -> List[Polygon]:
     first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)
-    if are_boxes_uncoupled(first_bounding_box, second_bounding_box):
+    if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):
         return [first]
     operation = Difference.from_multisegmentals(first, second)
     max_x = first_bounding_box.max_x
