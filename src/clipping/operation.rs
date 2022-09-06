@@ -305,6 +305,9 @@ where
         }
         debug_assert!(events
             .iter()
+            .all(|&event| events_ids[operation.to_opposite_event(event)] != UNDEFINED_INDEX));
+        debug_assert!(events
+            .iter()
             .all(|&event| operation.to_start_id(event)
                 < operation.to_unique_visited_endpoints_count()));
         let connectivity = operation.events_to_connectivity(&events);
@@ -630,6 +633,7 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
         let mut result = vec![event];
         visited_endpoints_positions[self.to_start_id(event)] = 0;
         let mut opposite_event_id = events_ids[self.to_opposite_event(event)];
+        debug_assert_ne!(opposite_event_id, UNDEFINED_INDEX);
         let mut cursor = event;
         let contour_start = self.get_event_start(event);
         let mut visited_endpoints_ids = vec![self.to_start_id(event)];
