@@ -126,6 +126,10 @@ class Operation(ABC):
         events_ids = [UNDEFINED_INDEX] * self._events_count
         for event_id, event in enumerate(events):
             events_ids[event] = event_id
+        assert all(
+                events_ids[self._to_opposite_event(event)] != UNDEFINED_INDEX
+                for event in events
+        )
         are_events_processed = [False] * len(events)
         are_from_in_to_out = [False] * len(events)
         are_internal: List[bool] = []
