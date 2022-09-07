@@ -21,9 +21,8 @@ def intersect_multipolygons(first: Multipolygon,
     first_polygons, second_polygons = first.polygons, second.polygons
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
     second_boxes = [polygon.bounding_box for polygon in second_polygons]
-    first_bounding_box, second_bounding_box = (
-        merge_boxes(first_boxes), merge_boxes(second_boxes)
-    )
+    first_bounding_box, second_bounding_box = (merge_boxes(first_boxes),
+                                               merge_boxes(second_boxes))
     if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):
         return []
     first_common_area_polygons_ids = to_boxes_ids_with_common_area(
@@ -96,9 +95,8 @@ def intersect_polygon_with_multipolygon(first: Polygon,
                                         second: Multipolygon) -> List[Polygon]:
     second_polygons = second.polygons
     second_boxes = [polygon.bounding_box for polygon in second_polygons]
-    first_bounding_box, second_bounding_box = (
-        first.bounding_box, merge_boxes(second_boxes)
-    )
+    first_bounding_box, second_bounding_box = (first.bounding_box,
+                                               merge_boxes(second_boxes))
     if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):
         return []
     second_common_area_polygons_ids = to_boxes_ids_with_common_area(

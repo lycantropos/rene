@@ -22,9 +22,8 @@ def unite_multipolygon_with_polygon(first: Multipolygon,
                                     second: Polygon) -> List[Polygon]:
     first_polygons = first.polygons
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
-    first_bounding_box, second_bounding_box = (
-        merge_boxes(first_boxes), second.bounding_box
-    )
+    first_bounding_box, second_bounding_box = (merge_boxes(first_boxes),
+                                               second.bounding_box)
     if do_boxes_have_no_common_continuum(first_bounding_box,
                                          second_bounding_box):
         return [*first.polygons, second]
@@ -40,10 +39,8 @@ def unite_multipolygon_with_polygon(first: Multipolygon,
         first_polygons[index]
         for index in first_common_continuum_polygons_ids
     ]
-    operation = (
-        Union.from_multisegmentals_sequence_multisegmental(
-                first_common_continuum_polygons, second
-        )
+    operation = Union.from_multisegmentals_sequence_multisegmental(
+            first_common_continuum_polygons, second
     )
     result = operation.reduce_events(list(operation),
                                      type(first_polygons[0].border),
@@ -61,11 +58,9 @@ def unite_multipolygons(first: Multipolygon,
                         second: Multipolygon) -> List[Polygon]:
     first_polygons, second_polygons = first.polygons, second.polygons
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
-    second_boxes = [polygon.bounding_box
-                             for polygon in second_polygons]
-    first_bounding_box, second_bounding_box = (
-        merge_boxes(first_boxes), merge_boxes(second_boxes)
-    )
+    second_boxes = [polygon.bounding_box for polygon in second_polygons]
+    first_bounding_box, second_bounding_box = (merge_boxes(first_boxes),
+                                               merge_boxes(second_boxes))
     if do_boxes_have_no_common_continuum(first_bounding_box,
                                          second_bounding_box):
         return [*first.polygons, *second.polygons]
@@ -117,8 +112,7 @@ def unite_multipolygons(first: Multipolygon,
 def unite_polygon_with_multipolygon(first: Polygon,
                                     second: Multipolygon) -> List[Polygon]:
     second_polygons = second.polygons
-    second_boxes = [polygon.bounding_box
-                             for polygon in second_polygons]
+    second_boxes = [polygon.bounding_box for polygon in second_polygons]
     first_bounding_box, second_bounding_box = (
         first.bounding_box, merge_boxes(second_boxes)
     )
@@ -137,10 +131,8 @@ def unite_polygon_with_multipolygon(first: Polygon,
         second_polygons[index]
         for index in second_common_continuum_polygons_ids
     ]
-    operation = (
-        Union.from_multisegmental_multisegmentals_sequence(
-                first, second_common_continuum_polygons
-        )
+    operation = Union.from_multisegmental_multisegmentals_sequence(
+            first, second_common_continuum_polygons
     )
     result = operation.reduce_events(list(operation), type(first.border),
                                      type(first))
