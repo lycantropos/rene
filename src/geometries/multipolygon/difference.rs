@@ -106,14 +106,7 @@ where
                 .map(|&index| bounding_boxes[index].get_max_x())
                 .max()
                 .unwrap_unchecked()
-        }
-        .min(unsafe {
-            other_common_area_polygons_ids
-                .iter()
-                .map(|&index| other_bounding_boxes[index].get_max_x())
-                .max()
-                .unwrap_unchecked()
-        });
+        };
         let common_area_polygons = common_area_polygons_ids
             .into_iter()
             .map(|index| &self.polygons[index])
