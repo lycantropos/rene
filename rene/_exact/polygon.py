@@ -83,15 +83,21 @@ class Polygon:
 
     def __or__(self, other):
         return (
-            collect_non_empty_polygons(unite_polygon_with_multipolygon(self,
-                                                                       other),
-                                       self._context.multipolygon_cls)
-            if isinstance(other, self._context.multipolygon_cls)
+            self
+            if isinstance(other, self._context.empty_cls)
             else (
-                collect_non_empty_polygons(unite_polygons(self, other),
-                                           self._context.multipolygon_cls)
-                if isinstance(other, Polygon)
-                else NotImplemented
+                collect_non_empty_polygons(
+                        unite_polygon_with_multipolygon(self,
+                                                        other),
+                        self._context.multipolygon_cls)
+                if isinstance(other, self._context.multipolygon_cls)
+                else
+                (
+                    collect_non_empty_polygons(unite_polygons(self, other),
+                                               self._context.multipolygon_cls)
+                    if isinstance(other, Polygon)
+                    else NotImplemented
+                )
             )
         )
 
