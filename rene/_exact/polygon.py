@@ -52,7 +52,7 @@ class Polygon:
 
     def __and__(self, other):
         return (
-            self._context.empty_cls
+            other
             if isinstance(other, self._context.empty_cls)
             else (
                 collect_maybe_empty_polygons(
