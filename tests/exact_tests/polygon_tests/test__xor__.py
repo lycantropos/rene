@@ -54,6 +54,7 @@ def test_alternatives(first: Polygon, second: Polygon) -> None:
 def test_reversals(first: Polygon, second: Polygon) -> None:
     result = first ^ second
 
+    assert result == reverse_polygon_holes(first) ^ second
     assert result == first ^ reverse_polygon_holes(second)
     assert result == reverse_compound_coordinates(
             reverse_polygon_coordinates(first)
