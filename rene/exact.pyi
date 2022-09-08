@@ -208,6 +208,21 @@ class Multipolygon:
         ...
 
     @_overload
+    def __and__(self, other: 'Empty') -> 'Empty':
+        ...
+
+    @_overload
+    def __and__(
+            self, other: 'Multipolygon'
+    ) -> _Union[Empty, 'Multipolygon', 'Polygon']:
+        ...
+
+    @_overload
+    def __and__(self,
+                other: 'Polygon') -> _Union[Empty, 'Multipolygon', 'Polygon']:
+        ...
+
+    @_overload
     def __eq__(self, other: 'Multipolygon') -> bool:
         ...
 
