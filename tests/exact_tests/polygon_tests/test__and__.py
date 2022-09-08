@@ -36,7 +36,8 @@ def test_commutativity(first: Polygon, second: Polygon) -> None:
 
 
 @given(strategies.polygons, strategies.polygons, strategies.polygons)
-def test_associativity(first: Polygon, second: Polygon,
+def test_associativity(first: Polygon,
+                       second: Polygon,
                        third: Polygon) -> None:
     assert (first & second) & third == first & (second & third)
 
