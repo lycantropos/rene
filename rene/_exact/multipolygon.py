@@ -86,7 +86,6 @@ class Multipolygon:
                 else (
                     collect_non_empty_polygons(
                             unite_multipolygon_with_polygon(self, other),
-                            self._context.empty_cls,
                             self._context.multipolygon_cls
                     )
                     if isinstance(other, self._context.polygon_cls)
