@@ -218,12 +218,7 @@ class Operation(ABC):
         self._overlap_kinds = [OverlapKind.NONE] * segments_count
         self._segments_ids = list(range(segments_count))
         self._starts_ids: List[int] = [UNDEFINED_INDEX] * initial_events_count
-        self._sweep_line_data = red_black.set_(
-                key=lambda event: SweepLineKey(
-                        event, self._is_left_event_from_first_operand(event),
-                        self._endpoints, self._opposites
-                )
-        )
+        self._sweep_line_data = red_black.set_(key=self._to_sweep_line_key)
 
     __repr__ = generate_repr(__init__)
 
@@ -584,17 +579,12 @@ class Operation(ABC):
 
     def _find(self, event: Event) -> Optional[Event]:
         assert is_left_event(event)
-        try:
-            candidate = self._sweep_line_data.floor(event)
-        except ValueError:
-            return None
-        else:
-            return (candidate
-                    if ((self.to_event_start(candidate)
-                         == self.to_event_start(event))
-                        and (self.to_event_end(candidate)
-                             == self.to_event_end(event)))
-                    else None)
+        candidate = self._sweep_line_data.tree.find(
+                self._to_sweep_line_key(event)
+        )
+        return (None
+                if candidate is red_black.NIL
+                else candidate.value)
 
     def _is_common_polyline_component_left_event(self, event: Event) -> bool:
         return (self._overlap_kinds[left_event_to_position(event)]
@@ -732,6 +722,12 @@ class Operation(ABC):
 
     def _to_start_id(self, event: Event) -> int:
         return self._starts_ids[event]
+
+    def _to_sweep_line_key(self, event: Event) -> SweepLineKey:
+        return SweepLineKey(
+                event, self._is_left_event_from_first_operand(event),
+                self._endpoints, self._opposites
+        )
 
 
 def _multisegmentals_to_segments_count(
