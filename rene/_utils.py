@@ -244,24 +244,6 @@ def relate_segments(
         return Relation.DISJOINT
 
 
-def shrink_collinear_vertices2(vertices: Sequence[Point]) -> List[Point]:
-    vertices = list(vertices)
-    index = -len(vertices) + 1
-    while index < 0:
-        while (max(2, -index) < len(vertices)
-               and orient(vertices[index + 1], vertices[index + 2],
-                          vertices[index]) is Orientation.COLLINEAR):
-            del vertices[index + 1]
-        index += 1
-    while index < len(vertices):
-        while (max(2, index) < len(vertices)
-               and orient(vertices[index - 1], vertices[index - 2],
-                          vertices[index]) is Orientation.COLLINEAR):
-            del vertices[index - 1]
-        index += 1
-    return vertices
-
-
 def shrink_collinear_vertices(vertices: Sequence[Point]) -> List[Point]:
     assert len(vertices) >= MIN_CONTOUR_VERTICES_COUNT
     result = [vertices[0]]
@@ -272,7 +254,6 @@ def shrink_collinear_vertices(vertices: Sequence[Point]) -> List[Point]:
     if (orient(result[-1], vertices[-1], result[0])
             is not Orientation.COLLINEAR):
         result.append(vertices[-1])
-    assert result == shrink_collinear_vertices2(vertices)
     return result
 
 
