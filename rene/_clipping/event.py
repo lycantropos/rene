@@ -1,17 +1,15 @@
 import sys
 from typing import NewType
 
+from rene._utils import (is_even,
+                         is_odd)
+
 Event = NewType('Event', int)
 
 UNDEFINED_EVENT = Event(sys.maxsize)
 
-
-def is_left_event(event: Event) -> bool:
-    return event % 2 == 0
-
-
-def is_right_event(event: Event) -> bool:
-    return event % 2 != 0
+is_left_event = is_even
+is_right_event = is_odd
 
 
 def left_event_to_position(event: Event) -> int:

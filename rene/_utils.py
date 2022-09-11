@@ -133,6 +133,10 @@ def is_even(value: int) -> bool:
     return value & 1 == 0
 
 
+def is_odd(value: int) -> bool:
+    return value & 1 == 1
+
+
 def locate_point_in_point_point_point_circle(
         point: Point, first: Point, second: Point, third: Point
 ) -> Location:
@@ -271,6 +275,6 @@ def to_sign(value: Fraction) -> int:
     return 1 if value > 0 else (-1 if value else 0)
 
 
-def to_sorted_pair(start: _Ordered, end: _Ordered
-                   ) -> Tuple[_Ordered, _Ordered]:
-    return (start, end) if start < end else (end, start)
+def to_sorted_pair(first: _Ordered,
+                   second: _Ordered) -> Tuple[_Ordered, _Ordered]:
+    return (first, second) if first < second else (second, first)

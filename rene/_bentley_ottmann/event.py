@@ -1,10 +1,10 @@
 from typing import NewType
 
+from rene._utils import is_even
+
 Event = NewType('Event', int)
 
-
-def is_left_event(event: Event) -> bool:
-    return event % 2 == 0
+is_left_event = is_even
 
 
 def segment_id_to_left_event(segment_id: int) -> Event:
