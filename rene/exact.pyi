@@ -197,6 +197,10 @@ class Multipolygon:
         ...
 
     @property
+    def polygons_count(self) -> int:
+        ...
+
+    @property
     def segments(self) -> _Sequence[Segment]:
         ...
 

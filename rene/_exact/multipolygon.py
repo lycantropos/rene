@@ -25,6 +25,10 @@ class Multipolygon:
         return self._polygons[:]
 
     @property
+    def polygons_count(self):
+        return len(self._polygons)
+
+    @property
     def segments(self):
         return list(chain.from_iterable(polygon.segments
                                         for polygon in self._polygons))

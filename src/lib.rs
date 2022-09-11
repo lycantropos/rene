@@ -768,6 +768,11 @@ impl PyExactMultipolygon {
     }
 
     #[getter]
+    fn polygons_count(&self) -> usize {
+        self.0.polygons_count()
+    }
+
+    #[getter]
     fn segments(&self) -> Vec<ExactSegment> {
         self.0.segments()
     }

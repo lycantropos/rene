@@ -365,6 +365,10 @@ class Multipolygon(_SelfComparable, Multisegmental[Segment[Scalar]],
     def polygons(self) -> _Sequence[Polygon[Scalar]]:
         ...
 
+    @property
+    def polygons_count(self) -> int:
+        ...
+
     def __new__(
             cls, vertices: _Sequence[Polygon[Scalar]]
     ) -> 'Multipolygon[Scalar]':
