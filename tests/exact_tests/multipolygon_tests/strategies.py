@@ -2,7 +2,8 @@ from hypothesis import strategies
 
 from rene import MIN_MULTIPOLYGON_POLYGONS_COUNT
 from rene.exact import Multipolygon
-from tests.exact_tests.strategies import (multipolygons,
+from tests.exact_tests.strategies import (empty_geometries,
+                                          multipolygons,
                                           multipolygons_polygons,
                                           non_zero_integers,
                                           polygons)
@@ -22,3 +23,4 @@ invalid_count_multipolygons_polygons = strategies.lists(
 multipolygons_like = strategies.builds(Multipolygon,
                                        multipolygons_like_polygons)
 multipolygons = multipolygons
+compounds = empty_geometries | multipolygons | polygons

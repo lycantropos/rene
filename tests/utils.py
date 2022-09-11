@@ -4,7 +4,8 @@ from typing import (Callable,
                     Iterable,
                     List,
                     Sequence,
-                    TypeVar)
+                    TypeVar,
+                    Union)
 
 from rene import (MIN_CONTOUR_VERTICES_COUNT,
                   exact)
@@ -14,6 +15,7 @@ from rene._utils import (deduplicate,
                          locate_point_in_point_point_point_circle,
                          orient)
 from rene.hints import (Contour,
+                        Empty,
                         Multipolygon,
                         Multisegment,
                         Point,
@@ -22,6 +24,7 @@ from rene.hints import (Contour,
 
 _T1 = TypeVar('_T1')
 _T2 = TypeVar('_T2')
+Compound = Union[Empty, Multipolygon, Polygon]
 
 
 def apply(function: Callable[..., _T2], args: Iterable[_T1]) -> _T2:

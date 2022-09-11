@@ -6,6 +6,7 @@ from hypothesis_geometry import planar
 
 from rene.exact import (Box,
                         Contour,
+                        Empty,
                         Multipolygon,
                         Multisegment,
                         Point,
@@ -25,6 +26,7 @@ scalars_strategies = strategies.sampled_from([
                       allow_infinity=False,
                       allow_nan=False)
 ])
+empty_geometries = strategies.builds(Empty)
 
 
 def to_box(raw_box: hints.Box) -> Box:
