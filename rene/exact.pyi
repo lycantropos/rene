@@ -373,6 +373,10 @@ class Polygon:
         ...
 
     @property
+    def holes_count(self) -> int:
+        ...
+
+    @property
     def segments(self) -> _Sequence[Segment]:
         ...
 

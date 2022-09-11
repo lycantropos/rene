@@ -32,6 +32,10 @@ class Polygon:
         return self._holes[:]
 
     @property
+    def holes_count(self):
+        return len(self._holes)
+
+    @property
     def segments(self):
         return list(chain(self.border.segments,
                           chain.from_iterable(hole.segments

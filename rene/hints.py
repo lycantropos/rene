@@ -287,6 +287,10 @@ class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]],
     def holes(self) -> _Sequence[Contour[Scalar]]:
         ...
 
+    @property
+    def holes_count(self) -> int:
+        ...
+
     def __new__(cls,
                 border: Contour[Scalar],
                 holes: _Sequence[Contour[Scalar]]) -> 'Polygon[Scalar]':
