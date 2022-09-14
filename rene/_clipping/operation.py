@@ -390,13 +390,11 @@ class Operation(ABC):
                         assert event_start < point < event_end
                         assert below_event_start < point < below_event_end
                         self._divide_event_by_midpoint(below_event, point)
-                        self._divide_event_by_midpoint(event,
-                                                       point)
+                        self._divide_event_by_midpoint(event, point)
                 elif below_event_start_orientation != Orientation.COLLINEAR:
                     if event_start < below_event_end < event_end:
                         point = below_event_end
-                        self._divide_event_by_midpoint(event,
-                                                       point)
+                        self._divide_event_by_midpoint(event, point)
                 elif event_start < below_event_start < event_end:
                     point = below_event_start
                     self._divide_event_by_midpoint(event, point)
