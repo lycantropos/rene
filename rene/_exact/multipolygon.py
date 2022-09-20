@@ -11,10 +11,10 @@ from rene._clipping import (intersect_multipolygon_with_polygon,
                             symmetric_subtract_multipolygons,
                             unite_multipolygon_with_polygon,
                             unite_multipolygons)
+from rene._context import Context
 from rene._rene import MIN_MULTIPOLYGON_POLYGONS_COUNT
 from rene._utils import (collect_maybe_empty_polygons,
                          collect_non_empty_polygons)
-from .context import Context
 
 
 class Multipolygon:

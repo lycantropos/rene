@@ -11,9 +11,9 @@ from rene._clipping import (intersect_polygon_with_multipolygon,
                             symmetric_subtract_polygons,
                             unite_polygon_with_multipolygon,
                             unite_polygons)
+from rene._context import Context
 from rene._utils import (collect_maybe_empty_polygons,
                          collect_non_empty_polygons)
-from .context import Context
 
 
 class Polygon:

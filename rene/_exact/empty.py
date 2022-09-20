@@ -2,7 +2,7 @@ from typing import Optional
 
 from reprit.base import generate_repr
 
-from .context import Context
+from rene._context import Context
 
 
 class Empty:

@@ -1,5 +1,5 @@
+from rene._context import Context as _Context
 from .box import Box
-from .context import Context as _Context
 from .contour import Contour
 from .empty import Empty
 from .multipolygon import Multipolygon

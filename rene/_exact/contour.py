@@ -6,12 +6,12 @@ from reprit.base import generate_repr
 
 from rene._bentley_ottmann.base import (Intersection,
                                         sweep)
+from rene._context import Context
 from rene._rene import (MIN_CONTOUR_VERTICES_COUNT,
                         Orientation,
                         Relation)
 from rene._utils import orient
 from .box import Box
-from .context import Context
 from .point import Point
 from .segment import Segment
 

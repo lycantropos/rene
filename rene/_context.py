@@ -3,14 +3,14 @@ from typing import Type
 from reprit import serializers
 from reprit.base import generate_repr
 
-from rene.hints import (Box,
-                        Contour,
-                        Empty,
-                        Multipolygon,
-                        Multisegment,
-                        Point,
-                        Polygon,
-                        Segment)
+from .hints import (Box,
+                    Contour,
+                    Empty,
+                    Multipolygon,
+                    Multisegment,
+                    Point,
+                    Polygon,
+                    Segment)
 
 
 class Context:
