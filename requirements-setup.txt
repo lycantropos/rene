@@ -1,1 +1,1 @@
-setuptools-rust>=1.4.1,<2.0; platform_python_implementation=='CPython'
+setuptools-rust>=1.5.2,<2.0; platform_python_implementation=='CPython'
