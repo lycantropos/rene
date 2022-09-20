@@ -2,6 +2,7 @@ from itertools import chain
 from typing import Optional
 
 from reprit.base import generate_repr
+from rithm import Fraction
 
 from rene._clipping import (intersect_multipolygon_with_polygon,
                             intersect_multipolygons,
@@ -18,7 +19,7 @@ from rene._utils import (collect_maybe_empty_polygons,
 
 
 class Multipolygon:
-    _context: Optional[Context] = None
+    _context: Optional[Context[Fraction]] = None
 
     @property
     def polygons(self):

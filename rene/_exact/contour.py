@@ -3,6 +3,7 @@ from typing import (Any,
                     Sequence)
 
 from reprit.base import generate_repr
+from rithm import Fraction
 
 from rene._bentley_ottmann.base import (Intersection,
                                         sweep)
@@ -17,7 +18,7 @@ from .segment import Segment
 
 
 class Contour:
-    _context: Optional[Context] = None
+    _context: Optional[Context[Fraction]] = None
 
     @property
     def bounding_box(self):

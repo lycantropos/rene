@@ -1,12 +1,13 @@
 from typing import Optional
 
 from reprit.base import generate_repr
+from rithm import Fraction
 
 from rene._context import Context
 
 
 class Segment:
-    _context: Optional[Context] = None
+    _context: Optional[Context[Fraction]] = None
 
     @property
     def end(self):

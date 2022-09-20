@@ -1,4 +1,5 @@
-from typing import Type
+from typing import (Generic,
+                    Type)
 
 from reprit import serializers
 from reprit.base import generate_repr
@@ -10,16 +11,17 @@ from .hints import (Box,
                     Multisegment,
                     Point,
                     Polygon,
+                    Scalar,
                     Segment)
 
 
-class Context:
+class Context(Generic[Scalar]):
     @property
-    def box_cls(self) -> Type[Box]:
+    def box_cls(self) -> Type[Box[Scalar]]:
         return self._box_cls
 
     @property
-    def contour_cls(self) -> Type[Contour]:
+    def contour_cls(self) -> Type[Contour[Scalar]]:
         return self._contour_cls
 
     @property
@@ -27,33 +29,33 @@ class Context:
         return self._empty_cls
 
     @property
-    def multipolygon_cls(self) -> Type[Multipolygon]:
+    def multipolygon_cls(self) -> Type[Multipolygon[Scalar]]:
         return self._multipolygon_cls
 
     @property
-    def multisegment_cls(self) -> Type[Multisegment]:
+    def multisegment_cls(self) -> Type[Multisegment[Scalar]]:
         return self._multisegment_cls
 
     @property
-    def point_cls(self) -> Type[Point]:
+    def point_cls(self) -> Type[Point[Scalar]]:
         return self._point_cls
 
     @property
-    def polygon_cls(self) -> Type[Polygon]:
+    def polygon_cls(self) -> Type[Polygon[Scalar]]:
         return self._polygon_cls
 
     @property
-    def segment_cls(self) -> Type[Segment]:
+    def segment_cls(self) -> Type[Segment[Scalar]]:
         return self._segment_cls
 
-    _box_cls: Type[Box]
-    _contour_cls: Type[Contour]
+    _box_cls: Type[Box[Scalar]]
+    _contour_cls: Type[Contour[Scalar]]
     _empty_cls: Type[Empty]
-    _multipolygon_cls: Type[Multipolygon]
-    _multisegment_cls: Type[Multisegment]
-    _point_cls: Type[Point]
-    _polygon_cls: Type[Polygon]
-    _segment_cls: Type[Segment]
+    _multipolygon_cls: Type[Multipolygon[Scalar]]
+    _multisegment_cls: Type[Multisegment[Scalar]]
+    _point_cls: Type[Point[Scalar]]
+    _polygon_cls: Type[Polygon[Scalar]]
+    _segment_cls: Type[Segment[Scalar]]
 
     __module__ = 'rene.exact'
     __slots__ = (
@@ -63,14 +65,14 @@ class Context:
 
     def __new__(cls,
                 *,
-                box_cls: Type[Box],
-                contour_cls: Type[Contour],
+                box_cls: Type[Box[Scalar]],
+                contour_cls: Type[Contour[Scalar]],
                 empty_cls: Type[Empty],
-                multipolygon_cls: Type[Multipolygon],
-                multisegment_cls: Type[Multisegment],
-                point_cls: Type[Point],
-                polygon_cls: Type[Polygon],
-                segment_cls: Type[Segment]) -> 'Context':
+                multipolygon_cls: Type[Multipolygon[Scalar]],
+                multisegment_cls: Type[Multisegment[Scalar]],
+                point_cls: Type[Point[Scalar]],
+                polygon_cls: Type[Polygon[Scalar]],
+                segment_cls: Type[Segment[Scalar]]) -> 'Context[Scalar]':
         self = super().__new__(cls)
         (
             self._box_cls, self._empty_cls, self._multipolygon_cls,

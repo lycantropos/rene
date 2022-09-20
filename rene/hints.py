@@ -1,4 +1,3 @@
-from numbers import Rational as _Rational
 from typing import (Any as _Any,
                     Sequence as _Sequence,
                     TypeVar as _TypeVar,
@@ -10,10 +9,71 @@ from typing_extensions import Protocol as _Protocol
 from rene import (Orientation as _Orientation,
                   Relation as _Relation)
 
-Scalar = _TypeVar('Scalar',
-                  bound=_Rational)
-
 _Self = _TypeVar('_Self')
+
+
+class _Scalar(_Protocol):
+    def __add__(self: _Self, other: _Self) -> _Self:
+        pass
+
+    @_overload
+    def __eq__(self: _Self, other: _Self) -> bool:
+        pass
+
+    @_overload
+    def __eq__(self: _Self, other: _Any) -> _Any:
+        pass
+
+    @_overload
+    def __ge__(self: _Self, other: _Self) -> bool:
+        pass
+
+    @_overload
+    def __ge__(self: _Self, other: _Any) -> _Any:
+        pass
+
+    @_overload
+    def __gt__(self: _Self, other: _Self) -> bool:
+        pass
+
+    @_overload
+    def __gt__(self: _Self, other: _Any) -> _Any:
+        pass
+
+    @_overload
+    def __le__(self: _Self, other: _Self) -> bool:
+        pass
+
+    @_overload
+    def __le__(self: _Self, other: _Any) -> _Any:
+        pass
+
+    @_overload
+    def __lt__(self: _Self, other: _Self) -> bool:
+        pass
+
+    @_overload
+    def __lt__(self: _Self, other: _Any) -> _Any:
+        pass
+
+    def __mul__(self: _Self, other: _Self) -> _Self:
+        pass
+
+    def __neg__(self: _Self) -> _Self:
+        pass
+
+    def __pos__(self: _Self) -> _Self:
+        pass
+
+    def __sub__(self: _Self, other: _Self) -> _Self:
+        pass
+
+    def __truediv__(self: _Self, other: _Self) -> _Self:
+        pass
+
+
+Scalar = _TypeVar('Scalar',
+                  bound=_Scalar)
 
 
 class _SelfComparable(_Protocol):
