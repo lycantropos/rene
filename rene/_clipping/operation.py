@@ -14,6 +14,7 @@ from reprit.base import generate_repr
 
 from rene._rene import Orientation
 from rene._utils import (intersect_crossing_segments,
+                         is_odd,
                          orient,
                          shrink_collinear_vertices)
 from rene.hints import (Contour,
@@ -157,7 +158,7 @@ class Operation(ABC):
                     are_from_in_to_out, contours_ids, events_ids
             )
             vertices = self._contour_events_to_vertices(contour_events)
-            if depths[contour_id] % 2 != 0:
+            if is_odd(depths[contour_id]):
                 vertices = vertices[:1] + vertices[:0:-1]
             contours_vertices.append(vertices)
         result: List[Polygon] = []
