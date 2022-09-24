@@ -7,11 +7,11 @@ from rene._utils import (do_boxes_have_no_common_continuum,
                          to_boxes_have_common_continuum)
 from rene.hints import (Multipolygon,
                         Polygon)
+from . import shaped
 from .event import Event
-from .operation import Operation
 
 
-class SymmetricDifference(Operation):
+class ShapedSymmetricDifference(shaped.Operation):
     def _detect_if_left_event_from_result(self, event: Event) -> bool:
         return not self._is_overlap_left_event(event)
 
@@ -39,7 +39,7 @@ def symmetric_subtract_multipolygon_with_polygon(
         for index in first_common_continuum_polygons_ids
     ]
     operation = (
-        SymmetricDifference.from_multisegmentals_sequence_multisegmental(
+        ShapedSymmetricDifference.from_multisegmentals_sequence_multisegmental(
                 first_common_continuum_polygons, second
         )
     )
@@ -89,7 +89,7 @@ def symmetric_subtract_multipolygons(first: Multipolygon,
         second_polygons[index]
         for index in second_common_continuum_polygons_ids
     ]
-    operation = SymmetricDifference.from_multisegmentals_sequences(
+    operation = ShapedSymmetricDifference.from_multisegmentals_sequences(
             first_common_continuum_polygons, second_common_continuum_polygons
     )
     result = operation.reduce_events(list(operation),
@@ -134,7 +134,7 @@ def symmetric_subtract_polygon_with_multipolygon(
         for index in second_common_continuum_polygons_ids
     ]
     operation = (
-        SymmetricDifference.from_multisegmental_multisegmentals_sequence(
+        ShapedSymmetricDifference.from_multisegmental_multisegmentals_sequence(
                 first, second_common_continuum_polygons
         )
     )
@@ -156,6 +156,6 @@ def symmetric_subtract_polygons(first: Polygon,
     if do_boxes_have_no_common_continuum(first_bounding_box,
                                          second_bounding_box):
         return [first, second]
-    operation = SymmetricDifference.from_multisegmentals(first, second)
+    operation = ShapedSymmetricDifference.from_multisegmentals(first, second)
     return operation.reduce_events(list(operation), type(first.border),
                                    type(first))

@@ -8,7 +8,7 @@ from .event import (Event,
                     is_left_event)
 
 
-class EventsQueueKey:
+class BinaryEventsQueueKey:
     __slots__ = 'endpoints', 'event', 'is_from_first_operand', 'opposites'
 
     def __init__(self,
@@ -23,7 +23,7 @@ class EventsQueueKey:
 
     __repr__ = generate_repr(__init__)
 
-    def __lt__(self, other: 'EventsQueueKey') -> bool:
+    def __lt__(self, other: 'BinaryEventsQueueKey') -> bool:
         """
         Checks if the event should be processed before the other.
         """

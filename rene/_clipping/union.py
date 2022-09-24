@@ -7,11 +7,11 @@ from rene._utils import (do_boxes_have_no_common_continuum,
                          to_boxes_have_common_continuum)
 from rene.hints import (Multipolygon,
                         Polygon)
+from . import shaped
 from .event import Event
-from .operation import Operation
 
 
-class Union(Operation):
+class ShapedUnion(shaped.Operation):
     def _detect_if_left_event_from_result(self, event: Event) -> bool:
         return (self._is_outside_left_event(event)
                 or (not self._is_left_event_from_first_operand(event)
@@ -39,7 +39,7 @@ def unite_multipolygon_with_polygon(first: Multipolygon,
         first_polygons[index]
         for index in first_common_continuum_polygons_ids
     ]
-    operation = Union.from_multisegmentals_sequence_multisegmental(
+    operation = ShapedUnion.from_multisegmentals_sequence_multisegmental(
             first_common_continuum_polygons, second
     )
     result = operation.reduce_events(list(operation),
@@ -88,7 +88,7 @@ def unite_multipolygons(first: Multipolygon,
         second_polygons[index]
         for index in second_common_continuum_polygons_ids
     ]
-    operation = Union.from_multisegmentals_sequences(
+    operation = ShapedUnion.from_multisegmentals_sequences(
             first_common_continuum_polygons, second_common_continuum_polygons
     )
     result = operation.reduce_events(list(operation),
@@ -131,7 +131,7 @@ def unite_polygon_with_multipolygon(first: Polygon,
         second_polygons[index]
         for index in second_common_continuum_polygons_ids
     ]
-    operation = Union.from_multisegmental_multisegmentals_sequence(
+    operation = ShapedUnion.from_multisegmental_multisegmentals_sequence(
             first, second_common_continuum_polygons
     )
     result = operation.reduce_events(list(operation), type(first.border),
@@ -151,6 +151,6 @@ def unite_polygons(first: Polygon, second: Polygon) -> List[Polygon]:
     if do_boxes_have_no_common_continuum(first_bounding_box,
                                          second_bounding_box):
         return [first, second]
-    operation = Union.from_multisegmentals(first, second)
+    operation = ShapedUnion.from_multisegmentals(first, second)
     return operation.reduce_events(list(operation), type(first.border),
                                    type(first))

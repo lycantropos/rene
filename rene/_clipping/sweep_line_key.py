@@ -7,7 +7,7 @@ from rene.hints import Point
 from .event import Event
 
 
-class SweepLineKey:
+class BinarySweepLineKey:
     __slots__ = 'endpoints', 'event', 'is_from_first_operand', 'opposites'
 
     def __init__(self,
@@ -22,10 +22,9 @@ class SweepLineKey:
 
     __repr__ = generate_repr(__init__)
 
-    def __lt__(self, other: 'SweepLineKey') -> bool:
+    def __lt__(self, other: 'BinarySweepLineKey') -> bool:
         """
-        Checks if the segment (or at least the point) associated with event
-        is lower than other's.
+        Checks if the segment associated with event is lower than other's.
         """
         assert self.endpoints is other.endpoints
         assert self.opposites is other.opposites

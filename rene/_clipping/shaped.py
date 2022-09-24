@@ -30,9 +30,9 @@ from .event import (UNDEFINED_EVENT,
                     left_event_to_position,
                     segment_id_to_left_event,
                     segment_id_to_right_event)
-from .events_queue_key import EventsQueueKey
+from .events_queue_key import BinaryEventsQueueKey as EventsQueueKey
 from .overlap_kind import OverlapKind
-from .sweep_line_key import SweepLineKey
+from .sweep_line_key import BinarySweepLineKey as SweepLineKey
 
 
 class Operation(ABC):

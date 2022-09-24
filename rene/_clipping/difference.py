@@ -8,11 +8,11 @@ from rene._utils import (do_boxes_have_no_common_area,
                          to_boxes_ids_with_common_area)
 from rene.hints import (Multipolygon,
                         Polygon)
+from . import shaped
 from .event import Event
-from .operation import Operation
 
 
-class Difference(Operation):
+class ShapedDifference(shaped.Operation):
     def _detect_if_left_event_from_result(self, event: Event) -> bool:
         return (self._is_outside_left_event(event)
                 if self._is_left_event_from_first_operand(event)
@@ -52,7 +52,7 @@ def subtract_multipolygons(first: Multipolygon,
     ]
     first_max_x = max(first_boxes[polygon_id].max_x
                       for polygon_id in first_common_area_polygons_ids)
-    operation = Difference.from_multisegmentals_sequences(
+    operation = ShapedDifference.from_multisegmentals_sequences(
             first_common_area_polygons, second_common_area_polygons
     )
     events = []
@@ -94,7 +94,7 @@ def subtract_polygon_from_multipolygon(first: Multipolygon,
     ]
     first_max_x = max(first_boxes[polygon_id].max_x
                       for polygon_id in first_common_area_polygons_ids)
-    operation = Difference.from_multisegmentals_sequence_multisegmental(
+    operation = ShapedDifference.from_multisegmentals_sequence_multisegmental(
             first_common_area_polygons, second
     )
     events = []
@@ -131,7 +131,7 @@ def subtract_multipolygon_from_polygon(first: Polygon,
         for polygon_id in second_common_area_polygons_ids
     ]
     first_max_x = first_bounding_box.max_x
-    operation = Difference.from_multisegmental_multisegmentals_sequence(
+    operation = ShapedDifference.from_multisegmental_multisegmentals_sequence(
             first, second_common_area_polygons
     )
     events = []
@@ -147,7 +147,7 @@ def subtract_polygons(first: Polygon, second: Polygon) -> List[Polygon]:
                                                second.bounding_box)
     if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):
         return [first]
-    operation = Difference.from_multisegmentals(first, second)
+    operation = ShapedDifference.from_multisegmentals(first, second)
     first_max_x = first_bounding_box.max_x
     events = []
     for event in operation:
