@@ -61,7 +61,7 @@ _T = TypeVar('_T')
 
 @singledispatch
 def reverse_compound_coordinates(compound: _T) -> _T:
-    raise TypeError(f'Unsupported type: {type(compound):!r}.')
+    raise TypeError(f'Unsupported type: {type(compound)!r}.')
 
 
 @reverse_compound_coordinates.register(exact.Empty)
