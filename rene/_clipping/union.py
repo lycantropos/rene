@@ -1,3 +1,4 @@
+from itertools import chain
 from typing import List
 
 from rene._utils import (do_boxes_have_no_common_continuum,
@@ -39,8 +40,12 @@ def unite_multipolygon_with_polygon(first: Multipolygon,
         first_polygons[index]
         for index in first_common_continuum_polygons_ids
     ]
-    operation = ShapedUnion.from_multisegmentals_sequence_multisegmental(
-            first_common_continuum_polygons, second
+    operation = ShapedUnion.from_segments_iterables(
+            chain.from_iterable(
+                    polygon.segments
+                    for polygon in first_common_continuum_polygons
+            ),
+            second.segments
     )
     result = operation.reduce_events(list(operation),
                                      type(first_polygons[0].border),
@@ -88,8 +93,15 @@ def unite_multipolygons(first: Multipolygon,
         second_polygons[index]
         for index in second_common_continuum_polygons_ids
     ]
-    operation = ShapedUnion.from_multisegmentals_sequences(
-            first_common_continuum_polygons, second_common_continuum_polygons
+    operation = ShapedUnion.from_segments_iterables(
+            chain.from_iterable(
+                    polygon.segments
+                    for polygon in first_common_continuum_polygons
+            ),
+            chain.from_iterable(
+                    polygon.segments
+                    for polygon in second_common_continuum_polygons
+            )
     )
     result = operation.reduce_events(list(operation),
                                      type(first_polygons[0].border),
@@ -131,8 +143,12 @@ def unite_polygon_with_multipolygon(first: Polygon,
         second_polygons[index]
         for index in second_common_continuum_polygons_ids
     ]
-    operation = ShapedUnion.from_multisegmental_multisegmentals_sequence(
-            first, second_common_continuum_polygons
+    operation = ShapedUnion.from_segments_iterables(
+            first.segments,
+            chain.from_iterable(
+                    polygon.segments
+                    for polygon in second_common_continuum_polygons
+            )
     )
     result = operation.reduce_events(list(operation), type(first.border),
                                      type(first))
@@ -151,6 +167,7 @@ def unite_polygons(first: Polygon, second: Polygon) -> List[Polygon]:
     if do_boxes_have_no_common_continuum(first_bounding_box,
                                          second_bounding_box):
         return [first, second]
-    operation = ShapedUnion.from_multisegmentals(first, second)
+    operation = ShapedUnion.from_segments_iterables(first.segments,
+                                                    second.segments)
     return operation.reduce_events(list(operation), type(first.border),
                                    type(first))

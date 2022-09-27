@@ -1,3 +1,4 @@
+from itertools import chain
 from typing import List
 
 from rene._utils import (do_boxes_have_no_common_area,
@@ -52,8 +53,16 @@ def subtract_multipolygons(first: Multipolygon,
     ]
     first_max_x = max(first_boxes[polygon_id].max_x
                       for polygon_id in first_common_area_polygons_ids)
-    operation = ShapedDifference.from_multisegmentals_sequences(
-            first_common_area_polygons, second_common_area_polygons
+    first_min_x = min(first_boxes[polygon_id].min_x
+                      for polygon_id in first_common_area_polygons_ids)
+    operation = ShapedDifference.from_segments_iterables(
+            chain.from_iterable(polygon.segments
+                                for polygon in first_common_area_polygons),
+            (segment
+             for polygon in second_common_area_polygons
+             for segment in polygon.segments
+             if (first_min_x <= max(segment.start.x, segment.end.x)
+                 and min(segment.start.x, segment.end.x) <= first_max_x))
     )
     events = []
     for event in operation:
@@ -94,8 +103,15 @@ def subtract_polygon_from_multipolygon(first: Multipolygon,
     ]
     first_max_x = max(first_boxes[polygon_id].max_x
                       for polygon_id in first_common_area_polygons_ids)
-    operation = ShapedDifference.from_multisegmentals_sequence_multisegmental(
-            first_common_area_polygons, second
+    first_min_x = min(first_boxes[polygon_id].min_x
+                      for polygon_id in first_common_area_polygons_ids)
+    operation = ShapedDifference.from_segments_iterables(
+            chain.from_iterable(polygon.segments
+                                for polygon in first_common_area_polygons),
+            (segment
+             for segment in second.segments
+             if (first_min_x <= max(segment.start.x, segment.end.x)
+                 and min(segment.start.x, segment.end.x) <= first_max_x))
     )
     events = []
     for event in operation:
@@ -106,9 +122,7 @@ def subtract_polygon_from_multipolygon(first: Multipolygon,
                                      type(first_polygons[0]))
     result.extend(
             first_polygons[index]
-            for index in flags_to_false_indices(
-                    first_boxes_have_common_area
-            )
+            for index in flags_to_false_indices(first_boxes_have_common_area)
     )
     return result
 
@@ -131,8 +145,14 @@ def subtract_multipolygon_from_polygon(first: Polygon,
         for polygon_id in second_common_area_polygons_ids
     ]
     first_max_x = first_bounding_box.max_x
-    operation = ShapedDifference.from_multisegmental_multisegmentals_sequence(
-            first, second_common_area_polygons
+    first_min_x = first_bounding_box.min_x
+    operation = ShapedDifference.from_segments_iterables(
+            first.segments,
+            (segment
+             for polygon in second_common_area_polygons
+             for segment in polygon.segments
+             if (first_min_x <= max(segment.start.x, segment.end.x)
+                 and min(segment.start.x, segment.end.x) <= first_max_x))
     )
     events = []
     for event in operation:
@@ -147,7 +167,15 @@ def subtract_polygons(first: Polygon, second: Polygon) -> List[Polygon]:
                                                second.bounding_box)
     if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):
         return [first]
-    operation = ShapedDifference.from_multisegmentals(first, second)
+    first_max_x, first_min_x = (first_bounding_box.max_x,
+                                first_bounding_box.min_x)
+    operation = ShapedDifference.from_segments_iterables(
+            first.segments,
+            (segment
+             for segment in second.segments
+             if (first_min_x <= max(segment.start.x, segment.end.x)
+                 and min(segment.start.x, segment.end.x) <= first_max_x))
+    )
     first_max_x = first_bounding_box.max_x
     events = []
     for event in operation:

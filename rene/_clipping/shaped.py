@@ -14,6 +14,7 @@ from reprit.base import generate_repr
 
 from rene._rene import Orientation
 from rene._utils import (intersect_crossing_segments,
+                         is_even,
                          is_odd,
                          orient,
                          shrink_collinear_vertices)
@@ -21,15 +22,14 @@ from rene.hints import (Contour,
                         Multisegmental,
                         Point,
                         Polygon,
+                        Scalar,
                         Segment)
 from .constants import UNDEFINED_INDEX
 from .event import (UNDEFINED_EVENT,
                     Event,
                     is_left_event,
                     is_right_event,
-                    left_event_to_position,
-                    segment_id_to_left_event,
-                    segment_id_to_right_event)
+                    left_event_to_position)
 from .events_queue_key import BinaryEventsQueueKey as EventsQueueKey
 from .overlap_kind import OverlapKind
 from .sweep_line_key import BinarySweepLineKey as SweepLineKey
@@ -37,82 +37,27 @@ from .sweep_line_key import BinarySweepLineKey as SweepLineKey
 
 class Operation(ABC):
     @classmethod
-    def from_multisegmentals(cls,
-                             first: Multisegmental,
-                             second: Multisegmental) -> 'Operation':
-        first_segments_count = first.segments_count
-        second_segments_count = second.segments_count
-        segments_count = first_segments_count + second_segments_count
-        self = cls(segments_count)
-        self._are_from_first_operand.extend([True] * first_segments_count)
-        self._are_from_first_operand.extend([False] * second_segments_count)
-        self._extend(first.segments)
-        self._extend(second.segments)
-        first_event = self._peek()
-        self._current_endpoint_first_event = first_event
-        return self
-
-    @classmethod
-    def from_multisegmentals_sequences(
+    def from_segments_iterables(
             cls,
-            first: Sequence[Multisegmental],
-            second: Sequence[Multisegmental]
+            first: Iterable[Segment],
+            second: Iterable[Segment],
     ) -> 'Operation':
-        first_segments_count = _multisegmentals_to_segments_count(first)
-        second_segments_count = _multisegmentals_to_segments_count(second)
-        segments_count = first_segments_count + second_segments_count
-        self = cls(segments_count)
-        self._are_from_first_operand.extend([True] * first_segments_count)
-        self._are_from_first_operand.extend([False] * second_segments_count)
-        for multisegmental in first:
-            self._extend(multisegmental.segments)
-        for multisegmental in second:
-            self._extend(multisegmental.segments)
-        first_event = self._peek()
-        self._current_endpoint_first_event = first_event
-        return self
-
-    @classmethod
-    def from_multisegmental_multisegmentals_sequence(
-            cls,
-            first: Multisegmental,
-            second: Sequence[Multisegmental]
-    ) -> 'Operation':
-        first_segments_count = first.segments_count
-        second_segments_count = _multisegmentals_to_segments_count(second)
-        segments_count = first_segments_count + second_segments_count
-        self = cls(segments_count)
-        self._are_from_first_operand.extend([True] * first_segments_count)
-        self._are_from_first_operand.extend([False] * second_segments_count)
-        self._extend(first.segments)
-        for multisegmental in second:
-            self._extend(multisegmental.segments)
-        first_event = self._peek()
-        self._current_endpoint_first_event = first_event
-        return self
-
-    @classmethod
-    def from_multisegmentals_sequence_multisegmental(
-            cls,
-            first: Sequence[Multisegmental],
-            second: Multisegmental
-    ) -> 'Operation':
-        first_segments_count = _multisegmentals_to_segments_count(first)
-        second_segments_count = second.segments_count
-        segments_count = first_segments_count + second_segments_count
-        self = cls(segments_count)
-        self._are_from_first_operand.extend([True] * first_segments_count)
-        self._are_from_first_operand.extend([False] * second_segments_count)
-        for multisegmental in first:
-            self._extend(multisegmental.segments)
-        self._extend(second.segments)
+        endpoints: List[Point] = []
+        have_interior_to_left: List[bool] = []
+        _populate_with_segments(first, endpoints, have_interior_to_left)
+        first_segments_count = len(have_interior_to_left)
+        _populate_with_segments(second, endpoints, have_interior_to_left)
+        second_segments_count = (len(have_interior_to_left)
+                                 - first_segments_count)
+        self = cls(first_segments_count, second_segments_count, endpoints,
+                   have_interior_to_left)
         first_event = self._peek()
         self._current_endpoint_first_event = first_event
         return self
 
     @property
     def segments_count(self) -> int:
-        return len(self._have_interior_to_left)
+        return self._first_segments_count + self._second_segments_count
 
     def reduce_events(self,
                       events: List[Event],
@@ -192,33 +137,41 @@ class Operation(ABC):
         return self._endpoints[event]
 
     __slots__ = (
-        '_are_from_first_operand', '_are_from_result',
+        '_first_segments_count', '_are_from_result',
         '_other_have_interior_to_left', '_below_event_from_result',
         '_current_endpoint_first_event', '_current_endpoint_id', '_endpoints',
         '_events_queue_data', '_have_interior_to_left', '_opposites',
         '_overlap_kinds', '_segments_ids', '_starts_ids', '_sweep_line_data'
     )
 
-    def __init__(self, segments_count: int) -> None:
+    def __init__(self,
+                 _first_segments_count: int,
+                 _second_segments_count: int,
+                 _endpoints: List[Point],
+                 _have_interior_to_left: Sequence[bool]) -> None:
+        segments_count = _first_segments_count + _second_segments_count
         initial_events_count = 2 * segments_count
-        self._are_from_first_operand: List[bool] = []
+        self._first_segments_count = _first_segments_count
+        self._second_segments_count = _second_segments_count
         self._are_from_result = [False] * segments_count
-        self._other_have_interior_to_left = [False] * segments_count
         self._below_event_from_result = [UNDEFINED_EVENT] * segments_count
         self._current_endpoint_first_event = UNDEFINED_EVENT
         self._current_endpoint_id = 0
-        self._endpoints: List[Point] = []
+        self._endpoints = _endpoints
+        self._have_interior_to_left = _have_interior_to_left
+        self._opposites = [Event(((index >> 1) << 1) + is_even(index))
+                           for index in range(initial_events_count)]
+        self._other_have_interior_to_left = [False] * segments_count
+        self._overlap_kinds = [OverlapKind.NONE] * segments_count
+        self._segments_ids = list(range(segments_count))
+        self._starts_ids: List[int] = [UNDEFINED_INDEX] * initial_events_count
         self._events_queue_data: PriorityQueue[Event] = PriorityQueue(
+                *range(initial_events_count),
                 key=lambda event: EventsQueueKey(
                         event, self._is_from_first_operand_event(event),
                         self._endpoints, self._opposites
                 )
         )
-        self._have_interior_to_left = [True] * segments_count
-        self._opposites: List[Event] = []
-        self._overlap_kinds = [OverlapKind.NONE] * segments_count
-        self._segments_ids = list(range(segments_count))
-        self._starts_ids: List[int] = [UNDEFINED_INDEX] * initial_events_count
         self._sweep_line_data = red_black.set_(key=self._to_sweep_line_key)
 
     __repr__ = generate_repr(__init__)
@@ -559,23 +512,6 @@ class Operation(ABC):
                 )
         return result
 
-    def _extend(self, segments: Iterable[Segment]) -> None:
-        segment_id_offset = len(self._endpoints) // 2
-        for segment_id, segment in enumerate(segments,
-                                             start=segment_id_offset):
-            start, end = segment.start, segment.end
-            if start > end:
-                start, end = end, start
-                self._have_interior_to_left[segment_id] = False
-            left_event = segment_id_to_left_event(segment_id)
-            right_event = segment_id_to_right_event(segment_id)
-            self._endpoints.append(start)
-            self._endpoints.append(end)
-            self._opposites.append(right_event)
-            self._opposites.append(left_event)
-            self._push(left_event)
-            self._push(right_event)
-
     def _find(self, event: Event) -> Optional[Event]:
         assert is_left_event(event)
         candidate = self._sweep_line_data.tree.find(
@@ -609,9 +545,8 @@ class Operation(ABC):
                 and self._overlap_kinds[event_position] is OverlapKind.NONE)
 
     def _is_left_event_from_first_operand(self, event: Event) -> bool:
-        return self._are_from_first_operand[
-            self._left_event_to_segment_id(event)
-        ]
+        return (self._left_event_to_segment_id(event)
+                < self._first_segments_count)
 
     def _is_outside_left_event(self, event: Event) -> bool:
         event_position = left_event_to_position(event)
@@ -727,6 +662,20 @@ class Operation(ABC):
                 event, self._is_left_event_from_first_operand(event),
                 self._endpoints, self._opposites
         )
+
+
+def _populate_with_segments(segments: Iterable[Segment],
+                            endpoints: List[Point],
+                            have_interior_to_left: List[bool]) -> None:
+    for segment in segments:
+        start, end = segment.start, segment.end
+        if start > end:
+            start, end = end, start
+            have_interior_to_left.append(False)
+        else:
+            have_interior_to_left.append(True)
+        endpoints.append(start)
+        endpoints.append(end)
 
 
 def _multisegmentals_to_segments_count(

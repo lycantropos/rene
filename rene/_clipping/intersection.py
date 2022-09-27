@@ -43,12 +43,25 @@ def intersect_multipolygons(first: Multipolygon,
         second_polygons[polygon_id]
         for polygon_id in second_common_area_polygons_ids
     ]
+    max_min_x = max(min(first_boxes[polygon_id].min_x
+                        for polygon_id in first_common_area_polygons_ids),
+                    min(second_boxes[polygon_id].min_x
+                        for polygon_id in second_common_area_polygons_ids))
     min_max_x = min(max(first_boxes[polygon_id].max_x
                         for polygon_id in first_common_area_polygons_ids),
                     max(second_boxes[polygon_id].max_x
                         for polygon_id in second_common_area_polygons_ids))
-    operation = ShapedIntersection.from_multisegmentals_sequences(
-            first_common_area_polygons, second_common_area_polygons
+    operation = ShapedIntersection.from_segments_iterables(
+            (segment
+             for polygon in first_common_area_polygons
+             for segment in polygon.segments
+             if (max_min_x <= max(segment.start.x, segment.end.x)
+                 and min(segment.start.x, segment.end.x) <= min_max_x)),
+            (segment
+             for polygon in second_common_area_polygons
+             for segment in polygon.segments
+             if (max_min_x <= max(segment.start.x, segment.end.x)
+                 and min(segment.start.x, segment.end.x) <= min_max_x)),
     )
     events = []
     for event in operation:
@@ -76,13 +89,22 @@ def intersect_multipolygon_with_polygon(first: Multipolygon,
         first_polygons[polygon_id]
         for polygon_id in first_common_area_polygons_ids
     ]
+    max_min_x = max(min(first_boxes[polygon_id].min_x
+                        for polygon_id in first_common_area_polygons_ids),
+                    second_bounding_box.min_x)
     min_max_x = min(max(first_boxes[polygon_id].max_x
                         for polygon_id in first_common_area_polygons_ids),
                     second_bounding_box.max_x)
-    operation = (
-        ShapedIntersection.from_multisegmentals_sequence_multisegmental(
-                first_common_area_polygons, second
-        )
+    operation = ShapedIntersection.from_segments_iterables(
+            (segment
+             for polygon in first_common_area_polygons
+             for segment in polygon.segments
+             if (max_min_x <= max(segment.start.x, segment.end.x)
+                 and min(segment.start.x, segment.end.x) <= min_max_x)),
+            (segment
+             for segment in second.segments
+             if (max_min_x <= max(segment.start.x, segment.end.x)
+                 and min(segment.start.x, segment.end.x) <= min_max_x))
     )
     events = []
     for event in operation:
@@ -110,13 +132,22 @@ def intersect_polygon_with_multipolygon(first: Polygon,
         second_polygons[polygon_id]
         for polygon_id in second_common_area_polygons_ids
     ]
+    max_min_x = max(first_bounding_box.min_x,
+                    min(second_boxes[polygon_id].min_x
+                        for polygon_id in second_common_area_polygons_ids))
     min_max_x = min(first_bounding_box.max_x,
                     max(second_boxes[polygon_id].max_x
                         for polygon_id in second_common_area_polygons_ids))
-    operation = (
-        ShapedIntersection.from_multisegmental_multisegmentals_sequence(
-                first, second_common_area_polygons
-        )
+    operation = ShapedIntersection.from_segments_iterables(
+            (segment
+             for segment in first.segments
+             if (max_min_x <= max(segment.start.x, segment.end.x)
+                 and min(segment.start.x, segment.end.x) <= min_max_x)),
+            (segment
+             for polygon in second_common_area_polygons
+             for segment in polygon.segments
+             if (max_min_x <= max(segment.start.x, segment.end.x)
+                 and min(segment.start.x, segment.end.x) <= min_max_x))
     )
     events = []
     for event in operation:
@@ -131,8 +162,18 @@ def intersect_polygons(first: Polygon, second: Polygon) -> List[Polygon]:
                                                second.bounding_box)
     if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):
         return []
+    max_min_x = max(first_bounding_box.min_x, second_bounding_box.min_x)
     min_max_x = min(first_bounding_box.max_x, second_bounding_box.max_x)
-    operation = ShapedIntersection.from_multisegmentals(first, second)
+    operation = ShapedIntersection.from_segments_iterables(
+            (segment
+             for segment in first.segments
+             if (max_min_x <= max(segment.start.x, segment.end.x)
+                 and min(segment.start.x, segment.end.x) <= min_max_x)),
+            (segment
+             for segment in second.segments
+             if (max_min_x <= max(segment.start.x, segment.end.x)
+                 and min(segment.start.x, segment.end.x) <= min_max_x))
+    )
     events = []
     for event in operation:
         if operation.to_event_start(event).x > min_max_x:

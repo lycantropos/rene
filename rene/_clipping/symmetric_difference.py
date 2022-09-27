@@ -1,3 +1,4 @@
+from itertools import chain
 from typing import List
 
 from rene._utils import (do_boxes_have_no_common_continuum,
@@ -38,10 +39,12 @@ def symmetric_subtract_multipolygon_with_polygon(
         first_polygons[index]
         for index in first_common_continuum_polygons_ids
     ]
-    operation = (
-        ShapedSymmetricDifference.from_multisegmentals_sequence_multisegmental(
-                first_common_continuum_polygons, second
-        )
+    operation = ShapedSymmetricDifference.from_segments_iterables(
+            chain.from_iterable(
+                    polygon.segments
+                    for polygon in first_common_continuum_polygons
+            ),
+            second.segments
     )
     result = operation.reduce_events(list(operation),
                                      type(first_polygons[0].border),
@@ -89,8 +92,15 @@ def symmetric_subtract_multipolygons(first: Multipolygon,
         second_polygons[index]
         for index in second_common_continuum_polygons_ids
     ]
-    operation = ShapedSymmetricDifference.from_multisegmentals_sequences(
-            first_common_continuum_polygons, second_common_continuum_polygons
+    operation = ShapedSymmetricDifference.from_segments_iterables(
+            chain.from_iterable(
+                    polygon.segments
+                    for polygon in first_common_continuum_polygons
+            ),
+            chain.from_iterable(
+                    polygon.segments
+                    for polygon in second_common_continuum_polygons
+            )
     )
     result = operation.reduce_events(list(operation),
                                      type(first_polygons[0].border),
@@ -133,10 +143,12 @@ def symmetric_subtract_polygon_with_multipolygon(
         second_polygons[index]
         for index in second_common_continuum_polygons_ids
     ]
-    operation = (
-        ShapedSymmetricDifference.from_multisegmental_multisegmentals_sequence(
-                first, second_common_continuum_polygons
-        )
+    operation = ShapedSymmetricDifference.from_segments_iterables(
+            first.segments,
+            chain.from_iterable(
+                    polygon.segments
+                    for polygon in second_common_continuum_polygons
+            )
     )
     result = operation.reduce_events(list(operation), type(first.border),
                                      type(first))
@@ -156,6 +168,8 @@ def symmetric_subtract_polygons(first: Polygon,
     if do_boxes_have_no_common_continuum(first_bounding_box,
                                          second_bounding_box):
         return [first, second]
-    operation = ShapedSymmetricDifference.from_multisegmentals(first, second)
+    operation = ShapedSymmetricDifference.from_segments_iterables(
+            first.segments, second.segments
+    )
     return operation.reduce_events(list(operation), type(first.border),
                                    type(first))
