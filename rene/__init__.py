@@ -1,6 +1,6 @@
 """Computational geometry."""
 
-__version__ = '0.0.0'
+__version__ = '0.1.0-alpha'
 
 try:
     from ._crene import (MIN_CONTOUR_VERTICES_COUNT,
