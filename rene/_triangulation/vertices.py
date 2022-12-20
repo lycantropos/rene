@@ -1,4 +1,5 @@
-from typing import Any
+from typing import (Any,
+                    Generic)
 
 from reprit.base import generate_repr
 
@@ -6,7 +7,7 @@ from rene.hints import (Point,
                         Scalar)
 
 
-class ContourVertex:
+class ContourVertex(Generic[Scalar]):
     contour_index: int
     index: int
     point: Point
@@ -14,7 +15,7 @@ class ContourVertex:
     __slots__ = 'contour_index', 'index', 'point'
 
     def __new__(
-            cls, contour_index: int, index: int, point: Point
+            cls, contour_index: int, index: int, point: Point[Scalar]
     ) -> 'ContourVertex':
         self = super().__new__(cls)
         self.contour_index, self.index, self.point = (
