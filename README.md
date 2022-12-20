@@ -42,11 +42,11 @@ Usage
 -----
 
 ```python
->>> from rene.exact import (Contour,
+>>> from rene.exact import (ConstrainedDelaunayTriangulation,
+...                         Contour,
 ...                         Empty,
 ...                         Point,
-...                         Polygon,
-...                         ConstrainedDelaunayTriangulation)
+...                         Polygon)
 >>> square = Polygon(Contour([Point(0, 0), Point(4, 0), Point(4, 4),
 ...                           Point(0, 4)]),
 ...                  [])
