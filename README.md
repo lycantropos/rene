@@ -38,6 +38,39 @@ Install
 python setup.py install
 ```
 
+Usage
+-----
+
+```python
+>>> from rene.exact import (Contour,
+...                         Empty,
+...                         Point,
+...                         Polygon,
+...                         ConstrainedDelaunayTriangulation)
+>>> square = Polygon(Contour([Point(0, 0), Point(4, 0), Point(4, 4),
+...                           Point(0, 4)]),
+...                  [])
+>>> square == square
+True
+>>> square & square == square
+True
+>>> square | square == square
+True
+>>> square - square == Empty()
+True
+>>> square ^ square == Empty()
+True
+>>> len(square.border.vertices) == 4
+True
+>>> len(square.holes) == 0
+True
+>>> (ConstrainedDelaunayTriangulation.from_polygon(square).triangles
+...  == [Contour([Point(0, 0), Point(4, 0), Point(0, 4)]),
+...      Contour([Point(0, 4), Point(4, 0), Point(4, 4)])])
+True
+
+```
+
 Development
 -----------
 
