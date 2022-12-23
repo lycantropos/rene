@@ -1,5 +1,4 @@
 #![feature(build_hasher_simple_hash_one)]
-#![feature(map_first_last)]
 
 use std::cmp::Ordering;
 use std::convert::TryFrom;
