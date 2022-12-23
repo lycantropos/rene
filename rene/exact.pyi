@@ -1,15 +1,9 @@
-import sys
+from __future__ import annotations
+
+import typing as _t
 from numbers import Rational as _Rational
-from typing import (Any as _Any,
-                    Sequence as _Sequence,
-                    Union as _Union,
-                    overload as _overload)
 
-if sys.version_info < (3, 8):
-    from typing_extensions import final as _final
-else:
-    from typing import final as _final
-
+import typing_extensions as _te
 from rithm import Fraction as _Fraction
 
 from rene import (Orientation as _Orientation,
@@ -33,49 +27,49 @@ class Box:
     def min_y(self) -> _Fraction:
         ...
 
-    def covers(self, other: 'Box') -> bool:
+    def covers(self, other: Box) -> bool:
         ...
 
-    def disjoint_with(self, other: 'Box') -> bool:
+    def disjoint_with(self, other: Box) -> bool:
         ...
 
-    def enclosed_by(self, other: 'Box') -> bool:
+    def enclosed_by(self, other: Box) -> bool:
         ...
 
-    def encloses(self, other: 'Box') -> bool:
+    def encloses(self, other: Box) -> bool:
         ...
 
-    def equals_to(self, other: 'Box') -> bool:
+    def equals_to(self, other: Box) -> bool:
         ...
 
     def is_valid(self) -> bool:
         ...
 
-    def overlaps(self, other: 'Box') -> bool:
+    def overlaps(self, other: Box) -> bool:
         ...
 
-    def relate_to(self, other: 'Box') -> _Relation:
+    def relate_to(self, other: Box) -> _Relation:
         ...
 
-    def touches(self, other: 'Box') -> bool:
+    def touches(self, other: Box) -> bool:
         ...
 
-    def within(self, other: 'Box') -> bool:
+    def within(self, other: Box) -> bool:
         ...
 
     def __new__(cls,
-                min_x: _Union[_Rational, float],
-                max_x: _Union[_Rational, float],
-                min_y: _Union[_Rational, float],
-                max_y: _Union[_Rational, float]) -> 'Box':
+                min_x: _t.Union[_Rational, float],
+                max_x: _t.Union[_Rational, float],
+                min_y: _t.Union[_Rational, float],
+                max_y: _t.Union[_Rational, float]) -> Box:
         ...
 
-    @_overload
-    def __eq__(self, other: 'Box') -> bool:
+    @_t.overload
+    def __eq__(self, other: Box) -> bool:
         ...
 
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
+    @_t.overload
+    def __eq__(self, other: _t.Any) -> _t.Any:
         ...
 
     def __hash__(self) -> int:
@@ -98,7 +92,7 @@ class Contour:
         ...
 
     @property
-    def segments(self) -> _Sequence[Segment]:
+    def segments(self) -> _t.Sequence[Segment]:
         ...
 
     @property
@@ -106,7 +100,7 @@ class Contour:
         ...
 
     @property
-    def vertices(self) -> _Sequence[Point]:
+    def vertices(self) -> _t.Sequence[Point]:
         ...
 
     @property
@@ -116,15 +110,15 @@ class Contour:
     def is_valid(self) -> bool:
         ...
 
-    def __new__(cls, vertices: _Sequence[Point]) -> 'Contour':
+    def __new__(cls, vertices: _t.Sequence[Point]) -> Contour:
         ...
 
-    @_overload
-    def __eq__(self, other: 'Contour') -> bool:
+    @_t.overload
+    def __eq__(self, other: Contour) -> bool:
         ...
 
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
+    @_t.overload
+    def __eq__(self, other: _t.Any) -> _t.Any:
         ...
 
     def __hash__(self) -> int:
@@ -138,34 +132,35 @@ class Contour:
 
 
 class Empty:
-    def __new__(cls) -> 'Empty':
+    def __new__(cls) -> Empty:
         ...
 
-    def __and__(self,
-                other: _Union['Empty', 'Multipolygon', 'Polygon']) -> 'Empty':
+    def __and__(
+            self, other: _t.Union[Empty, Multipolygon, Polygon]
+    ) -> Empty:
         ...
 
-    @_overload
-    def __eq__(self, other: 'Empty') -> bool:
+    @_t.overload
+    def __eq__(self, other: Empty) -> bool:
         ...
 
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
+    @_t.overload
+    def __eq__(self, other: _t.Any) -> _t.Any:
         ...
 
     def __hash__(self) -> int:
         ...
 
-    @_overload
-    def __or__(self, other: 'Empty') -> 'Empty':
+    @_t.overload
+    def __or__(self, other: Empty) -> Empty:
         ...
 
-    @_overload
-    def __or__(self, other: 'Multipolygon') -> 'Multipolygon':
+    @_t.overload
+    def __or__(self, other: Multipolygon) -> Multipolygon:
         ...
 
-    @_overload
-    def __or__(self, other: 'Polygon') -> 'Polygon':
+    @_t.overload
+    def __or__(self, other: Polygon) -> Polygon:
         ...
 
     def __repr__(self) -> str:
@@ -174,26 +169,27 @@ class Empty:
     def __str__(self) -> str:
         ...
 
-    def __sub__(self,
-                other: _Union['Empty', 'Multipolygon', 'Polygon']) -> 'Empty':
+    def __sub__(
+            self, other: _t.Union[Empty, Multipolygon, Polygon]
+    ) -> Empty:
         ...
 
-    @_overload
-    def __xor__(self, other: 'Empty') -> 'Empty':
+    @_t.overload
+    def __xor__(self, other: Empty) -> Empty:
         ...
 
-    @_overload
-    def __xor__(self, other: 'Multipolygon') -> 'Multipolygon':
+    @_t.overload
+    def __xor__(self, other: Multipolygon) -> Multipolygon:
         ...
 
-    @_overload
-    def __xor__(self, other: 'Polygon') -> 'Polygon':
+    @_t.overload
+    def __xor__(self, other: Polygon) -> Polygon:
         ...
 
 
 class Multipolygon:
     @property
-    def polygons(self) -> _Sequence[Polygon]:
+    def polygons(self) -> _t.Sequence[Polygon]:
         ...
 
     @property
@@ -201,94 +197,97 @@ class Multipolygon:
         ...
 
     @property
-    def segments(self) -> _Sequence[Segment]:
+    def segments(self) -> _t.Sequence[Segment]:
         ...
 
     @property
     def segments_count(self) -> int:
         ...
 
-    def __new__(cls, polygons: _Sequence[Polygon]) -> 'Multipolygon':
+    def __new__(cls, polygons: _t.Sequence[Polygon]) -> Multipolygon:
         ...
 
-    @_overload
-    def __and__(self, other: 'Empty') -> 'Empty':
+    @_t.overload
+    def __and__(self, other: Empty) -> Empty:
         ...
 
-    @_overload
+    @_t.overload
     def __and__(
-            self, other: 'Multipolygon'
-    ) -> _Union[Empty, 'Multipolygon', 'Polygon']:
+            self, other: Multipolygon
+    ) -> _t.Union[Empty, Multipolygon, Polygon]:
         ...
 
-    @_overload
-    def __and__(self,
-                other: 'Polygon') -> _Union[Empty, 'Multipolygon', 'Polygon']:
+    @_t.overload
+    def __and__(
+            self, other: Polygon
+    ) -> _t.Union[Empty, Multipolygon, Polygon]:
         ...
 
-    @_overload
-    def __eq__(self, other: 'Multipolygon') -> bool:
+    @_t.overload
+    def __eq__(self, other: Multipolygon) -> bool:
         ...
 
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
+    @_t.overload
+    def __eq__(self, other: _t.Any) -> _t.Any:
         ...
 
     def __hash__(self) -> int:
         ...
 
-    @_overload
-    def __or__(self, other: 'Empty') -> 'Multipolygon':
+    @_t.overload
+    def __or__(self, other: Empty) -> Multipolygon:
         ...
 
-    @_overload
-    def __or__(self, other: 'Multipolygon') -> _Union['Multipolygon', Polygon]:
+    @_t.overload
+    def __or__(
+            self, other: Multipolygon
+    ) -> _t.Union[Multipolygon, Polygon]:
         ...
 
-    @_overload
-    def __or__(self, other: 'Polygon') -> _Union['Multipolygon', Polygon]:
+    @_t.overload
+    def __or__(self, other: Polygon) -> _t.Union[Multipolygon, Polygon]:
         ...
 
     def __repr__(self) -> str:
         ...
 
-    @_overload
-    def __sub__(self, other: 'Empty') -> 'Multipolygon':
+    @_t.overload
+    def __sub__(self, other: Empty) -> Multipolygon:
         ...
 
-    @_overload
+    @_t.overload
     def __sub__(
-            self, other: 'Multipolygon'
-    ) -> _Union[Empty, Multipolygon, 'Polygon']:
+            self, other: Multipolygon
+    ) -> _t.Union[Empty, Multipolygon, Polygon]:
         ...
 
-    @_overload
+    @_t.overload
     def __sub__(self,
-                other: 'Polygon') -> _Union[Empty, Multipolygon, 'Polygon']:
+                other: Polygon) -> _t.Union[Empty, Multipolygon, Polygon]:
         ...
 
     def __str__(self) -> str:
         ...
 
-    @_overload
-    def __xor__(self, other: 'Empty') -> 'Multipolygon':
+    @_t.overload
+    def __xor__(self, other: Empty) -> Multipolygon:
         ...
 
-    @_overload
+    @_t.overload
     def __xor__(
-            self, other: 'Multipolygon'
-    ) -> _Union[Empty, Multipolygon, 'Polygon']:
+            self, other: Multipolygon
+    ) -> _t.Union[Empty, Multipolygon, Polygon]:
         ...
 
-    @_overload
+    @_t.overload
     def __xor__(self,
-                other: 'Polygon') -> _Union[Empty, Multipolygon, 'Polygon']:
+                other: Polygon) -> _t.Union[Empty, Multipolygon, Polygon]:
         ...
 
 
 class Multisegment:
     @property
-    def segments(self) -> _Sequence[Segment]:
+    def segments(self) -> _t.Sequence[Segment]:
         ...
 
     @property
@@ -298,15 +297,15 @@ class Multisegment:
     def is_valid(self) -> bool:
         ...
 
-    def __new__(cls, segments: _Sequence[Segment]) -> 'Multisegment':
+    def __new__(cls, segments: _t.Sequence[Segment]) -> Multisegment:
         ...
 
-    @_overload
-    def __eq__(self, other: 'Multisegment') -> bool:
+    @_t.overload
+    def __eq__(self, other: Multisegment) -> bool:
         ...
 
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
+    @_t.overload
+    def __eq__(self, other: _t.Any) -> _t.Any:
         ...
 
     def __hash__(self) -> int:
@@ -329,31 +328,31 @@ class Point:
         ...
 
     def __new__(cls,
-                x: _Union[_Rational, float],
-                y: _Union[_Rational, float]) -> 'Point':
+                x: _t.Union[_Rational, float],
+                y: _t.Union[_Rational, float]) -> Point:
         ...
 
-    @_overload
-    def __eq__(self, other: 'Point') -> bool:
+    @_t.overload
+    def __eq__(self, other: Point) -> bool:
         ...
 
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
+    @_t.overload
+    def __eq__(self, other: _t.Any) -> _t.Any:
         ...
 
-    def __ge__(self, other: 'Point') -> bool:
+    def __ge__(self, other: Point) -> bool:
         ...
 
-    def __gt__(self, other: 'Point') -> bool:
+    def __gt__(self, other: Point) -> bool:
         ...
 
     def __hash__(self) -> int:
         ...
 
-    def __le__(self, other: 'Point') -> bool:
+    def __le__(self, other: Point) -> bool:
         ...
 
-    def __lt__(self, other: 'Point') -> bool:
+    def __lt__(self, other: Point) -> bool:
         ...
 
     def __repr__(self) -> str:
@@ -373,7 +372,7 @@ class Polygon:
         ...
 
     @property
-    def holes(self) -> _Sequence[Contour]:
+    def holes(self) -> _t.Sequence[Contour]:
         ...
 
     @property
@@ -381,41 +380,44 @@ class Polygon:
         ...
 
     @property
-    def segments(self) -> _Sequence[Segment]:
+    def segments(self) -> _t.Sequence[Segment]:
         ...
 
     @property
     def segments_count(self) -> int:
         ...
 
-    def __new__(cls, border: Contour, holes: _Sequence[Contour]) -> 'Polygon':
+    def __new__(cls,
+                border: Contour,
+                holes: _t.Sequence[Contour]) -> Polygon:
         ...
 
     def __and__(self,
-                other: 'Polygon') -> _Union[Empty, Multipolygon, 'Polygon']:
+                other: Polygon) -> _t.Union[Empty, Multipolygon, Polygon]:
         ...
 
-    @_overload
-    def __eq__(self, other: 'Polygon') -> bool:
+    @_t.overload
+    def __eq__(self, other: Polygon) -> bool:
         ...
 
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
+    @_t.overload
+    def __eq__(self, other: _t.Any) -> _t.Any:
         ...
 
     def __hash__(self) -> int:
         ...
 
-    @_overload
-    def __or__(self, other: 'Empty') -> 'Polygon':
+    @_t.overload
+    def __or__(self, other: Empty) -> Polygon:
         ...
 
-    @_overload
-    def __or__(self, other: 'Multipolygon') -> _Union['Multipolygon', Polygon]:
+    @_t.overload
+    def __or__(self,
+               other: Multipolygon) -> _t.Union[Multipolygon, Polygon]:
         ...
 
-    @_overload
-    def __or__(self, other: 'Polygon') -> _Union['Multipolygon', Polygon]:
+    @_t.overload
+    def __or__(self, other: Polygon) -> _t.Union[Multipolygon, Polygon]:
         ...
 
     def __repr__(self) -> str:
@@ -424,34 +426,34 @@ class Polygon:
     def __str__(self) -> str:
         ...
 
-    @_overload
-    def __sub__(self, other: 'Empty') -> 'Polygon':
+    @_t.overload
+    def __sub__(self, other: Empty) -> Polygon:
         ...
 
-    @_overload
+    @_t.overload
     def __sub__(
-            self, other: 'Multipolygon'
-    ) -> _Union[Empty, Multipolygon, 'Polygon']:
+            self, other: Multipolygon
+    ) -> _t.Union[Empty, Multipolygon, Polygon]:
         ...
 
-    @_overload
+    @_t.overload
     def __sub__(self,
-                other: 'Polygon') -> _Union[Empty, Multipolygon, 'Polygon']:
+                other: Polygon) -> _t.Union[Empty, Multipolygon, Polygon]:
         ...
 
-    @_overload
-    def __xor__(self, other: 'Empty') -> 'Polygon':
+    @_t.overload
+    def __xor__(self, other: Empty) -> Polygon:
         ...
 
-    @_overload
+    @_t.overload
     def __xor__(
-            self, other: 'Multipolygon'
-    ) -> _Union[Empty, Multipolygon, 'Polygon']:
+            self, other: Multipolygon
+    ) -> _t.Union[Empty, Multipolygon, Polygon]:
         ...
 
-    @_overload
-    def __xor__(self,
-                other: 'Polygon') -> _Union[Empty, Multipolygon, 'Polygon']:
+    @_t.overload
+    def __xor__(self, 
+                other: Polygon) -> _t.Union[Empty, Multipolygon, Polygon]:
         ...
 
 
@@ -464,15 +466,15 @@ class Segment:
     def start(self) -> Point:
         ...
 
-    def __new__(cls, start: Point, end: Point) -> 'Segment':
+    def __new__(cls, start: Point, end: Point) -> Segment:
         ...
 
-    @_overload
-    def __eq__(self, other: 'Segment') -> bool:
+    @_t.overload
+    def __eq__(self, other: Segment) -> bool:
         ...
 
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
+    @_t.overload
+    def __eq__(self, other: _t.Any) -> _t.Any:
         ...
 
     def __hash__(self) -> int:
@@ -485,7 +487,7 @@ class Segment:
         ...
 
 
-@_final
+@_te.final
 class ConstrainedDelaunayTriangulation:
     @classmethod
     def from_polygon(cls,
@@ -497,17 +499,18 @@ class ConstrainedDelaunayTriangulation:
         ...
 
     @property
-    def triangles(self) -> _Sequence[Contour]:
+    def triangles(self) -> _t.Sequence[Contour]:
         ...
 
     def __bool__(self) -> bool:
         ...
 
 
-@_final
+@_te.final
 class DelaunayTriangulation:
     @classmethod
-    def from_points(cls, points: _Sequence[Point]) -> 'DelaunayTriangulation':
+    def from_points(cls,
+                    points: _t.Sequence[Point]) -> 'DelaunayTriangulation':
         ...
 
     @property
@@ -515,7 +518,7 @@ class DelaunayTriangulation:
         ...
 
     @property
-    def triangles(self) -> _Sequence[Contour]:
+    def triangles(self) -> _t.Sequence[Contour]:
         ...
 
     def __bool__(self) -> bool:
