@@ -1262,6 +1262,10 @@ impl PyExactSegment {
         PyExactPoint(self.0.end())
     }
 
+    fn relate_to(&self, other: &Self) -> PyResult<&PyAny> {
+        try_relation_to_py_relation(self.0.relate_to(&other.0))
+    }
+
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
         PyFrozenSet::new(py, &[self.start().into_py(py), self.end().into_py(py)])?.hash()
     }

@@ -4,6 +4,7 @@ from reprit.base import generate_repr
 from rithm import Fraction
 
 from rene._context import Context
+from rene._utils import relate_segments
 
 
 class Segment:
@@ -16,6 +17,12 @@ class Segment:
     @property
     def start(self):
         return self._start
+
+    def relate_to(self, other):
+        if isinstance(other, Segment):
+            return relate_segments(self.start, self.end, other.start,
+                                   other.end)
+        raise TypeError(f'Unsupported type: {type(other)!r}.')
 
     __module__ = 'rene.exact'
     __slots__ = '_end', '_start'

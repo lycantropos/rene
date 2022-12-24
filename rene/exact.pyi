@@ -466,6 +466,9 @@ class Segment:
     def start(self) -> Point:
         ...
 
+    def relate_to(self, other: Segment) -> Point:
+        ...
+
     def __new__(cls, start: Point, end: Point) -> Segment:
         ...
 
