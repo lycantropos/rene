@@ -14,7 +14,8 @@ from rene._rene import (Location,
 from rene._utils import (deduplicate,
                          locate_point_in_point_point_point_circle,
                          orient)
-from rene.hints import (Contour,
+from rene.hints import (Box,
+                        Contour,
                         Empty,
                         Multipolygon,
                         Multisegment,
@@ -57,6 +58,10 @@ def pack(function: Callable[..., _T2]) -> Callable[[Iterable[_T1]], _T2]:
 
 
 _T = TypeVar('_T')
+
+
+def reverse_box_coordinates(box: Box) -> Box:
+    return type(box)(box.min_y, box.max_y, box.min_x, box.max_x)
 
 
 @singledispatch
