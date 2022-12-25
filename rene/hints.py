@@ -1,59 +1,57 @@
-from typing import (Any as _Any,
-                    Sequence as _Sequence,
-                    TypeVar as _TypeVar,
-                    Union as _Union,
-                    overload as _overload)
+from __future__ import annotations
 
-from typing_extensions import Protocol as _Protocol
+import typing as _t
+
+import typing_extensions as _te
 
 from rene import (Orientation as _Orientation,
                   Relation as _Relation)
 
-_Self = _TypeVar('_Self')
+_Self = _t.TypeVar('_Self')
 
 
-class _Scalar(_Protocol):
+class _Scalar(_te.Protocol):
     def __add__(self: _Self, other: _Self) -> _Self:
         pass
 
-    @_overload
+    @_t.overload
     def __eq__(self: _Self, other: _Self) -> bool:
         pass
 
-    @_overload
-    def __eq__(self: _Self, other: _Any) -> _Any:
+    @_t.overload
+    def __eq__(self: _Self, other: _t.Any) -> _t.Any:
         pass
 
-    @_overload
+    @_t.overload
     def __ge__(self: _Self, other: _Self) -> bool:
         pass
 
-    @_overload
-    def __ge__(self: _Self, other: _Any) -> _Any:
+    @_t.overload
+    def __ge__(self: _Self, other: _t.Any) -> _t.Any:
         pass
 
-    @_overload
+    @_t.overload
     def __gt__(self: _Self, other: _Self) -> bool:
         pass
 
-    @_overload
-    def __gt__(self: _Self, other: _Any) -> _Any:
+    @_t.overload
+    def __gt__(self: _Self, other: _t.Any) -> _t.Any:
         pass
 
-    @_overload
+    @_t.overload
     def __le__(self: _Self, other: _Self) -> bool:
         pass
 
-    @_overload
-    def __le__(self: _Self, other: _Any) -> _Any:
+    @_t.overload
+    def __le__(self: _Self, other: _t.Any) -> _t.Any:
         pass
 
-    @_overload
+    @_t.overload
     def __lt__(self: _Self, other: _Self) -> bool:
         pass
 
-    @_overload
-    def __lt__(self: _Self, other: _Any) -> _Any:
+    @_t.overload
+    def __lt__(self: _Self, other: _t.Any) -> _t.Any:
         pass
 
     def __mul__(self: _Self, other: _Self) -> _Self:
@@ -72,21 +70,21 @@ class _Scalar(_Protocol):
         pass
 
 
-Scalar = _TypeVar('Scalar',
-                  bound=_Scalar)
+Scalar = _t.TypeVar('Scalar',
+                    bound=_Scalar)
 
 
-class _SelfComparable(_Protocol):
-    @_overload
+class _SelfComparable(_te.Protocol):
+    @_t.overload
     def __eq__(self: _Self, other: _Self) -> bool:
         ...
 
-    @_overload
-    def __eq__(self, other: _Any) -> _Any:
+    @_t.overload
+    def __eq__(self, other: _t.Any) -> _t.Any:
         ...
 
 
-class Point(_SelfComparable, _Protocol[Scalar]):
+class Point(_SelfComparable, _te.Protocol[Scalar]):
     @property
     def x(self) -> Scalar:
         ...
@@ -95,22 +93,22 @@ class Point(_SelfComparable, _Protocol[Scalar]):
     def y(self) -> Scalar:
         ...
 
-    def __new__(cls, x: Scalar, y: Scalar) -> 'Point[Scalar]':
+    def __new__(cls, x: Scalar, y: Scalar) -> Point[Scalar]:
         ...
 
-    def __ge__(self, other: 'Point[Scalar]') -> bool:
+    def __ge__(self, other: Point[Scalar]) -> bool:
         ...
 
-    def __gt__(self, other: 'Point[Scalar]') -> bool:
+    def __gt__(self, other: Point[Scalar]) -> bool:
         ...
 
     def __hash__(self) -> int:
         ...
 
-    def __le__(self, other: 'Point[Scalar]') -> bool:
+    def __le__(self, other: Point[Scalar]) -> bool:
         ...
 
-    def __lt__(self, other: 'Point[Scalar]') -> bool:
+    def __lt__(self, other: Point[Scalar]) -> bool:
         ...
 
     def __repr__(self) -> str:
@@ -120,29 +118,29 @@ class Point(_SelfComparable, _Protocol[Scalar]):
         ...
 
 
-class Empty(_SelfComparable, _Protocol):
-    def __new__(cls) -> 'Empty':
+class Empty(_SelfComparable, _te.Protocol):
+    def __new__(cls) -> Empty:
         ...
 
     def __and__(
             self,
-            other: _Union['Empty', 'Multipolygon[Scalar]', 'Polygon[Scalar]']
-    ) -> 'Empty':
+            other: _t.Union[Empty, Multipolygon[Scalar], Polygon[Scalar]]
+    ) -> Empty:
         ...
 
     def __hash__(self) -> int:
         ...
 
-    @_overload
-    def __or__(self, other: 'Empty') -> 'Empty':
+    @_t.overload
+    def __or__(self, other: Empty) -> Empty:
         ...
 
-    @_overload
-    def __or__(self, other: 'Multipolygon[Scalar]') -> 'Multipolygon[Scalar]':
+    @_t.overload
+    def __or__(self, other: Multipolygon[Scalar]) -> Multipolygon[Scalar]:
         ...
 
-    @_overload
-    def __or__(self, other: 'Polygon[Scalar]') -> 'Polygon[Scalar]':
+    @_t.overload
+    def __or__(self, other: Polygon[Scalar]) -> Polygon[Scalar]:
         ...
 
     def __repr__(self) -> str:
@@ -153,24 +151,24 @@ class Empty(_SelfComparable, _Protocol):
 
     def __sub__(
             self,
-            other: _Union['Empty', 'Multipolygon[Scalar]', 'Polygon[Scalar]']
-    ) -> 'Empty':
+            other: _t.Union[Empty, Multipolygon[Scalar], Polygon[Scalar]]
+    ) -> Empty:
         ...
 
-    @_overload
-    def __xor__(self, other: 'Empty') -> 'Empty':
+    @_t.overload
+    def __xor__(self, other: Empty) -> Empty:
         ...
 
-    @_overload
-    def __xor__(self, other: 'Multipolygon[Scalar]') -> 'Multipolygon[Scalar]':
+    @_t.overload
+    def __xor__(self, other: Multipolygon[Scalar]) -> Multipolygon[Scalar]:
         ...
 
-    @_overload
-    def __xor__(self, other: 'Polygon[Scalar]') -> 'Polygon[Scalar]':
+    @_t.overload
+    def __xor__(self, other: Polygon[Scalar]) -> Polygon[Scalar]:
         ...
 
 
-class Box(_SelfComparable, _Protocol[Scalar]):
+class Box(_SelfComparable, _te.Protocol[Scalar]):
     @property
     def max_x(self) -> Scalar:
         ...
@@ -187,41 +185,41 @@ class Box(_SelfComparable, _Protocol[Scalar]):
     def min_y(self) -> Scalar:
         ...
 
-    def covers(self, other: 'Box[Scalar]') -> bool:
+    def covers(self, other: Box[Scalar]) -> bool:
         ...
 
-    def disjoint_with(self, other: 'Box[Scalar]') -> bool:
+    def disjoint_with(self, other: Box[Scalar]) -> bool:
         ...
 
-    def enclosed_by(self, other: 'Box[Scalar]') -> bool:
+    def enclosed_by(self, other: Box[Scalar]) -> bool:
         ...
 
-    def encloses(self, other: 'Box[Scalar]') -> bool:
+    def encloses(self, other: Box[Scalar]) -> bool:
         ...
 
-    def equals_to(self, other: 'Box[Scalar]') -> bool:
+    def equals_to(self, other: Box[Scalar]) -> bool:
         ...
 
     def is_valid(self) -> bool:
         ...
 
-    def overlaps(self, other: 'Box[Scalar]') -> bool:
+    def overlaps(self, other: Box[Scalar]) -> bool:
         ...
 
-    def relate_to(self, other: 'Box[Scalar]') -> _Relation:
+    def relate_to(self, other: Box[Scalar]) -> _Relation:
         ...
 
-    def touches(self, other: 'Box[Scalar]') -> bool:
+    def touches(self, other: Box[Scalar]) -> bool:
         ...
 
-    def within(self, other: 'Box[Scalar]') -> bool:
+    def within(self, other: Box[Scalar]) -> bool:
         ...
 
     def __new__(cls,
                 min_x: Scalar,
                 max_x: Scalar,
                 min_y: Scalar,
-                max_y: Scalar) -> 'Box[Scalar]':
+                max_y: Scalar) -> Box[Scalar]:
         ...
 
     def __hash__(self) -> int:
@@ -234,7 +232,7 @@ class Box(_SelfComparable, _Protocol[Scalar]):
         ...
 
 
-class Segment(_SelfComparable, _Protocol[Scalar]):
+class Segment(_SelfComparable, _te.Protocol[Scalar]):
     @property
     def end(self) -> Point[Scalar]:
         ...
@@ -245,7 +243,7 @@ class Segment(_SelfComparable, _Protocol[Scalar]):
 
     def __new__(cls,
                 start: Point[Scalar],
-                end: Point[Scalar]) -> 'Segment[Scalar]':
+                end: Point[Scalar]) -> Segment[Scalar]:
         ...
 
     def __hash__(self) -> int:
@@ -258,7 +256,7 @@ class Segment(_SelfComparable, _Protocol[Scalar]):
         ...
 
 
-class Contour(_SelfComparable, _Protocol[Scalar]):
+class Contour(_SelfComparable, _te.Protocol[Scalar]):
     @property
     def bounding_box(self) -> Box[Scalar]:
         ...
@@ -268,7 +266,7 @@ class Contour(_SelfComparable, _Protocol[Scalar]):
         ...
 
     @property
-    def segments(self) -> _Sequence[Segment[Scalar]]:
+    def segments(self) -> _t.Sequence[Segment[Scalar]]:
         ...
 
     @property
@@ -276,7 +274,7 @@ class Contour(_SelfComparable, _Protocol[Scalar]):
         ...
 
     @property
-    def vertices(self) -> _Sequence[Point[Scalar]]:
+    def vertices(self) -> _t.Sequence[Point[Scalar]]:
         ...
 
     @property
@@ -286,7 +284,7 @@ class Contour(_SelfComparable, _Protocol[Scalar]):
     def is_valid(self) -> bool:
         ...
 
-    def __new__(cls, vertices: _Sequence[Point[Scalar]]) -> 'Contour[Scalar]':
+    def __new__(cls, vertices: _t.Sequence[Point[Scalar]]) -> Contour[Scalar]:
         ...
 
     def __hash__(self) -> int:
@@ -299,13 +297,14 @@ class Contour(_SelfComparable, _Protocol[Scalar]):
         ...
 
 
-_Segmental = _TypeVar('_Segmental',
+_Segmental = _t.TypeVar(
+        '_Segmental',
                       covariant=True)
 
 
-class Multisegmental(_Protocol[_Segmental]):
+class Multisegmental(_te.Protocol[_Segmental]):
     @property
-    def segments(self) -> _Sequence[_Segmental]:
+    def segments(self) -> _t.Sequence[_Segmental]:
         ...
 
     @property
@@ -314,13 +313,13 @@ class Multisegmental(_Protocol[_Segmental]):
 
 
 class Multisegment(_SelfComparable, Multisegmental[Segment[Scalar]],
-                   _Protocol[Scalar]):
+                   _te.Protocol[Scalar]):
     def is_valid(self) -> bool:
         ...
 
     def __new__(
-            cls, segments: _Sequence[Segment[Scalar]]
-    ) -> 'Multisegment[Scalar]':
+            cls, segments: _t.Sequence[Segment[Scalar]]
+    ) -> Multisegment[Scalar]:
         ...
 
     def __hash__(self) -> int:
@@ -334,7 +333,7 @@ class Multisegment(_SelfComparable, Multisegmental[Segment[Scalar]],
 
 
 class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]],
-              _Protocol[Scalar]):
+              _te.Protocol[Scalar]):
     @property
     def border(self) -> Contour[Scalar]:
         ...
@@ -344,7 +343,7 @@ class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]],
         ...
 
     @property
-    def holes(self) -> _Sequence[Contour[Scalar]]:
+    def holes(self) -> _t.Sequence[Contour[Scalar]]:
         ...
 
     @property
@@ -353,31 +352,31 @@ class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]],
 
     def __new__(cls,
                 border: Contour[Scalar],
-                holes: _Sequence[Contour[Scalar]]) -> 'Polygon[Scalar]':
+                holes: _t.Sequence[Contour[Scalar]]) -> Polygon[Scalar]:
         ...
 
     def __and__(
-            self, other: 'Polygon[Scalar]'
-    ) -> _Union[Empty, 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+            self, other: Polygon[Scalar]
+    ) -> _t.Union[Empty, Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
     def __hash__(self) -> int:
         ...
 
-    @_overload
-    def __or__(self, other: 'Empty') -> 'Polygon[Scalar]':
+    @_t.overload
+    def __or__(self, other: Empty) -> Polygon[Scalar]:
         ...
 
-    @_overload
+    @_t.overload
     def __or__(
-            self, other: 'Multipolygon[Scalar]'
-    ) -> _Union['Multipolygon[Scalar]', 'Polygon[Scalar]']:
+            self, other: Multipolygon[Scalar]
+    ) -> _t.Union[Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
-    @_overload
+    @_t.overload
     def __or__(
-            self, other: 'Polygon[Scalar]'
-    ) -> _Union['Multipolygon[Scalar]', 'Polygon[Scalar]']:
+            self, other: Polygon[Scalar]
+    ) -> _t.Union[Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
     def __repr__(self) -> str:
@@ -386,43 +385,43 @@ class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]],
     def __str__(self) -> str:
         ...
 
-    @_overload
-    def __sub__(self, other: 'Empty') -> 'Polygon[Scalar]':
+    @_t.overload
+    def __sub__(self, other: Empty) -> Polygon[Scalar]:
         ...
 
-    @_overload
+    @_t.overload
     def __sub__(
-            self, other: 'Multipolygon[Scalar]'
-    ) -> _Union['Empty', 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+            self, other: Multipolygon[Scalar]
+    ) -> _t.Union[Empty, Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
-    @_overload
+    @_t.overload
     def __sub__(
-            self, other: 'Polygon[Scalar]'
-    ) -> _Union[Empty, 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+            self, other: Polygon[Scalar]
+    ) -> _t.Union[Empty, Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
-    @_overload
-    def __xor__(self, other: 'Empty') -> 'Polygon[Scalar]':
+    @_t.overload
+    def __xor__(self, other: Empty) -> Polygon[Scalar]:
         ...
 
-    @_overload
+    @_t.overload
     def __xor__(
-            self, other: 'Multipolygon[Scalar]'
-    ) -> _Union['Empty', 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+            self, other: Multipolygon[Scalar]
+    ) -> _t.Union[Empty, Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
-    @_overload
+    @_t.overload
     def __xor__(
-            self, other: 'Polygon[Scalar]'
-    ) -> _Union[Empty, 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+            self, other: Polygon[Scalar]
+    ) -> _t.Union[Empty, Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
 
 class Multipolygon(_SelfComparable, Multisegmental[Segment[Scalar]],
-                   _Protocol[Scalar]):
+                   _te.Protocol[Scalar]):
     @property
-    def polygons(self) -> _Sequence[Polygon[Scalar]]:
+    def polygons(self) -> _t.Sequence[Polygon[Scalar]]:
         ...
 
     @property
@@ -430,79 +429,79 @@ class Multipolygon(_SelfComparable, Multisegmental[Segment[Scalar]],
         ...
 
     def __new__(
-            cls, vertices: _Sequence[Polygon[Scalar]]
-    ) -> 'Multipolygon[Scalar]':
+            cls, vertices: _t.Sequence[Polygon[Scalar]]
+    ) -> Multipolygon[Scalar]:
         ...
 
-    @_overload
-    def __and__(self, other: 'Empty') -> 'Empty':
+    @_t.overload
+    def __and__(self, other: Empty) -> Empty:
         ...
 
-    @_overload
+    @_t.overload
     def __and__(
-            self, other: 'Multipolygon[Scalar]'
-    ) -> _Union['Empty', 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+            self, other: Multipolygon[Scalar]
+    ) -> _t.Union[Empty, Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
-    @_overload
+    @_t.overload
     def __and__(
-            self, other: 'Polygon[Scalar]'
-    ) -> _Union['Empty', 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+            self, other: Polygon[Scalar]
+    ) -> _t.Union[Empty, Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
     def __hash__(self) -> int:
         ...
 
-    @_overload
-    def __or__(self, other: 'Empty') -> 'Polygon[Scalar]':
+    @_t.overload
+    def __or__(self, other: Empty) -> Polygon[Scalar]:
         ...
 
-    @_overload
+    @_t.overload
     def __or__(
-            self, other: 'Multipolygon[Scalar]'
-    ) -> _Union['Multipolygon[Scalar]', 'Polygon[Scalar]']:
+            self, other: Multipolygon[Scalar]
+    ) -> _t.Union[Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
-    @_overload
+    @_t.overload
     def __or__(
-            self, other: 'Polygon[Scalar]'
-    ) -> _Union['Multipolygon[Scalar]', 'Polygon[Scalar]']:
+            self, other: Polygon[Scalar]
+    ) -> _t.Union[Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
     def __repr__(self) -> str:
         ...
 
-    @_overload
-    def __sub__(self, other: 'Empty') -> 'Multipolygon[Scalar]':
+    @_t.overload
+    def __sub__(self, other: Empty) -> Multipolygon[Scalar]:
         ...
 
-    @_overload
+    @_t.overload
     def __sub__(
-            self, other: 'Multipolygon[Scalar]'
-    ) -> _Union['Empty', 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+            self, other: Multipolygon[Scalar]
+    ) -> _t.Union[Empty, Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
-    @_overload
+    @_t.overload
     def __sub__(
-            self, other: 'Polygon[Scalar]'
-    ) -> _Union['Empty', 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+            self, other: Polygon[Scalar]
+    ) -> _t.Union[Empty, Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
     def __str__(self) -> str:
         ...
 
-    @_overload
-    def __xor__(self, other: 'Empty') -> 'Multipolygon[Scalar]':
+    @_t.overload
+    def __xor__(self, other: Empty) -> Multipolygon[Scalar]:
         ...
 
-    @_overload
+    @_t.overload
     def __xor__(
-            self, other: 'Multipolygon[Scalar]'
-    ) -> _Union['Empty', 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+            self, other: Multipolygon[Scalar]
+    ) -> _t.Union[Empty, Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
-    @_overload
+    @_t.overload
     def __xor__(
-            self, other: 'Polygon[Scalar]'
-    ) -> _Union['Empty', 'Multipolygon[Scalar]', 'Polygon[Scalar]']:
+            self, other: Polygon[Scalar]
+    ) -> _t.Union[Empty, Multipolygon[Scalar], Polygon[Scalar]]:
         ...
