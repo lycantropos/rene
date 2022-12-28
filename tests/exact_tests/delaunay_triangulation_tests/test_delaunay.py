@@ -1,11 +1,11 @@
 from typing import Sequence
 
-from ground.hints import Point
 from hypothesis import given
 
 from rene import MIN_CONTOUR_VERTICES_COUNT
 from rene.exact import (Contour,
-                        DelaunayTriangulation)
+                        DelaunayTriangulation,
+                        Point)
 from tests.utils import (is_contour_triangular,
                          is_point_inside_circumcircle,
                          to_convex_hull,
