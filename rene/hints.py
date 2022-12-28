@@ -241,6 +241,9 @@ class Segment(_SelfComparable, _te.Protocol[Scalar]):
     def start(self) -> Point[Scalar]:
         ...
 
+    def relate_to(self, other: Segment[Scalar]) -> _Relation:
+        ...
+
     def __new__(cls,
                 start: Point[Scalar],
                 end: Point[Scalar]) -> Segment[Scalar]:
