@@ -70,8 +70,10 @@ class DelaunayTriangulation:
 
     __slots__ = '_left_side', '_mesh', '_right_side'
 
-    def __init__(self, left_side: QuadEdge, right_side: QuadEdge, mesh: Mesh
-                 ) -> None:
+    def __init__(self,
+                 left_side: QuadEdge,
+                 right_side: QuadEdge,
+                 mesh: Mesh) -> None:
         self._left_side, self._mesh, self._right_side = (
             left_side, mesh, right_side
         )

@@ -265,8 +265,8 @@ def find_left_candidate(mesh: Mesh, base_edge: QuadEdge) -> Optional[QuadEdge]:
     return result
 
 
-def find_right_candidate(mesh: Mesh, base_edge: QuadEdge
-                         ) -> Optional[QuadEdge]:
+def find_right_candidate(mesh: Mesh,
+                         base_edge: QuadEdge) -> Optional[QuadEdge]:
     result = mesh.to_right_from_start(base_edge)
     if (orient_point_to_edge(mesh, base_edge, mesh.to_end(result))
             is not Orientation.CLOCKWISE):
