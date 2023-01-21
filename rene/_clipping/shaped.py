@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import (ABC,
                  abstractmethod)
 from typing import (Iterable,
@@ -22,7 +24,6 @@ from rene.hints import (Contour,
                         Multisegmental,
                         Point,
                         Polygon,
-                        Scalar,
                         Segment)
 from .constants import UNDEFINED_INDEX
 from .event import (UNDEFINED_EVENT,
@@ -37,11 +38,9 @@ from .sweep_line_key import BinarySweepLineKey as SweepLineKey
 
 class Operation(ABC):
     @classmethod
-    def from_segments_iterables(
-            cls,
-            first: Iterable[Segment],
-            second: Iterable[Segment],
-    ) -> 'Operation':
+    def from_segments_iterables(cls,
+                                first: Iterable[Segment],
+                                second: Iterable[Segment]) -> Operation:
         endpoints: List[Point] = []
         have_interior_to_left: List[bool] = []
         _populate_with_segments(first, endpoints, have_interior_to_left)

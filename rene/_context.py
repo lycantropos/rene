@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import (Generic,
                     Type)
 
@@ -72,7 +74,7 @@ class Context(Generic[Scalar]):
                 multisegment_cls: Type[Multisegment[Scalar]],
                 point_cls: Type[Point[Scalar]],
                 polygon_cls: Type[Polygon[Scalar]],
-                segment_cls: Type[Segment[Scalar]]) -> 'Context[Scalar]':
+                segment_cls: Type[Segment[Scalar]]) -> Context[Scalar]:
         self = super().__new__(cls)
         (
             self._box_cls, self._empty_cls, self._multipolygon_cls,

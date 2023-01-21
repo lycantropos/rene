@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import (Iterable,
                     List,
                     Optional,
@@ -24,7 +26,7 @@ class Mesh:
     starts_indices: List[int]
 
     @classmethod
-    def from_points(cls, endpoints: List[Point]) -> 'Mesh':
+    def from_points(cls, endpoints: List[Point]) -> Mesh:
         return cls(endpoints, [], [])
 
     def connect_edges(self, first: QuadEdge, second: QuadEdge) -> QuadEdge:

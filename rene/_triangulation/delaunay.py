@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import (List,
                     Sequence,
                     Tuple)
@@ -16,7 +18,7 @@ from .quad_edge import (QuadEdge,
 
 class DelaunayTriangulation:
     @classmethod
-    def from_points(cls, points: Sequence[Point]) -> 'DelaunayTriangulation':
+    def from_points(cls, points: Sequence[Point]) -> DelaunayTriangulation:
         endpoints = list(points)
         endpoints.sort()
         mesh = Mesh.from_points(deduplicate(endpoints))

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import deque
 from itertools import (chain,
                        groupby,
@@ -34,7 +36,7 @@ BORDER_CONTOUR_INDEX = 0
 class ConstrainedDelaunayTriangulation:
     @classmethod
     def from_polygon(cls,
-                     polygon: Polygon) -> 'ConstrainedDelaunayTriangulation':
+                     polygon: Polygon) -> ConstrainedDelaunayTriangulation:
         contours_vertices = [polygon.border.vertices,
                              *[hole.vertices for hole in polygon.holes]]
         vertices = list(chain.from_iterable(

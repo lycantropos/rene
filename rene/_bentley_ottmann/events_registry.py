@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from functools import partial
 from typing import (Iterator,
                     List,
@@ -28,7 +30,7 @@ class EventsRegistry:
     def from_segments(cls,
                       segments: Sequence[Segment],
                       *,
-                      unique: bool) -> 'EventsRegistry':
+                      unique: bool) -> EventsRegistry:
         result = cls(unique=unique)
         for segment_id, segment in enumerate(segments):
             left_event = segment_id_to_left_event(segment_id)

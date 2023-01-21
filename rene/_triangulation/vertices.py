@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import (Any,
                     Generic)
 
@@ -16,7 +18,7 @@ class ContourVertex(Generic[Scalar]):
 
     def __new__(
             cls, contour_index: int, index: int, point: Point[Scalar]
-    ) -> 'ContourVertex':
+    ) -> ContourVertex:
         self = super().__new__(cls)
         self.contour_index, self.index, self.point = (
             contour_index, index, point
@@ -62,7 +64,7 @@ class PolygonVertexPosition:
 
     def __new__(cls,
                 contour_index: int,
-                index: int) -> 'PolygonVertexPosition':
+                index: int) -> PolygonVertexPosition:
         self = super().__new__(cls)
         self.contour_index, self.index = contour_index, index
         return self

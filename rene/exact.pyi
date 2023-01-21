@@ -494,7 +494,7 @@ class Segment:
 class ConstrainedDelaunayTriangulation:
     @classmethod
     def from_polygon(cls,
-                     polygon: Polygon) -> 'ConstrainedDelaunayTriangulation':
+                     polygon: Polygon) -> ConstrainedDelaunayTriangulation:
         ...
 
     @property
@@ -513,7 +513,7 @@ class ConstrainedDelaunayTriangulation:
 class DelaunayTriangulation:
     @classmethod
     def from_points(cls,
-                    points: _t.Sequence[Point]) -> 'DelaunayTriangulation':
+                    points: _t.Sequence[Point]) -> DelaunayTriangulation:
         ...
 
     @property
