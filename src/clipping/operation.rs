@@ -510,7 +510,7 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
                 event_id += 1;
             }
             let left_stop_event_id = event_id - 1;
-            let has_right_events = left_start_event_id >= right_start_event_id + 1;
+            let has_right_events = left_start_event_id > right_start_event_id;
             let has_left_events = left_stop_event_id >= left_start_event_id;
             if has_right_events {
                 result.splice(
@@ -624,7 +624,7 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
         events_ids: &[usize],
         connectivity: &[usize],
         are_events_processed: &[bool],
-        visited_endpoints_positions: &mut Vec<usize>,
+        visited_endpoints_positions: &mut [usize],
     ) -> Vec<Event>
     where
         Point: PartialEq,
@@ -968,7 +968,7 @@ where
     }
 }
 
-impl<'a, Point: Ord + Orient, const KIND: u8> Operation<Point, KIND> {
+impl<Point: Ord + Orient, const KIND: u8> Operation<Point, KIND> {
     fn extend<Segment: Segmental<Endpoint = Point>>(
         &mut self,
         segments: impl Iterator<Item = Segment>,

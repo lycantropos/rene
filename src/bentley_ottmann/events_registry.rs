@@ -66,12 +66,10 @@ where
                         self.merge_equal_segment_events(event_opposite, equal_segment_event);
                     }
                     Some(event)
+                } else if UNIQUE {
+                    self.next()
                 } else {
-                    if UNIQUE {
-                        self.next()
-                    } else {
-                        Some(event)
-                    }
+                    Some(event)
                 }
             }
         } else {

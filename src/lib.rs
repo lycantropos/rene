@@ -454,7 +454,7 @@ impl PyExactBox {
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
         PyTuple::new(
             py,
-            &[self.min_x()?, self.max_x()?, self.min_y()?, self.max_y()?],
+            [self.min_x()?, self.max_x()?, self.min_y()?, self.max_y()?],
         )
         .hash()
     }
@@ -1355,7 +1355,7 @@ fn try_py_integral_to_big_int(value: &PyAny) -> PyResult<BigInt> {
             Ordering::Less => Err(PyErr::fetch(py)),
             Ordering::Equal => Ok(BigInt::zero()),
             Ordering::Greater => {
-                let bytes_count = (bits_count as usize) / (u8::BITS as usize) + 1;
+                let bytes_count = bits_count / (u8::BITS as usize) + 1;
                 let mut buffer = vec![0u8; bytes_count];
                 if ffi::_PyLong_AsByteArray(
                     Py::<PyLong>::from_owned_ptr(py, ptr).as_ptr() as *mut ffi::PyLongObject,

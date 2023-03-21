@@ -343,12 +343,10 @@ fn are_triangular_hole_vertices(
         .filter(|contour_index| {
             second_positions
                 .iter()
-                .find(|position| position.contour_index.eq(contour_index))
-                .is_some()
+                .any(|position| position.contour_index.eq(contour_index))
                 && third_positions
                     .iter()
-                    .find(|position| position.contour_index.eq(contour_index))
-                    .is_some()
+                    .any(|position| position.contour_index.eq(contour_index))
         })
         .any(|contour_index| triangular_holes_indices.contains(&contour_index))
 }
@@ -368,7 +366,7 @@ fn detect_crossings<Endpoint: Orient + PartialEq + PartialOrd>(
                 mesh.get_start(last_crossing),
                 mesh.get_end(last_crossing),
                 constraint_start,
-                constraint_end
+                constraint_end,
             ),
             Relation::Cross
         );
@@ -429,16 +427,15 @@ fn intersect_polygon_vertices_positions_slices_impl<
     let mut result = Vec::with_capacity(shorter.len());
     for shorter_position in shorter {
         if WITH_BORDER || shorter_position.contour_index != 0 {
-            match longer
+            if let Some(longer_position) = longer
                 .iter()
                 .find(|&candidate| candidate.contour_index == shorter_position.contour_index)
             {
-                Some(longer_position) => result.push(if REVERSE {
+                result.push(if REVERSE {
                     (*shorter_position, *longer_position)
                 } else {
                     (*longer_position, *shorter_position)
-                }),
-                _ => {}
+                })
             }
         }
     }
@@ -586,10 +583,10 @@ fn resolve_crossings<Endpoint: Orient + PartialOrd>(
             crossings_queue.push_front(edge)
         }
     }
-    return result;
+    result
 }
 
-fn set_constraint<'a, Endpoint: LocatePointInPointPointPointCircle + Orient + PartialOrd>(
+fn set_constraint<Endpoint: LocatePointInPointPointPointCircle + Orient + PartialOrd>(
     mesh: &mut Mesh<Endpoint>,
     constraint_start: &Endpoint,
     constraint_end: &Endpoint,

@@ -63,7 +63,7 @@ pub(crate) fn do_boxes_have_common_area<Scalar>(first: &Box<Scalar>, second: &Bo
 where
     for<'a> &'a Box<Scalar>: Relatable,
 {
-    !first.disjoint_with(&second) && !first.touches(&second)
+    !first.disjoint_with(second) && !first.touches(second)
 }
 
 pub(crate) fn do_boxes_have_common_continuum<Scalar: PartialEq>(
@@ -86,7 +86,7 @@ pub(crate) fn do_boxes_have_no_common_area<Scalar>(
 where
     for<'a> &'a Box<Scalar>: Relatable,
 {
-    first.disjoint_with(&second) || first.touches(&second)
+    first.disjoint_with(second) || first.touches(second)
 }
 
 pub(crate) fn do_boxes_have_no_common_continuum<Scalar: PartialEq>(
@@ -364,7 +364,7 @@ where
 {
     boxes
         .iter()
-        .map(|box_| do_boxes_have_common_area(box_, &target_box))
+        .map(|box_| do_boxes_have_common_area(box_, target_box))
         .collect::<Vec<_>>()
 }
 
@@ -377,7 +377,7 @@ where
 {
     boxes
         .iter()
-        .map(|box_| do_boxes_have_common_continuum(box_, &target_box))
+        .map(|box_| do_boxes_have_common_continuum(box_, target_box))
         .collect::<Vec<_>>()
 }
 
@@ -393,7 +393,7 @@ where
     for<'a> &'a Box<Scalar>: Relatable,
 {
     (0..boxes.len())
-        .filter(|&index| do_boxes_have_common_area(&boxes[index], &target_box))
+        .filter(|&index| do_boxes_have_common_area(&boxes[index], target_box))
         .collect::<Vec<_>>()
 }
 

@@ -127,7 +127,7 @@ where
             debug_assert!(maybe_events_count.is_some());
             Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
         };
-        while let Some(event) = operation.next() {
+        for event in operation.by_ref() {
             events.push(event)
         }
         let mut result = Multipolygon::<_>::reduce_events(events, &mut operation);
@@ -208,7 +208,7 @@ where
             debug_assert!(maybe_events_count.is_some());
             Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
         };
-        while let Some(event) = operation.next() {
+        for event in operation.by_ref() {
             events.push(event)
         }
         let mut result = Multipolygon::<_>::reduce_events(events, &mut operation);
@@ -285,7 +285,7 @@ where
             debug_assert!(maybe_events_count.is_some());
             Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
         };
-        while let Some(event) = operation.next() {
+        for event in operation.by_ref() {
             events.push(event)
         }
         let mut result = Polygon::<_>::reduce_events(events, &mut operation);
