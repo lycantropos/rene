@@ -35,14 +35,10 @@ pub(crate) trait CrossMultiply {
     ) -> Self::Output;
 }
 
-impl<
-        Digit,
-        const SEPARATOR: char,
-        const SHIFT: usize,
-        Point: Elemental<Coordinate = Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>,
-    > CrossMultiply for Point
+impl<Digit, const SHIFT: usize, Point: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>>
+    CrossMultiply for Point
 where
-    BigInt<Digit, SEPARATOR, SHIFT>: Clone,
+    BigInt<Digit, SHIFT>: Clone,
     <Self as Elemental>::Coordinate: Mul<Output = <Self as Elemental>::Coordinate>
         + Sub<Output = <Self as Elemental>::Coordinate>,
 {
@@ -131,13 +127,12 @@ pub(crate) trait IntersectCrossingSegments {
 
 impl<
         Digit,
-        const SEPARATOR: char,
         const SHIFT: usize,
         Point: CrossMultiply<Output = <Point as Elemental>::Coordinate>
             + From<(
                 <Point as Elemental>::Coordinate,
                 <Point as Elemental>::Coordinate,
-            )> + Elemental<Coordinate = Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>,
+            )> + Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
     > IntersectCrossingSegments for Point
 where
     for<'a> <Point as Elemental>::Coordinate: Add<Output = <Point as Elemental>::Coordinate>
@@ -170,12 +165,8 @@ pub(crate) trait LocatePointInPointPointPointCircle {
     ) -> Location;
 }
 
-impl<
-        Digit,
-        const SEPARATOR: char,
-        const SHIFT: usize,
-        Point: Elemental<Coordinate = Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>,
-    > LocatePointInPointPointPointCircle for Point
+impl<Digit, const SHIFT: usize, Point: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>>
+    LocatePointInPointPointPointCircle for Point
 where
     for<'a> &'a <Point as Elemental>::Coordinate: Mul<Output = <Point as Elemental>::Coordinate>,
     <Point as Elemental>::Coordinate: Add<Output = <Point as Elemental>::Coordinate>

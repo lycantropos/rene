@@ -6,12 +6,11 @@ use crate::traits::Multipolygonal;
 
 use super::types::Multipolygon;
 
-impl<Digit, const SEPARATOR: char, const SHIFT: usize> Multipolygonal
-    for Multipolygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
+impl<Digit, const SHIFT: usize> Multipolygonal for Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    BigInt<Digit, SEPARATOR, SHIFT>: Clone,
+    BigInt<Digit, SHIFT>: Clone,
 {
-    type Polygon = self::Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>;
+    type Polygon = self::Polygon<Fraction<BigInt<Digit, SHIFT>>>;
 
     fn polygons(&self) -> Vec<Self::Polygon> {
         self.polygons.clone()

@@ -6,12 +6,11 @@ use crate::traits::Polygonal;
 
 use super::types::Polygon;
 
-impl<Digit, const SEPARATOR: char, const SHIFT: usize> Polygonal
-    for Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
+impl<Digit, const SHIFT: usize> Polygonal for Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    BigInt<Digit, SEPARATOR, SHIFT>: Clone,
+    BigInt<Digit, SHIFT>: Clone,
 {
-    type Contour = self::Contour<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>;
+    type Contour = self::Contour<Fraction<BigInt<Digit, SHIFT>>>;
 
     fn border(&self) -> Self::Contour {
         self.border.clone()

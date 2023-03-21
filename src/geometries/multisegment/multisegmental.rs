@@ -6,12 +6,11 @@ use crate::traits::Multisegmental;
 
 use super::types::Multisegment;
 
-impl<Digit, const SEPARATOR: char, const SHIFT: usize> Multisegmental
-    for Multisegment<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
+impl<Digit, const SHIFT: usize> Multisegmental for Multisegment<Fraction<BigInt<Digit, SHIFT>>>
 where
-    BigInt<Digit, SEPARATOR, SHIFT>: Clone,
+    BigInt<Digit, SHIFT>: Clone,
 {
-    type Segment = self::Segment<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>;
+    type Segment = self::Segment<Fraction<BigInt<Digit, SHIFT>>>;
 
     fn segments(&self) -> Vec<Self::Segment> {
         self.segments.clone()

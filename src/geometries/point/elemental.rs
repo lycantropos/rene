@@ -5,12 +5,11 @@ use crate::traits::Elemental;
 
 use super::types::Point;
 
-impl<Digit, const SEPARATOR: char, const SHIFT: usize> Elemental
-    for Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
+impl<Digit, const SHIFT: usize> Elemental for Point<Fraction<BigInt<Digit, SHIFT>>>
 where
-    BigInt<Digit, SEPARATOR, SHIFT>: Clone,
+    BigInt<Digit, SHIFT>: Clone,
 {
-    type Coordinate = Fraction<BigInt<Digit, SEPARATOR, SHIFT>>;
+    type Coordinate = Fraction<BigInt<Digit, SHIFT>>;
 
     fn x(&self) -> Self::Coordinate {
         self.x.clone()

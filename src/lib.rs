@@ -52,10 +52,10 @@ type Digit = u16;
 #[cfg(not(target_arch = "x86"))]
 type Digit = u32;
 
-const BINARY_SHIFT: usize = (Digit::BITS - 1) as usize;
-const _: () = assert!(big_int::is_valid_shift::<Digit, BINARY_SHIFT>());
+const DIGIT_BITNESS: usize = (Digit::BITS - 1) as usize;
+const _: () = assert!(big_int::is_valid_digit_bitness::<Digit, DIGIT_BITNESS>());
 
-type BigInt = big_int::BigInt<Digit, '_', BINARY_SHIFT>;
+type BigInt = big_int::BigInt<Digit, DIGIT_BITNESS>;
 type Fraction = fraction::Fraction<BigInt>;
 type Empty = geometries::Empty;
 type ExactBox = bounded::Box<Fraction>;
@@ -1384,7 +1384,7 @@ fn try_scalar_to_fraction(value: &PyAny) -> PyResult<Fraction> {
     let py = value.py();
     if value.is_instance(PyFloat::type_object(py))? {
         Fraction::try_from(value.extract::<f64>()?).map_err(|reason| match reason {
-            fraction::FromFloatConversionError::Infinity => {
+            fraction::FromFloatConstructionError::Infinity => {
                 PyOverflowError::new_err(reason.to_string())
             }
             _ => PyValueError::new_err(reason.to_string()),

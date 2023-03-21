@@ -6,12 +6,11 @@ use crate::traits::Multivertexal;
 
 use super::types::Contour;
 
-impl<Digit, const SEPARATOR: char, const SHIFT: usize> Multivertexal
-    for Contour<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
+impl<Digit, const SHIFT: usize> Multivertexal for Contour<Fraction<BigInt<Digit, SHIFT>>>
 where
-    BigInt<Digit, SEPARATOR, SHIFT>: Clone,
+    BigInt<Digit, SHIFT>: Clone,
 {
-    type Vertex = self::Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>;
+    type Vertex = self::Point<Fraction<BigInt<Digit, SHIFT>>>;
 
     fn vertices(&self) -> Vec<Self::Vertex> {
         self.vertices.clone()

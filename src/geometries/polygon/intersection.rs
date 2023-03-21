@@ -42,25 +42,23 @@ impl<Scalar> Intersection<&Empty> for &Polygon<Scalar> {
     }
 }
 
-impl<Digit, const SEPARATOR: char, const SHIFT: usize> Intersection
-    for &Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
+impl<Digit, const SHIFT: usize> Intersection for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    for<'a> &'a Box<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>: Relatable,
-    for<'a> Operation<Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>, INTERSECTION>: From<(
-            &'a Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>,
-            &'a Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>,
+    for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
+    for<'a> Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>: From<(
+            &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
+            &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
         )> + Iterator<Item = Event>,
-    Fraction<BigInt<Digit, SEPARATOR, SHIFT>>: Ord,
-    Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>:
-        Elemental<Coordinate = Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>,
-    Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
+    Fraction<BigInt<Digit, SHIFT>>: Ord,
+    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>
         + ReduceEvents<
-            Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>,
+            Point<Fraction<BigInt<Digit, SHIFT>>>,
             INTERSECTION,
-            Output = Vec<Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>>,
+            Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
         >,
 {
-    type Output = Vec<Polygon<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>>;
+    type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
     fn intersection(self, other: Self) -> Self::Output {
         let bounding_box = self.to_bounding_box();

@@ -16,12 +16,11 @@ impl<Scalar> Segment<Scalar> {
     }
 }
 
-impl<Digit, const SEPARATOR: char, const SHIFT: usize> traits::Segmental
-    for Segment<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>
+impl<Digit, const SHIFT: usize> traits::Segmental for Segment<Fraction<BigInt<Digit, SHIFT>>>
 where
-    BigInt<Digit, SEPARATOR, SHIFT>: Clone,
+    BigInt<Digit, SHIFT>: Clone,
 {
-    type Endpoint = self::Point<Fraction<BigInt<Digit, SEPARATOR, SHIFT>>>;
+    type Endpoint = self::Point<Fraction<BigInt<Digit, SHIFT>>>;
 
     fn start(&self) -> Self::Endpoint {
         self.start.clone()
