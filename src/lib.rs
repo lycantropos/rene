@@ -19,7 +19,7 @@ use crate::bounded::Bounded;
 use crate::constants::{
     MIN_CONTOUR_VERTICES_COUNT, MIN_MULTIPOLYGON_POLYGONS_COUNT, MIN_MULTISEGMENT_SEGMENTS_COUNT,
 };
-use crate::locatable::Location;
+use crate::locatable::{Locatable, Location};
 use crate::operations::to_arg_min;
 use crate::oriented::{Orientation, Oriented};
 use crate::relatable::{Relatable, Relation};
@@ -1259,6 +1259,10 @@ impl PyExactSegment {
         try_relation_to_py_relation(self.0.relate_to(&other.0))
     }
 
+    fn locate(&self, point: &PyExactPoint) -> PyResult<&PyAny> {
+        try_location_to_py_location(self.0.locate(&point.0))
+    }
+
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
         PyFrozenSet::new(py, &[self.start().into_py(py), self.end().into_py(py)])?.hash()
     }
@@ -1303,6 +1307,16 @@ fn try_fraction_to_py_fraction<'a>(value: &Fraction) -> PyResult<&'a PyAny> {
         ),
         None,
     )
+}
+
+fn try_location_to_py_location<'a>(value: Location) -> PyResult<&'a PyAny> {
+    let location_cls = unsafe { MAYBE_LOCATION_CLS.unwrap_unchecked() };
+    let py = location_cls.py();
+    location_cls.getattr(match value {
+        Location::Boundary => intern!(py, "BOUNDARY"),
+        Location::Exterior => intern!(py, "EXTERIOR"),
+        Location::Interior => intern!(py, "INTERIOR"),
+    })
 }
 
 fn try_relation_to_py_relation<'a>(value: Relation) -> PyResult<&'a PyAny> {
@@ -1446,6 +1460,7 @@ fn try_segments_to_py_exact_multisegment(
 
 static mut MAYBE_FRACTION_CLS: Option<&PyAny> = None;
 static mut MAYBE_ORIENTATION_CLS: Option<&PyAny> = None;
+static mut MAYBE_LOCATION_CLS: Option<&PyAny> = None;
 static mut MAYBE_RELATION_CLS: Option<&PyAny> = None;
 
 fn extract_from_sequence<'a, Wrapper: FromPyObject<'a>, Wrapped: From<Wrapper>>(
@@ -1473,6 +1488,7 @@ fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
     unsafe {
         let py = Python::assume_gil_acquired();
         MAYBE_FRACTION_CLS = Some(py.import("rithm")?.getattr(intern!(py, "Fraction"))?);
+        MAYBE_LOCATION_CLS = Some(py.import("rene")?.getattr(intern!(py, "Location"))?);
         MAYBE_ORIENTATION_CLS = Some(py.import("rene")?.getattr(intern!(py, "Orientation"))?);
         MAYBE_RELATION_CLS = Some(py.import("rene")?.getattr(intern!(py, "Relation"))?);
     }

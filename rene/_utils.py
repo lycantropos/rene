@@ -153,6 +153,22 @@ def locate_point_in_point_point_point_circle(
     )
 
 
+def locate_point_in_segment(start: Point,
+                            end: Point,
+                            point: Point) -> Location:
+    return (Location.BOUNDARY
+            if (start == point
+                or end == point
+                or ((start.x <= point.x <= end.x
+                     if start.x <= end.x
+                     else end.x < point.x < start.x)
+                    and (start.y <= point.y <= end.y
+                         if start.y <= end.y
+                         else end.y < point.y < start.y)
+                    and orient(start, end, point) is Orientation.COLLINEAR))
+            else Location.EXTERIOR)
+
+
 def merge_boxes(boxes: Iterable[Box]) -> Box:
     boxes_iterator = iter(boxes)
     first_box = next(boxes_iterator)

@@ -4,7 +4,9 @@ from reprit.base import generate_repr
 from rithm import Fraction
 
 from rene._context import Context
-from rene._utils import relate_segments
+from rene._exact import Point
+from rene._utils import (locate_point_in_segment,
+                         relate_segments)
 
 
 class Segment:
@@ -17,6 +19,11 @@ class Segment:
     @property
     def start(self):
         return self._start
+
+    def locate(self, other):
+        if isinstance(other, Point):
+            return locate_point_in_segment(self.start, self.end, other)
+        raise TypeError(f'Unsupported type: {type(other)!r}.')
 
     def relate_to(self, other):
         if isinstance(other, Segment):
