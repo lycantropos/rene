@@ -14,9 +14,7 @@ use pyo3::{
 use rithm::{big_int, fraction};
 use traiter::numbers::{Endianness, FromBytes, ToBytes, Zeroable};
 
-use crate::bentley_ottmann::{
-    is_contour_valid, is_multisegment_valid, to_unique_non_crossing_or_overlapping_segments,
-};
+use crate::bentley_ottmann::{is_contour_valid, is_multisegment_valid};
 use crate::bounded::Bounded;
 use crate::constants::{
     MIN_CONTOUR_VERTICES_COUNT, MIN_MULTIPOLYGON_POLYGONS_COUNT, MIN_MULTISEGMENT_SEGMENTS_COUNT,
@@ -926,18 +924,6 @@ impl PyExactMultipolygon {
 
 #[pymethods]
 impl PyExactMultisegment {
-    #[classmethod]
-    fn from_segments(_cls: &PyType, segments: &PySequence) -> PyResult<Self> {
-        try_segments_to_py_exact_multisegment(to_unique_non_crossing_or_overlapping_segments::<
-            ExactPoint,
-            Fraction,
-            ExactSegment,
-        >(&extract_from_sequence::<
-            PyExactSegment,
-            ExactSegment,
-        >(segments)?))
-    }
-
     #[new]
     fn new(segments: &PySequence) -> PyResult<Self> {
         try_segments_to_py_exact_multisegment(
