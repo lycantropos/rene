@@ -216,9 +216,7 @@ impl<Endpoint: Orient + PartialEq + LocatePointInPointPointPointCircle> Mesh<End
 
     fn find_left_candidate(&mut self, base_edge: QuadEdge) -> Option<QuadEdge> {
         let mut result = self.to_left_from_start(to_opposite_edge(base_edge));
-        if self.orient_point_to_edge(base_edge, self.get_end(result)) != Orientation::Clockwise {
-            None
-        } else {
+        if self.orient_point_to_edge(base_edge, self.get_end(result)) == Orientation::Clockwise {
             while self
                 .orient_point_to_edge(base_edge, self.get_end(self.to_left_from_start(result)))
                 == Orientation::Clockwise
@@ -236,14 +234,14 @@ impl<Endpoint: Orient + PartialEq + LocatePointInPointPointPointCircle> Mesh<End
                 result = next_candidate;
             }
             Some(result)
+        } else {
+            None
         }
     }
 
     fn find_right_candidate(&mut self, base_edge: QuadEdge) -> Option<QuadEdge> {
         let mut result = self.to_right_from_start(base_edge);
-        if self.orient_point_to_edge(base_edge, self.get_end(result)) != Orientation::Clockwise {
-            None
-        } else {
+        if self.orient_point_to_edge(base_edge, self.get_end(result)) == Orientation::Clockwise {
             while self
                 .orient_point_to_edge(base_edge, self.get_end(self.to_right_from_start(result)))
                 == Orientation::Clockwise
@@ -261,6 +259,8 @@ impl<Endpoint: Orient + PartialEq + LocatePointInPointPointPointCircle> Mesh<End
                 result = next_candidate;
             }
             Some(result)
+        } else {
+            None
         }
     }
 

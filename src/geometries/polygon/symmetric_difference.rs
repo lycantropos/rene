@@ -80,7 +80,7 @@ where
             Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
         };
         for event in operation.by_ref() {
-            events.push(event)
+            events.push(event);
         }
         Polygon::<_>::reduce_events(events, &mut operation)
     }

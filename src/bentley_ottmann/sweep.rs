@@ -67,27 +67,24 @@ where
                 .events_registry
                 .are_collinear(first_segment_id, second_segment_id)
             {
-                match self.start_event {
-                    Some(start_event) => {
-                        let start = self.events_registry.get_event_start(start_event);
-                        (
-                            if first_start == start
-                                || first_end == start
-                                || second_start == start
-                                || second_end == start
-                            {
-                                Relation::Touch
-                            } else {
-                                Relation::Cross
-                            },
-                            start,
-                            start,
-                        )
-                    }
-                    None => {
-                        debug_assert!(first_start == second_start);
-                        (Relation::Touch, first_start, first_start)
-                    }
+                if let Some(start_event) = self.start_event {
+                    let start = self.events_registry.get_event_start(start_event);
+                    (
+                        if first_start == start
+                            || first_end == start
+                            || second_start == start
+                            || second_end == start
+                        {
+                            Relation::Touch
+                        } else {
+                            Relation::Cross
+                        },
+                        start,
+                        start,
+                    )
+                } else {
+                    debug_assert!(first_start == second_start);
+                    (Relation::Touch, first_start, first_start)
                 }
             } else if first_start.max(second_start).eq(first_end.min(second_end)) {
                 let point = first_start.max(second_start);

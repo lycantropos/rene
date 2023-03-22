@@ -28,7 +28,7 @@ where
             + self
                 .holes
                 .iter()
-                .map(|hole| hole.segments_count())
+                .map(Multisegmental::segments_count)
                 .sum::<usize>()
     }
 }

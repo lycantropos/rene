@@ -25,7 +25,7 @@ where
     fn segments_count(&self) -> usize {
         self.polygons
             .iter()
-            .map(|polygon| polygon.segments_count())
+            .map(Multisegmental::segments_count)
             .sum::<usize>()
     }
 }

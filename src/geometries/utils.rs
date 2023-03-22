@@ -17,5 +17,5 @@ pub(super) fn hash_slice_unordered<
 }
 
 fn shuffle_bits(hash: u64) -> u64 {
-    ((hash ^ 89869747) ^ (hash.wrapping_shl(16))).wrapping_mul(3644798167)
+    ((hash ^ 89_869_747) ^ (hash.wrapping_shl(16))).wrapping_mul(3_644_798_167)
 }

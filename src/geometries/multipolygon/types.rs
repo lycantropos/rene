@@ -6,6 +6,7 @@ pub struct Multipolygon<Scalar> {
 }
 
 impl<Scalar> Multipolygon<Scalar> {
+    #[must_use]
     pub fn new(polygons: Vec<Polygon<Scalar>>) -> Self {
         Self { polygons }
     }

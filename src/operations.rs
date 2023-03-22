@@ -335,13 +335,13 @@ pub(crate) fn shrink_collinear_vertices<'a, Point: Orient>(
         if result[result.len() - 1].orient(vertices[index], vertices[index + 1])
             != Orientation::Collinear
         {
-            result.push(vertices[index])
+            result.push(vertices[index]);
         }
     }
     if result[result.len() - 1].orient(vertices[vertices.len() - 1], result[0])
         != Orientation::Collinear
     {
-        result.push(vertices[vertices.len() - 1])
+        result.push(vertices[vertices.len() - 1]);
     }
     result
 }

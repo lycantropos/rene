@@ -8,20 +8,17 @@ pub(super) fn are_non_empty_unique_sequences_rotationally_equivalent<T: PartialE
     right: &[T],
 ) -> bool {
     debug_assert!(!left.is_empty() && !right.is_empty());
-    if left.len() != right.len() {
-        false
-    } else {
+    left.len() == right.len() && {
         let left_first_element = &left[0];
         right
             .iter()
             .position(|value| value == left_first_element)
-            .map(|index| {
+            .map_or(false, |index| {
                 (left[1..left.len() - index] == right[index + 1..]
                     && left[left.len() - index..] == right[..index])
-                    || (left[1..index + 1].iter().eq(right[..index].iter().rev())
+                    || (left[1..=index].iter().eq(right[..index].iter().rev())
                         && left[index + 1..].iter().eq(right[index + 1..].iter().rev()))
             })
-            .unwrap_or(false)
     }
 }
 
@@ -29,9 +26,7 @@ pub(super) fn are_unique_hashable_sequences_permutationally_equivalent<T: Eq + H
     left: &[T],
     right: &[T],
 ) -> bool {
-    if left.len() != right.len() {
-        false
-    } else {
+    left.len() == right.len() && {
         let left_set = HashSet::<_, RandomState>::from_iter(left);
         right.iter().all(|value| left_set.contains(value))
     }

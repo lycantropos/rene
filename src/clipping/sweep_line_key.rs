@@ -110,13 +110,7 @@ fn compare_segments_position<Scalar: Ord, Point: Orient + Elemental<Coordinate =
     if other_start_orientation == other_end_orientation {
         match other_start_orientation {
             Orientation::Collinear => {
-                if first_segment_is_from_first_operand != second_segment_is_from_first_operand {
-                    if first_segment_is_from_first_operand {
-                        Ordering::Less
-                    } else {
-                        Ordering::Greater
-                    }
-                } else {
+                if first_segment_is_from_first_operand == second_segment_is_from_first_operand {
                     match first_start.y().cmp(&second_start.y()) {
                         Ordering::Equal => match first_start.x().cmp(&second_start.x()) {
                             Ordering::Equal => match first_end.y().cmp(&second_end.y()) {
@@ -127,6 +121,10 @@ fn compare_segments_position<Scalar: Ord, Point: Orient + Elemental<Coordinate =
                         },
                         value => value,
                     }
+                } else if first_segment_is_from_first_operand {
+                    Ordering::Less
+                } else {
+                    Ordering::Greater
                 }
             }
             Orientation::Clockwise => Ordering::Greater,

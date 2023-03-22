@@ -497,10 +497,8 @@ impl PyExactBox {
 #[pymethods]
 impl PyExactConstrainedDelaunayTriangulation {
     #[classmethod]
-    fn from_polygon(_: &PyType, polygon: &PyExactPolygon) -> PyResult<Self> {
-        Ok(PyExactConstrainedDelaunayTriangulation(
-            ConstrainedDelaunayTriangulation::from(&polygon.0),
-        ))
+    fn from_polygon(_: &PyType, polygon: &PyExactPolygon) -> Self {
+        PyExactConstrainedDelaunayTriangulation(ConstrainedDelaunayTriangulation::from(&polygon.0))
     }
 
     #[getter]
@@ -581,7 +579,7 @@ impl PyExactContour {
         let min_vertex_index = unsafe { to_arg_min(&vertices).unwrap_unchecked() };
         vertices.rotate_left(min_vertex_index);
         if self.0.to_orientation() == Orientation::Clockwise {
-            vertices[1..].reverse()
+            vertices[1..].reverse();
         }
         PyTuple::new(py, &vertices).hash()
     }
@@ -616,8 +614,8 @@ impl PyExactContour {
             "Contour([{}])",
             self.vertices()
                 .into_iter()
-                .flat_map(|vertex| PyExactPoint(vertex).__str__())
-                .collect::<Vec<String>>()
+                .map(|vertex| PyExactPoint(vertex).__str__())
+                .collect::<PyResult<Vec<String>>>()?
                 .join(", ")
         ))
     }
@@ -867,8 +865,8 @@ impl PyExactMultipolygon {
             "Multipolygon([{}])",
             self.polygons()
                 .into_iter()
-                .flat_map(|polygon| PyExactPolygon(polygon).__str__())
-                .collect::<Vec<String>>()
+                .map(|polygon| PyExactPolygon(polygon).__str__())
+                .collect::<PyResult<Vec<String>>>()?
                 .join(", ")
         ))
     }
@@ -928,6 +926,18 @@ impl PyExactMultipolygon {
 
 #[pymethods]
 impl PyExactMultisegment {
+    #[classmethod]
+    fn from_segments(_cls: &PyType, segments: &PySequence) -> PyResult<Self> {
+        try_segments_to_py_exact_multisegment(to_unique_non_crossing_or_overlapping_segments::<
+            ExactPoint,
+            Fraction,
+            ExactSegment,
+        >(&extract_from_sequence::<
+            PyExactSegment,
+            ExactSegment,
+        >(segments)?))
+    }
+
     #[new]
     fn new(segments: &PySequence) -> PyResult<Self> {
         try_segments_to_py_exact_multisegment(
@@ -983,8 +993,8 @@ impl PyExactMultisegment {
             "Multisegment([{}])",
             self.segments()
                 .into_iter()
-                .flat_map(|segment| PyExactSegment(segment).__str__())
-                .collect::<Vec<String>>()
+                .map(|segment| PyExactSegment(segment).__str__())
+                .collect::<PyResult<Vec<String>>>()?
                 .join(", ")
         ))
     }
@@ -1183,8 +1193,8 @@ impl PyExactPolygon {
             PyExactContour(self.border()).__str__()?,
             self.holes()
                 .into_iter()
-                .flat_map(|hole| PyExactContour(hole).__str__())
-                .collect::<Vec<String>>()
+                .map(|hole| PyExactContour(hole).__str__())
+                .collect::<PyResult<Vec<String>>>()?
                 .join(", ")
         ))
     }
@@ -1245,11 +1255,8 @@ impl PyExactPolygon {
 #[pymethods]
 impl PyExactSegment {
     #[new]
-    fn new(start: &PyExactPoint, end: &PyExactPoint) -> PyResult<Self> {
-        Ok(PyExactSegment(ExactSegment::new(
-            start.0.clone(),
-            end.0.clone(),
-        )))
+    fn new(start: &PyExactPoint, end: &PyExactPoint) -> Self {
+        PyExactSegment(ExactSegment::new(start.0.clone(), end.0.clone()))
     }
 
     #[getter]
@@ -1358,7 +1365,9 @@ fn try_py_integral_to_big_int(value: &PyAny) -> PyResult<BigInt> {
                 let bytes_count = bits_count / (u8::BITS as usize) + 1;
                 let mut buffer = vec![0u8; bytes_count];
                 if ffi::_PyLong_AsByteArray(
-                    Py::<PyLong>::from_owned_ptr(py, ptr).as_ptr() as *mut ffi::PyLongObject,
+                    Py::<PyLong>::from_owned_ptr(py, ptr)
+                        .as_ptr()
+                        .cast::<ffi::PyLongObject>(),
                     buffer.as_mut_ptr(),
                     buffer.len(),
                     1,

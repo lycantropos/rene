@@ -2,6 +2,7 @@
 pub struct Empty();
 
 impl Empty {
+    #[must_use]
     pub fn new() -> Self {
         Self {}
     }

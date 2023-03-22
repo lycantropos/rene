@@ -84,7 +84,7 @@ where
             if operation.get_event_start(event).x().gt(max_x) {
                 break;
             }
-            events.push(event)
+            events.push(event);
         }
         Polygon::<_>::reduce_events(events, &mut operation)
     }

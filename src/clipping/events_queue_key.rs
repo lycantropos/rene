@@ -81,13 +81,7 @@ fn compare_events<Point: Ord + Orient>(
 ) -> Ordering {
     match endpoints[first_event].cmp(&endpoints[second_event]) {
         Ordering::Equal => {
-            if is_left_event(first_event) != is_left_event(second_event) {
-                if is_left_event(first_event) {
-                    Ordering::Greater
-                } else {
-                    Ordering::Less
-                }
-            } else {
+            if is_left_event(first_event) == is_left_event(second_event) {
                 match endpoints[first_event].orient(
                     &endpoints[opposites[first_event]],
                     &endpoints[opposites[second_event]],
@@ -118,6 +112,10 @@ fn compare_events<Point: Ord + Orient>(
                         }
                     }
                 }
+            } else if is_left_event(first_event) {
+                Ordering::Greater
+            } else {
+                Ordering::Less
             }
         }
         value => value,

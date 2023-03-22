@@ -124,7 +124,7 @@ where
             Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
         };
         for event in operation.by_ref() {
-            events.push(event)
+            events.push(event);
         }
         let mut result = Multipolygon::<_>::reduce_events(events, &mut operation);
         result.reserve(
@@ -197,7 +197,7 @@ where
             Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
         };
         for event in operation.by_ref() {
-            events.push(event)
+            events.push(event);
         }
         let mut result = Multipolygon::<_>::reduce_events(events, &mut operation);
         result.reserve(self.polygons.len() - common_continuum_polygons.len());
@@ -265,7 +265,7 @@ where
             Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
         };
         for event in operation.by_ref() {
-            events.push(event)
+            events.push(event);
         }
         let mut result = Polygon::<_>::reduce_events(events, &mut operation);
         result.reserve(other.polygons.len() - other_common_continuum_polygons.len());

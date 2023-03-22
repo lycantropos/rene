@@ -101,7 +101,7 @@ where
             result.push(Segment::from((
                 events_registry.get_event_start(event).clone(),
                 events_registry.get_event_end(event).clone(),
-            )))
+            )));
         }
     }
     result

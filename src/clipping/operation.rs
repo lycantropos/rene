@@ -355,7 +355,7 @@ where
             );
             let mut vertices = operation.contour_events_to_vertices(&contour_events);
             if depths[contour_id].is_odd() {
-                vertices[1..].reverse()
+                vertices[1..].reverse();
             }
             contours_vertices.push(vertices);
         }
@@ -375,7 +375,7 @@ where
                             })
                             .collect(),
                     ))
-                }))
+                }));
             } else {
                 result.push(Polygon::from((
                     multivertex_from_vertices_references(contour_vertices),
@@ -385,7 +385,7 @@ where
                             multivertex_from_vertices_references(&contours_vertices[hole_id])
                         })
                         .collect(),
-                )))
+                )));
             }
         }
         result
@@ -515,7 +515,7 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
             if has_right_events {
                 result.splice(
                     right_start_event_id..left_start_event_id - 1,
-                    right_start_event_id + 1..left_start_event_id - 1 + 1,
+                    (right_start_event_id + 1)..left_start_event_id,
                 );
                 result[left_start_event_id - 1] = if has_left_events {
                     left_stop_event_id
@@ -530,7 +530,7 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
                     left_stop_event_id
                 };
                 result.splice(
-                    left_start_event_id + 1..left_stop_event_id + 1,
+                    (left_start_event_id + 1)..=left_stop_event_id,
                     left_start_event_id..left_stop_event_id,
                 );
             }
@@ -931,7 +931,7 @@ impl<Point: Ord + Orient, const KIND: u8> EventsQueue for Operation<Point, KIND>
 
     fn push(&mut self, event: Event) {
         self.events_queue_data
-            .push(Reverse(self.to_events_queue_key(event)))
+            .push(Reverse(self.to_events_queue_key(event)));
     }
 }
 
@@ -1063,5 +1063,5 @@ fn multivertex_from_vertices_references<
 where
     MultivertexalVertex<Multivertex>: Clone,
 {
-    Multivertex::from(vertices.iter().cloned().cloned().collect())
+    Multivertex::from(vertices.iter().copied().cloned().collect())
 }

@@ -370,7 +370,7 @@ impl<Point: Ord, const UNIQUE: bool> EventsQueue for EventsRegistry<Point, UNIQU
             event,
             &self.endpoints,
             &self.opposites,
-        )))
+        )));
     }
 }
 

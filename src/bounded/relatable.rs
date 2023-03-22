@@ -83,30 +83,32 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
     }
 
     fn overlaps(self, other: Self) -> bool {
-        if !(self.min_x < other.max_x
+        (self.min_x < other.max_x
             && other.min_x < self.max_x
             && self.min_y < other.max_y
             && other.min_y < self.max_y)
-        {
-            false
-        } else {
-            match self.max_x.cmp(&other.max_x) {
-                Ordering::Equal => match self.min_x.cmp(&other.min_x) {
-                    Ordering::Equal => {
-                        (other.min_y < self.min_y && other.max_y < self.max_y)
-                            || (self.min_y < other.min_y && self.max_y < other.max_y)
+            && {
+                match self.max_x.cmp(&other.max_x) {
+                    Ordering::Equal => match self.min_x.cmp(&other.min_x) {
+                        Ordering::Equal => {
+                            (other.min_y < self.min_y && other.max_y < self.max_y)
+                                || (self.min_y < other.min_y && self.max_y < other.max_y)
+                        }
+                        Ordering::Greater => self.min_y < other.min_y || other.max_y < self.max_y,
+                        Ordering::Less => other.min_y < self.min_y || self.max_y < other.max_y,
+                    },
+                    Ordering::Greater => {
+                        other.min_x < self.min_x
+                            || other.min_y < self.min_y
+                            || self.max_y < other.max_y
                     }
-                    Ordering::Greater => self.min_y < other.min_y || other.max_y < self.max_y,
-                    Ordering::Less => other.min_y < self.min_y || self.max_y < other.max_y,
-                },
-                Ordering::Greater => {
-                    other.min_x < self.min_x || other.min_y < self.min_y || self.max_y < other.max_y
-                }
-                Ordering::Less => {
-                    self.min_x < other.min_x || self.min_y < other.min_y || other.max_y < self.max_y
+                    Ordering::Less => {
+                        self.min_x < other.min_x
+                            || self.min_y < other.min_y
+                            || other.max_y < self.max_y
+                    }
                 }
             }
-        }
     }
 
     fn touches(self, other: Self) -> bool {

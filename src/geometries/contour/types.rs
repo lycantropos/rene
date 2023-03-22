@@ -7,6 +7,7 @@ pub struct Contour<Scalar> {
 }
 
 impl<Scalar> Contour<Scalar> {
+    #[must_use]
     pub fn new(vertices: Vec<Point<Scalar>>) -> Self {
         Self { vertices }
     }

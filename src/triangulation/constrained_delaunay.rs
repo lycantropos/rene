@@ -96,12 +96,8 @@ where
         for hole in polygon.holes() {
             contours_vertices.push(hole.vertices());
         }
-        let mut polygon_endpoints = Vec::with_capacity(
-            contours_vertices
-                .iter()
-                .map(|vertices| vertices.len())
-                .sum(),
-        );
+        let mut polygon_endpoints =
+            Vec::with_capacity(contours_vertices.iter().map(std::vec::Vec::len).sum());
         for (contour_index, contour_vertices) in contours_vertices.iter().enumerate() {
             polygon_endpoints.extend(contour_vertices.iter().enumerate().map(
                 |(vertex_index, point)| PolygonEndpoint {
@@ -109,7 +105,7 @@ where
                     vertex_index,
                     point,
                 },
-            ))
+            ));
         }
         polygon_endpoints.sort();
         let mut polygon_vertices_positions = Vec::with_capacity(polygon_endpoints.len());
@@ -154,7 +150,7 @@ where
         };
         let contours_sizes = contours_vertices
             .iter()
-            .map(|contour_vertices| contour_vertices.len())
+            .map(Vec::len)
             .collect::<Vec<usize>>();
         result.constrain(&contours_sizes, &contours_vertices);
         result.bound(&contours_sizes);
@@ -178,7 +174,7 @@ impl<Endpoint> ConstrainedDelaunayTriangulation<Endpoint> {
         if edge == self.left_side || to_opposite_edge(edge) == self.left_side {
             self.left_side = self.mesh.to_left_from_start(self.left_side);
         }
-        self.mesh.delete_edge(edge)
+        self.mesh.delete_edge(edge);
     }
 
     fn to_unique_boundary_edges(&self) -> Vec<QuadEdge> {
@@ -299,7 +295,7 @@ impl<Endpoint: LocatePointInPointPointPointCircle + Orient + PartialOrd>
                 contours_vertices,
                 &self.polygon_vertices_positions,
             ) {
-                self.delete_edge(edge)
+                self.delete_edge(edge);
             }
         }
     }
@@ -376,7 +372,7 @@ fn detect_crossings<Endpoint: Orient + PartialEq + PartialOrd>(
             || constraint_start.orient(constraint_end, mesh.get_end(candidate))
                 == Orientation::Clockwise
         {
-            candidate = to_opposite_edge(mesh.to_right_from_end(last_crossing))
+            candidate = to_opposite_edge(mesh.to_right_from_end(last_crossing));
         }
     }
     result
@@ -435,7 +431,7 @@ fn intersect_polygon_vertices_positions_slices_impl<
                     (*shorter_position, *longer_position)
                 } else {
                     (*longer_position, *shorter_position)
-                })
+                });
             }
         }
     }
@@ -580,7 +576,7 @@ fn resolve_crossings<Endpoint: Orient + PartialOrd>(
                 _ => result.push(edge),
             }
         } else {
-            crossings_queue.push_front(edge)
+            crossings_queue.push_front(edge);
         }
     }
     result
@@ -607,16 +603,16 @@ fn set_criterion<Endpoint: LocatePointInPointPointPointCircle + Orient>(
             if edge_should_be_swapped(mesh, edge) {
                 edges_to_swap.push(edge);
             } else {
-                next_target_edges.push(edge)
+                next_target_edges.push(edge);
             }
         }
         if edges_to_swap.is_empty() {
             break;
         }
         for edge in edges_to_swap {
-            mesh.swap_diagonal(edge)
+            mesh.swap_diagonal(edge);
         }
-        candidates = next_target_edges
+        candidates = next_target_edges;
     }
 }
 
@@ -634,7 +630,7 @@ fn to_angle_containing_constraint_base<Endpoint: Orient + PartialEq>(
                 if orientation == Orientation::Clockwise {
                     break;
                 }
-                edge = candidate
+                edge = candidate;
             }
         } else {
             loop {

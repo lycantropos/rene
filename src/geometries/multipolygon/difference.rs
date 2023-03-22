@@ -125,7 +125,7 @@ where
             if operation.get_event_start(event).x().gt(max_x) {
                 break;
             }
-            events.push(event)
+            events.push(event);
         }
         let mut result = Multipolygon::<_>::reduce_events(events, &mut operation);
         result.reserve(self.polygons.len() - common_area_polygons.len());
@@ -196,7 +196,7 @@ where
             if operation.get_event_start(event).x().gt(max_x) {
                 break;
             }
-            events.push(event)
+            events.push(event);
         }
         let mut result = Multipolygon::<_>::reduce_events(events, &mut operation);
         result.reserve(self.polygons.len() - common_area_polygons.len());
@@ -262,7 +262,7 @@ where
             if operation.get_event_start(event).x().gt(max_x) {
                 break;
             }
-            events.push(event)
+            events.push(event);
         }
         Polygon::<_>::reduce_events(events, &mut operation)
     }

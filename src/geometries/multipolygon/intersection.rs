@@ -124,7 +124,7 @@ where
             if operation.get_event_start(event).x().gt(min_max_x) {
                 break;
             }
-            events.push(event)
+            events.push(event);
         }
         Multipolygon::<_>::reduce_events(events, &mut operation)
     }
@@ -189,7 +189,7 @@ where
             if operation.get_event_start(event).x().gt(min_max_x) {
                 break;
             }
-            events.push(event)
+            events.push(event);
         }
         Multipolygon::<_>::reduce_events(events, &mut operation)
     }
@@ -253,7 +253,7 @@ where
             if operation.get_event_start(event).x().gt(min_max_x) {
                 break;
             }
-            events.push(event)
+            events.push(event);
         }
         Polygon::<_>::reduce_events(events, &mut operation)
     }

@@ -18,7 +18,7 @@ where
             result.push(Segment::new(
                 self.vertices[index].clone(),
                 self.vertices[index + 1].clone(),
-            ))
+            ));
         }
         result.push(Segment::new(
             self.vertices[self.vertices.len() - 1].clone(),
