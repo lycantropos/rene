@@ -7,3 +7,7 @@ pub enum Location {
     /// point lies in the interior of the geometry
     Interior,
 }
+
+pub trait Locatable<Other> {
+    fn locate(self, other: Other) -> Location;
+}
