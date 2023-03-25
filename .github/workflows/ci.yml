@@ -63,18 +63,21 @@ jobs:
         with:
           submodules: true
       - name: 'Setup Python'
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
           architecture: ${{ matrix.platform.python_architecture }}
       - name: 'Setup Rust'
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
-          default: true
-          profile: minimal
           target: ${{ matrix.platform.rust_target }}
-          toolchain: nightly
+        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
+      - name: 'Check Rust metadata'
+        run: >
+          [[ $(cargo metadata --format-version=1 --no-deps | jq '.packages[0].repository')
+          == '"${{ github.server_url }}/${{ github.repository }}"' ]]
+        shell: bash
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Run Rust linter'
         run: cargo fmt --check
@@ -103,7 +106,7 @@ jobs:
         run: python -m pip install -U mypy
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Run Python type checker'
-        run: python -m mypy ${{ github.event.repository.name }}
+        run: python -m mypy --strict ${{ github.event.repository.name }}
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Install Python coverage dependencies'
         run: python -m pip install --upgrade coverage
@@ -128,14 +131,14 @@ jobs:
           --ignore "/*" -o coverage_rust.xml
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Upload PyPy coverage'
-        uses: codecov/codecov-action@v2.1.0
+        uses: codecov/codecov-action@v3.1.1
         with:
           fail_ci_if_error: false
           files: ./coverage_python.xml
         if: ${{ startsWith(matrix.python_version, 'pypy') }}
         continue-on-error: true
       - name: 'Upload СPython coverage'
-        uses: codecov/codecov-action@v2.1.0
+        uses: codecov/codecov-action@v3.1.1
         with:
           fail_ci_if_error: false
           files: ./coverage_python.xml,./coverage_rust.xml
@@ -160,11 +163,7 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v3
       - name: 'Setup Rust'
-        uses: actions-rs/toolchain@v1
-        with:
-          default: true
-          profile: minimal
-          toolchain: nightly
+        uses: dtolnay/rust-toolchain@nightly
       - name: 'Upload'
         run: cargo publish --no-verify
         env:
@@ -180,13 +179,13 @@ jobs:
         with:
           submodules: true
       - name: 'Setup Python'
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
       - name: 'Install packaging tools'
-        run: python -m pip install -U build pip setuptools
+        run: python -m pip install -U build
       - name: 'Build sdist'
         run: python -m build --sdist
       - name: 'Upload sdist'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist
@@ -197,7 +196,7 @@ jobs:
     needs: pre-deploy
     strategy:
       matrix:
-        python_tag: ['cp37', 'cp38', 'cp39', 'cp310']
+        python_tag: ['cp37', 'cp38', 'cp39', 'cp310', 'cp311']
         platform: [
           {
             architecture: 'x86_64',
@@ -319,22 +318,35 @@ jobs:
               rust_target: 'aarch64-apple-darwin',
               tag: 'macosx_universal2'
             }
+          - python_tag: 'cp311'
+            platform: {
+              architecture: 'arm64',
+              os: 'macos-latest',
+              python_architecture: 'x64',
+              rust_target: 'aarch64-apple-darwin',
+              tag: 'macosx_arm64'
+            }
+          - python_tag: 'cp311'
+            platform: {
+              architecture: 'universal2',
+              os: 'macos-latest',
+              python_architecture: 'x64',
+              rust_target: 'aarch64-apple-darwin',
+              tag: 'macosx_universal2'
+            }
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v3
         with:
           submodules: true
       - name: 'Setup Python'
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           architecture: ${{ matrix.platform.python_architecture }}
       - name: 'Setup Rust'
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          default: true
-          profile: minimal
           target: ${{ matrix.platform.rust_target }}
-          toolchain: nightly
         if: ${{ runner.os != 'Linux' }}
       - name: 'Setup QEMU'
         uses: docker/setup-qemu-action@v2
@@ -342,7 +354,7 @@ jobs:
           platforms: all
         if: ${{ runner.os == 'Linux' }}
       - name: 'Build wheels'
-        uses: pypa/cibuildwheel@v2.6.1
+        uses: pypa/cibuildwheel@v2.12.0
         env:
           CIBW_ARCHS: ${{ matrix.platform.architecture }}
           CIBW_BEFORE_ALL_LINUX: |
@@ -359,7 +371,7 @@ jobs:
           CIBW_BUILD_VERBOSITY: 1
           CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
       - name: 'Upload wheels'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: dist
           path: wheelhouse/*.whl
@@ -410,17 +422,17 @@ jobs:
             platform: { os: 'windows-latest', python_architecture: 'x64' }
     steps:
       - name: 'Setup Python'
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
           architecture: ${{ matrix.platform.python_architecture }}
       - name: 'Download distributions'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: dist
           path: dist
       - name: 'Install from distributions'
-        run: python -m pip install --find-links=dist --no-deps --no-index ${{ github.event.repository.name }}
+        run: python -m pip install --find-links=dist --no-deps ${{ github.event.repository.name }}
 
   deploy-pypi:
     name: 'Deploy to PyPI'
@@ -429,12 +441,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Download distributions'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: dist
           path: dist
       - name: 'Upload'
-        uses: pypa/gh-action-pypi-publish@v1.5.0
+        uses: pypa/gh-action-pypi-publish@v1.6.4
         with:
           packages_dir: dist
           password: ${{ secrets.PYPI_API_TOKEN }}
