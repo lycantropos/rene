@@ -13,6 +13,7 @@ services:
       - ./README.md:/opt/rene/README.md
       - ./rene:/opt/rene/rene
       - ./requirements-tests.txt:/opt/rene/requirements-tests.txt
+      - ./requirements.txt:/opt/rene/requirements.txt
       - ./setup.py:/opt/rene/setup.py
       - ./tests:/opt/rene/tests
     entrypoint: pytest
