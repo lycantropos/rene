@@ -1,35 +1,45 @@
+from __future__ import annotations
+
+import typing as _t
+from numbers import Rational
+
+import typing_extensions as _te
 from reprit.base import generate_repr
-from rithm import Fraction
+from rithm.fraction import Fraction
+from rithm.integer import Int
 
-from rene._rene import Relation
+from rene import Relation
+
+_Coordinate = _t.Union[Fraction, Int, Rational, float, int]
 
 
+@_te.final
 class Box:
     @property
-    def max_x(self):
+    def max_x(self) -> Fraction:
         return self._max_x
 
     @property
-    def max_y(self):
+    def max_y(self) -> Fraction:
         return self._max_y
 
     @property
-    def min_x(self):
+    def min_x(self) -> Fraction:
         return self._min_x
 
     @property
-    def min_y(self):
+    def min_y(self) -> Fraction:
         return self._min_y
 
-    def covers(self, other):
+    def covers(self, other: _te.Self) -> bool:
         return (other.max_x < self.max_x and other.max_y < self.max_y
                 and self.min_x < other.min_x and self.min_y < other.min_y)
 
-    def disjoint_with(self, other):
+    def disjoint_with(self, other: _te.Self) -> bool:
         return (self.max_x < other.min_x or self.max_y < other.min_y
                 or other.max_x < self.min_x or other.max_y < self.min_y)
 
-    def enclosed_by(self, other):
+    def enclosed_by(self, other: _te.Self) -> bool:
         return 2 <= ((1
                       if self.max_x == other.max_x
                       else (2 if self.max_x < other.max_x else 0))
@@ -43,7 +53,7 @@ class Box:
                         if self.min_y == other.min_y
                         else (2 if self.min_y > other.min_y else 0))) <= 8
 
-    def encloses(self, other):
+    def encloses(self, other: _te.Self) -> bool:
         return 2 <= ((1
                       if self.max_x == other.max_x
                       else (2 if self.max_x > other.max_x else 0))
@@ -57,14 +67,14 @@ class Box:
                         if self.min_y == other.min_y
                         else (2 if self.min_y < other.min_y else 0))) <= 8
 
-    def equals_to(self, other):
+    def equals_to(self, other: _te.Self) -> bool:
         return (self.min_x == other.min_x and self.max_x == other.max_x
                 and self.min_y == other.min_y and self.max_y == other.max_y)
 
-    def is_valid(self):
+    def is_valid(self) -> bool:
         return self.min_x <= self.max_x and self.min_y <= self.max_y
 
-    def overlaps(self, other):
+    def overlaps(self, other: _te.Self) -> bool:
         if not (self.min_x < other.max_x and other.min_x < self.max_x
                 and self.min_y < other.max_y and other.min_y < self.max_y):
             return False
@@ -84,7 +94,7 @@ class Box:
             return ((other.min_y < self.min_y and other.max_y < self.max_y)
                     or (self.min_y < other.min_y and self.max_y < other.max_y))
 
-    def relate_to(self, other):
+    def relate_to(self, other: _te.Self) -> Relation:
         if self.max_x == other.max_x:
             if self.min_x == other.min_x:
                 if self.max_y == other.max_y:
@@ -343,30 +353,47 @@ class Box:
                 assert self.max_x < other.min_x
                 return Relation.DISJOINT
 
-    def touches(self, other):
+    def touches(self, other: _te.Self) -> bool:
         return (((self.min_x == other.max_x or self.max_x == other.min_x)
                  and (self.min_y <= other.max_y and other.min_y <= self.max_y))
                 or
                 ((self.min_x <= other.max_x and other.min_x <= self.max_x)
                  and (self.min_y == other.max_y or other.min_y == self.max_y)))
 
-    def within(self, other):
+    def within(self, other: _te.Self) -> bool:
         return (self.max_x < other.max_x
                 and self.max_y < other.max_y
                 and other.min_x < self.min_x
                 and other.min_y < self.min_y)
 
+    _max_x: Fraction
+    _max_y: Fraction
+    _min_x: Fraction
+    _min_y: Fraction
+
     __module__ = 'rene.exact'
     __slots__ = '_min_x', '_max_x', '_min_y', '_max_y'
 
-    def __new__(cls, min_x, max_x, min_y, max_y):
+    def __new__(cls,
+                min_x: _Coordinate,
+                max_x: _Coordinate,
+                min_y: _Coordinate,
+                max_y: _Coordinate) -> _te.Self:
         self = super().__new__(cls)
         self._max_x, self._max_y, self._min_x, self._min_y = (
             Fraction(max_x), Fraction(max_y), Fraction(min_x), Fraction(min_y)
         )
         return self
 
-    def __eq__(self, other):
+    @_t.overload
+    def __eq__(self, other: _te.Self) -> bool:
+        ...
+
+    @_t.overload
+    def __eq__(self, other: _t.Any) -> _t.Any:
+        ...
+
+    def __eq__(self, other: _t.Any) -> _t.Any:
         return ((self.min_x == other.min_x
                  and self.max_x == other.max_x
                  and self.min_y == other.min_y
@@ -374,12 +401,12 @@ class Box:
                 if isinstance(other, Box)
                 else NotImplemented)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.min_x, self.max_x, self.min_y, self.max_y))
 
     __repr__ = generate_repr(__new__,
                              with_module_name=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (f'{type(self).__qualname__}'
                 f'({self.min_x}, {self.max_x}, {self.min_y}, {self.max_y})')

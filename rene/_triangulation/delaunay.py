@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from typing import (List,
-                    Sequence,
-                    Tuple)
+import typing as _t
 
+import typing_extensions as _te
 from reprit.base import generate_repr
 
 from rene._rene import Orientation
 from rene._utils import deduplicate
-from rene.hints import Point
+from rene.hints import (Point,
+                        Scalar)
 from .mesh import (Mesh,
                    build_delaunay_triangulation,
                    orient_point_to_edge)
@@ -16,9 +16,9 @@ from .quad_edge import (QuadEdge,
                         to_opposite_edge)
 
 
-class DelaunayTriangulation:
+class DelaunayTriangulation(_t.Generic[Scalar]):
     @classmethod
-    def from_points(cls, points: Sequence[Point]) -> DelaunayTriangulation:
+    def from_points(cls, points: _t.Sequence[Point[Scalar]]) -> _te.Self:
         endpoints = list(points)
         endpoints.sort()
         mesh = Mesh.from_points(deduplicate(endpoints))
@@ -30,14 +30,14 @@ class DelaunayTriangulation:
         return self._left_side
 
     @property
-    def mesh(self) -> Mesh:
+    def mesh(self) -> Mesh[Scalar]:
         return self._mesh
 
     @property
     def right_side(self) -> QuadEdge:
         return self._right_side
 
-    def to_boundary_points(self) -> List[Point]:
+    def to_boundary_points(self) -> _t.List[Point[Scalar]]:
         if self:
             result = []
             start = self.left_side
@@ -52,7 +52,9 @@ class DelaunayTriangulation:
         else:
             return self.mesh.endpoints
 
-    def triangles_vertices(self) -> List[Tuple[Point, Point, Point]]:
+    def triangles_vertices(
+            self
+    ) -> _t.List[_t.Tuple[Point[Scalar], Point[Scalar], Point[Scalar]]]:
         mesh = self.mesh
         result = []
         for edge in mesh.to_edges():
@@ -75,7 +77,7 @@ class DelaunayTriangulation:
     def __init__(self,
                  left_side: QuadEdge,
                  right_side: QuadEdge,
-                 mesh: Mesh) -> None:
+                 mesh: Mesh[Scalar]) -> None:
         self._left_side, self._mesh, self._right_side = (
             left_side, mesh, right_side
         )

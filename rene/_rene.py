@@ -1,6 +1,8 @@
 from enum import (IntEnum,
                   unique)
 
+import typing_extensions as _te
+
 MIN_CONTOUR_VERTICES_COUNT = 3
 MIN_MULTIPOLYGON_POLYGONS_COUNT = 2
 MIN_MULTISEGMENT_SEGMENTS_COUNT = 2
@@ -9,14 +11,15 @@ MIN_MULTISEGMENT_SEGMENTS_COUNT = 2
 class Base(IntEnum):
     __module__ = 'rene'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (f'{type(self).__module__}.{type(self).__qualname__}'
                 f'.{self.name}')
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{type(self).__qualname__}.{self.name}'
 
 
+@_te.final
 @unique
 class Location(Base):
     #: point lies on the boundary of the geometry
@@ -27,6 +30,7 @@ class Location(Base):
     INTERIOR = 1
 
 
+@_te.final
 @unique
 class Orientation(Base):
     CLOCKWISE = -1
@@ -34,6 +38,7 @@ class Orientation(Base):
     COUNTERCLOCKWISE = 1
 
 
+@_te.final
 @unique
 class Relation(Base):
     """
@@ -81,23 +86,23 @@ class Relation(Base):
     WITHIN = 10
 
     @property
-    def complement(self):
-        cls = type(self)
-        if (self is cls.CROSS
-                or self is cls.DISJOINT
-                or self is cls.EQUAL
-                or self is cls.OVERLAP
-                or self is cls.TOUCH):
+    def complement(self) -> _te.Self:
+        if (self is Relation.CROSS
+                or self is Relation.DISJOINT
+                or self is Relation.EQUAL
+                or self is Relation.OVERLAP
+                or self is Relation.TOUCH):
             return self
-        elif self is cls.COMPONENT:
-            return cls.COMPOSITE
-        elif self is cls.COMPOSITE:
-            return cls.COMPONENT
-        elif self is cls.COVER:
-            return cls.WITHIN
-        elif self is cls.ENCLOSED:
-            return cls.ENCLOSES
-        elif self is cls.ENCLOSES:
-            return cls.ENCLOSED
-        elif self is cls.WITHIN:
-            return cls.COVER
+        elif self is Relation.COMPONENT:
+            return Relation.COMPOSITE
+        elif self is Relation.COMPOSITE:
+            return Relation.COMPONENT
+        elif self is Relation.COVER:
+            return Relation.WITHIN
+        elif self is Relation.ENCLOSED:
+            return Relation.ENCLOSES
+        elif self is Relation.ENCLOSES:
+            return Relation.ENCLOSED
+        else:
+            assert self is Relation.WITHIN
+            return Relation.COVER

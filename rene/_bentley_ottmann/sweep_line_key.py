@@ -1,17 +1,20 @@
+import typing as _t
+
+import typing_extensions as _te
 from reprit.base import generate_repr
 
 from rene._hints import Map
 from rene._rene import Orientation
 from rene._utils import orient
-from rene.hints import Point
+from rene.hints import Point, Scalar
 from .event import Event
 
 
-class SweepLineKey:
+class SweepLineKey(_t.Generic[Scalar]):
     __slots__ = 'endpoints', 'event', 'opposites'
 
     def __init__(self,
-                 endpoints: Map[Event, Point],
+                 endpoints: Map[Event, Point[Scalar]],
                  opposites: Map[Event, Event],
                  event: Event) -> None:
         self.endpoints, self.event, self.opposites = (endpoints, event,
@@ -19,7 +22,7 @@ class SweepLineKey:
 
     __repr__ = generate_repr(__init__)
 
-    def __lt__(self, other: 'SweepLineKey') -> bool:
+    def __lt__(self, other: _te.Self) -> bool:
         """
         Checks if the segment (or at least the point) associated with event
         is lower than other's.

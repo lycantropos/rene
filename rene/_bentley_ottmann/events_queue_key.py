@@ -1,16 +1,22 @@
+from __future__ import annotations
+
+import typing as _t
+
+import typing_extensions as _te
 from reprit.base import generate_repr
 
 from rene._hints import Map
-from rene.hints import Point
+from rene.hints import (Point,
+                        Scalar)
 from .event import (Event,
                     is_left_event)
 
 
-class EventsQueueKey:
+class EventsQueueKey(_t.Generic[Scalar]):
     __slots__ = 'endpoints', 'event', 'opposites'
 
     def __init__(self,
-                 endpoints: Map[Event, Point],
+                 endpoints: Map[Event, Point[Scalar]],
                  opposites: Map[Event, Event],
                  event: Event) -> None:
         self.endpoints, self.event, self.opposites = (endpoints, event,
@@ -18,7 +24,7 @@ class EventsQueueKey:
 
     __repr__ = generate_repr(__init__)
 
-    def __lt__(self, other: 'EventsQueueKey') -> bool:
+    def __lt__(self, other: _te.Self) -> bool:
         """
         Checks if the event should be processed before the other.
         """

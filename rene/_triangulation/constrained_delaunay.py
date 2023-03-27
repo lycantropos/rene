@@ -1,26 +1,24 @@
 from __future__ import annotations
 
+import typing as _t
 from collections import deque
 from itertools import (chain,
                        groupby,
                        repeat)
 from operator import attrgetter
-from typing import (Container,
-                    Iterable,
-                    List,
-                    Sequence,
-                    Tuple)
 
+import typing_extensions as _te
 from reprit.base import generate_repr
 
-from rene._rene import (Location,
-                        Orientation,
-                        Relation)
+from rene import (Location,
+                  Orientation,
+                  Relation)
 from rene._utils import (locate_point_in_point_point_point_circle,
                          orient,
                          relate_segments)
 from rene.hints import (Point,
-                        Polygon)
+                        Polygon,
+                        Scalar)
 from .mesh import (Mesh,
                    build_delaunay_triangulation,
                    orient_point_to_edge)
@@ -33,22 +31,26 @@ from .vertices import (ContourVertex,
 BORDER_CONTOUR_INDEX = 0
 
 
-class ConstrainedDelaunayTriangulation:
+class ConstrainedDelaunayTriangulation(_t.Generic[Scalar]):
     @classmethod
-    def from_polygon(cls,
-                     polygon: Polygon) -> ConstrainedDelaunayTriangulation:
+    def from_polygon(cls, polygon: Polygon[Scalar]) -> _te.Self:
         contours_vertices = [polygon.border.vertices,
                              *[hole.vertices for hole in polygon.holes]]
         vertices = list(chain.from_iterable(
-                map(ContourVertex, repeat(index),
-                    range(len(contour_vertices) - 1), contour_vertices)
+                (
+                    ContourVertex(index, vertex_index, vertex)
+                    for vertex_index, vertex
+                    in zip(range(len(contour_vertices) - 1), contour_vertices)
+                )
                 for index, contour_vertices in enumerate(contours_vertices)
         )) + [ContourVertex(index, len(contour_vertices) - 1,
                             contour_vertices[-1])
               for index, contour_vertices in enumerate(contours_vertices)]
         vertices.sort()
-        polygon_vertices_positions: List[List[PolygonVertexPosition]] = []
-        points: List[Point] = []
+        polygon_vertices_positions: _t.List[
+            _t.List[PolygonVertexPosition]
+        ] = []
+        points: _t.List[Point[Scalar]] = []
         for point, same_point_vertices in groupby(vertices,
                                                   key=attrgetter('point')):
             points.append(point)
@@ -78,14 +80,14 @@ class ConstrainedDelaunayTriangulation:
         return self._left_side
 
     @property
-    def mesh(self) -> Mesh:
+    def mesh(self) -> Mesh[Scalar]:
         return self._mesh
 
     @property
     def right_side(self) -> QuadEdge:
         return self._right_side
 
-    def bound(self, contours_sizes: List[int]) -> None:
+    def bound(self, contours_sizes: _t.List[int]) -> None:
         mesh = self.mesh
         boundary_edges = self.to_unique_boundary_edges()
         extraneous_mouths = [
@@ -107,9 +109,11 @@ class ConstrainedDelaunayTriangulation:
                                    self._polygon_vertices_positions):
                 extraneous_mouths.append(second_candidate)
 
-    def constrain(self,
-                  contours_sizes: List[int],
-                  contours_vertices: List[Sequence[Point]]) -> None:
+    def constrain(
+            self,
+            contours_sizes: _t.List[int],
+            contours_vertices: _t.List[_t.Sequence[Point[Scalar]]]
+    ) -> None:
         mesh = self.mesh
         contours_constraints_flags = to_contours_constraints_flags(
                 mesh, contours_sizes, self._polygon_vertices_positions
@@ -147,7 +151,8 @@ class ConstrainedDelaunayTriangulation:
                         constraint_index
                     ] = True
 
-    def cut(self, contours_vertices: List[Sequence[Point]]) -> None:
+    def cut(self,
+            contours_vertices: _t.List[_t.Sequence[Point[Scalar]]]) -> None:
         mesh = self.mesh
         for edge in mesh.to_unique_edges():
             if is_edge_inside_hole(mesh, edge, contours_vertices,
@@ -164,12 +169,12 @@ class ConstrainedDelaunayTriangulation:
             self._left_side = self.mesh.to_left_from_start(self.left_side)
         self.mesh.delete_edge(edge)
 
-    def to_boundary_points(self) -> List[Point]:
+    def to_boundary_points(self) -> _t.List[Point[Scalar]]:
         edge_to_start = self.mesh.to_start
         return [edge_to_start(edge)
                 for edge in self.to_unique_boundary_edges()]
 
-    def to_unique_boundary_edges(self) -> List[QuadEdge]:
+    def to_unique_boundary_edges(self) -> _t.List[QuadEdge]:
         if self:
             result = []
             start = self.left_side
@@ -184,7 +189,9 @@ class ConstrainedDelaunayTriangulation:
         else:
             return list(self.mesh.to_unique_edges())
 
-    def triangles_vertices(self) -> List[Tuple[Point, Point, Point]]:
+    def triangles_vertices(
+            self
+    ) -> _t.List[_t.Tuple[Point[Scalar], Point[Scalar], Point[Scalar]]]:
         mesh = self.mesh
         result = []
         for edge in mesh.to_edges():
@@ -225,9 +232,11 @@ class ConstrainedDelaunayTriangulation:
             self,
             left_side: QuadEdge,
             right_side: QuadEdge,
-            mesh: Mesh,
-            _polygon_vertices_positions: List[List[PolygonVertexPosition]],
-            _triangular_holes_indices: Container[int]
+            mesh: Mesh[Scalar],
+            _polygon_vertices_positions: _t.List[
+                _t.List[PolygonVertexPosition]
+            ],
+            _triangular_holes_indices: _t.Container[int]
     ) -> None:
         (self._left_side, self._mesh, self._polygon_vertices_positions,
          self._right_side, self._triangular_holes_indices) = (
@@ -244,11 +253,11 @@ class ConstrainedDelaunayTriangulation:
     __repr__ = generate_repr(__init__)
 
 
-def angle_contains_point(vertex: Point,
-                         first_ray_point: Point,
-                         second_ray_point: Point,
+def angle_contains_point(vertex: Point[Scalar],
+                         first_ray_point: Point[Scalar],
+                         second_ray_point: Point[Scalar],
                          angle_orientation: Orientation,
-                         point: Point) -> bool:
+                         point: Point[Scalar]) -> bool:
     assert angle_orientation is not Orientation.COLLINEAR
     first_half_orientation = orient(vertex, first_ray_point, point)
     second_half_orientation = orient(second_ray_point, vertex, point)
@@ -267,10 +276,10 @@ def are_polygon_edge_indices(first: int,
 
 
 def are_triangular_hole_vertices(
-        first_positions: List[PolygonVertexPosition],
-        second_positions: List[PolygonVertexPosition],
-        third_positions: List[PolygonVertexPosition],
-        triangular_holes_indices: Container[int]
+        first_positions: _t.List[PolygonVertexPosition],
+        second_positions: _t.List[PolygonVertexPosition],
+        third_positions: _t.List[PolygonVertexPosition],
+        triangular_holes_indices: _t.Container[int]
 ) -> bool:
     first_contours_indices = [position.contour_index
                               for position in first_positions]
@@ -285,10 +294,10 @@ def are_triangular_hole_vertices(
                for contour_index in first_contours_indices)
 
 
-def detect_crossings(mesh: Mesh,
+def detect_crossings(mesh: Mesh[Scalar],
                      base_edge: QuadEdge,
-                     constraint_start: Point,
-                     constraint_end: Point) -> List[QuadEdge]:
+                     constraint_start: Point[Scalar],
+                     constraint_end: Point[Scalar]) -> _t.List[QuadEdge]:
     candidate = mesh.to_left_from_end(base_edge)
     result = []
     while mesh.to_start(candidate) != constraint_end:
@@ -315,11 +324,11 @@ def detect_crossings(mesh: Mesh,
 
 
 def intersect_polygon_vertices_positions(
-        first: List[PolygonVertexPosition],
-        second: List[PolygonVertexPosition],
+        first: _t.List[PolygonVertexPosition],
+        second: _t.List[PolygonVertexPosition],
         *,
         with_border: bool
-) -> List[Tuple[PolygonVertexPosition, PolygonVertexPosition]]:
+) -> _t.List[_t.Tuple[PolygonVertexPosition, PolygonVertexPosition]]:
     return list(_intersect_polygon_vertices_positions(first, second, False,
                                                       with_border)
                 if len(first) < len(second)
@@ -328,11 +337,11 @@ def intersect_polygon_vertices_positions(
 
 
 def _intersect_polygon_vertices_positions(
-        first: List[PolygonVertexPosition],
-        second: List[PolygonVertexPosition],
+        first: _t.List[PolygonVertexPosition],
+        second: _t.List[PolygonVertexPosition],
         reverse: bool,
         with_border: bool
-) -> Iterable[Tuple[PolygonVertexPosition, PolygonVertexPosition]]:
+) -> _t.Iterable[_t.Tuple[PolygonVertexPosition, PolygonVertexPosition]]:
     assert len(first) <= len(second)
     for first_position in first:
         if with_border or first_position.contour_index != BORDER_CONTOUR_INDEX:
@@ -352,10 +361,10 @@ def _intersect_polygon_vertices_positions(
 
 
 def is_edge_inside_hole(
-        mesh: Mesh,
+        mesh: Mesh[Scalar],
         edge: QuadEdge,
-        contours_vertices: List[Sequence[Point]],
-        polygon_vertices_positions: List[List[PolygonVertexPosition]]
+        contours_vertices: _t.List[_t.Sequence[Point[Scalar]]],
+        polygon_vertices_positions: _t.List[_t.List[PolygonVertexPosition]]
 ) -> bool:
     start_index, end_index = mesh.to_start_index(edge), mesh.to_end_index(edge)
     start, end = mesh.endpoints[start_index], mesh.endpoints[end_index]
@@ -370,11 +379,13 @@ def is_edge_inside_hole(
                                        contours_vertices))
 
 
-def is_segment_inside_hole(start: Point,
-                           end: Point,
-                           start_position: PolygonVertexPosition,
-                           end_position: PolygonVertexPosition,
-                           contours_vertices: List[Sequence[Point]]) -> bool:
+def is_segment_inside_hole(
+        start: Point[Scalar],
+        end: Point[Scalar],
+        start_position: PolygonVertexPosition,
+        end_position: PolygonVertexPosition,
+        contours_vertices: _t.List[_t.Sequence[Point[Scalar]]]
+) -> bool:
     assert start_position.contour_index == end_position.contour_index
     hole_vertices = contours_vertices[start_position.contour_index]
     hole_size = len(hole_vertices)
@@ -401,8 +412,8 @@ def is_segment_inside_hole(start: Point,
                                          start_angle_orientation, end)))
 
 
-def mouth_edge_to_incidents(mesh: Mesh,
-                            edge: QuadEdge) -> Tuple[QuadEdge, QuadEdge]:
+def mouth_edge_to_incidents(mesh: Mesh[Scalar],
+                            edge: QuadEdge) -> _t.Tuple[QuadEdge, QuadEdge]:
     left_from_start = mesh.to_left_from_start(edge)
     assert orient_point_to_edge(
             mesh, edge, mesh.to_end(left_from_start)
@@ -411,10 +422,10 @@ def mouth_edge_to_incidents(mesh: Mesh,
 
 
 def to_contours_constraints_flags(
-        mesh: Mesh,
-        contours_sizes: List[int],
-        polygon_vertices_positions: List[List[PolygonVertexPosition]],
-) -> List[List[bool]]:
+        mesh: Mesh[Scalar],
+        contours_sizes: _t.List[int],
+        polygon_vertices_positions: _t.List[_t.List[PolygonVertexPosition]],
+) -> _t.List[_t.List[bool]]:
     result = [[False] * contour_size for contour_size in contours_sizes]
     for edge in mesh.to_unique_edges():
         common_positions = intersect_polygon_vertices_positions(
@@ -434,7 +445,7 @@ def to_contours_constraints_flags(
     return result
 
 
-def edge_should_be_swapped(mesh: Mesh, edge: QuadEdge) -> bool:
+def edge_should_be_swapped(mesh: Mesh[Scalar], edge: QuadEdge) -> bool:
     return (is_convex_quadrilateral_diagonal(mesh, edge)
             and
             (locate_point_in_point_point_point_circle(
@@ -451,7 +462,8 @@ def edge_should_be_swapped(mesh: Mesh, edge: QuadEdge) -> bool:
                  is Location.INTERIOR)))
 
 
-def is_convex_quadrilateral_diagonal(mesh: Mesh, edge: QuadEdge) -> bool:
+def is_convex_quadrilateral_diagonal(mesh: Mesh[Scalar],
+                                     edge: QuadEdge) -> bool:
     return (orient_point_to_edge(mesh, mesh.to_left_from_end(edge),
                                  mesh.to_start(edge))
             is orient_point_to_edge(mesh, mesh.to_right_from_start(edge),
@@ -470,10 +482,10 @@ def is_convex_quadrilateral_diagonal(mesh: Mesh, edge: QuadEdge) -> bool:
 
 
 def is_polygon_edge(
-        mesh: Mesh,
+        mesh: Mesh[Scalar],
         edge: QuadEdge,
-        contours_sizes: List[int],
-        polygon_vertices_positions: List[List[PolygonVertexPosition]]
+        contours_sizes: _t.List[int],
+        polygon_vertices_positions: _t.List[_t.List[PolygonVertexPosition]]
 ) -> bool:
     common_positions = intersect_polygon_vertices_positions(
             polygon_vertices_positions[mesh.to_start_index(edge)],
@@ -488,10 +500,10 @@ def is_polygon_edge(
                for start_position, end_position in common_positions)
 
 
-def resolve_crossings(mesh: Mesh,
-                      constraint_start: Point,
-                      constraint_end: Point,
-                      crossings: List[QuadEdge]) -> List[QuadEdge]:
+def resolve_crossings(mesh: Mesh[Scalar],
+                      constraint_start: Point[Scalar],
+                      constraint_end: Point[Scalar],
+                      crossings: _t.List[QuadEdge]) -> _t.List[QuadEdge]:
     result = []
     crossings_queue = deque(crossings,
                             maxlen=len(crossings))
@@ -511,10 +523,11 @@ def resolve_crossings(mesh: Mesh,
     return result
 
 
-def restore_delaunay_criterion(mesh: Mesh, candidates: List[QuadEdge]) -> None:
+def restore_delaunay_criterion(mesh: Mesh[Scalar],
+                               candidates: _t.List[QuadEdge]) -> None:
     while True:
-        next_target_edges: List[QuadEdge] = []
-        edges_to_swap: List[QuadEdge] = []
+        next_target_edges: _t.List[QuadEdge] = []
+        edges_to_swap: _t.List[QuadEdge] = []
         for edge in candidates:
             (edges_to_swap
              if edge_should_be_swapped(mesh, edge)
@@ -526,18 +539,20 @@ def restore_delaunay_criterion(mesh: Mesh, candidates: List[QuadEdge]) -> None:
         candidates = next_target_edges
 
 
-def set_constraint(mesh: Mesh,
-                   constraint_start: Point,
-                   constraint_end: Point,
-                   crossings: List[QuadEdge]) -> None:
+def set_constraint(mesh: Mesh[Scalar],
+                   constraint_start: Point[Scalar],
+                   constraint_end: Point[Scalar],
+                   crossings: _t.List[QuadEdge]) -> None:
     new_edges = resolve_crossings(mesh, constraint_start, constraint_end,
                                   crossings)
     restore_delaunay_criterion(mesh, new_edges)
 
 
-def to_angle_containing_constraint_base(mesh: Mesh,
-                                        edge: QuadEdge,
-                                        constraint_end: Point) -> QuadEdge:
+def to_angle_containing_constraint_base(
+        mesh: Mesh[Scalar],
+        edge: QuadEdge,
+        constraint_end: Point[Scalar]
+) -> QuadEdge:
     if mesh.to_end(edge) != constraint_end:
         orientation = orient_point_to_edge(mesh, edge, constraint_end)
         if orientation is Orientation.COUNTERCLOCKWISE:

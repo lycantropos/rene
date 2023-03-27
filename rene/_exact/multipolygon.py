@@ -1,9 +1,13 @@
+from __future__ import annotations
+
+import typing as _t
 from itertools import chain
-from typing import Optional
 
+import typing_extensions as _te
 from reprit.base import generate_repr
-from rithm import Fraction
+from rithm.fraction import Fraction
 
+from rene import hints as _hints
 from rene._clipping import (intersect_multipolygon_with_polygon,
                             intersect_multipolygons,
                             subtract_multipolygons,
@@ -19,29 +23,33 @@ from rene._utils import (collect_maybe_empty_polygons,
 
 
 class Multipolygon:
-    _context: Optional[Context[Fraction]] = None
+    _context: _t.ClassVar[Context[Fraction]]
 
     @property
-    def polygons(self):
+    def polygons(self) -> _t.Sequence[_hints.Polygon[Fraction]]:
         return self._polygons[:]
 
     @property
-    def polygons_count(self):
+    def polygons_count(self) -> int:
         return len(self._polygons)
 
     @property
-    def segments(self):
+    def segments(self) -> _t.Sequence[_hints.Segment[Fraction]]:
         return list(chain.from_iterable(polygon.segments
                                         for polygon in self._polygons))
 
     @property
-    def segments_count(self):
+    def segments_count(self) -> int:
         return sum(polygon.segments_count for polygon in self._polygons)
+
+    _polygons: _t.Sequence[_hints.Polygon[Fraction]]
 
     __module__ = 'rene.exact'
     __slots__ = '_polygons',
 
-    def __new__(cls, polygons):
+    def __new__(
+            cls, polygons: _t.Sequence[_hints.Polygon[Fraction]]
+    ) -> _te.Self:
         if len(polygons) < MIN_MULTIPOLYGON_POLYGONS_COUNT:
             raise ValueError('Multipolygon should have at least '
                              f'{MIN_MULTIPOLYGON_POLYGONS_COUNT} polygons, '
@@ -50,7 +58,33 @@ class Multipolygon:
         self._polygons = list(polygons)
         return self
 
-    def __and__(self, other):
+    @_t.overload
+    def __and__(self, other: _hints.Empty[Fraction]) -> _hints.Empty[Fraction]:
+        ...
+
+    @_t.overload
+    def __and__(
+            self, other: _hints.Multipolygon[Fraction]
+    ) -> _t.Union[
+        _hints.Empty[Fraction], _hints.Multipolygon[Fraction],
+        _hints.Polygon[Fraction]
+    ]:
+        ...
+
+    @_t.overload
+    def __and__(
+            self, other: _hints.Polygon[Fraction]
+    ) -> _t.Union[
+        _hints.Empty[Fraction], _hints.Multipolygon[Fraction],
+        _hints.Polygon[Fraction]
+    ]:
+        ...
+
+    @_t.overload
+    def __and__(self, other: _t.Any) -> _t.Any:
+        ...
+
+    def __and__(self, other: _t.Any) -> _t.Any:
         return (
             self._context.empty_cls()
             if isinstance(other, self._context.empty_cls)
@@ -72,15 +106,43 @@ class Multipolygon:
             )
         )
 
-    def __eq__(self, other):
+    @_t.overload
+    def __eq__(self, other: _te.Self) -> bool:
+        ...
+
+    @_t.overload
+    def __eq__(self, other: _t.Any) -> _t.Any:
+        ...
+
+    def __eq__(self, other: _t.Any) -> _t.Any:
         return (frozenset(self.polygons) == frozenset(other.polygons)
                 if isinstance(other, self._context.multipolygon_cls)
                 else NotImplemented)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(frozenset(self.polygons))
 
-    def __or__(self, other):
+    @_t.overload
+    def __or__(self, other: _hints.Empty[Fraction]) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __or__(
+            self, other: _hints.Multipolygon[Fraction]
+    ) -> _t.Union[_hints.Multipolygon[Fraction], _hints.Polygon[Fraction]]:
+        ...
+
+    @_t.overload
+    def __or__(
+            self, other: _hints.Polygon[Fraction]
+    ) -> _t.Union[_hints.Multipolygon[Fraction], _hints.Polygon[Fraction]]:
+        ...
+
+    @_t.overload
+    def __or__(self, other: _t.Any) -> _t.Any:
+        ...
+
+    def __or__(self, other: _t.Any) -> _t.Any:
         return (
             self
             if isinstance(other, self._context.empty_cls)
@@ -102,7 +164,33 @@ class Multipolygon:
     __repr__ = generate_repr(__new__,
                              with_module_name=True)
 
-    def __sub__(self, other):
+    @_t.overload
+    def __sub__(self, other: _hints.Empty[Fraction]) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __sub__(
+            self, other: _hints.Multipolygon[Fraction]
+    ) -> _t.Union[
+        _hints.Empty[Fraction], _hints.Multipolygon[Fraction],
+        _hints.Polygon[Fraction]
+    ]:
+        ...
+
+    @_t.overload
+    def __sub__(
+            self, other: _hints.Polygon[Fraction]
+    ) -> _t.Union[
+        _hints.Empty[Fraction], _hints.Multipolygon[Fraction],
+        _hints.Polygon[Fraction]
+    ]:
+        ...
+
+    @_t.overload
+    def __sub__(self, other: _t.Any) -> _t.Any:
+        ...
+
+    def __sub__(self, other: _t.Any) -> _t.Any:
         return (
             self
             if isinstance(other, self._context.empty_cls)
@@ -126,11 +214,37 @@ class Multipolygon:
             )
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (f'{type(self).__qualname__}([{{}}])'
                 .format(', '.join(map(str, self.polygons))))
 
-    def __xor__(self, other):
+    @_t.overload
+    def __xor__(self, other: _hints.Empty[Fraction]) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __xor__(
+            self, other: _hints.Multipolygon[Fraction]
+    ) -> _t.Union[
+        _hints.Empty[Fraction], _hints.Multipolygon[Fraction],
+        _hints.Polygon[Fraction]
+    ]:
+        ...
+
+    @_t.overload
+    def __xor__(
+            self, other: _hints.Polygon[Fraction]
+    ) -> _t.Union[
+        _hints.Empty[Fraction], _hints.Multipolygon[Fraction],
+        _hints.Polygon[Fraction]
+    ]:
+        ...
+
+    @_t.overload
+    def __xor__(self, other: _t.Any) -> _t.Any:
+        ...
+
+    def __xor__(self, other: _t.Any) -> _t.Any:
         return (
             self
             if isinstance(other, self._context.empty_cls)

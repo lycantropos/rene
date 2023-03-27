@@ -1,27 +1,27 @@
-from typing import (Any,
-                    Optional,
-                    Sequence)
+from __future__ import annotations
 
+import typing as _t
+
+import typing_extensions as _te
 from reprit.base import generate_repr
-from rithm import Fraction
+from rithm.fraction import Fraction
 
+from rene import (MIN_CONTOUR_VERTICES_COUNT,
+                  Orientation,
+                  Relation)
 from rene._bentley_ottmann.base import (Intersection,
                                         sweep)
 from rene._context import Context
-from rene._rene import (MIN_CONTOUR_VERTICES_COUNT,
-                        Orientation,
-                        Relation)
-from rene._utils import orient
-from .box import Box
-from .point import Point
-from .segment import Segment
+from rene._utils import (are_contour_vertices_non_degenerate,
+                         to_contour_orientation)
+from rene.hints import (Box,
+                        Point,
+                        Segment)
 
 
 class Contour:
-    _context: Optional[Context[Fraction]] = None
-
     @property
-    def bounding_box(self):
+    def bounding_box(self) -> Box[Fraction]:
         vertices = iter(self._vertices)
         first_vertex = next(vertices)
         min_x = max_x = first_vertex.x
@@ -35,36 +35,38 @@ class Contour:
                 max_y = vertex.y
             elif vertex.y < min_y:
                 min_y = vertex.y
-        return Box(min_x, max_x, min_y, max_y)
+        return self._context.box_cls(min_x, max_x, min_y, max_y)
 
     @property
-    def orientation(self):
+    def orientation(self) -> Orientation:
         vertices = self.vertices
         min_vertex_index = min(range(len(vertices)),
                                key=vertices.__getitem__)
-        return _to_contour_orientation(vertices, min_vertex_index)
+        return to_contour_orientation(vertices, min_vertex_index)
 
     @property
-    def segments(self):
-        result = [Segment(self._vertices[index], self._vertices[index + 1])
+    def segments(self) -> _t.Sequence[Segment[Fraction]]:
+        segment_cls = self._context.segment_cls
+        result = [segment_cls(self._vertices[index], self._vertices[index + 1])
                   for index in range(len(self.vertices) - 1)]
-        result.append(Segment(self._vertices[-1], self._vertices[0]))
+        result.append(segment_cls(self._vertices[-1],
+                                  self._vertices[0]))
         return result
 
     @property
-    def segments_count(self):
+    def segments_count(self) -> int:
         return len(self._vertices)
 
     @property
-    def vertices(self):
+    def vertices(self) -> _t.Sequence[Point[Fraction]]:
         return self._vertices[:]
 
     @property
-    def vertices_count(self):
+    def vertices_count(self) -> int:
         return len(self._vertices)
 
-    def is_valid(self):
-        if not _are_contour_vertices_non_degenerate(self.vertices):
+    def is_valid(self) -> bool:
+        if not are_contour_vertices_non_degenerate(self.vertices):
             return False
         segments = self.segments
         if len(segments) < MIN_CONTOUR_VERTICES_COUNT:
@@ -76,10 +78,13 @@ class Contour:
             neighbour_segments_touches_count += 1
         return neighbour_segments_touches_count == len(segments)
 
+    _context: _t.ClassVar[Context[Fraction]]
+    _vertices: _t.List[Point[Fraction]]
+
     __module__ = 'rene.exact'
     __slots__ = '_vertices',
 
-    def __new__(cls, vertices):
+    def __new__(cls, vertices: _t.Sequence[Point[Fraction]]) -> Contour:
         if len(vertices) < MIN_CONTOUR_VERTICES_COUNT:
             raise ValueError('Contour should have at least '
                              f'{MIN_CONTOUR_VERTICES_COUNT} vertices, '
@@ -88,7 +93,15 @@ class Contour:
         self._vertices = list(vertices)
         return self
 
-    def __eq__(self, other):
+    @_t.overload
+    def __eq__(self, other: _te.Self) -> bool:
+        pass
+
+    @_t.overload
+    def __eq__(self, other: _t.Any) -> _t.Any:
+        pass
+
+    def __eq__(self, other: _t.Any) -> _t.Any:
         return (
             _are_non_empty_unique_sequences_rotationally_equivalent(
                     self.vertices, other.vertices
@@ -97,15 +110,15 @@ class Contour:
             else NotImplemented
         )
 
-    def __hash__(self):
-        vertices = self.vertices
+    def __hash__(self) -> int:
+        vertices = self._vertices
         min_vertex_index = min(range(len(vertices)),
                                key=vertices.__getitem__)
         vertices = (vertices[min_vertex_index:min_vertex_index + 1]
                     + vertices[:min_vertex_index][::-1]
                     + vertices[:min_vertex_index:-1]
-                    if (_to_contour_orientation(vertices, min_vertex_index)
-                        == Orientation.CLOCKWISE)
+                    if (to_contour_orientation(vertices, min_vertex_index)
+                        is Orientation.CLOCKWISE)
                     else (vertices[min_vertex_index:]
                           + vertices[:min_vertex_index]))
         return hash(tuple(vertices))
@@ -113,24 +126,15 @@ class Contour:
     __repr__ = generate_repr(__new__,
                              with_module_name=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (f'{type(self).__qualname__}([{{}}])'
                 .format(', '.join(map(str, self.vertices))))
 
 
-def _are_contour_vertices_non_degenerate(vertices: Sequence[Point]) -> bool:
-    return (all(orient(vertices[index - 1], vertices[index],
-                       vertices[index + 1]) is not Orientation.COLLINEAR
-                for index in range(1, len(vertices) - 1))
-            and (len(vertices) <= MIN_CONTOUR_VERTICES_COUNT
-                 or ((orient(vertices[-2], vertices[-1], vertices[0])
-                      is not Orientation.COLLINEAR)
-                     and (orient(vertices[-1], vertices[0], vertices[1])
-                          is not Orientation.COLLINEAR))))
-
-
-def _neighbour_segments_vertices_touch(intersection: Intersection,
-                                       segments: Sequence[Segment]) -> bool:
+def _neighbour_segments_vertices_touch(
+        intersection: Intersection[Fraction],
+        segments: _t.Sequence[Segment[Fraction]]
+) -> bool:
     first_segment = segments[intersection.first_segment_id]
     second_segment = segments[intersection.second_segment_id]
     touches_at_vertices = (
@@ -151,14 +155,8 @@ def _neighbour_segments_vertices_touch(intersection: Intersection,
     return touches_at_vertices and neighbour_segments_intersection
 
 
-def _to_contour_orientation(vertices: Sequence[Point],
-                            min_vertex_index: int) -> Orientation:
-    return orient(vertices[min_vertex_index - 1], vertices[min_vertex_index],
-                  vertices[(min_vertex_index + 1) % len(vertices)])
-
-
 def _are_non_empty_unique_sequences_rotationally_equivalent(
-        left: Sequence[Any], right: Sequence[Any]
+        left: _t.Sequence[_t.Any], right: _t.Sequence[_t.Any]
 ) -> bool:
     assert left and right
     if len(left) != len(right):

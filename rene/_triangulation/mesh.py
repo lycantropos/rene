@@ -1,32 +1,31 @@
 from __future__ import annotations
 
-from typing import (Iterable,
-                    List,
-                    Optional,
-                    Tuple)
+import typing as _t
 
+import typing_extensions as _te
 from reprit.base import generate_repr
 
-from rene._rene import (Location,
-                        Orientation)
+from rene import (Location,
+                  Orientation)
 from rene._utils import (ceil_log2,
                          is_even,
                          locate_point_in_point_point_point_circle,
                          orient)
-from rene.hints import Point
+from rene.hints import (Point,
+                        Scalar)
 from .quad_edge import (UNDEFINED_EDGE,
                         QuadEdge,
                         to_opposite_edge,
                         to_rotated_edge)
 
 
-class Mesh:
-    endpoints: List[Point]
-    left_from_start: List[QuadEdge]
-    starts_indices: List[int]
+class Mesh(_t.Generic[Scalar]):
+    endpoints: _t.List[Point[Scalar]]
+    left_from_start: _t.List[QuadEdge]
+    starts_indices: _t.List[int]
 
     @classmethod
-    def from_points(cls, endpoints: List[Point]) -> Mesh:
+    def from_points(cls, endpoints: _t.List[Point[Scalar]]) -> _te.Self:
         return cls(endpoints, [], [])
 
     def connect_edges(self, first: QuadEdge, second: QuadEdge) -> QuadEdge:
@@ -87,14 +86,14 @@ class Mesh:
         assert self.to_start(edge) == self.to_end(side)
         assert self.to_end(edge) == self.to_end(opposite_side)
 
-    def to_edges(self) -> Iterable[QuadEdge]:
+    def to_edges(self) -> _t.Iterable[QuadEdge]:
         candidates = [QuadEdge(index)
                       for index in range(0, len(self.left_from_start), 2)]
         return [candidate
                 for candidate in candidates
                 if not self.is_deleted_edge(candidate)]
 
-    def to_end(self, edge: QuadEdge) -> Point:
+    def to_end(self, edge: QuadEdge) -> Point[Scalar]:
         """
         aka "Dest" in L. Guibas and J. Stolfi notation.
         """
@@ -129,7 +128,7 @@ class Mesh:
         """
         return to_rotated_edge(self.to_left_from_start(to_rotated_edge(edge)))
 
-    def to_start(self, edge: QuadEdge) -> Point:
+    def to_start(self, edge: QuadEdge) -> Point[Scalar]:
         """
         aka "Org" in L. Guibas and J. Stolfi notation.
         """
@@ -139,7 +138,7 @@ class Mesh:
         assert is_even(edge)
         return self.starts_indices[edge // 2]
 
-    def to_unique_edges(self) -> Iterable[QuadEdge]:
+    def to_unique_edges(self) -> _t.Iterable[QuadEdge]:
         candidates = [QuadEdge(index)
                       for index in range(0, len(self.left_from_start), 4)]
         return [candidate
@@ -152,9 +151,9 @@ class Mesh:
         return bool(self.left_from_start)
 
     def __init__(self,
-                 endpoints: List[Point],
-                 left_from_start: List[QuadEdge],
-                 starts_indices: List[int]) -> None:
+                 endpoints: _t.List[Point[Scalar]],
+                 left_from_start: _t.List[QuadEdge],
+                 starts_indices: _t.List[int]) -> None:
         self.endpoints, self.left_from_start, self.starts_indices = (
             endpoints, left_from_start, starts_indices
         )
@@ -163,10 +162,10 @@ class Mesh:
 
 
 def build_base_edge(
-        mesh: Mesh,
+        mesh: Mesh[Scalar],
         first_right_side: QuadEdge,
         second_left_side: QuadEdge,
-) -> Tuple[QuadEdge, QuadEdge, QuadEdge]:
+) -> _t.Tuple[QuadEdge, QuadEdge, QuadEdge]:
     while True:
         if orient_point_to_edge(
                 mesh, first_right_side, mesh.to_start(second_left_side)
@@ -184,7 +183,9 @@ def build_base_edge(
             second_left_side)
 
 
-def build_delaunay_triangulation(mesh: Mesh) -> Tuple[QuadEdge, QuadEdge]:
+def build_delaunay_triangulation(
+        mesh: Mesh[Scalar]
+) -> _t.Tuple[QuadEdge, QuadEdge]:
     if len(mesh.endpoints) < 2:
         left_side = right_side = UNDEFINED_EDGE
     else:
@@ -221,10 +222,10 @@ def build_delaunay_triangulation(mesh: Mesh) -> Tuple[QuadEdge, QuadEdge]:
     return left_side, right_side
 
 
-def create_triangle(mesh: Mesh,
+def create_triangle(mesh: Mesh[Scalar],
                     left_point_index: int,
                     mid_point_index: int,
-                    right_point_index: int) -> Tuple[QuadEdge, QuadEdge]:
+                    right_point_index: int) -> _t.Tuple[QuadEdge, QuadEdge]:
     first_edge = mesh.create_edge(left_point_index, mid_point_index)
     second_edge = mesh.create_edge(mid_point_index, right_point_index)
     mesh.splice_edges(to_opposite_edge(first_edge), second_edge)
@@ -242,7 +243,8 @@ def create_triangle(mesh: Mesh,
         return first_edge, to_opposite_edge(second_edge)
 
 
-def find_left_candidate(mesh: Mesh, base_edge: QuadEdge) -> Optional[QuadEdge]:
+def find_left_candidate(mesh: Mesh[Scalar],
+                        base_edge: QuadEdge) -> _t.Optional[QuadEdge]:
     result = mesh.to_left_from_start(to_opposite_edge(base_edge))
     if (orient_point_to_edge(mesh, base_edge, mesh.to_end(result))
             is not Orientation.CLOCKWISE):
@@ -267,8 +269,8 @@ def find_left_candidate(mesh: Mesh, base_edge: QuadEdge) -> Optional[QuadEdge]:
     return result
 
 
-def find_right_candidate(mesh: Mesh,
-                         base_edge: QuadEdge) -> Optional[QuadEdge]:
+def find_right_candidate(mesh: Mesh[Scalar],
+                         base_edge: QuadEdge) -> _t.Optional[QuadEdge]:
     result = mesh.to_right_from_start(base_edge)
     if (orient_point_to_edge(mesh, base_edge, mesh.to_end(result))
             is not Orientation.CLOCKWISE):
@@ -293,10 +295,11 @@ def find_right_candidate(mesh: Mesh,
     return result
 
 
-def merge(mesh: Mesh,
-          first_sides: Tuple[QuadEdge, QuadEdge],
-          second_sides: Tuple[QuadEdge, QuadEdge]
-          ) -> Tuple[QuadEdge, QuadEdge]:
+def merge(
+        mesh: Mesh[Scalar],
+        first_sides: _t.Tuple[QuadEdge, QuadEdge],
+        second_sides: _t.Tuple[QuadEdge, QuadEdge]
+) -> _t.Tuple[QuadEdge, QuadEdge]:
     first_left_side, first_right_side = first_sides
     second_left_side, second_right_side = second_sides
     first_right_side, base_edge, second_left_side = build_base_edge(
@@ -317,13 +320,13 @@ def merge(mesh: Mesh,
     return left_side, right_side
 
 
-def orient_point_to_edge(mesh: Mesh,
+def orient_point_to_edge(mesh: Mesh[Scalar],
                          base_edge: QuadEdge,
-                         point: Point) -> Orientation:
+                         point: Point[Scalar]) -> Orientation:
     return orient(mesh.to_start(base_edge), mesh.to_end(base_edge), point)
 
 
-def rise_bubble(mesh: Mesh, base_edge: QuadEdge) -> None:
+def rise_bubble(mesh: Mesh[Scalar], base_edge: QuadEdge) -> None:
     while True:
         left_candidate, right_candidate = (
             find_left_candidate(mesh, base_edge),
@@ -356,7 +359,7 @@ def rise_bubble(mesh: Mesh, base_edge: QuadEdge) -> None:
             break
 
 
-def to_base_cases(points_count: int) -> Tuple[int, int]:
+def to_base_cases(points_count: int) -> _t.Tuple[int, int]:
     """
     Searches solution of linear diophantine equation
         2 * segments_count + 3 * triangles_count == points_count

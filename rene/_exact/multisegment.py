@@ -1,8 +1,11 @@
-from typing import Optional
+from __future__ import annotations
+
+import typing as _t
 
 from reprit.base import generate_repr
-from rithm import Fraction
+from rithm.fraction import Fraction
 
+from rene import hints as _hints
 from rene._bentley_ottmann.base import sweep
 from rene._context import Context
 from rene._rene import (MIN_MULTISEGMENT_SEGMENTS_COUNT,
@@ -10,25 +13,26 @@ from rene._rene import (MIN_MULTISEGMENT_SEGMENTS_COUNT,
 
 
 class Multisegment:
-    _context: Optional[Context[Fraction]] = None
-
     @property
-    def segments(self):
+    def segments(self) -> _t.Sequence[_hints.Segment[Fraction]]:
         return self._segments[:]
 
     @property
-    def segments_count(self):
+    def segments_count(self) -> int:
         return len(self._segments)
 
-    def is_valid(self):
-        segments = self.segments
+    def is_valid(self) -> bool:
         return all(intersection.relation is Relation.TOUCH
-                   for intersection in sweep(segments))
+                   for intersection in sweep(self._segments))
+
+    _context: _t.ClassVar[Context[Fraction]]
+    _segments: _t.Sequence[_hints.Segment[Fraction]]
 
     __module__ = 'rene.exact'
     __slots__ = '_segments',
 
-    def __new__(cls, segments):
+    def __new__(cls, segments: _t.Sequence[
+        _hints.Segment[Fraction]]) -> Multisegment:
         if len(segments) < MIN_MULTISEGMENT_SEGMENTS_COUNT:
             raise ValueError('Multisegment should have at least '
                              f'{MIN_MULTISEGMENT_SEGMENTS_COUNT} segments, '
@@ -37,17 +41,25 @@ class Multisegment:
         self._segments = list(segments)
         return self
 
-    def __eq__(self, other):
+    @_t.overload
+    def __eq__(self, other: Multisegment) -> bool:
+        ...
+
+    @_t.overload
+    def __eq__(self, other: _t.Any) -> _t.Any:
+        ...
+
+    def __eq__(self, other: _t.Any) -> _t.Any:
         return (frozenset(self.segments) == frozenset(other.segments)
                 if isinstance(other, Multisegment)
                 else NotImplemented)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(frozenset(self.segments))
 
     __repr__ = generate_repr(__new__,
                              with_module_name=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (f'{type(self).__qualname__}([{{}}])'
                 .format(', '.join(map(str, self.segments))))

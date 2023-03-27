@@ -1,19 +1,28 @@
+import typing as _t
+
+import typing_extensions as _te
 from reprit.base import generate_repr
 
 from rene._hints import Map
 from rene._rene import Orientation
 from rene._utils import orient
-from rene.hints import Point
+from rene.hints import (Point,
+                        Scalar)
 from .event import Event
 
 
-class BinarySweepLineKey:
+class BinarySweepLineKey(_t.Generic[Scalar]):
+    endpoints: Map[Event, Point[Scalar]]
+    event: Event
+    is_from_first_operand: bool
+    opposites: Map[Event, Event]
+
     __slots__ = 'endpoints', 'event', 'is_from_first_operand', 'opposites'
 
     def __init__(self,
                  event: Event,
                  is_from_first_operand: bool,
-                 endpoints: Map[Event, Point],
+                 endpoints: Map[Event, Point[Scalar]],
                  opposites: Map[Event, Event]) -> None:
         (
             self.endpoints, self.event, self.is_from_first_operand,
@@ -22,7 +31,7 @@ class BinarySweepLineKey:
 
     __repr__ = generate_repr(__init__)
 
-    def __lt__(self, other: 'BinarySweepLineKey') -> bool:
+    def __lt__(self, other: _te.Self) -> bool:
         """
         Checks if the segment associated with event is lower than other's.
         """

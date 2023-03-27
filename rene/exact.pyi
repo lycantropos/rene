@@ -4,7 +4,7 @@ import typing as _t
 from numbers import Rational as _Rational
 
 import typing_extensions as _te
-from rithm import Fraction as _Fraction
+from rithm.fraction import Fraction as _Fraction
 
 from rene import (Orientation as _Orientation,
                   Relation as _Relation)
@@ -452,7 +452,7 @@ class Polygon:
         ...
 
     @_t.overload
-    def __xor__(self, 
+    def __xor__(self,
                 other: Polygon) -> _t.Union[Empty, Multipolygon, Polygon]:
         ...
 

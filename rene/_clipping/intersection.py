@@ -1,23 +1,24 @@
 from typing import List
 
+from rene import hints as _hints
 from rene._utils import (do_boxes_have_no_common_area,
                          merge_boxes,
                          to_boxes_ids_with_common_area)
-from rene.hints import (Multipolygon,
-                        Polygon)
 from . import shaped
 from .event import Event
 
 
-class ShapedIntersection(shaped.Operation):
+class ShapedIntersection(shaped.Operation[_hints.Scalar]):
     def _detect_if_left_event_from_result(self, event: Event) -> bool:
         return (self._is_inside_left_event(event)
                 or not self._is_left_event_from_first_operand(event)
                 and self._is_common_region_boundary_left_event(event))
 
 
-def intersect_multipolygons(first: Multipolygon,
-                            second: Multipolygon) -> List[Polygon]:
+def intersect_multipolygons(
+        first: _hints.Multipolygon[_hints.Scalar],
+        second: _hints.Multipolygon[_hints.Scalar]
+) -> List[_hints.Polygon[_hints.Scalar]]:
     first_polygons, second_polygons = first.polygons, second.polygons
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
     second_boxes = [polygon.bounding_box for polygon in second_polygons]
@@ -72,8 +73,10 @@ def intersect_multipolygons(first: Multipolygon,
                                    type(first_polygons[0]))
 
 
-def intersect_multipolygon_with_polygon(first: Multipolygon,
-                                        second: Polygon) -> List[Polygon]:
+def intersect_multipolygon_with_polygon(
+        first: _hints.Multipolygon[_hints.Scalar],
+        second: _hints.Polygon[_hints.Scalar]
+) -> List[_hints.Polygon[_hints.Scalar]]:
     first_polygons = first.polygons
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
     first_bounding_box, second_bounding_box = (merge_boxes(first_boxes),
@@ -115,8 +118,10 @@ def intersect_multipolygon_with_polygon(first: Multipolygon,
                                    type(first_polygons[0]))
 
 
-def intersect_polygon_with_multipolygon(first: Polygon,
-                                        second: Multipolygon) -> List[Polygon]:
+def intersect_polygon_with_multipolygon(
+        first: _hints.Polygon[_hints.Scalar],
+        second: _hints.Multipolygon[_hints.Scalar]
+) -> List[_hints.Polygon[_hints.Scalar]]:
     second_polygons = second.polygons
     second_boxes = [polygon.bounding_box for polygon in second_polygons]
     first_bounding_box, second_bounding_box = (first.bounding_box,
@@ -157,7 +162,10 @@ def intersect_polygon_with_multipolygon(first: Polygon,
     return operation.reduce_events(events, type(first.border), type(first))
 
 
-def intersect_polygons(first: Polygon, second: Polygon) -> List[Polygon]:
+def intersect_polygons(
+        first: _hints.Polygon[_hints.Scalar],
+        second: _hints.Polygon[_hints.Scalar]
+) -> List[_hints.Polygon[_hints.Scalar]]:
     first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)
     if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):

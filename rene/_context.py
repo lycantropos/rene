@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import (Generic,
                     Type)
 
+import typing_extensions as _te
 from reprit import serializers
 from reprit.base import generate_repr
 
@@ -27,7 +28,7 @@ class Context(Generic[Scalar]):
         return self._contour_cls
 
     @property
-    def empty_cls(self) -> Type[Empty]:
+    def empty_cls(self) -> Type[Empty[Scalar]]:
         return self._empty_cls
 
     @property
@@ -52,7 +53,7 @@ class Context(Generic[Scalar]):
 
     _box_cls: Type[Box[Scalar]]
     _contour_cls: Type[Contour[Scalar]]
-    _empty_cls: Type[Empty]
+    _empty_cls: Type[Empty[Scalar]]
     _multipolygon_cls: Type[Multipolygon[Scalar]]
     _multisegment_cls: Type[Multisegment[Scalar]]
     _point_cls: Type[Point[Scalar]]
@@ -69,12 +70,12 @@ class Context(Generic[Scalar]):
                 *,
                 box_cls: Type[Box[Scalar]],
                 contour_cls: Type[Contour[Scalar]],
-                empty_cls: Type[Empty],
+                empty_cls: Type[Empty[Scalar]],
                 multipolygon_cls: Type[Multipolygon[Scalar]],
                 multisegment_cls: Type[Multisegment[Scalar]],
                 point_cls: Type[Point[Scalar]],
                 polygon_cls: Type[Polygon[Scalar]],
-                segment_cls: Type[Segment[Scalar]]) -> Context[Scalar]:
+                segment_cls: Type[Segment[Scalar]]) -> _te.Self:
         self = super().__new__(cls)
         (
             self._box_cls, self._empty_cls, self._multipolygon_cls,
