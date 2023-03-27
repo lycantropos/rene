@@ -4,6 +4,7 @@ description = "Computational geometry."
 license = "MIT"
 version = "0.1.0-alpha"
 edition = "2018"
+repository = "https://github.com/lycantropos/rene"
 rust-version = "1.66.0"
 
 [lib]
