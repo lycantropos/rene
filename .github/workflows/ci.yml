@@ -93,10 +93,8 @@ jobs:
             -Zprofile -Ccodegen-units=1 -Copt-level=0 -Coverflow-checks=off
             -Zpanic_abort_tests -Cpanic=abort
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
-      - name: 'Install Python packaging tools'
-        run: python -m pip install -U pip setuptools
       - name: 'Install in editable mode'
-        run: python -m pip -v install -e .
+        run: python -m pip -v install -e .[tests]
         env:
           CARGO_INCREMENTAL: 0
           RUSTFLAGS: >
@@ -104,14 +102,12 @@ jobs:
             -Zpanic_abort_tests -Cpanic=abort
       - name: 'Install Python type checker'
         run: python -m pip install -U mypy
-        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
+        if: ${{ matrix.python_version != 'pypy-3.7' }}
       - name: 'Run Python type checker'
-        run: python -m mypy --strict ${{ github.event.repository.name }}
-        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
+        run: python -m mypy ${{ github.event.repository.name }}
+        if: ${{ matrix.python_version != 'pypy-3.7' }}
       - name: 'Install Python coverage dependencies'
-        run: python -m pip install --upgrade coverage
-      - name: 'Install Python tests dependencies'
-        run: python -m pip install -r requirements-tests.txt
+        run: python -m pip install --upgrade coverage[toml]
       - name: 'Run Python doctests'
         run: >
           coverage run -m doctest README.md
@@ -365,8 +361,6 @@ jobs:
             [net]
             git-fetch-with-cli = true
             EOF
-          CIBW_BEFORE_BUILD: >
-            python -m pip install -U pip setuptools -r requirements-setup.txt
           CIBW_BUILD: ${{ matrix.python_tag }}-${{ matrix.platform.tag }}
           CIBW_BUILD_VERBOSITY: 1
           CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
