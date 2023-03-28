@@ -1,5 +1,5 @@
 from hypothesis import strategies
-from rithm import Fraction
+from rithm.fraction import Fraction
 
 from rene.exact import Point
 from tests.exact_tests.strategies import (empty_geometries,
