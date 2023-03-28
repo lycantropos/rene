@@ -1,0 +1,47 @@
+[project]
+name = "rene"
+authors = [{ name = "Azat Ibrakov", email = "azatibrakov@gmail.com" }]
+readme = "README.md"
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+requires-python = ">=3.7"
+dependencies = [
+    "dendroid>=1.6.1,<2.0",
+    "prioq>=0.5.0,<1.0",
+    "reprit>=0.8.0,<1.0",
+    "rithm>=11.0.0,<12.0",
+    "typing_extensions>=4.5.0,<5.0"
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+tests = [
+    "hypothesis>=6.70.1,<7.0",
+    "hypothesis-geometry>=7.3.0,<8.0",
+    "pytest>=7.2.2,<8.0"
+]
+
+[build-system]
+requires = [
+    "setuptools-rust>=1.5.2,<2.0; platform_python_implementation=='CPython'",
+    "setuptools"
+]
+build-backend = "setuptools.build_meta"
+
+[tool.coverage.run]
+source = ["rene"]
+
+[tool.pytest.ini_options]
+addopts = "--verbose -s --hypothesis-profile=default"
+
+[tool.setuptools.dynamic]
+version = { attr = "rene.__version__" }
