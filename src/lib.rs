@@ -1487,7 +1487,10 @@ fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactSegment>()?;
     unsafe {
         let py = Python::assume_gil_acquired();
-        MAYBE_FRACTION_CLS = Some(py.import("rithm")?.getattr(intern!(py, "Fraction"))?);
+        MAYBE_FRACTION_CLS = Some(
+            py.import("rithm.fraction")?
+                .getattr(intern!(py, "Fraction"))?,
+        );
         MAYBE_LOCATION_CLS = Some(py.import("rene")?.getattr(intern!(py, "Location"))?);
         MAYBE_ORIENTATION_CLS = Some(py.import("rene")?.getattr(intern!(py, "Orientation"))?);
         MAYBE_RELATION_CLS = Some(py.import("rene")?.getattr(intern!(py, "Relation"))?);
