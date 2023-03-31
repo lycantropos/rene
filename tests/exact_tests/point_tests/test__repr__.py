@@ -10,4 +10,6 @@ from . import strategies
 def test_round_trip(point: Point) -> None:
     result = repr(point)
 
-    assert eval(result, sys.modules) == point
+    assert eval(result, {**vars(sys.modules['rene.exact']),
+                         **vars(sys.modules['rithm.fraction']),
+                         **vars(sys.modules['rithm.integer'])}) == point
