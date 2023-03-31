@@ -392,6 +392,17 @@ class Polygon:
                 holes: _t.Sequence[Contour]) -> Polygon:
         ...
 
+    @_t.overload
+    def __and__(self, other: Empty) -> Empty:
+        ...
+
+    @_t.overload
+    def __and__(
+            self, other: Multipolygon
+    ) -> _t.Union[Empty, Multipolygon, Polygon]:
+        ...
+
+    @_t.overload
     def __and__(self,
                 other: Polygon) -> _t.Union[Empty, Multipolygon, Polygon]:
         ...
