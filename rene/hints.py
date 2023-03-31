@@ -260,21 +260,29 @@ class Segment(_SelfComparable, _te.Protocol[Scalar_co]):
         ...
 
 
-class Contour(_SelfComparable, _te.Protocol[Scalar_co]):
+_Segmental = _t.TypeVar('_Segmental',
+                        bound=Segment[_t.Any],
+                        covariant=True)
+
+
+class Multisegmental(_te.Protocol[_Segmental]):
+    @property
+    def segments(self) -> _t.Sequence[_Segmental]:
+        ...
+
+    @property
+    def segments_count(self) -> int:
+        ...
+
+
+class Contour(_SelfComparable, Multisegmental[Segment[Scalar_co]],
+              _te.Protocol[Scalar_co]):
     @property
     def bounding_box(self) -> Box[Scalar_co]:
         ...
 
     @property
     def orientation(self) -> _Orientation:
-        ...
-
-    @property
-    def segments(self) -> _t.Sequence[Segment[Scalar_co]]:
-        ...
-
-    @property
-    def segments_count(self) -> int:
         ...
 
     @property
@@ -301,29 +309,12 @@ class Contour(_SelfComparable, _te.Protocol[Scalar_co]):
         ...
 
 
-_Segmental = _t.TypeVar('_Segmental',
-                        bound=Segment[_t.Any],
-                        covariant=True)
-
-
-class Multisegmental(_te.Protocol[_Segmental]):
-    @property
-    def segments(self) -> _t.Sequence[_Segmental]:
-        ...
-
-    @property
-    def segments_count(self) -> int:
-        ...
-
-
 class Multisegment(_SelfComparable, Multisegmental[Segment[Scalar_co]],
                    _te.Protocol[Scalar_co]):
     def is_valid(self) -> bool:
         ...
 
-    def __new__(
-            cls, segments: _t.Sequence[Segment[Scalar_co]]
-    ) -> Multisegment[Scalar_co]:
+    def __new__(cls, segments: _t.Sequence[Segment[Scalar_co]]) -> _te.Self:
         ...
 
     def __hash__(self) -> int:
