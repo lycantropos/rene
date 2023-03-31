@@ -161,8 +161,7 @@ class Multipolygon:
             )
         )
 
-    __repr__ = generate_repr(__new__,
-                             with_module_name=True)
+    __repr__ = generate_repr(__new__)
 
     @_t.overload
     def __sub__(self, other: _hints.Empty[Fraction]) -> _te.Self:

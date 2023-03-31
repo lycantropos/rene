@@ -459,7 +459,7 @@ impl PyExactBox {
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!(
-            "rene.exact.Box({}, {}, {}, {})",
+            "Box({}, {}, {}, {})",
             self.min_x()?.repr()?.extract::<String>()?,
             self.max_x()?.repr()?.extract::<String>()?,
             self.min_y()?.repr()?.extract::<String>()?,
@@ -584,7 +584,7 @@ impl PyExactContour {
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
         Ok(format!(
-            "rene.exact.Contour({})",
+            "Contour({})",
             self.vertices()
                 .into_py(py)
                 .as_ref(py)
@@ -694,7 +694,7 @@ impl PyExactEmpty {
     }
 
     fn __repr__(&self) -> &'static str {
-        "rene.exact.Empty()"
+        "Empty()"
     }
 
     fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
@@ -835,7 +835,7 @@ impl PyExactMultipolygon {
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
         Ok(format!(
-            "rene.exact.Multipolygon({})",
+            "Multipolygon({})",
             self.polygons()
                 .into_py(py)
                 .as_ref(py)
@@ -951,7 +951,7 @@ impl PyExactMultisegment {
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
         Ok(format!(
-            "rene.exact.Multisegment({})",
+            "Multisegment({})",
             self.segments()
                 .into_py(py)
                 .as_ref(py)
@@ -1012,7 +1012,7 @@ impl PyExactPoint {
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!(
-            "rene.exact.Point({}, {})",
+            "Point({}, {})",
             self.x()?.repr()?.extract::<String>()?,
             self.y()?.repr()?.extract::<String>()?,
         ))
@@ -1149,7 +1149,7 @@ impl PyExactPolygon {
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
         Ok(format!(
-            "rene.exact.Polygon({}, {})",
+            "Polygon({}, {})",
             PyExactContour(self.border()).__repr__(py)?,
             self.holes()
                 .into_py(py)
@@ -1269,7 +1269,7 @@ impl PyExactSegment {
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!(
-            "rene.exact.Segment({}, {})",
+            "Segment({}, {})",
             self.start().__repr__()?,
             self.end().__repr__()?,
         ))

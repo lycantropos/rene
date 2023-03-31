@@ -404,8 +404,7 @@ class Box:
     def __hash__(self) -> int:
         return hash((self.min_x, self.max_x, self.min_y, self.max_y))
 
-    __repr__ = generate_repr(__new__,
-                             with_module_name=True)
+    __repr__ = generate_repr(__new__)
 
     def __str__(self) -> str:
         return (f'{type(self).__qualname__}'

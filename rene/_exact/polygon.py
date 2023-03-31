@@ -168,8 +168,7 @@ class Polygon:
             )
         )
 
-    __repr__ = generate_repr(__new__,
-                             with_module_name=True)
+    __repr__ = generate_repr(__new__)
 
     def __str__(self) -> str:
         return (f'{type(self).__qualname__}({self.border}, [{{}}])'
