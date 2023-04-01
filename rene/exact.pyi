@@ -6,7 +6,8 @@ from numbers import Rational as _Rational
 import typing_extensions as _te
 from rithm.fraction import Fraction as _Fraction
 
-from rene import (Orientation as _Orientation,
+from rene import (Location as _Location,
+                  Orientation as _Orientation,
                   Relation as _Relation)
 
 
@@ -475,6 +476,9 @@ class Segment:
 
     @property
     def start(self) -> Point:
+        ...
+
+    def locate(self, point: Point) -> _Location:
         ...
 
     def relate_to(self, other: Segment) -> _Relation:

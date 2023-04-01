@@ -4,7 +4,8 @@ import typing as _t
 
 import typing_extensions as _te
 
-from rene import (Orientation as _Orientation,
+from rene import (Location as _Location,
+                  Orientation as _Orientation,
                   Relation as _Relation)
 
 
@@ -240,6 +241,9 @@ class Segment(_SelfComparable, _te.Protocol[Scalar_co]):
 
     @property
     def start(self) -> Point[Scalar_co]:
+        ...
+
+    def locate(self, point: Point[Scalar_co]) -> _Location:
         ...
 
     def relate_to(self, other: _te.Self) -> _Relation:
