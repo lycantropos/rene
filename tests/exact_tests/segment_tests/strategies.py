@@ -1,5 +1,5 @@
-from tests.exact_tests.strategies import (segments,
-                                          segments_endpoints)
+from tests.exact_tests import strategies as _strategies
 
-segments_endpoints = segments_endpoints
-segments = segments
+points = _strategies.points
+segments_endpoints = _strategies.segments_endpoints
+segments = _strategies.segments
