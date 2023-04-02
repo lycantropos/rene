@@ -156,6 +156,37 @@ where
     }
 }
 
+pub(crate) fn is_point_in_segment<Point: Elemental + Orient + PartialEq>(
+    point: &Point,
+    start: &Point,
+    end: &Point,
+) -> bool
+where
+    <Point as Elemental>::Coordinate: PartialOrd,
+{
+    start.eq(point)
+        || end.eq(point)
+        || ({
+            let start_x = start.x();
+            let end_x = end.x();
+            let point_x = point.x();
+            if start_x <= end_x {
+                start_x <= point_x && point_x <= end_x
+            } else {
+                end_x < point_x && point_x < start_x
+            }
+        } && {
+            let start_y = start.y();
+            let end_y = end.y();
+            let point_y = point.y();
+            if start_y <= end_y {
+                start_y <= point_y && point_y <= end_y
+            } else {
+                end_y < point_y && point_y < start_y
+            }
+        } && start.orient(&end, &point) == Orientation::Collinear)
+}
+
 pub(crate) trait LocatePointInPointPointPointCircle {
     fn locate_point_in_point_point_point_circle(
         &self,
