@@ -2,13 +2,11 @@ from hypothesis import strategies
 
 from rene import MIN_CONTOUR_VERTICES_COUNT
 from rene.exact import Contour
-from tests.exact_tests.strategies import (contours,
-                                          contours_vertices,
-                                          non_zero_integers,
-                                          points)
+from tests.exact_tests import strategies as _strategies
 
-non_zero_integers = non_zero_integers
-contours_vertices = contours_vertices
+points = _strategies.points
+non_zero_integers = _strategies.non_zero_integers
+contours_vertices = _strategies.contours_vertices
 contours_like_vertices = strategies.lists(points,
                                           unique=True,
                                           min_size=MIN_CONTOUR_VERTICES_COUNT)
@@ -18,4 +16,4 @@ invalid_count_contours_vertices = strategies.lists(
         max_size=MIN_CONTOUR_VERTICES_COUNT - 1
 )
 contours_like = strategies.builds(Contour, contours_like_vertices)
-contours = contours
+contours = _strategies.contours
