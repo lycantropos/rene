@@ -127,6 +127,11 @@ def reverse_polygon_holes(polygon: Polygon) -> Polygon:
     return type(polygon)(polygon.border, polygon.holes[::-1])
 
 
+def reverse_segment_coordinates(segment: Segment) -> Segment:
+    return type(segment)(reverse_point_coordinates(segment.start),
+                         reverse_point_coordinates(segment.end))
+
+
 def reverse_segment_endpoints(segment: Segment) -> Segment:
     return type(segment)(segment.end, segment.start)
 
