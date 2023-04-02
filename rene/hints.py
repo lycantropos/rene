@@ -234,24 +234,22 @@ class Box(_SelfComparable, _te.Protocol[Scalar_co]):
         ...
 
 
-class Segment(_SelfComparable, _te.Protocol[Scalar_co]):
+class Segment(_SelfComparable, _te.Protocol[Scalar]):
     @property
-    def end(self) -> Point[Scalar_co]:
+    def end(self) -> Point[Scalar]:
         ...
 
     @property
-    def start(self) -> Point[Scalar_co]:
+    def start(self) -> Point[Scalar]:
         ...
 
-    def locate(self, point: Point[Scalar_co]) -> _Location:
+    def locate(self, point: Point[Scalar]) -> _Location:
         ...
 
     def relate_to(self, other: _te.Self) -> _Relation:
         ...
 
-    def __new__(cls,
-                start: Point[Scalar_co],
-                end: Point[Scalar_co]) -> _te.Self:
+    def __new__(cls, start: Point[Scalar], end: Point[Scalar]) -> _te.Self:
         ...
 
     def __hash__(self) -> int:
@@ -279,10 +277,10 @@ class Multisegmental(_te.Protocol[_Segmental]):
         ...
 
 
-class Contour(_SelfComparable, Multisegmental[Segment[Scalar_co]],
-              _te.Protocol[Scalar_co]):
+class Contour(_SelfComparable, Multisegmental[Segment[Scalar]],
+              _te.Protocol[Scalar]):
     @property
-    def bounding_box(self) -> Box[Scalar_co]:
+    def bounding_box(self) -> Box[Scalar]:
         ...
 
     @property
@@ -290,7 +288,7 @@ class Contour(_SelfComparable, Multisegmental[Segment[Scalar_co]],
         ...
 
     @property
-    def vertices(self) -> _t.Sequence[Point[Scalar_co]]:
+    def vertices(self) -> _t.Sequence[Point[Scalar]]:
         ...
 
     @property
@@ -300,10 +298,10 @@ class Contour(_SelfComparable, Multisegmental[Segment[Scalar_co]],
     def is_valid(self) -> bool:
         ...
 
-    def locate(self, point: Point[Scalar_co]) -> _Location:
+    def locate(self, point: Point[Scalar]) -> _Location:
         ...
 
-    def __new__(cls, vertices: _t.Sequence[Point[Scalar_co]]) -> _te.Self:
+    def __new__(cls, vertices: _t.Sequence[Point[Scalar]]) -> _te.Self:
         ...
 
     def __hash__(self) -> int:
@@ -316,12 +314,12 @@ class Contour(_SelfComparable, Multisegmental[Segment[Scalar_co]],
         ...
 
 
-class Multisegment(_SelfComparable, Multisegmental[Segment[Scalar_co]],
-                   _te.Protocol[Scalar_co]):
+class Multisegment(_SelfComparable, Multisegmental[Segment[Scalar]],
+                   _te.Protocol[Scalar]):
     def is_valid(self) -> bool:
         ...
 
-    def __new__(cls, segments: _t.Sequence[Segment[Scalar_co]]) -> _te.Self:
+    def __new__(cls, segments: _t.Sequence[Segment[Scalar]]) -> _te.Self:
         ...
 
     def __hash__(self) -> int:
