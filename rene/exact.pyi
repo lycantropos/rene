@@ -111,6 +111,9 @@ class Contour:
     def is_valid(self) -> bool:
         ...
 
+    def locate(self, point: Point) -> _Location:
+        ...
+
     def __new__(cls, vertices: _t.Sequence[Point]) -> Contour:
         ...
 

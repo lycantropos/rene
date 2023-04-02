@@ -7,6 +7,7 @@ from reprit.base import generate_repr
 from rithm.fraction import Fraction
 
 from rene import (MIN_CONTOUR_VERTICES_COUNT,
+                  Location,
                   Orientation,
                   Relation)
 from rene._bentley_ottmann.base import (Intersection,
@@ -77,6 +78,12 @@ class Contour:
                 return False
             neighbour_segments_touches_count += 1
         return neighbour_segments_touches_count == len(segments)
+
+    def locate(self, point: Point) -> Location:
+        return (Location.EXTERIOR
+                if all(segment.locate(point) is Location.EXTERIOR
+                       for segment in self.segments)
+                else Location.BOUNDARY)
 
     _context: _t.ClassVar[Context[Fraction]]
     _vertices: _t.List[Point[Fraction]]

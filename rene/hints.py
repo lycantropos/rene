@@ -300,6 +300,9 @@ class Contour(_SelfComparable, Multisegmental[Segment[Scalar_co]],
     def is_valid(self) -> bool:
         ...
 
+    def locate(self, point: Point[Scalar_co]) -> _Location:
+        ...
+
     def __new__(cls, vertices: _t.Sequence[Point[Scalar_co]]) -> _te.Self:
         ...
 

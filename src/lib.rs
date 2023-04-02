@@ -572,6 +572,10 @@ impl PyExactContour {
         is_contour_valid(&self.0)
     }
 
+    fn locate(&self, point: &PyExactPoint) -> PyResult<&PyAny> {
+        try_location_to_py_location(self.0.locate(&point.0))
+    }
+
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
         let mut vertices = self.0.vertices();
         let min_vertex_index = unsafe { to_arg_min(&vertices).unwrap_unchecked() };
