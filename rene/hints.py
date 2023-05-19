@@ -319,6 +319,9 @@ class Multisegment(_SelfComparable, Multisegmental[Segment[Scalar]],
     def is_valid(self) -> bool:
         ...
 
+    def locate(self, point: Point[Scalar]) -> _Location:
+        ...
+
     def __new__(cls, segments: _t.Sequence[Segment[Scalar]]) -> _te.Self:
         ...
 
