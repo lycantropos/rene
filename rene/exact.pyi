@@ -298,6 +298,9 @@ class Multisegment:
     def segments_count(self) -> int:
         ...
 
+    def locate(self, point: Point) -> _Location:
+        ...
+
     def is_valid(self) -> bool:
         ...
 

@@ -5,11 +5,12 @@ import typing as _t
 from reprit.base import generate_repr
 from rithm.fraction import Fraction
 
-from rene import hints as _hints
+from rene import (Location,
+                  Relation,
+                  hints as _hints)
 from rene._bentley_ottmann.base import sweep
 from rene._context import Context
-from rene._rene import (MIN_MULTISEGMENT_SEGMENTS_COUNT,
-                        Relation)
+from rene._rene import MIN_MULTISEGMENT_SEGMENTS_COUNT
 
 
 class Multisegment:
@@ -21,6 +22,13 @@ class Multisegment:
     def segments_count(self) -> int:
         return len(self._segments)
 
+    def locate(self, point: _hints.Point[Fraction]) -> Location:
+        for segment in self._segments:
+            location = segment.locate(point)
+            if location is not Location.EXTERIOR:
+                return location
+        return Location.EXTERIOR
+
     def is_valid(self) -> bool:
         return all(intersection.relation is Relation.TOUCH
                    for intersection in sweep(self._segments))
@@ -31,8 +39,9 @@ class Multisegment:
     __module__ = 'rene.exact'
     __slots__ = '_segments',
 
-    def __new__(cls, segments: _t.Sequence[
-        _hints.Segment[Fraction]]) -> Multisegment:
+    def __new__(
+            cls, segments: _t.Sequence[_hints.Segment[Fraction]]
+    ) -> Multisegment:
         if len(segments) < MIN_MULTISEGMENT_SEGMENTS_COUNT:
             raise ValueError('Multisegment should have at least '
                              f'{MIN_MULTISEGMENT_SEGMENTS_COUNT} segments, '

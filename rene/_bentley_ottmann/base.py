@@ -3,8 +3,8 @@ from itertools import combinations
 
 from reprit.base import generate_repr
 
-from rene import hints as _hints
-from rene._rene import Relation
+from rene import (Relation,
+                  hints as _hints)
 from .events_registry import EventsRegistry
 
 

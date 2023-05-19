@@ -949,6 +949,10 @@ impl PyExactMultisegment {
         is_multisegment_valid(&self.0)
     }
 
+    fn locate(&self, point: &PyExactPoint) -> PyResult<&PyAny> {
+        try_location_to_py_location(self.0.locate(&point.0))
+    }
+
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
         PyFrozenSet::new(py, &self.segments())?.hash()
     }
