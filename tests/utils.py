@@ -113,6 +113,13 @@ def reverse_multisegment(multisegment: Multisegment) -> Multisegment:
     return type(multisegment)(multisegment.segments[::-1])
 
 
+def reverse_multisegment_coordinates(
+        multisegment: Multisegment
+) -> Multisegment:
+    return type(multisegment)([reverse_segment_coordinates(segment)
+                               for segment in multisegment.segments])
+
+
 def reverse_point_coordinates(point: Point) -> Point:
     return type(point)(point.y, point.x)
 

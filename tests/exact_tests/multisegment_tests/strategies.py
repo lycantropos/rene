@@ -2,18 +2,16 @@ from hypothesis import strategies
 
 from rene import MIN_MULTISEGMENT_SEGMENTS_COUNT
 from rene.exact import Multisegment
-from tests.exact_tests.strategies import (multisegments,
-                                          multisegments_segments,
-                                          non_zero_integers,
-                                          segments)
+from tests.exact_tests import strategies as _strategies
 
-non_zero_integers = non_zero_integers
-multisegments_segments = multisegments_segments
+points = _strategies.points
+non_zero_integers = _strategies.non_zero_integers
+multisegments_segments = _strategies.multisegments_segments
 multisegments_like_segments = strategies.lists(
-        segments,
+        _strategies.segments,
         unique=True,
         min_size=MIN_MULTISEGMENT_SEGMENTS_COUNT
 )
 multisegments_like = strategies.builds(Multisegment,
                                        multisegments_like_segments)
-multisegments = multisegments
+multisegments = _strategies.multisegments
