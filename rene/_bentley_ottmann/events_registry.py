@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import typing as _t
-from functools import partial
 
 from dendroid import red_black
 from dendroid.hints import KeyedSet
@@ -81,9 +80,11 @@ class EventsRegistry(_t.Generic[_hints.Scalar]):
         self._endpoints: _t.List[_hints.Point[_hints.Scalar]] = []
         self._segments_ids: _t.List[int] = []
         self._min_collinear_segments_ids: _t.List[int] = []
-        self._events_queue_data: PriorityQueue[Event] = PriorityQueue(
-                key=partial(EventsQueueKey, self._endpoints, self._opposites)
-        )
+        self._events_queue_data: PriorityQueue[
+            EventsQueueKey[_hints.Scalar], Event
+        ] = PriorityQueue(key=lambda event: EventsQueueKey(self._endpoints,
+                                                           self._opposites,
+                                                           event))
         self._sweep_line_data: KeyedSet[SweepLineKey[_hints.Scalar], Event] = red_black.set_(
                 key=self._event_to_sweep_line_key
         )

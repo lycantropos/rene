@@ -79,7 +79,7 @@ class Contour:
             neighbour_segments_touches_count += 1
         return neighbour_segments_touches_count == len(segments)
 
-    def locate(self, point: Point) -> Location:
+    def locate(self, point: Point[Fraction]) -> Location:
         return (Location.EXTERIOR
                 if all(segment.locate(point) is Location.EXTERIOR
                        for segment in self.segments)

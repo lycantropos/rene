@@ -160,12 +160,16 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
         self._other_have_interior_to_left = [False] * segments_count
         self._overlap_kinds = [OverlapKind.NONE] * segments_count
         self._segments_ids = list(range(segments_count))
-        self._starts_ids: _t.List[int] = [
-                                             UNDEFINED_INDEX] * initial_events_count
-        self._events_queue_data: PriorityQueue[Event] = PriorityQueue(
+        self._starts_ids: _t.List[int] = (
+                [UNDEFINED_INDEX] * initial_events_count
+        )
+        self._events_queue_data: PriorityQueue[
+            EventsQueueKey[_hints.Scalar], Event
+        ] = PriorityQueue(
                 *range(initial_events_count),
                 key=lambda event: EventsQueueKey(
-                        event, self._is_from_first_operand_event(event),
+                        event,
+                        self._is_from_first_operand_event(event),
                         self._endpoints, self._opposites
                 )
         )
