@@ -184,7 +184,7 @@ where
             } else {
                 end_y < point_y && point_y < start_y
             }
-        } && start.orient(&end, &point) == Orientation::Collinear)
+        } && start.orient(end, point) == Orientation::Collinear)
 }
 
 pub(crate) trait LocatePointInPointPointPointCircle {
