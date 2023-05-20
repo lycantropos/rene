@@ -151,7 +151,8 @@ def locate_point_in_point_point_point_circle(point: Point[Scalar],
             else (Location.INTERIOR if raw > 0 else Location.EXTERIOR))
 
 
-def locate_point_in_region(border: Contour, point: Point) -> Location:
+def locate_point_in_region(border: Contour[Scalar],
+                           point: Point[Scalar]) -> Location:
     is_point_inside = False
     point_y = point.y
     for edge in border.segments:
