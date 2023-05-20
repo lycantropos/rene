@@ -572,8 +572,10 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
     def _left_event_to_segment_id(self, event: Event) -> int:
         return self._segments_ids[left_event_to_position(event)]
 
-    def _peek(self) -> Event:
-        return self._events_queue_data.peek()
+    def _peek(self) -> _t.Optional[Event]:
+        return (self._events_queue_data.peek()
+                if self._events_queue_data
+                else None)
 
     def _pop(self) -> Event:
         return self._events_queue_data.pop()
