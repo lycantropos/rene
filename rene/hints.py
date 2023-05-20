@@ -434,6 +434,9 @@ class Multipolygon(_SelfComparable, Multisegmental[Segment[Scalar]],
     def polygons_count(self) -> int:
         ...
 
+    def locate(self, point: Point[Scalar]) -> _Location:
+        ...
+
     def __new__(
             cls, vertices: _t.Sequence[Polygon[Scalar]]
     ) -> Multipolygon[Scalar]:

@@ -781,6 +781,10 @@ impl PyExactMultipolygon {
         self.0.segments_count()
     }
 
+    fn locate(&self, point: &PyExactPoint) -> PyResult<&PyAny> {
+        try_location_to_py_location(self.0.locate(&point.0))
+    }
+
     fn __and__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactEmpty::type_object(py))? {

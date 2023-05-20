@@ -208,6 +208,9 @@ class Multipolygon:
     def segments_count(self) -> int:
         ...
 
+    def locate(self, point: Point) -> _Location:
+        ...
+
     def __new__(cls, polygons: _t.Sequence[Polygon]) -> Multipolygon:
         ...
 

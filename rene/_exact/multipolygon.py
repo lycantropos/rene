@@ -7,7 +7,8 @@ import typing_extensions as _te
 from reprit.base import generate_repr
 from rithm.fraction import Fraction
 
-from rene import hints as _hints
+from rene import (Location,
+                  hints as _hints)
 from rene._clipping import (intersect_multipolygon_with_polygon,
                             intersect_multipolygons,
                             subtract_multipolygons,
@@ -41,6 +42,13 @@ class Multipolygon:
     @property
     def segments_count(self) -> int:
         return sum(polygon.segments_count for polygon in self._polygons)
+
+    def locate(self, point: _hints.Point[Fraction]) -> Location:
+        for polygon in self._polygons:
+            location = polygon.locate(point)
+            if location is not Location.EXTERIOR:
+                return location
+        return Location.EXTERIOR
 
     _polygons: _t.Sequence[_hints.Polygon[Fraction]]
 
