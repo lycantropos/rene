@@ -353,6 +353,9 @@ class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]],
     def holes_count(self) -> int:
         ...
 
+    def locate(self, point: Point[Scalar]) -> _Location:
+        ...
+
     def __new__(cls,
                 border: Contour[Scalar],
                 holes: _t.Sequence[Contour[Scalar]]) -> Polygon[Scalar]:

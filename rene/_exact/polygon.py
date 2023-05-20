@@ -7,7 +7,8 @@ import typing_extensions as _te
 from reprit.base import generate_repr
 from rithm.fraction import Fraction
 
-from rene import hints as _hints
+from rene import (Location,
+                  hints as _hints)
 from rene._clipping import (intersect_polygon_with_multipolygon,
                             intersect_polygons,
                             subtract_multipolygon_from_polygon,
@@ -18,7 +19,8 @@ from rene._clipping import (intersect_polygon_with_multipolygon,
                             unite_polygons)
 from rene._context import Context
 from rene._utils import (collect_maybe_empty_polygons,
-                         collect_non_empty_polygons)
+                         collect_non_empty_polygons,
+                         locate_point_in_region)
 
 
 class Polygon:
@@ -48,6 +50,17 @@ class Polygon:
     def segments_count(self) -> int:
         return sum([hole.segments_count for hole in self._holes],
                    self._border.segments_count)
+
+    def locate(self, point: _hints.Point[Fraction]) -> Location:
+        location_without_holes = locate_point_in_region(self._border, point)
+        if location_without_holes is Location.INTERIOR:
+            for hole in self._holes:
+                location_in_hole = locate_point_in_region(hole, point)
+                if location_in_hole is Location.INTERIOR:
+                    return Location.EXTERIOR
+                elif location_in_hole is Location.BOUNDARY:
+                    return Location.BOUNDARY
+        return location_without_holes
 
     _context: _t.ClassVar[Context[Fraction]]
     _border: _hints.Contour[Fraction]

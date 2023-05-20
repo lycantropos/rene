@@ -10,6 +10,7 @@ from rene import (MIN_CONTOUR_VERTICES_COUNT,
                   Orientation,
                   Relation)
 from rene.hints import (Box,
+                        Contour,
                         Empty,
                         Multipolygon,
                         Point,
@@ -148,6 +149,22 @@ def locate_point_in_point_point_point_circle(point: Point[Scalar],
     return (Location.BOUNDARY
             if raw == 0
             else (Location.INTERIOR if raw > 0 else Location.EXTERIOR))
+
+
+def locate_point_in_region(border: Contour, point: Point) -> Location:
+    is_point_inside = False
+    point_y = point.y
+    for edge in border.segments:
+        if (locate_point_in_segment(edge.start, edge.end, point)
+                is Location.BOUNDARY):
+            return Location.BOUNDARY
+        start, end = edge.start, edge.end
+        if ((start.y > point_y) is not (end.y > point_y)
+                and ((end.y > start.y)
+                     is (orient(start, end, point)
+                         is Orientation.COUNTERCLOCKWISE))):
+            is_point_inside = not is_point_inside
+    return Location.INTERIOR if is_point_inside else Location.EXTERIOR
 
 
 def locate_point_in_segment(start: Point[Scalar],
