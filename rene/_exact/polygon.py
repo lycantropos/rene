@@ -28,7 +28,7 @@ class Polygon:
 
     @property
     def bounding_box(self) -> _hints.Box[Fraction]:
-        return self.border.bounding_box
+        return self._border.bounding_box
 
     @property
     def holes(self) -> _t.Sequence[_hints.Contour[Fraction]]:
@@ -40,14 +40,14 @@ class Polygon:
 
     @property
     def segments(self) -> _t.Sequence[_hints.Segment[Fraction]]:
-        return list(chain(self.border.segments,
+        return list(chain(self._border.segments,
                           chain.from_iterable(hole.segments
                                               for hole in self._holes)))
 
     @property
     def segments_count(self) -> int:
         return sum([hole.segments_count for hole in self._holes],
-                   self.border.segments_count)
+                   self._border.segments_count)
 
     _context: _t.ClassVar[Context[Fraction]]
     _border: _hints.Contour[Fraction]
@@ -103,7 +103,8 @@ class Polygon:
                     collect_maybe_empty_polygons(
                             intersect_polygons(self, other),
                             self._context.empty_cls,
-                            self._context.multipolygon_cls)
+                            self._context.multipolygon_cls
+                    )
                     if isinstance(other, self._context.polygon_cls)
                     else NotImplemented
                 )
@@ -119,14 +120,14 @@ class Polygon:
         ...
 
     def __eq__(self, other: _t.Any) -> _t.Any:
-        return ((self.border == other.border
-                 and len(self.holes) == len(other.holes)
-                 and frozenset(self.holes) == frozenset(other.holes))
+        return ((self._border == other.border
+                 and len(self._holes) == len(other.holes)
+                 and frozenset(self._holes) == frozenset(other.holes))
                 if isinstance(other, self._context.polygon_cls)
                 else NotImplemented)
 
     def __hash__(self) -> int:
-        return hash((self.border, frozenset(self.holes)))
+        return hash((self._border, frozenset(self._holes)))
 
     @_t.overload
     def __or__(self, other: _hints.Empty[Fraction]) -> _te.Self:
@@ -154,9 +155,9 @@ class Polygon:
             if isinstance(other, self._context.empty_cls)
             else (
                 collect_non_empty_polygons(
-                        unite_polygon_with_multipolygon(self,
-                                                        other),
-                        self._context.multipolygon_cls)
+                        unite_polygon_with_multipolygon(self, other),
+                        self._context.multipolygon_cls
+                )
                 if isinstance(other, self._context.multipolygon_cls)
                 else
                 (
