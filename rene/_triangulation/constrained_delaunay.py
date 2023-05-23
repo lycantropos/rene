@@ -3,8 +3,7 @@ from __future__ import annotations
 import typing as _t
 from collections import deque
 from itertools import (chain,
-                       groupby,
-                       repeat)
+                       groupby)
 from operator import attrgetter
 
 import typing_extensions as _te
