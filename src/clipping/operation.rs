@@ -193,11 +193,11 @@ impl<Point> DetectIfLeftEventFromResult for Operation<Point, UNION> {
 }
 
 impl<
-        Point: Clone + self::Elemental + IntersectCrossingSegments + Orient + PartialOrd,
+        Point: Clone + Elemental + IntersectCrossingSegments + Orient + PartialOrd,
         const KIND: u8,
     > Iterator for Operation<Point, KIND>
 where
-    <Point as self::Elemental>::Coordinate: PartialEq,
+    <Point as Elemental>::Coordinate: PartialEq,
     Self: EventsQueue + DetectIfLeftEventFromResult + SweepLine,
 {
     type Item = Event;
@@ -403,8 +403,8 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
 
     fn compute_left_event_fields(&mut self, event: Event, maybe_below_event: Option<Event>)
     where
-        Point: self::Elemental,
-        <Point as self::Elemental>::Coordinate: PartialEq,
+        Point: Elemental,
+        <Point as Elemental>::Coordinate: PartialEq,
         Self: DetectIfLeftEventFromResult,
     {
         let event_position = left_event_to_position(event);
@@ -584,8 +584,8 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
 
     fn is_vertical_left_event(&self, event: Event) -> bool
     where
-        Point: self::Elemental,
-        <Point as self::Elemental>::Coordinate: PartialEq,
+        Point: Elemental,
+        <Point as Elemental>::Coordinate: PartialEq,
     {
         debug_assert!(is_left_event(event));
         self.get_event_start(event).x() == self.get_event_end(event).x()

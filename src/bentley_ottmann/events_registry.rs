@@ -134,7 +134,7 @@ impl<Point, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
     }
 }
 
-impl<Point: Ord, Segment: self::Segmental<Endpoint = Point>, const UNIQUE: bool> From<&[Segment]>
+impl<Point: Ord, Segment: Segmental<Endpoint = Point>, const UNIQUE: bool> From<&[Segment]>
     for EventsRegistry<Point, UNIQUE>
 {
     fn from(segments: &[Segment]) -> Self {
@@ -408,7 +408,7 @@ where
 }
 
 impl<'a, Point: Ord, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
-    fn extend<Segment: self::Segmental<Endpoint = Point> + 'a>(
+    fn extend<Segment: Segmental<Endpoint = Point> + 'a>(
         &'a mut self,
         segments: impl Iterator<Item = &'a Segment>,
     ) {
