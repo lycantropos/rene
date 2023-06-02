@@ -1,5 +1,6 @@
 pub use types::Segment;
 
+mod bounded;
 mod eq;
 mod from;
 mod hash;
