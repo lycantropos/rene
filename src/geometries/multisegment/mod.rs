@@ -1,5 +1,6 @@
 pub use self::types::Multisegment;
 
+mod bounded;
 mod eq;
 mod from;
 mod hash;
