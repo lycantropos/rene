@@ -7,7 +7,8 @@ from reprit.base import generate_repr
 from rithm.fraction import Fraction
 
 from rene import (Location,
-                  Relation)
+                  Relation,
+                  hints as _hints)
 from rene._context import Context
 from rene._utils import (locate_point_in_segment,
                          relate_segments)
@@ -18,6 +19,13 @@ class Segment:
     _context: Context[Fraction]
     _end: Point[Fraction]
     _start: Point[Fraction]
+
+    @property
+    def bounding_box(self) -> _hints.Box:
+        return self._context.box_cls(min(self._end.x, self._start.x),
+                                     max(self._end.x, self._start.x),
+                                     min(self._end.y, self._start.y),
+                                     max(self._end.y, self._start.y))
 
     @property
     def end(self) -> Point[Fraction]:

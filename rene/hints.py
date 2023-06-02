@@ -236,6 +236,10 @@ class Box(_SelfComparable, _te.Protocol[Scalar_co]):
 
 class Segment(_SelfComparable, _te.Protocol[Scalar]):
     @property
+    def bounding_box(self) -> Box[Scalar]:
+        ...
+
+    @property
     def end(self) -> Point[Scalar]:
         ...
 

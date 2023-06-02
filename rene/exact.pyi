@@ -483,6 +483,10 @@ class Polygon:
 
 class Segment:
     @property
+    def bounding_box(self) -> Box:
+        ...
+
+    @property
     def end(self) -> Point:
         ...
 

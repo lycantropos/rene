@@ -1262,6 +1262,11 @@ impl PyExactSegment {
     }
 
     #[getter]
+    fn bounding_box(&self) -> ExactBox {
+        self.0.to_bounding_box()
+    }
+
+    #[getter]
     fn start(&self) -> PyExactPoint {
         PyExactPoint(self.0.start())
     }
