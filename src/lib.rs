@@ -331,7 +331,6 @@ impl PyRelation {
 }
 
 #[pyclass(name = "Box", module = "rene.exact", subclass)]
-#[pyo3(text_signature = "(min_x, max_x, min_y, max_y, /)")]
 #[derive(Clone)]
 struct PyExactBox(ExactBox);
 
@@ -340,7 +339,6 @@ struct PyExactBox(ExactBox);
 struct PyExactConstrainedDelaunayTriangulation(ExactConstrainedDelaunayTriangulation);
 
 #[pyclass(name = "Contour", module = "rene.exact", subclass)]
-#[pyo3(text_signature = "(vertices, /)")]
 #[derive(Clone)]
 struct PyExactContour(ExactContour);
 
@@ -353,33 +351,29 @@ struct PyExactDelaunayTriangulation(ExactDelaunayTriangulation);
 struct PyExactEmpty(Empty);
 
 #[pyclass(name = "Multipolygon", module = "rene.exact", subclass)]
-#[pyo3(text_signature = "(polygons, /)")]
 #[derive(Clone)]
 struct PyExactMultipolygon(ExactMultipolygon);
 
 #[pyclass(name = "Multisegment", module = "rene.exact", subclass)]
-#[pyo3(text_signature = "(segments, /)")]
 #[derive(Clone)]
 struct PyExactMultisegment(ExactMultisegment);
 
 #[pyclass(name = "Point", module = "rene.exact", subclass)]
-#[pyo3(text_signature = "(x, y, /)")]
 #[derive(Clone)]
 struct PyExactPoint(ExactPoint);
 
 #[pyclass(name = "Polygon", module = "rene.exact", subclass)]
-#[pyo3(text_signature = "(border, holes, /)")]
 #[derive(Clone)]
 struct PyExactPolygon(ExactPolygon);
 
 #[pyclass(name = "Segment", module = "rene.exact", subclass)]
-#[pyo3(text_signature = "(start, end, /)")]
 #[derive(Clone)]
 struct PyExactSegment(ExactSegment);
 
 #[pymethods]
 impl PyExactBox {
     #[new]
+    #[pyo3(signature = (min_x, max_x, min_y, max_y, /))]
     fn new(min_x: &PyAny, max_x: &PyAny, min_y: &PyAny, max_y: &PyAny) -> PyResult<Self> {
         Ok(PyExactBox(ExactBox::new(
             try_scalar_to_fraction(min_x)?,
@@ -524,6 +518,7 @@ impl PyExactConstrainedDelaunayTriangulation {
 #[pymethods]
 impl PyExactContour {
     #[new]
+    #[pyo3(signature = (vertices, /))]
     fn new(vertices: &PySequence) -> PyResult<Self> {
         try_vertices_to_py_exact_contour(extract_from_sequence::<PyExactPoint, ExactPoint>(
             vertices,
@@ -755,6 +750,7 @@ impl PyExactEmpty {
 #[pymethods]
 impl PyExactMultipolygon {
     #[new]
+    #[pyo3(signature = (polygons, /))]
     fn new(polygons: &PySequence) -> PyResult<Self> {
         try_polygons_to_py_exact_multipolygon(
             extract_from_sequence::<PyExactPolygon, ExactPolygon>(polygons)?,
@@ -933,6 +929,7 @@ impl PyExactMultipolygon {
 #[pymethods]
 impl PyExactMultisegment {
     #[new]
+    #[pyo3(signature = (segments, /))]
     fn new(segments: &PySequence) -> PyResult<Self> {
         try_segments_to_py_exact_multisegment(
             extract_from_sequence::<PyExactSegment, ExactSegment>(segments)?,
@@ -1001,6 +998,7 @@ impl PyExactMultisegment {
 #[pymethods]
 impl PyExactPoint {
     #[new]
+    #[pyo3(signature = (x, y, /))]
     fn new(x: &PyAny, y: &PyAny) -> PyResult<Self> {
         Ok(PyExactPoint(ExactPoint::new(
             try_scalar_to_fraction(x)?,
@@ -1059,6 +1057,7 @@ impl PyExactPoint {
 #[pymethods]
 impl PyExactPolygon {
     #[new]
+    #[pyo3(signature = (border, holes, /))]
     fn new(border: &PyExactContour, holes: &PySequence) -> PyResult<Self> {
         Ok(PyExactPolygon(ExactPolygon::new(
             border.0.clone(),
@@ -1257,6 +1256,7 @@ impl PyExactPolygon {
 #[pymethods]
 impl PyExactSegment {
     #[new]
+    #[pyo3(signature = (start, end, /))]
     fn new(start: &PyExactPoint, end: &PyExactPoint) -> Self {
         PyExactSegment(ExactSegment::new(start.0.clone(), end.0.clone()))
     }
