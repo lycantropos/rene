@@ -294,6 +294,10 @@ class Multipolygon:
 
 class Multisegment:
     @property
+    def bounding_box(self) -> Box:
+        ...
+
+    @property
     def segments(self) -> _t.Sequence[Segment]:
         ...
 

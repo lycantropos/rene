@@ -330,6 +330,10 @@ class Contour(_SelfComparable, Multisegmental[Segment[Scalar]],
 
 class Multisegment(_SelfComparable, Multisegmental[Segment[Scalar]],
                    _te.Protocol[Scalar]):
+    @property
+    def bounding_box(self) -> Box[Scalar]:
+        ...
+
     def is_valid(self) -> bool:
         ...
 

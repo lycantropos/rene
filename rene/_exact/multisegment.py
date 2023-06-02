@@ -15,6 +15,29 @@ from rene._rene import MIN_MULTISEGMENT_SEGMENTS_COUNT
 
 class Multisegment:
     @property
+    def bounding_box(self) -> _hints.Box[Fraction]:
+        segments = iter(self._segments)
+        first_segment = next(segments)
+        min_x = min(first_segment.start.x, first_segment.end.x)
+        max_x = max(first_segment.start.x, first_segment.end.x)
+        min_y = min(first_segment.start.y, first_segment.end.y)
+        max_y = max(first_segment.start.y, first_segment.end.y)
+        for segment in segments:
+            segment_max_x = max(segment.start.x, segment.end.x)
+            if segment_max_x > max_x:
+                max_x = segment_max_x
+            segment_min_x = min(segment.start.x, segment.end.x)
+            if segment_min_x < min_x:
+                min_x = segment_min_x
+            segment_max_y = max(segment.start.y, segment.end.y)
+            if segment_max_y > max_y:
+                max_y = segment_max_y
+            segment_min_y = min(segment.start.y, segment.end.y)
+            if segment_min_y < min_y:
+                min_y = segment_min_y
+        return self._context.box_cls(min_x, max_x, min_y, max_y)
+
+    @property
     def segments(self) -> _t.Sequence[_hints.Segment[Fraction]]:
         return self._segments[:]
 

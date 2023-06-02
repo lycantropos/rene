@@ -937,6 +937,11 @@ impl PyExactMultisegment {
     }
 
     #[getter]
+    fn bounding_box(&self) -> ExactBox {
+        self.0.to_bounding_box()
+    }
+
+    #[getter]
     fn segments(&self) -> Vec<ExactSegment> {
         self.0.segments()
     }
