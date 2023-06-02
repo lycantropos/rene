@@ -10,6 +10,11 @@ from rene import (Location as _Location,
 
 
 class _Scalar(_te.Protocol):
+    @_t.overload
+    def __add__(self, other: int) -> _te.Self:
+        pass
+
+    @_t.overload
     def __add__(self, other: _te.Self) -> _te.Self:
         pass
 
@@ -26,46 +31,51 @@ class _Scalar(_te.Protocol):
         pass
 
     @_t.overload
-    def __ge__(self: _te.Self, other: _t.Any) -> _t.Any:
+    def __ge__(self, other: _t.Any) -> _t.Any:
         pass
 
     @_t.overload
-    def __gt__(self: _te.Self, other: _te.Self) -> bool:
+    def __gt__(self, other: _te.Self) -> bool:
         pass
 
     @_t.overload
-    def __gt__(self: _te.Self, other: _t.Any) -> _t.Any:
+    def __gt__(self, other: _t.Any) -> _t.Any:
         pass
 
     @_t.overload
-    def __le__(self: _te.Self, other: _te.Self) -> bool:
+    def __le__(self, other: _te.Self) -> bool:
         pass
 
     @_t.overload
-    def __le__(self: _te.Self, other: _t.Any) -> _t.Any:
+    def __le__(self, other: _t.Any) -> _t.Any:
         pass
 
     @_t.overload
-    def __lt__(self: _te.Self, other: _te.Self) -> bool:
+    def __lt__(self, other: _te.Self) -> bool:
         pass
 
     @_t.overload
-    def __lt__(self: _te.Self, other: _t.Any) -> _t.Any:
+    def __lt__(self, other: _t.Any) -> _t.Any:
         pass
 
-    def __mul__(self: _te.Self, other: _te.Self) -> _te.Self:
+    def __mul__(self, other: _te.Self) -> _te.Self:
         pass
 
-    def __neg__(self: _te.Self) -> _te.Self:
+    def __neg__(self) -> _te.Self:
         pass
 
-    def __pos__(self: _te.Self) -> _te.Self:
+    def __pos__(self) -> _te.Self:
         pass
 
-    def __sub__(self: _te.Self, other: _te.Self) -> _te.Self:
+    @_t.overload
+    def __sub__(self, other: int) -> _te.Self:
         pass
 
-    def __truediv__(self: _te.Self, other: _te.Self) -> _te.Self:
+    @_t.overload
+    def __sub__(self, other: _te.Self) -> _te.Self:
+        pass
+
+    def __truediv__(self, other: _te.Self) -> _te.Self:
         pass
 
 
