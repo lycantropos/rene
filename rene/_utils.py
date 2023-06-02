@@ -23,9 +23,8 @@ class Ordered(_te.Protocol):
         ...
 
 
-_Ordered = _t.TypeVar('_Ordered',
-                      bound=Ordered)
-
+_OrderedT = _t.TypeVar('_OrderedT',
+                       bound=Ordered)
 _T = _t.TypeVar('_T')
 
 
@@ -325,6 +324,11 @@ def to_boxes_ids_with_continuous_common_points(
             if do_boxes_have_common_continuum(box, target_box)]
 
 
+def to_arg_min(values: _t.Sequence[_OrderedT]) -> int:
+    return min(range(len(values)),
+               key=values.__getitem__)
+
+
 def to_contour_orientation(vertices: _t.Sequence[Point[Scalar]],
                            min_vertex_index: int) -> Orientation:
     return orient(vertices[min_vertex_index - 1], vertices[min_vertex_index],
@@ -335,6 +339,6 @@ def to_sign(value: _t.Any) -> int:
     return 1 if value > 0 else (-1 if value else 0)
 
 
-def to_sorted_pair(first: _Ordered,
-                   second: _Ordered) -> _t.Tuple[_Ordered, _Ordered]:
+def to_sorted_pair(first: _OrderedT,
+                   second: _OrderedT) -> _t.Tuple[_OrderedT, _OrderedT]:
     return (first, second) if first < second else (second, first)

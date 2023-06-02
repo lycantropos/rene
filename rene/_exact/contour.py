@@ -14,6 +14,7 @@ from rene._bentley_ottmann.base import (Intersection,
                                         sweep)
 from rene._context import Context
 from rene._utils import (are_contour_vertices_non_degenerate,
+                         to_arg_min,
                          to_contour_orientation)
 from rene.hints import (Box,
                         Point,
@@ -41,8 +42,7 @@ class Contour:
     @property
     def orientation(self) -> Orientation:
         vertices = self.vertices
-        min_vertex_index = min(range(len(vertices)),
-                               key=vertices.__getitem__)
+        min_vertex_index = to_arg_min(vertices)
         return to_contour_orientation(vertices, min_vertex_index)
 
     @property
@@ -119,8 +119,7 @@ class Contour:
 
     def __hash__(self) -> int:
         vertices = self._vertices
-        min_vertex_index = min(range(len(vertices)),
-                               key=vertices.__getitem__)
+        min_vertex_index = to_arg_min(vertices)
         vertices = (vertices[min_vertex_index:min_vertex_index + 1]
                     + vertices[:min_vertex_index][::-1]
                     + vertices[:min_vertex_index:-1]
