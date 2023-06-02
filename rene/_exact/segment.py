@@ -21,7 +21,7 @@ class Segment:
     _start: Point[Fraction]
 
     @property
-    def bounding_box(self) -> _hints.Box:
+    def bounding_box(self) -> _hints.Box[Fraction]:
         return self._context.box_cls(min(self._end.x, self._start.x),
                                      max(self._end.x, self._start.x),
                                      min(self._end.y, self._start.y),
