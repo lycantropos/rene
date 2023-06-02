@@ -1272,13 +1272,13 @@ impl PyExactSegment {
     }
 
     #[getter]
-    fn start(&self) -> PyExactPoint {
-        PyExactPoint(self.0.start())
+    fn end(&self) -> PyExactPoint {
+        PyExactPoint(self.0.end())
     }
 
     #[getter]
-    fn end(&self) -> PyExactPoint {
-        PyExactPoint(self.0.end())
+    fn start(&self) -> PyExactPoint {
+        PyExactPoint(self.0.start())
     }
 
     fn relate_to(&self, other: &Self) -> PyResult<&PyAny> {
