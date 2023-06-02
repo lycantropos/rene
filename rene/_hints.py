@@ -1,13 +1,13 @@
-from typing import TypeVar
+import typing as _t
 
-from typing_extensions import Protocol
+import typing_extensions as _te
 
-_Key = TypeVar('_Key',
-               contravariant=True)
-_Value = TypeVar('_Value',
-                 covariant=True)
+_Key = _t.TypeVar('_Key',
+                  contravariant=True)
+_Value = _t.TypeVar('_Value',
+                    covariant=True)
 
 
-class Map(Protocol[_Key, _Value]):
+class Map(_te.Protocol[_Key, _Value]):
     def __getitem__(self, key: _Key) -> _Value:
         pass
