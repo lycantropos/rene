@@ -44,6 +44,11 @@ def is_contour_triangular(contour: Contour) -> bool:
     return len(contour.vertices) == MIN_CONTOUR_VERTICES_COUNT
 
 
+def is_point_inside_box(point: Point, box: Box) -> bool:
+    return (box.min_x <= point.x <= box.max_x
+            and box.min_y <= point.y <= box.max_y)
+
+
 def is_point_inside_circumcircle(point: Point,
                                  first_vertex: Point,
                                  second_vertex: Point,
@@ -51,6 +56,11 @@ def is_point_inside_circumcircle(point: Point,
     return locate_point_in_point_point_point_circle(
             point, first_vertex, second_vertex, third_vertex
     ) is Location.INTERIOR
+
+
+def is_segment_inside_box(segment: Segment, box: Box) -> bool:
+    return (is_point_inside_box(segment.start, box)
+            and is_point_inside_box(segment.end, box))
 
 
 def pack(function: Callable[..., _T2]) -> Callable[[Iterable[_T1]], _T2]:
