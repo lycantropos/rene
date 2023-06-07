@@ -43,6 +43,7 @@ mod operations;
 pub mod oriented;
 pub mod relatable;
 pub mod traits;
+mod trapezoidation;
 mod triangulation;
 
 #[cfg(target_arch = "x86")]
