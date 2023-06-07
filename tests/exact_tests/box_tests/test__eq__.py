@@ -2,7 +2,8 @@ from hypothesis import given
 
 from rene.exact import Box
 from tests.utils import (equivalence,
-                         implication)
+                         implication,
+                         reverse_box_coordinates)
 from . import strategies
 
 
@@ -24,3 +25,11 @@ def test_transitivity(first: Box, second: Box, third: Box) -> None:
 @given(strategies.boxes, strategies.boxes)
 def test_alternatives(first: Box, second: Box) -> None:
     assert equivalence(first == second, not first != second)
+
+
+@given(strategies.boxes, strategies.boxes)
+def test_reversals(first: Box, second: Box) -> None:
+    assert equivalence(
+            first == second,
+            reverse_box_coordinates(first) == reverse_box_coordinates(second)
+    )
