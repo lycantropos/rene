@@ -38,11 +38,9 @@ def test_reversals(first: Multisegment, second: Multisegment) -> None:
             first == second,
             reverse_multisegment(first) == reverse_multisegment(second)
     )
-    assert equivalence(
-            first == second,
-            (reverse_multisegment_coordinates(first)
-             == reverse_multisegment_coordinates(second))
-    )
+    assert equivalence(first == second,
+                       (reverse_multisegment_coordinates(first)
+                        == reverse_multisegment_coordinates(second)))
 
 
 @given(strategies.multisegments)
