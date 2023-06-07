@@ -8,7 +8,8 @@ try:
                           Multisegment,
                           Point,
                           Polygon,
-                          Segment)
+                          Segment,
+                          Trapezoidation)
 except ImportError:
     from ._exact import (Box,
                          ConstrainedDelaunayTriangulation,
@@ -19,4 +20,5 @@ except ImportError:
                          Multisegment,
                          Point,
                          Polygon,
-                         Segment)
+                         Segment,
+                         Trapezoidation)

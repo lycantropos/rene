@@ -27,6 +27,7 @@ use crate::traits::{
     Difference, Elemental, Intersection, Multipolygonal, Multisegmental, Multivertexal, Polygonal,
     Segmental, SymmetricDifference, Union,
 };
+use crate::trapezoidation::Trapezoidation;
 use crate::triangulation::{
     BoundaryEndpoints, ConstrainedDelaunayTriangulation, DelaunayTriangulation,
 };
@@ -66,6 +67,7 @@ type ExactMultisegment = geometries::Multisegment<Fraction>;
 type ExactPoint = geometries::Point<Fraction>;
 type ExactPolygon = geometries::Polygon<Fraction>;
 type ExactSegment = geometries::Segment<Fraction>;
+type ExactTrapezoidation = Trapezoidation<ExactPoint>;
 
 impl IntoPy<PyObject> for ExactBox {
     fn into_py(self, py: Python<'_>) -> PyObject {
@@ -370,6 +372,10 @@ struct PyExactPolygon(ExactPolygon);
 #[pyclass(name = "Segment", module = "rene.exact", subclass)]
 #[derive(Clone)]
 struct PyExactSegment(ExactSegment);
+
+#[pyclass(name = "Trapezoidation", module = "rene.exact")]
+#[derive(Clone)]
+struct PyExactTrapezoidation(ExactTrapezoidation);
 
 #[pymethods]
 impl PyExactBox {
@@ -1325,6 +1331,30 @@ impl PyExactSegment {
     }
 }
 
+#[pymethods]
+impl PyExactTrapezoidation {
+    #[classmethod]
+    fn from_multisegment(_: &PyType, multisegment: &PyExactMultisegment) -> PyResult<Self> {
+        Ok(PyExactTrapezoidation(Trapezoidation::from_multisegment(
+            &multisegment.0,
+            |values| {},
+        )))
+    }
+
+    #[getter]
+    fn height(&self) -> usize {
+        self.0.height()
+    }
+
+    fn locate(&self, point: &PyExactPoint) -> PyResult<&PyAny> {
+        try_location_to_py_location(self.0.locate(&point.0))
+    }
+
+    fn __contains__(&self, point: &PyExactPoint) -> bool {
+        !matches!(self.0.locate(&point.0), Location::Exterior)
+    }
+}
+
 fn try_fraction_to_py_fraction<'a>(value: &Fraction) -> PyResult<&'a PyAny> {
     let fraction_cls = unsafe { MAYBE_FRACTION_CLS.unwrap_unchecked() };
     fraction_cls.call(
@@ -1507,6 +1537,7 @@ fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactContour>()?;
     module.add_class::<PyExactDelaunayTriangulation>()?;
     module.add_class::<PyExactEmpty>()?;
+    module.add_class::<PyExactTrapezoidation>()?;
     module.add_class::<PyExactMultipolygon>()?;
     module.add_class::<PyExactMultisegment>()?;
     module.add_class::<PyExactPoint>()?;

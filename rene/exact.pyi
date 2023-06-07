@@ -62,7 +62,7 @@ class Box:
                 min_x: _t.Union[_Rational, float],
                 max_x: _t.Union[_Rational, float],
                 min_y: _t.Union[_Rational, float],
-                max_y: _t.Union[_Rational, float]) -> Box:
+                max_y: _t.Union[_Rational, float]) -> _te.Self:
         ...
 
     @_t.overload
@@ -114,7 +114,7 @@ class Contour:
     def locate(self, point: Point) -> _Location:
         ...
 
-    def __new__(cls, vertices: _t.Sequence[Point]) -> Contour:
+    def __new__(cls, vertices: _t.Sequence[Point]) -> _te.Self:
         ...
 
     @_t.overload
@@ -136,7 +136,7 @@ class Contour:
 
 
 class Empty:
-    def __new__(cls) -> Empty:
+    def __new__(cls) -> _te.Self:
         ...
 
     def __and__(
@@ -211,7 +211,7 @@ class Multipolygon:
     def locate(self, point: Point) -> _Location:
         ...
 
-    def __new__(cls, polygons: _t.Sequence[Polygon]) -> Multipolygon:
+    def __new__(cls, polygons: _t.Sequence[Polygon]) -> _te.Self:
         ...
 
     @_t.overload
@@ -311,7 +311,7 @@ class Multisegment:
     def is_valid(self) -> bool:
         ...
 
-    def __new__(cls, segments: _t.Sequence[Segment]) -> Multisegment:
+    def __new__(cls, segments: _t.Sequence[Segment]) -> _te.Self:
         ...
 
     @_t.overload
@@ -343,7 +343,7 @@ class Point:
 
     def __new__(cls,
                 x: _t.Union[_Rational, float],
-                y: _t.Union[_Rational, float]) -> Point:
+                y: _t.Union[_Rational, float]) -> _te.Self:
         ...
 
     @_t.overload
@@ -404,9 +404,7 @@ class Polygon:
     def locate(self, point: Point) -> _Location:
         ...
 
-    def __new__(cls,
-                border: Contour,
-                holes: _t.Sequence[Contour]) -> Polygon:
+    def __new__(cls, border: Contour, holes: _t.Sequence[Contour]) -> _te.Self:
         ...
 
     @_t.overload
@@ -504,7 +502,7 @@ class Segment:
     def relate_to(self, other: Segment) -> _Relation:
         ...
 
-    def __new__(cls, start: Point, end: Point) -> Segment:
+    def __new__(cls, start: Point, end: Point) -> _te.Self:
         ...
 
     @_t.overload
@@ -528,8 +526,7 @@ class Segment:
 @_te.final
 class ConstrainedDelaunayTriangulation:
     @classmethod
-    def from_polygon(cls,
-                     polygon: Polygon) -> ConstrainedDelaunayTriangulation:
+    def from_polygon(cls, polygon: Polygon) -> _te.Self:
         ...
 
     @property
@@ -547,8 +544,7 @@ class ConstrainedDelaunayTriangulation:
 @_te.final
 class DelaunayTriangulation:
     @classmethod
-    def from_points(cls,
-                    points: _t.Sequence[Point]) -> DelaunayTriangulation:
+    def from_points(cls, points: _t.Sequence[Point]) -> _te.Self:
         ...
 
     @property
@@ -560,4 +556,21 @@ class DelaunayTriangulation:
         ...
 
     def __bool__(self) -> bool:
+        ...
+
+
+@_te.final
+class Trapezoidation:
+    @classmethod
+    def from_multisegment(cls, multisegment: Multisegment) -> _te.Self:
+        ...
+
+    @property
+    def height(self) -> int:
+        ...
+
+    def locate(self, point: Point) -> _Location:
+        ...
+
+    def __contains__(self, point: Point) -> bool:
         ...

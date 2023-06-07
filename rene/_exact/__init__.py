@@ -7,6 +7,7 @@ from .multisegment import Multisegment
 from .point import Point
 from .polygon import Polygon
 from .segment import Segment
+from .trapezoidation import Trapezoidation
 from .triangulation import (ConstrainedDelaunayTriangulation,
                             DelaunayTriangulation)
 
