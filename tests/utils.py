@@ -44,6 +44,11 @@ def is_contour_triangular(contour: Contour) -> bool:
     return len(contour.vertices) == MIN_CONTOUR_VERTICES_COUNT
 
 
+def is_multisegment_inside_box(multisegment: Multisegment, box: Box) -> bool:
+    return all(is_segment_inside_box(segment, box)
+               for segment in multisegment.segments)
+
+
 def is_point_inside_box(point: Point, box: Box) -> bool:
     return (box.min_x <= point.x <= box.max_x
             and box.min_y <= point.y <= box.max_y)
