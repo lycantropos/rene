@@ -106,7 +106,8 @@ class Trapezoidation(_t.Generic[_hints.Scalar]):
         Memory complexity:
             ``O(1)``
         """
-        return bool(self._root.locate(point, self._edges, self._nodes))
+        return (self._root.locate(point, self._edges, self._nodes)
+                is not Location.EXTERIOR)
 
     @classmethod
     def _from_box_with_edges(cls,
