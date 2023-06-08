@@ -3,9 +3,10 @@ use std::ops::{Add, Sub};
 use traiter::numbers::{Unitary, Zeroable};
 
 use crate::bounded;
-use crate::operations::Orient;
-use crate::oriented::Orientation;
-use crate::traits::{Multisegmental, Segmental};
+use crate::geometries::{Multisegment, Segment};
+use crate::operations::{to_arg_min, Orient};
+use crate::oriented::{Orientation, Oriented};
+use crate::traits::{Contoural, Multisegmental, Polygonal, Segmental};
 use crate::trapezoidation::node::Node;
 use crate::trapezoidation::trapezoid::Trapezoid;
 
@@ -71,6 +72,67 @@ impl<Point> Trapezoidation<Point> {
         }
         shuffler(&mut edges);
         Self::from_box_with_edges(multisegment.to_bounding_box(), edges)
+    }
+
+    pub(crate) fn from_polygon<
+        Polygon: bounded::Bounded<Scalar> + Polygonal<Contour = Contour>,
+        Scalar,
+        Contour: Contoural<Segment = Segment> + Oriented,
+        Segment: Segmental<Endpoint = Point>,
+        Shuffler: FnOnce(&mut Vec<Edge<Point>>),
+    >(
+        polygon: &Polygon,
+        shuffler: Shuffler,
+    ) -> Self
+    where
+        Point: Clone + From<(Scalar, Scalar)> + Orient + PartialOrd,
+        Scalar: Clone + Unitary + Zeroable,
+        for<'b> &'b Scalar:
+            Add<Scalar, Output = Scalar> + Sub<Scalar, Output = Scalar> + Sub<Output = Scalar>,
+    {
+        let (border, holes) = (polygon.border(), polygon.holes());
+        let mut edges = Vec::<Edge<Point>>::with_capacity(
+            border.segments_count()
+                + holes
+                    .iter()
+                    .map(Multisegmental::segments_count)
+                    .sum::<usize>(),
+        );
+        Self::populate_edges_from_contour(border, &mut edges);
+        for hole in holes {
+            Self::populate_edges_from_contour(hole, &mut edges);
+        }
+        shuffler(&mut edges);
+        Self::from_box_with_edges(polygon.to_bounding_box(), edges)
+    }
+
+    fn populate_edges_from_contour<
+        Contour: Contoural<Segment = Segment> + Oriented,
+        Segment: Segmental<Endpoint = Point>,
+    >(
+        contour: Contour,
+        edges: &mut Vec<Edge<Point>>,
+    ) where
+        Point: PartialOrd,
+    {
+        let is_border_positively_oriented =
+            contour.to_orientation() == Orientation::Counterclockwise;
+        for segment in contour.segments() {
+            let (start, end) = (segment.start(), segment.end());
+            edges.push(if start < end {
+                Edge::<Point> {
+                    left_point: start,
+                    right_point: end,
+                    interior_to_left: is_border_positively_oriented,
+                }
+            } else {
+                Edge::<Point> {
+                    left_point: end,
+                    right_point: start,
+                    interior_to_left: !is_border_positively_oriented,
+                }
+            })
+        }
     }
 
     fn from_box_with_edges<Scalar>(box_: bounded::Box<Scalar>, mut edges: Vec<Edge<Point>>) -> Self
