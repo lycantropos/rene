@@ -75,7 +75,7 @@ impl<Point> Trapezoidation<Point> {
     }
 
     pub(crate) fn from_polygon<
-        Polygon: bounded::Bounded<Scalar> + Polygonal<Contour = Contour>,
+        Polygon: bounded::Bounded<Scalar> + Polygonal<Contour = Contour> + Multisegmental,
         Scalar,
         Contour: Contoural<Segment = Segment> + Oriented,
         Segment: Segmental<Endpoint = Point>,
@@ -90,16 +90,9 @@ impl<Point> Trapezoidation<Point> {
         for<'b> &'b Scalar:
             Add<Scalar, Output = Scalar> + Sub<Scalar, Output = Scalar> + Sub<Output = Scalar>,
     {
-        let (border, holes) = (polygon.border(), polygon.holes());
-        let mut edges = Vec::<Edge<Point>>::with_capacity(
-            border.segments_count()
-                + holes
-                    .iter()
-                    .map(Multisegmental::segments_count)
-                    .sum::<usize>(),
-        );
-        Self::populate_edges_from_contour(border, &mut edges);
-        for hole in holes {
+        let mut edges = Vec::<Edge<Point>>::with_capacity(polygon.segments_count());
+        Self::populate_edges_from_contour(polygon.border(), &mut edges);
+        for hole in polygon.holes() {
             Self::populate_edges_from_contour(hole, &mut edges);
         }
         shuffler(&mut edges);
