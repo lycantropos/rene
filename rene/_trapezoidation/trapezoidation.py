@@ -7,7 +7,8 @@ import typing_extensions as _te
 from rene import (Location,
                   Orientation,
                   hints as _hints)
-from rene._utils import (to_arg_min,
+from rene._utils import (permute,
+                         to_arg_min,
                          to_contour_orientation)
 from .edge import Edge
 from .hints import Shuffler
@@ -22,12 +23,13 @@ class Trapezoidation(_t.Generic[_hints.Scalar]):
     @classmethod
     def from_multisegment(cls,
                           multisegment: _hints.Multisegment[_hints.Scalar],
-                          shuffler: Shuffler) -> _te.Self:
+                          seed: int) -> _te.Self:
+        assert seed >= 0, 'Seed should be non-negative.'
         edges = [(Edge.from_endpoints(segment.start, segment.end, False)
                   if segment.start < segment.end
                   else Edge.from_endpoints(segment.end, segment.start, False))
                  for segment in multisegment.segments]
-        shuffler(edges)
+        permute(edges, seed)
         return cls._from_box_with_edges(multisegment.bounding_box, edges)
 
     @classmethod

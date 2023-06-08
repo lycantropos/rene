@@ -1334,10 +1334,15 @@ impl PyExactSegment {
 #[pymethods]
 impl PyExactTrapezoidation {
     #[classmethod]
-    fn from_multisegment(_: &PyType, multisegment: &PyExactMultisegment) -> PyResult<Self> {
+    #[pyo3(signature = (_multisegment, _seed))]
+    fn from_multisegment(
+        _: &PyType,
+        _multisegment: &PyExactMultisegment,
+        _seed: usize,
+    ) -> PyResult<Self> {
         Ok(PyExactTrapezoidation(Trapezoidation::from_multisegment(
-            &multisegment.0,
-            |values| {},
+            &_multisegment.0,
+            |values| permute(values, _seed),
         )))
     }
 
@@ -1528,6 +1533,20 @@ fn extract_from_sequence<'a, Wrapper: FromPyObject<'a>, Wrapped: From<Wrapper>>(
         result.push(element?.extract::<Wrapper>()?.into());
     }
     Ok(result)
+}
+
+/// Based on "Ranking and unranking permutations in linear time"
+/// by W. Myrvold, F. Ruskey
+///
+/// Time complexity: O(values.len())
+/// Memory complexity: O(1)
+///
+/// More at: http://webhome.cs.uvic.ca/~ruskey/Publications/RankPerm/MyrvoldRuskey.pdf
+fn permute<T>(values: &mut [T], mut seed: usize) {
+    for step in (1..=values.len()).rev() {
+        values.swap(step - 1, seed % step);
+        seed /= step;
+    }
 }
 
 #[pymodule]

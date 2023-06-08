@@ -532,3 +532,6 @@ class Multipolygon(_SelfComparable, Multisegmental[Segment[Scalar]],
             self, other: Polygon[Scalar]
     ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
         ...
+
+
+Seeder = _t.Callable[[], int]

@@ -342,3 +342,19 @@ def to_sign(value: _t.Any) -> int:
 def to_sorted_pair(first: _OrderedT,
                    second: _OrderedT) -> _t.Tuple[_OrderedT, _OrderedT]:
     return (first, second) if first < second else (second, first)
+
+
+def permute(values: _t.MutableSequence[_T], seed: int) -> None:
+    """
+    Based on "Ranking and unranking permutations in linear time"
+    by W. Myrvold, F. Ruskey
+
+    Time complexity: O(values.len())
+    Memory complexity: O(1)
+
+    More at: http://webhome.cs.uvic.ca/~ruskey/Publications/RankPerm/MyrvoldRuskey.pdf
+    """
+    for step in range(len(values), 0, -1):
+        values[seed % step], values[step - 1] = (values[step - 1],
+                                                 values[seed % step])
+        seed //= step

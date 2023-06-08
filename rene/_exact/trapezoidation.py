@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-import random as _random
+import random
+import typing as _t
 
 import typing_extensions as _te
 from rithm.fraction import Fraction as _Fraction
 
-from rene._trapezoidation.hints import Shuffler as _Shuffler
 from rene._trapezoidation.trapezoidation import (
     Trapezoidation as _RawTrapezoidation
 )
+from rene.hints import Seeder as _Seeder
 from .multisegment import Multisegment as _Multisegment
 
 
@@ -16,9 +17,12 @@ class Trapezoidation:
     @classmethod
     def from_multisegment(cls,
                           _multisegment: _Multisegment,
-                          _shuffler: _Shuffler = _random.shuffle) -> _te.Self:
-        return cls(_RawTrapezoidation.from_multisegment(_multisegment,
-                                                        _shuffler))
+                          *,
+                          seeder: _t.Optional[_Seeder] = None) -> _te.Self:
+        seed = (random.randint(0, _multisegment.segments_count)
+                if seeder is None
+                else seeder())
+        return cls(_RawTrapezoidation.from_multisegment(_multisegment, seed))
 
     @property
     def height(self) -> int:

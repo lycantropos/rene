@@ -9,6 +9,7 @@ from rithm.fraction import Fraction as _Fraction
 from rene import (Location as _Location,
                   Orientation as _Orientation,
                   Relation as _Relation)
+from rene.hints import Seeder as _Seeder
 
 
 class Box:
@@ -562,7 +563,10 @@ class DelaunayTriangulation:
 @_te.final
 class Trapezoidation:
     @classmethod
-    def from_multisegment(cls, multisegment: Multisegment) -> _te.Self:
+    def from_multisegment(cls,
+                          multisegment: Multisegment,
+                          *,
+                          seeder: _Seeder = ...) -> _te.Self:
         ...
 
     @property
