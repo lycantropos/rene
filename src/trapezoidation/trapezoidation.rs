@@ -1,10 +1,9 @@
-use std::ops::{Add, Sub};
-
 use traiter::numbers::{Unitary, Zeroable};
 
+use std::ops::{Add, Sub};
+
 use crate::bounded;
-use crate::geometries::{Multisegment, Segment};
-use crate::operations::{to_arg_min, Orient};
+use crate::operations::Orient;
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{Contoural, Multisegmental, Polygonal, Segmental};
 use crate::trapezoidation::node::Node;
