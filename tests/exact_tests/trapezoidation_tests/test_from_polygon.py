@@ -4,8 +4,8 @@ import pytest
 from hypothesis import given
 
 from rene import Location
-from rene._exact import (Polygon,
-                         Trapezoidation)
+from rene.exact import (Polygon,
+                        Trapezoidation)
 from rene.hints import Seeder
 from . import strategies
 

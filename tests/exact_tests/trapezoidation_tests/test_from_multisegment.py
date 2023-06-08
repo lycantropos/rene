@@ -3,7 +3,7 @@ from typing import Any
 import pytest
 from hypothesis import given
 
-from rene._exact import (Multisegment,
+from rene.exact import (Multisegment,
                         Trapezoidation)
 from rene.hints import Seeder
 from . import strategies
