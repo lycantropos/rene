@@ -52,51 +52,39 @@ impl<Point> Trapezoid<Point> {
         self.leaf_index
     }
 
-    pub(super) fn set_as_lower_left(&mut self, value: Option<&mut Self>) {
-        match value {
-            Some(value) => {
-                self.lower_left_leaf_index = Some(value.leaf_index);
-                value.lower_right_leaf_index = Some(self.leaf_index);
-            }
-            None => {
-                self.lower_left_leaf_index = None;
-            }
-        }
+    pub(super) fn reset_lower_left(&mut self) {
+        self.lower_left_leaf_index = None;
     }
 
-    pub(super) fn set_as_lower_right(&mut self, value: Option<&mut Self>) {
-        match value {
-            Some(value) => {
-                self.lower_right_leaf_index = Some(value.leaf_index);
-                value.lower_left_leaf_index = Some(self.leaf_index);
-            }
-            None => {
-                self.lower_right_leaf_index = None;
-            }
-        }
+    pub(super) fn reset_lower_right(&mut self) {
+        self.lower_right_leaf_index = None;
     }
 
-    pub(super) fn set_as_upper_left(&mut self, value: Option<&mut Self>) {
-        match value {
-            Some(value) => {
-                self.upper_left_leaf_index = Some(value.leaf_index);
-                value.upper_right_leaf_index = Some(self.leaf_index);
-            }
-            None => {
-                self.upper_left_leaf_index = None;
-            }
-        };
+    pub(super) fn reset_upper_left(&mut self) {
+        self.upper_left_leaf_index = None;
     }
 
-    pub(super) fn set_as_upper_right(&mut self, value: Option<&mut Self>) {
-        match value {
-            Some(value) => {
-                self.upper_right_leaf_index = Some(value.leaf_index);
-                value.upper_left_leaf_index = Some(self.leaf_index);
-            }
-            None => {
-                self.upper_right_leaf_index = None;
-            }
-        }
+    pub(super) fn reset_upper_right(&mut self) {
+        self.upper_right_leaf_index = None;
+    }
+
+    pub(super) fn set_as_lower_left(&mut self, value: &mut Self) {
+        self.lower_left_leaf_index = Some(value.leaf_index);
+        value.lower_right_leaf_index = Some(self.leaf_index);
+    }
+
+    pub(super) fn set_as_lower_right(&mut self, value: &mut Self) {
+        self.lower_right_leaf_index = Some(value.leaf_index);
+        value.lower_left_leaf_index = Some(self.leaf_index);
+    }
+
+    pub(super) fn set_as_upper_left(&mut self, value: &mut Self) {
+        self.upper_left_leaf_index = Some(value.leaf_index);
+        value.upper_right_leaf_index = Some(self.leaf_index);
+    }
+
+    pub(super) fn set_as_upper_right(&mut self, value: &mut Self) {
+        self.upper_right_leaf_index = Some(value.leaf_index);
+        value.upper_left_leaf_index = Some(self.leaf_index);
     }
 }
