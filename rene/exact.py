@@ -41,6 +41,9 @@ else:
             seed = (_random.randint(0, multisegment.segments_count)
                     if seeder is None
                     else seeder())
+            if seed < 0:
+                raise ValueError(f'Seed should be non-negative integer, '
+                                 f'but found {seed}.')
             return cls(_RawTrapezoidation.from_multisegment(multisegment,
                                                             seed))
 

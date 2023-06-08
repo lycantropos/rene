@@ -22,6 +22,8 @@ class Trapezoidation:
         seed = (random.randint(0, _multisegment.segments_count)
                 if seeder is None
                 else seeder())
+        if seed < 0:
+            raise ValueError('Seed should be non-negative.')
         return cls(_RawTrapezoidation.from_multisegment(_multisegment, seed))
 
     @property
