@@ -24,7 +24,7 @@ class Trapezoidation(_t.Generic[_hints.Scalar]):
     def from_multisegment(cls,
                           multisegment: _hints.Multisegment[_hints.Scalar],
                           seed: int) -> _te.Self:
-        assert seed >= 0, 'Seed should be non-negative.'
+        assert seed >= 0, f'Seed should be non-negative, but got {seed}.'
         edges = [(Edge.from_endpoints(segment.start, segment.end, False)
                   if segment.start < segment.end
                   else Edge.from_endpoints(segment.end, segment.start, False))

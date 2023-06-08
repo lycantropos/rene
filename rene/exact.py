@@ -29,6 +29,7 @@ else:
     import typing_extensions as _te
 
     from ._crene import Location as _Location
+    from ._utils import validate_seed as _validate_seed
     from .hints import Seeder as _Seeder
 
 
@@ -41,9 +42,7 @@ else:
             seed = (_random.randint(0, multisegment.segments_count)
                     if seeder is None
                     else seeder())
-            if seed < 0:
-                raise ValueError(f'Seed should be non-negative integer, '
-                                 f'but found {seed}.')
+            _validate_seed(seed)
             return cls(_RawTrapezoidation.from_multisegment(multisegment,
                                                             seed))
 

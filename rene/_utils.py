@@ -358,3 +358,12 @@ def permute(values: _t.MutableSequence[_T], seed: int) -> None:
         values[seed % step], values[step - 1] = (values[step - 1],
                                                  values[seed % step])
         seed //= step
+
+
+def validate_seed(seed: _t.Any) -> None:
+    if not isinstance(seed, int):
+        raise TypeError(f'Seed should be non-negative integer, '
+                        f'but got "{seed}".')
+    elif seed < 0:
+        raise ValueError(f'Seed should be non-negative integer, '
+                         f'but got "{seed}".')

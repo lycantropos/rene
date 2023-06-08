@@ -9,6 +9,7 @@ from rithm.fraction import Fraction as _Fraction
 from rene._trapezoidation.trapezoidation import (
     Trapezoidation as _RawTrapezoidation
 )
+from rene._utils import validate_seed as _validate_seed
 from rene.hints import Seeder as _Seeder
 from .multisegment import Multisegment as _Multisegment
 
@@ -22,8 +23,7 @@ class Trapezoidation:
         seed = (random.randint(0, _multisegment.segments_count)
                 if seeder is None
                 else seeder())
-        if seed < 0:
-            raise ValueError('Seed should be non-negative.')
+        _validate_seed(seed)
         return cls(_RawTrapezoidation.from_multisegment(_multisegment, seed))
 
     @property
