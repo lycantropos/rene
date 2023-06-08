@@ -1346,6 +1346,15 @@ impl PyExactTrapezoidation {
         )))
     }
 
+    #[classmethod]
+    #[pyo3(signature = (_polygon, _seed))]
+    fn from_polygon(_: &PyType, _polygon: &PyExactPolygon, _seed: usize) -> PyResult<Self> {
+        Ok(PyExactTrapezoidation(Trapezoidation::from_polygon(
+            &_polygon.0,
+            |values| permute(values, _seed),
+        )))
+    }
+
     #[getter]
     fn height(&self) -> usize {
         self.0.height()
