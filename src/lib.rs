@@ -20,7 +20,7 @@ use crate::constants::{
     MIN_CONTOUR_VERTICES_COUNT, MIN_MULTIPOLYGON_POLYGONS_COUNT, MIN_MULTISEGMENT_SEGMENTS_COUNT,
 };
 use crate::locatable::{Locatable, Location};
-use crate::operations::to_arg_min;
+use crate::operations::{permute, to_arg_min};
 use crate::oriented::{Orientation, Oriented};
 use crate::relatable::{Relatable, Relation};
 use crate::traits::{
@@ -1533,20 +1533,6 @@ fn extract_from_sequence<'a, Wrapper: FromPyObject<'a>, Wrapped: From<Wrapper>>(
         result.push(element?.extract::<Wrapper>()?.into());
     }
     Ok(result)
-}
-
-/// Based on "Ranking and unranking permutations in linear time"
-/// by W. Myrvold, F. Ruskey
-///
-/// Time complexity: O(values.len())
-/// Memory complexity: O(1)
-///
-/// More at: http://webhome.cs.uvic.ca/~ruskey/Publications/RankPerm/MyrvoldRuskey.pdf
-fn permute<T>(values: &mut [T], mut seed: usize) {
-    for step in (1..=values.len()).rev() {
-        values.swap(step - 1, seed % step);
-        seed /= step;
-    }
 }
 
 #[pymodule]
