@@ -42,8 +42,7 @@ Usage
 -----
 
 ```python
->>> from rene.exact import (ConstrainedDelaunayTriangulation,
-...                         Contour,
+>>> from rene.exact import (Contour,
 ...                         Empty,
 ...                         Point,
 ...                         Polygon)
@@ -64,9 +63,18 @@ True
 True
 >>> len(square.holes) == 0
 True
+>>> from rene.exact import ConstrainedDelaunayTriangulation
 >>> (ConstrainedDelaunayTriangulation.from_polygon(square).triangles
 ...  == [Contour([Point(0, 0), Point(4, 0), Point(0, 4)]),
 ...      Contour([Point(0, 4), Point(4, 0), Point(4, 4)])])
+True
+>>> from rene import Location
+>>> from rene.exact import Trapezoidation
+>>> trapezoidation = Trapezoidation.from_polygon(square)
+>>> all(vertex in trapezoidation for vertex in square.border.vertices)
+True
+>>> all(trapezoidation.locate(vertex) is Location.BOUNDARY
+...     for vertex in square.border.vertices)
 True
 
 ```
