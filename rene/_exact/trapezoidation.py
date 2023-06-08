@@ -14,6 +14,7 @@ from rene._utils import validate_seed as _validate_seed
 from rene.hints import Seeder as _Seeder
 from .multisegment import Multisegment as _Multisegment
 from .point import Point as _Point
+from .polygon import Polygon as _Polygon
 
 
 class Trapezoidation:
@@ -27,6 +28,17 @@ class Trapezoidation:
                 else seeder())
         _validate_seed(seed)
         return cls(_RawTrapezoidation.from_multisegment(_multisegment, seed))
+
+    @classmethod
+    def from_polygon(cls,
+                     _polygon: _Polygon,
+                     *,
+                     seeder: _t.Optional[_Seeder] = None) -> _te.Self:
+        seed = (random.randint(0, _polygon.segments_count)
+                if seeder is None
+                else seeder())
+        _validate_seed(seed)
+        return cls(_RawTrapezoidation.from_polygon(_polygon, seed))
 
     @property
     def height(self) -> int:

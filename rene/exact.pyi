@@ -569,6 +569,13 @@ class Trapezoidation:
                           seeder: _Seeder = ...) -> _te.Self:
         ...
 
+    @classmethod
+    def from_polygon(cls,
+                     polygon: Polygon,
+                     *,
+                     seeder: _t.Optional[_Seeder] = None) -> _te.Self:
+        ...
+
     @property
     def height(self) -> int:
         ...

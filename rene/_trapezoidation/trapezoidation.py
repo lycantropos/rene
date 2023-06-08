@@ -11,7 +11,6 @@ from rene._utils import (permute,
                          to_arg_min,
                          to_contour_orientation)
 from .edge import Edge
-from .hints import Shuffler
 from .leaf import Leaf
 from .node import Node
 from .trapezoid import Trapezoid
@@ -35,7 +34,7 @@ class Trapezoidation(_t.Generic[_hints.Scalar]):
     @classmethod
     def from_polygon(cls,
                      polygon: _hints.Polygon[_hints.Scalar],
-                     shuffler: Shuffler) -> _te.Self:
+                     seed: int) -> _te.Self:
         border = polygon.border
         is_border_positively_oriented = (
                 to_contour_orientation(border.vertices,
@@ -65,7 +64,7 @@ class Trapezoidation(_t.Generic[_hints.Scalar]):
                                         not is_hole_negatively_oriented)
                     for segment in hole.segments
             )
-        shuffler(edges)
+        permute(edges, seed)
         return cls._from_box_with_edges(border.bounding_box, edges)
 
     @property

@@ -46,6 +46,17 @@ else:
             return cls(_RawTrapezoidation.from_multisegment(multisegment,
                                                             seed))
 
+        @classmethod
+        def from_polygon(cls,
+                         polygon: Polygon,
+                         *,
+                         seeder: _t.Optional[_Seeder] = None) -> _te.Self:
+            seed = (_random.randint(0, polygon.segments_count)
+                    if seeder is None
+                    else seeder())
+            _validate_seed(seed)
+            return cls(_RawTrapezoidation.from_polygon(polygon, seed))
+
         @property
         def height(self) -> int:
             return self._raw.height
