@@ -18,24 +18,24 @@ pub(crate) struct Trapezoidation<Point> {
 }
 
 impl<Point> Trapezoidation<Point> {
-    fn from_box_with_edges<Scalar>(box_: bounded::Box<Scalar>, mut edges: Vec<Edge<Point>>) -> Self
-    where
-        Point: Clone + From<(Scalar, Scalar)> + Orient + PartialOrd,
-        Scalar: Clone + Unitary + Zeroable,
-        for<'b> &'b Scalar:
-            Add<Scalar, Output = Scalar> + Sub<Scalar, Output = Scalar> + Sub<Output = Scalar>,
-    {
-        debug_assert!(!edges.is_empty());
-        let mut nodes = Vec::<Node<Point>>::new();
-        let first_leaf_index = Self::leaf_from_box_with_edges(box_, &mut edges, &mut nodes);
-        debug_assert_eq!(first_leaf_index, 0usize);
-        Self::add_edge_to_single_trapezoid(0usize, 0usize, &edges, &mut nodes);
-        for edge_index in 1..edges.len() - 2 {
-            Self::add_edge(edge_index, &edges, &mut nodes)
-        }
-        Self { edges, nodes }
+    pub(super) fn get_root(&self) -> &Node<Point> {
+        &self.nodes[0]
     }
 
+    pub(super) fn get_edges(&self) -> &[Edge<Point>] {
+        &self.edges
+    }
+
+    pub(super) fn get_nodes(&self) -> &[Node<Point>] {
+        &self.nodes
+    }
+
+    pub(crate) fn height(&self) -> usize {
+        self.get_root().height(self.get_nodes())
+    }
+}
+
+impl<Point> Trapezoidation<Point> {
     pub(crate) fn from_multisegment<
         Multisegment: bounded::Bounded<Scalar> + Multisegmental<Segment = Segment>,
         Scalar,
@@ -71,6 +71,24 @@ impl<Point> Trapezoidation<Point> {
         }
         shuffler(&mut edges);
         Self::from_box_with_edges(multisegment.to_bounding_box(), edges)
+    }
+
+    fn from_box_with_edges<Scalar>(box_: bounded::Box<Scalar>, mut edges: Vec<Edge<Point>>) -> Self
+    where
+        Point: Clone + From<(Scalar, Scalar)> + Orient + PartialOrd,
+        Scalar: Clone + Unitary + Zeroable,
+        for<'b> &'b Scalar:
+            Add<Scalar, Output = Scalar> + Sub<Scalar, Output = Scalar> + Sub<Output = Scalar>,
+    {
+        debug_assert!(!edges.is_empty());
+        let mut nodes = Vec::<Node<Point>>::new();
+        let first_leaf_index = Self::leaf_from_box_with_edges(box_, &mut edges, &mut nodes);
+        debug_assert_eq!(first_leaf_index, 0usize);
+        Self::add_edge_to_single_trapezoid(0usize, 0usize, &edges, &mut nodes);
+        for edge_index in 1..edges.len() - 2 {
+            Self::add_edge(edge_index, &edges, &mut nodes)
+        }
+        Self { edges, nodes }
     }
 
     fn leaf_from_box_with_edges<Scalar>(
@@ -122,24 +140,6 @@ impl<Point> Trapezoidation<Point> {
             above_edge_index,
             nodes,
         )
-    }
-}
-
-impl<Point> Trapezoidation<Point> {
-    pub(super) fn get_root(&self) -> &Node<Point> {
-        &self.get_nodes()[0]
-    }
-
-    pub(super) fn get_edges(&self) -> &[Edge<Point>] {
-        &self.edges
-    }
-
-    pub(super) fn get_nodes(&self) -> &[Node<Point>] {
-        &self.nodes
-    }
-
-    pub(crate) fn height(&self) -> usize {
-        self.get_root().height(self.get_nodes())
     }
 }
 
