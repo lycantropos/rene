@@ -1,5 +1,3 @@
-use super::edge::Edge;
-
 #[derive(Clone)]
 pub(crate) struct Trapezoid<Point> {
     pub(super) left_point: Point,
