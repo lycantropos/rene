@@ -10,10 +10,6 @@ from .trapezoid import Trapezoid
 
 
 class XNode(Node[_hints.Scalar]):
-    def to_height(self, nodes: _t.Sequence[Node[_hints.Scalar]]) -> int:
-        return max(nodes[self.left_node_index].to_height(nodes),
-                   nodes[self.right_node_index].to_height(nodes)) + 1
-
     def locate(self,
                point: _hints.Point[_hints.Scalar],
                edges: _t.Sequence[Edge[_hints.Scalar]],
@@ -36,6 +32,10 @@ class XNode(Node[_hints.Scalar]):
             else self.right_node_index
         ].search_edge(edge, edges, nodes)
 
+    def to_height(self, nodes: _t.Sequence[Node[_hints.Scalar]]) -> int:
+        return max(nodes[self.left_node_index].to_height(nodes),
+                   nodes[self.right_node_index].to_height(nodes)) + 1
+
     __slots__ = 'left_node_index', 'point', 'right_node_index'
 
     def __init__(self,
@@ -47,5 +47,3 @@ class XNode(Node[_hints.Scalar]):
         )
 
     __repr__ = generate_repr(__init__)
-    __str__ = generate_repr(__init__,
-                            argument_serializer=str)

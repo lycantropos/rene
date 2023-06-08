@@ -57,5 +57,3 @@ class Edge(_t.Generic[_hints.Scalar]):
                     else NotImplemented)
 
     __repr__ = generate_repr(__init__)
-    __str__ = generate_repr(__init__,
-                            argument_serializer=str)

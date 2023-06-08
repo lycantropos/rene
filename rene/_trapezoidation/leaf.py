@@ -10,9 +10,6 @@ from .trapezoid import Trapezoid
 
 
 class Leaf(Node[_hints.Scalar]):
-    def to_height(self, nodes: _t.Sequence[Node[_hints.Scalar]]) -> int:
-        return 0
-
     def locate(self,
                point: _hints.Point[_hints.Scalar],
                edges: _t.Sequence[Edge[_hints.Scalar]],
@@ -29,11 +26,12 @@ class Leaf(Node[_hints.Scalar]):
     ) -> Trapezoid[_hints.Scalar]:
         return self.trapezoid
 
+    def to_height(self, nodes: _t.Sequence[Node[_hints.Scalar]]) -> int:
+        return 0
+
     __slots__ = 'trapezoid',
 
     def __init__(self, trapezoid: Trapezoid[_hints.Scalar]) -> None:
         self.trapezoid = trapezoid
 
     __repr__ = generate_repr(__init__)
-    __str__ = generate_repr(__init__,
-                            argument_serializer=str)
