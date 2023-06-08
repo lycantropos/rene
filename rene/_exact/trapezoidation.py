@@ -13,7 +13,7 @@ from rene._trapezoidation.trapezoidation import (
 from rene._utils import validate_seed as _validate_seed
 from rene.hints import Seeder as _Seeder
 from .multisegment import Multisegment as _Multisegment
-from .point import Point
+from .point import Point as _Point
 
 
 class Trapezoidation:
@@ -32,7 +32,7 @@ class Trapezoidation:
     def height(self) -> int:
         return self._raw.height
 
-    def locate(self, point: Point) -> Location:
+    def locate(self, point: _Point) -> Location:
         return self._raw.locate(point)
 
     _raw: _RawTrapezoidation[_Fraction]
@@ -43,5 +43,5 @@ class Trapezoidation:
     def __init__(self, _raw: _RawTrapezoidation[_Fraction]) -> None:
         self._raw = _raw
 
-    def __contains__(self, point: Point) -> bool:
+    def __contains__(self, point: _Point) -> bool:
         return self._raw.__contains__(point)
