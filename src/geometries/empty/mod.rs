@@ -5,6 +5,7 @@ mod difference;
 mod from;
 mod intersection;
 mod locatable;
+mod relatable;
 mod symmetric_difference;
 mod types;
 mod union;
