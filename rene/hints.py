@@ -134,6 +134,9 @@ class Empty(_SelfComparable, _te.Protocol[Scalar]):
     def locate(self, point: Point[Scalar]) -> _Location:
         ...
 
+    def relate_to(self, other: _t.Union[Compound[Scalar]]) -> _Relation:
+        ...
+
     def __new__(cls) -> _te.Self:
         ...
 
@@ -556,3 +559,8 @@ class Multipolygon(_SelfComparable, Multisegmental[Segment[Scalar]],
 
 
 Seeder = _t.Callable[[], int]
+
+Compound = _t.Union[
+    Contour[Scalar], Empty[Scalar], Multisegment[Scalar], Multipolygon[Scalar],
+    Polygon[Scalar], Segment[Scalar]
+]

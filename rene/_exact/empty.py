@@ -4,14 +4,28 @@ import typing_extensions as _te
 from reprit.base import generate_repr as _generate_repr
 from rithm.fraction import Fraction as _Fraction
 
-from rene import (Location,
+from rene import (Location as _Location,
+                  Relation as _Relation,
                   hints as _hints)
 from rene._context import Context as _Context
 
 
 class Empty:
-    def locate(self, _point: _hints.Point[_Fraction]) -> Location:
-        return Location.EXTERIOR
+    def locate(self, _point: _hints.Point[_Fraction]) -> _Location:
+        return _Location.EXTERIOR
+
+    def relate_to(self,
+                  _other: _t.Union[_hints.Compound[_Fraction]]) -> _Relation:
+        context = self._context
+        if not isinstance(_other,
+                          (context.contour_cls, context.empty_cls,
+                           context.multisegment_cls, context.multipolygon_cls,
+                           context.polygon_cls, context.segment_cls)):
+            raise TypeError('Expected compound geometry, '
+                            f'but got {type(_other)}.')
+        return (_Relation.EQUAL
+                if isinstance(_other, context.empty_cls)
+                else _Relation.DISJOINT)
 
     _context: _t.ClassVar[_Context[_Fraction]]
 

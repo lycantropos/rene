@@ -143,6 +143,9 @@ class Empty:
     def locate(self, point: Point) -> _Location:
         ...
 
+    def relate_to(self, other: _Compound) -> _Relation:
+        ...
+
     def __new__(cls) -> _te.Self:
         ...
 
@@ -606,3 +609,8 @@ class Trapezoidation:
 
     def __contains__(self, point: Point) -> bool:
         ...
+
+
+_Compound = _t.Union[
+    Contour, Empty, Multisegment, Multipolygon, Polygon, Segment
+]

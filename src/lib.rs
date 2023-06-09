@@ -669,6 +669,31 @@ impl PyExactEmpty {
         unsafe { MAYBE_LOCATION_CLS.unwrap_unchecked() }.getattr(intern!(py, "EXTERIOR"))
     }
 
+    fn relate_to(&self, other: &PyAny) -> PyResult<&PyAny> {
+        if other.is_instance_of::<PyExactContour>() {
+            try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactContour>()?.0))
+        } else if other.is_instance_of::<PyExactEmpty>() {
+            try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactEmpty>()?.0))
+        } else if other.is_instance_of::<PyExactMultipolygon>() {
+            try_relation_to_py_relation(
+                self.0.relate_to(&other.extract::<PyExactMultipolygon>()?.0),
+            )
+        } else if other.is_instance_of::<PyExactMultisegment>() {
+            try_relation_to_py_relation(
+                self.0.relate_to(&other.extract::<PyExactMultisegment>()?.0),
+            )
+        } else if other.is_instance_of::<PyExactPolygon>() {
+            try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactPolygon>()?.0))
+        } else if other.is_instance_of::<PyExactSegment>() {
+            try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactSegment>()?.0))
+        } else {
+            Err(PyTypeError::new_err(format!(
+                "Expected compound geometry, but got {}.",
+                other.get_type().repr()?
+            )))
+        }
+    }
+
     fn __and__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactEmpty::type_object(py))? {
