@@ -518,6 +518,9 @@ class Segment:
     def __new__(cls, start: Point, end: Point) -> _te.Self:
         ...
 
+    def __contains__(self, point: Point) -> bool:
+        ...
+
     @_t.overload
     def __eq__(self, other: Segment) -> bool:
         ...

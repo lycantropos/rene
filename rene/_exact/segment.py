@@ -54,6 +54,9 @@ class Segment:
         self._end, self._start = end, start
         return self
 
+    def __contains__(self, point: Point[Fraction]) -> bool:
+        return self.locate(point) is not Location.EXTERIOR
+
     def __hash__(self) -> int:
         return hash(frozenset((self.start, self.end)))
 

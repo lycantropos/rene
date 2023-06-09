@@ -266,6 +266,9 @@ class Segment(_SelfComparable, _te.Protocol[Scalar]):
     def __new__(cls, start: Point[Scalar], end: Point[Scalar]) -> _te.Self:
         ...
 
+    def __contains__(self, point: Point[Scalar]) -> bool:
+        ...
+
     def __hash__(self) -> int:
         ...
 
