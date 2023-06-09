@@ -45,7 +45,7 @@ class Relation(Base):
     Represents kinds of relations in which geometries can be.
     Order of members assumes that conditions for previous ones do not hold.
     """
-    #: intersection is empty
+    #: at least one geometry is non-empty and intersection is empty
     DISJOINT = 0
     #: intersection is a strict subset of each of the geometries,
     #: has dimension less than at least of one of the geometries

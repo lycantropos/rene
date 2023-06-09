@@ -1,6 +1,6 @@
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Relation {
-    /// intersection is empty
+    /// at least one geometry is non-empty and intersection is empty
     Disjoint,
     /// intersection is a strict subset of each of the geometries,
     /// has dimension less than at least of one of the geometries
