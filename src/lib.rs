@@ -1139,6 +1139,10 @@ impl PyExactPolygon {
         }
     }
 
+    fn __contains__(&self, point: &PyExactPoint) -> bool {
+        !matches!(self.0.locate(&point.0), Location::Exterior)
+    }
+
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
         PyTuple::new(
             py,

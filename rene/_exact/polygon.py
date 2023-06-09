@@ -124,6 +124,9 @@ class Polygon:
             )
         )
 
+    def __contains__(self, point: _hints.Point[Fraction]) -> bool:
+        return self.locate(point) is not Location.EXTERIOR
+
     @_t.overload
     def __eq__(self, other: _te.Self) -> bool:
         ...

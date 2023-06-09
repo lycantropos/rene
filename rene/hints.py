@@ -387,6 +387,9 @@ class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]],
     ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
+    def __contains__(self, point: Point[Scalar]) -> bool:
+        ...
+
     def __hash__(self) -> int:
         ...
 
