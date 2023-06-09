@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys as _sys
 import typing as _t
 from itertools import groupby
 
@@ -360,10 +361,16 @@ def permute(values: _t.MutableSequence[_T], seed: int) -> None:
         seed //= step
 
 
-def validate_seed(seed: _t.Any) -> None:
+def validate_seed(seed: _t.Any,
+                  _max_usize_value: int = (_sys.maxsize << 1) + 1) -> None:
+    error_type: _t.Type[Exception]
     if not isinstance(seed, int):
-        raise TypeError(f'Seed should be non-negative integer, '
-                        f'but got "{seed}".')
+        error_type = TypeError
     elif seed < 0:
-        raise ValueError(f'Seed should be non-negative integer, '
-                         f'but got "{seed}".')
+        error_type = ValueError
+    elif seed > _max_usize_value:
+        error_type = OverflowError
+    else:
+        return
+    raise error_type('Seed should be an integer '
+                     f'from range({0}, {_max_usize_value}), but got "{seed}".')
