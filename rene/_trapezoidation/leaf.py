@@ -1,5 +1,6 @@
 import typing as _t
 
+import typing_extensions as _te
 from reprit.base import generate_repr
 
 from rene import (Location,
@@ -18,13 +19,13 @@ class Leaf(Node[_hints.Scalar]):
                 if self.trapezoid.is_component(edges)
                 else Location.EXTERIOR)
 
-    def search_edge(
+    def search_edge_node(
             self,
             edge: Edge[_hints.Scalar],
             edges: _t.Sequence[Edge[_hints.Scalar]],
             nodes: _t.Sequence[Node[_hints.Scalar]]
-    ) -> Trapezoid[_hints.Scalar]:
-        return self.trapezoid
+    ) -> _te.Self:
+        return self
 
     def to_height(self, nodes: _t.Sequence[Node[_hints.Scalar]]) -> int:
         return 0

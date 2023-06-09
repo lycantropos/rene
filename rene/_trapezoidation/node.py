@@ -7,7 +7,6 @@ from abc import (ABC,
 from rene import (Location,
                   hints as _hints)
 from .edge import Edge
-from .trapezoid import Trapezoid
 
 
 class Node(ABC, _t.Generic[_hints.Scalar]):
@@ -21,14 +20,14 @@ class Node(ABC, _t.Generic[_hints.Scalar]):
         """
 
     @abstractmethod
-    def search_edge(
+    def search_edge_node(
             self,
             edge: Edge[_hints.Scalar],
             edges: _t.Sequence[Edge[_hints.Scalar]],
             nodes: _t.Sequence[Node[_hints.Scalar]]
-    ) -> Trapezoid[_hints.Scalar]:
+    ) -> Node[_hints.Scalar]:
         """
-        Recursive search for the trapezoid
+        Recursive search for the node
         which contains the left endpoint of the given segment.
         """
 

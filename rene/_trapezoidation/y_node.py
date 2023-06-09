@@ -7,7 +7,6 @@ from rene import (Location,
                   hints as _hints)
 from .edge import Edge
 from .node import Node
-from .trapezoid import Trapezoid
 
 
 class YNode(Node[_hints.Scalar]):
@@ -22,17 +21,17 @@ class YNode(Node[_hints.Scalar]):
                       if point_orientation is Orientation.CLOCKWISE
                       else Location.BOUNDARY))
 
-    def search_edge(
+    def search_edge_node(
             self,
             edge: Edge[_hints.Scalar],
             edges: _t.Sequence[Edge[_hints.Scalar]],
             nodes: _t.Sequence[Node[_hints.Scalar]]
-    ) -> Trapezoid[_hints.Scalar]:
+    ) -> Node[_hints.Scalar]:
         return nodes[
             self.above_node_index
             if edges[self.edge_index] < edge
             else self.below_node_index
-        ].search_edge(edge, edges, nodes)
+        ]
 
     def to_height(self, nodes: _t.Sequence[Node[_hints.Scalar]]) -> int:
         return max(nodes[self.below_node_index].to_height(nodes),
