@@ -968,6 +968,10 @@ impl PyExactMultisegment {
         try_location_to_py_location(self.0.locate(&point.0))
     }
 
+    fn __contains__(&self, point: &PyExactPoint) -> bool {
+        !matches!(self.0.locate(&point.0), Location::Exterior)
+    }
+
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
         PyFrozenSet::new(py, &self.segments())?.hash()
     }

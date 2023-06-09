@@ -318,6 +318,9 @@ class Multisegment:
     def __new__(cls, segments: _t.Sequence[Segment]) -> _te.Self:
         ...
 
+    def __contains__(self, point: Point) -> bool:
+        ...
+
     @_t.overload
     def __eq__(self, other: Multisegment) -> bool:
         ...
