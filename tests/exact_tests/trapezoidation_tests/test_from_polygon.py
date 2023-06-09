@@ -51,6 +51,6 @@ def test_locate(polygon: Polygon, seeder: Seeder) -> None:
 @given(strategies.polygons, strategies.invalid_seeds)
 def test_invalid_seeders(polygon: Polygon,
                          invalid_seed: Any) -> None:
-    with pytest.raises((ValueError, TypeError)):
+    with pytest.raises((OverflowError, TypeError, ValueError)):
         Trapezoidation.from_polygon(polygon,
                                     seeder=lambda: invalid_seed)
