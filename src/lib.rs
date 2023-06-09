@@ -665,6 +665,10 @@ impl PyExactEmpty {
         PyExactEmpty(Empty::new())
     }
 
+    fn locate(&self, _point: &PyExactPoint, py: Python) -> PyResult<&PyAny> {
+        unsafe { MAYBE_LOCATION_CLS.unwrap_unchecked() }.getattr(intern!(py, "EXTERIOR"))
+    }
+
     fn __and__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactEmpty::type_object(py))? {

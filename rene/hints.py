@@ -131,6 +131,9 @@ class Point(_SelfComparable, _te.Protocol[Scalar_co]):
 
 
 class Empty(_SelfComparable, _te.Protocol[Scalar]):
+    def locate(self, point: Point[Scalar]) -> _Location:
+        ...
+
     def __new__(cls) -> _te.Self:
         ...
 

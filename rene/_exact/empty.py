@@ -4,11 +4,15 @@ import typing_extensions as _te
 from reprit.base import generate_repr as _generate_repr
 from rithm.fraction import Fraction as _Fraction
 
-from rene import hints as _hints
+from rene import (Location,
+                  hints as _hints)
 from rene._context import Context as _Context
 
 
 class Empty:
+    def locate(self, _point: _hints.Point[_Fraction]) -> Location:
+        return Location.EXTERIOR
+
     _context: _t.ClassVar[_Context[_Fraction]]
 
     __module__ = 'rene.exact'
