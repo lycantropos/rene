@@ -38,6 +38,9 @@ class Empty:
                                       self._context.multipolygon_cls))
                 else NotImplemented)
 
+    def __contains__(self, point: _hints.Point[_Fraction]) -> bool:
+        return False
+
     @_t.overload
     def __eq__(self, other: _te.Self) -> bool:
         ...
@@ -85,7 +88,6 @@ class Empty:
 
     def __str__(self) -> str:
         return f'{type(self).__qualname__}()'
-
 
     @_t.overload
     def __sub__(

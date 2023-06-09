@@ -140,6 +140,9 @@ class Empty(_SelfComparable, _te.Protocol[Scalar]):
     ) -> _te.Self:
         ...
 
+    def __contains__(self, point: Point[Scalar]) -> bool:
+        ...
+
     def __hash__(self) -> int:
         ...
 

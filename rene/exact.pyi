@@ -148,6 +148,9 @@ class Empty:
     ) -> Empty:
         ...
 
+    def __contains__(self, point: Point) -> bool:
+        ...
+
     @_t.overload
     def __eq__(self, other: Empty) -> bool:
         ...

@@ -681,6 +681,10 @@ impl PyExactEmpty {
         }
     }
 
+    fn __contains__(&self, _point: &PyExactPoint) -> bool {
+        false
+    }
+
     fn __hash__(&self) -> ffi::Py_hash_t {
         0
     }
