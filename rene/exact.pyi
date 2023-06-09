@@ -234,6 +234,9 @@ class Multipolygon:
     ) -> _t.Union[Empty, Multipolygon, Polygon]:
         ...
 
+    def __contains__(self, point: Point) -> bool:
+        ...
+
     @_t.overload
     def __eq__(self, other: Multipolygon) -> bool:
         ...
