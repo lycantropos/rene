@@ -9,21 +9,19 @@ from rithm.fraction import Fraction
 from rene import (MIN_CONTOUR_VERTICES_COUNT,
                   Location,
                   Orientation,
-                  Relation)
+                  Relation,
+                  hints as _hints)
 from rene._bentley_ottmann.base import (Intersection,
                                         sweep)
 from rene._context import Context
 from rene._utils import (are_contour_vertices_non_degenerate,
                          to_arg_min,
                          to_contour_orientation)
-from rene.hints import (Box,
-                        Point,
-                        Segment)
 
 
 class Contour:
     @property
-    def bounding_box(self) -> Box[Fraction]:
+    def bounding_box(self) -> _hints.Box[Fraction]:
         vertices = iter(self._vertices)
         first_vertex = next(vertices)
         min_x = max_x = first_vertex.x
@@ -46,7 +44,7 @@ class Contour:
         return to_contour_orientation(vertices, min_vertex_index)
 
     @property
-    def segments(self) -> _t.Sequence[Segment[Fraction]]:
+    def segments(self) -> _t.Sequence[_hints.Segment[Fraction]]:
         segment_cls = self._context.segment_cls
         result = [segment_cls(self._vertices[index], self._vertices[index + 1])
                   for index in range(len(self.vertices) - 1)]
@@ -59,7 +57,7 @@ class Contour:
         return len(self._vertices)
 
     @property
-    def vertices(self) -> _t.Sequence[Point[Fraction]]:
+    def vertices(self) -> _t.Sequence[_hints.Point[Fraction]]:
         return self._vertices[:]
 
     @property
@@ -79,19 +77,19 @@ class Contour:
             neighbour_segments_touches_count += 1
         return neighbour_segments_touches_count == len(segments)
 
-    def locate(self, point: Point[Fraction]) -> Location:
+    def locate(self, point: _hints.Point[Fraction]) -> Location:
         return (Location.EXTERIOR
                 if all(segment.locate(point) is Location.EXTERIOR
                        for segment in self.segments)
                 else Location.BOUNDARY)
 
     _context: _t.ClassVar[Context[Fraction]]
-    _vertices: _t.List[Point[Fraction]]
+    _vertices: _t.List[_hints.Point[Fraction]]
 
     __module__ = 'rene.exact'
     __slots__ = '_vertices',
 
-    def __new__(cls, vertices: _t.Sequence[Point[Fraction]]) -> Contour:
+    def __new__(cls, vertices: _t.Sequence[_hints.Point[Fraction]]) -> Contour:
         if len(vertices) < MIN_CONTOUR_VERTICES_COUNT:
             raise ValueError('Contour should have at least '
                              f'{MIN_CONTOUR_VERTICES_COUNT} vertices, '
@@ -100,7 +98,7 @@ class Contour:
         self._vertices = list(vertices)
         return self
 
-    def __contains__(self, point: Point[Fraction]) -> bool:
+    def __contains__(self, point: _hints.Point[Fraction]) -> bool:
         return self.locate(point) is not Location.EXTERIOR
 
     @_t.overload
@@ -141,7 +139,7 @@ class Contour:
 
 def _neighbour_segments_vertices_touch(
         intersection: Intersection[Fraction],
-        segments: _t.Sequence[Segment[Fraction]]
+        segments: _t.Sequence[_hints.Segment[Fraction]]
 ) -> bool:
     first_segment = segments[intersection.first_segment_id]
     second_segment = segments[intersection.second_segment_id]
