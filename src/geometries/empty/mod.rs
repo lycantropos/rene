@@ -4,6 +4,7 @@ mod default;
 mod difference;
 mod from;
 mod intersection;
+mod locatable;
 mod symmetric_difference;
 mod types;
 mod union;
