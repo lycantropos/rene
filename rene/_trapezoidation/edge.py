@@ -54,6 +54,6 @@ class Edge(_t.Generic[_hints.Scalar]):
             return (left_orientation is Orientation.CLOCKWISE
                     if right_orientation is Orientation.COLLINEAR
                     # crossing edges are incomparable
-                    else NotImplemented)
+                    else False)
 
     __repr__ = generate_repr(__init__)
