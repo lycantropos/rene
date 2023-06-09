@@ -52,8 +52,10 @@ class Trapezoidation:
     __module__ = 'rene.exact'
     __slots__ = '_raw',
 
-    def __init__(self, _raw: _RawTrapezoidation[_Fraction]) -> None:
+    def __new__(cls, _raw: _RawTrapezoidation[_Fraction]) -> _te.Self:
+        self = super().__new__(cls)
         self._raw = _raw
+        return self
 
     def __contains__(self, point: _Point) -> bool:
         return self._raw.__contains__(point)
