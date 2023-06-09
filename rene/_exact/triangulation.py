@@ -75,5 +75,7 @@ class DelaunayTriangulation:
     def __bool__(self) -> bool:
         return bool(self._raw)
 
-    def __init__(self, _raw: _RawDelaunayTriangulation[_Fraction]) -> None:
+    def __new__(cls, _raw: _RawDelaunayTriangulation[_Fraction]) -> _te.Self:
+        self = super().__new__(cls)
         self._raw = _raw
+        return self
