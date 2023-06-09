@@ -16,11 +16,13 @@ class Edge(_t.Generic[_hints.Scalar]):
     def from_endpoints(cls,
                        left_point: _hints.Point[_hints.Scalar],
                        right_point: _hints.Point[_hints.Scalar],
-                       interior_to_left: bool) -> _te.Self:
+                       interior_to_left: bool,
+                       /) -> _te.Self:
         return cls(left_point, right_point, interior_to_left)
 
     def orientation_of(self,
-                       point: _hints.Point[_hints.Scalar]) -> Orientation:
+                       point: _hints.Point[_hints.Scalar],
+                       /) -> Orientation:
         return orient(self.left_point, self.right_point, point)
 
     __slots__ = 'interior_to_left', 'left_point', 'right_point'
@@ -28,7 +30,8 @@ class Edge(_t.Generic[_hints.Scalar]):
     def __init__(self,
                  left_point: _hints.Point[_hints.Scalar],
                  right_point: _hints.Point[_hints.Scalar],
-                 interior_to_left: bool) -> None:
+                 interior_to_left: bool,
+                 /) -> None:
         assert left_point < right_point, 'Incorrect endpoints order'
         (
             self.interior_to_left, self.left_point, self.right_point

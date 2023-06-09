@@ -13,7 +13,8 @@ class YNode(Node[_hints.Scalar]):
     def locate(self,
                point: _hints.Point[_hints.Scalar],
                edges: _t.Sequence[Edge[_hints.Scalar]],
-               nodes: _t.Sequence[Node[_hints.Scalar]]) -> Location:
+               nodes: _t.Sequence[Node[_hints.Scalar]],
+               /) -> Location:
         point_orientation = edges[self.edge_index].orientation_of(point)
         return (nodes[self.above_node_index].locate(point, edges, nodes)
                 if point_orientation is Orientation.COUNTERCLOCKWISE
@@ -25,7 +26,8 @@ class YNode(Node[_hints.Scalar]):
             self,
             edge: Edge[_hints.Scalar],
             edges: _t.Sequence[Edge[_hints.Scalar]],
-            nodes: _t.Sequence[Node[_hints.Scalar]]
+            nodes: _t.Sequence[Node[_hints.Scalar]],
+            /
     ) -> Node[_hints.Scalar]:
         return nodes[
             self.above_node_index
@@ -33,7 +35,7 @@ class YNode(Node[_hints.Scalar]):
             else self.below_node_index
         ]
 
-    def to_height(self, nodes: _t.Sequence[Node[_hints.Scalar]]) -> int:
+    def to_height(self, nodes: _t.Sequence[Node[_hints.Scalar]], /) -> int:
         return max(nodes[self.below_node_index].to_height(nodes),
                    nodes[self.above_node_index].to_height(nodes)) + 1
 
@@ -42,7 +44,8 @@ class YNode(Node[_hints.Scalar]):
     def __init__(self,
                  edge_index: int,
                  below_node_index: int,
-                 above_node_index: int) -> None:
+                 above_node_index: int,
+                 /) -> None:
         self.above_node_index, self.below_node_index, self.edge_index = (
             above_node_index, below_node_index, edge_index
         )

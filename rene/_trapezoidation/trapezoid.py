@@ -10,7 +10,7 @@ from .edge import Edge
 
 
 class Trapezoid(_t.Generic[_hints.Scalar]):
-    def is_component(self, edges: _t.Sequence[Edge[_hints.Scalar]]) -> bool:
+    def is_component(self, edges: _t.Sequence[Edge[_hints.Scalar]], /) -> bool:
         """
         Checks if the trapezoid is a component of decomposed geometry.
         """
@@ -33,28 +33,28 @@ class Trapezoid(_t.Generic[_hints.Scalar]):
     def upper_right_leaf_index(self) -> _t.Optional[int]:
         return self._upper_right_leaf_index
 
-    def set_as_lower_left(self, value: _t.Optional[_te.Self]) -> None:
+    def set_as_lower_left(self, value: _t.Optional[_te.Self], /) -> None:
         if value is None:
             self._lower_left_leaf_index = None
         else:
             self._lower_left_leaf_index = value.leaf_index
             value._lower_right_leaf_index = self.leaf_index
 
-    def set_as_lower_right(self, value: _t.Optional[_te.Self]) -> None:
+    def set_as_lower_right(self, value: _t.Optional[_te.Self], /) -> None:
         if value is None:
             self._lower_right_leaf_index = None
         else:
             self._lower_right_leaf_index = value.leaf_index
             value._lower_left_leaf_index = self.leaf_index
 
-    def set_as_upper_left(self, value: _t.Optional[_te.Self]) -> None:
+    def set_as_upper_left(self, value: _t.Optional[_te.Self], /) -> None:
         if value is None:
             self._upper_left_leaf_index = None
         else:
             self._upper_left_leaf_index = value.leaf_index
             value._upper_right_leaf_index = self.leaf_index
 
-    def set_as_upper_right(self, value: _t.Optional[_te.Self]) -> None:
+    def set_as_upper_right(self, value: _t.Optional[_te.Self], /) -> None:
         if value is None:
             self._upper_right_leaf_index = None
         else:
@@ -78,10 +78,7 @@ class Trapezoid(_t.Generic[_hints.Scalar]):
                  below_edge_index: int,
                  above_edge_index: int,
                  leaf_index: int,
-                 _lower_left_leaf_index: _t.Optional[int] = None,
-                 _lower_right_leaf_index: _t.Optional[int] = None,
-                 _upper_left_leaf_index: _t.Optional[int] = None,
-                 _upper_right_leaf_index: _t.Optional[int] = None) -> None:
+                 /) -> None:
         assert left_point < right_point, 'Incorrect endpoints order'
         (
             self.above_edge_index, self.below_edge_index, self.left_point,

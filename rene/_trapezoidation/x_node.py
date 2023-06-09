@@ -12,7 +12,8 @@ class XNode(Node[_hints.Scalar]):
     def locate(self,
                point: _hints.Point[_hints.Scalar],
                edges: _t.Sequence[Edge[_hints.Scalar]],
-               nodes: _t.Sequence[Node[_hints.Scalar]]) -> Location:
+               nodes: _t.Sequence[Node[_hints.Scalar]],
+               /) -> Location:
         return (nodes[self.left_node_index].locate(point, edges, nodes)
                 if point < self.point
                 else (nodes[self.right_node_index].locate(point, edges, nodes)
@@ -23,7 +24,8 @@ class XNode(Node[_hints.Scalar]):
             self,
             edge: Edge[_hints.Scalar],
             edges: _t.Sequence[Edge[_hints.Scalar]],
-            nodes: _t.Sequence[Node[_hints.Scalar]]
+            nodes: _t.Sequence[Node[_hints.Scalar]],
+            /
     ) -> Node[_hints.Scalar]:
         return nodes[
             self.left_node_index
@@ -31,7 +33,7 @@ class XNode(Node[_hints.Scalar]):
             else self.right_node_index
         ]
 
-    def to_height(self, nodes: _t.Sequence[Node[_hints.Scalar]]) -> int:
+    def to_height(self, nodes: _t.Sequence[Node[_hints.Scalar]], /) -> int:
         return max(nodes[self.left_node_index].to_height(nodes),
                    nodes[self.right_node_index].to_height(nodes)) + 1
 
@@ -40,7 +42,8 @@ class XNode(Node[_hints.Scalar]):
     def __init__(self,
                  point: _hints.Point[_hints.Scalar],
                  left_node_index: int,
-                 right_node_index: int) -> None:
+                 right_node_index: int,
+                 /) -> None:
         self.left_node_index, self.point, self.right_node_index = (
             left_node_index, point, right_node_index
         )
