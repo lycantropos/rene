@@ -49,6 +49,6 @@ def test_locate(multisegment: Multisegment, seeder: Seeder) -> None:
 @given(strategies.multisegments, strategies.invalid_seeds)
 def test_invalid_seeders(multisegment: Multisegment,
                          invalid_seed: Any) -> None:
-    with pytest.raises((ValueError, TypeError)):
+    with pytest.raises((OverflowError, TypeError, ValueError)):
         Trapezoidation.from_multisegment(multisegment,
                                          seeder=lambda: invalid_seed)
