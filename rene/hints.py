@@ -318,6 +318,9 @@ class Contour(_SelfComparable, Multisegmental[Segment[Scalar]],
     def __new__(cls, vertices: _t.Sequence[Point[Scalar]]) -> _te.Self:
         ...
 
+    def __contains__(self, point: Point[Scalar]) -> bool:
+        ...
+
     def __hash__(self) -> int:
         ...
 

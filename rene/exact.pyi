@@ -118,6 +118,9 @@ class Contour:
     def __new__(cls, vertices: _t.Sequence[Point]) -> _te.Self:
         ...
 
+    def __contains__(self, point: Point) -> bool:
+        ...
+
     @_t.overload
     def __eq__(self, other: Contour) -> bool:
         ...
