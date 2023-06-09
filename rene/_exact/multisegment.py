@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import typing as _t
 
+import typing_extensions as _te
 from reprit.base import generate_repr
 from rithm.fraction import Fraction
 
@@ -62,9 +63,8 @@ class Multisegment:
     __module__ = 'rene.exact'
     __slots__ = '_segments',
 
-    def __new__(
-            cls, segments: _t.Sequence[_hints.Segment[Fraction]]
-    ) -> Multisegment:
+    def __new__(cls,
+                segments: _t.Sequence[_hints.Segment[Fraction]]) -> _te.Self:
         if len(segments) < MIN_MULTISEGMENT_SEGMENTS_COUNT:
             raise ValueError('Multisegment should have at least '
                              f'{MIN_MULTISEGMENT_SEGMENTS_COUNT} segments, '
