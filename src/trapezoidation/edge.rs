@@ -64,7 +64,8 @@ impl<Point: PartialEq + Orient> PartialOrd for Edge<Point> {
                     Some(Ordering::Greater)
                 }
             } else {
-                unreachable!("Crossing edges are incomparable.")
+                // crossing edges are incomparable
+                None
             }
         }
     }
