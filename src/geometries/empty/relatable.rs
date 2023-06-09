@@ -16,40 +16,24 @@ impl<Scalar> Relatable<&Contour<Scalar>> for &Empty {
 }
 
 impl<Scalar> Relatable<&Multipolygon<Scalar>> for &Empty {
-    fn equals_to(self, _other: &Multipolygon<Scalar>) -> bool {
-        false
-    }
-
     fn relate_to(self, _other: &Multipolygon<Scalar>) -> Relation {
         Relation::Disjoint
     }
 }
 
 impl<Scalar> Relatable<&Multisegment<Scalar>> for &Empty {
-    fn equals_to(self, _other: &Multisegment<Scalar>) -> bool {
-        false
-    }
-
     fn relate_to(self, _other: &Multisegment<Scalar>) -> Relation {
         Relation::Disjoint
     }
 }
 
 impl<Scalar> Relatable<&Polygon<Scalar>> for &Empty {
-    fn equals_to(self, _other: &Polygon<Scalar>) -> bool {
-        false
-    }
-
     fn relate_to(self, _other: &Polygon<Scalar>) -> Relation {
         Relation::Disjoint
     }
 }
 
 impl<Scalar> Relatable<&Segment<Scalar>> for &Empty {
-    fn equals_to(self, _other: &Segment<Scalar>) -> bool {
-        false
-    }
-
     fn relate_to(self, _other: &Segment<Scalar>) -> Relation {
         Relation::Disjoint
     }
