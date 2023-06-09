@@ -91,5 +91,3 @@ class Trapezoid(_t.Generic[_hints.Scalar]):
         self._upper_left_leaf_index = self._upper_right_leaf_index = None
 
     __repr__ = generate_repr(__init__)
-    __str__ = generate_repr(__init__,
-                            argument_serializer=str)
