@@ -87,6 +87,9 @@ class Trapezoidation(_t.Generic[_hints.Scalar]):
 
     __slots__ = '_edges', '_nodes'
 
+    _edges: _t.Sequence[Edge[_hints.Scalar]]
+    _nodes: _t.Sequence[Node[_hints.Scalar]]
+
     def __new__(cls,
                 edges: _t.Sequence[Edge[_hints.Scalar]],
                 nodes: _t.Sequence[Node[_hints.Scalar]],
