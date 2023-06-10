@@ -47,8 +47,10 @@ def relate_to_contour(
                     has_no_cross = False
             last_touched_edge_index = index
             last_touched_edge_start = contour_segment_start
-        elif has_no_cross and relation is Relation.CROSS:
-            has_no_cross = False
+        else:
+            assert relation is Relation.CROSS, relation
+            if has_no_cross:
+                has_no_cross = False
     if (has_no_cross
             and not has_no_touch
             and last_touched_edge_index == contour.vertices_count - 1):
