@@ -11,6 +11,8 @@ from .trapezoid import Trapezoid
 
 
 class Leaf(Node[hints.Scalar]):
+    trapezoid: Trapezoid[hints.Scalar]
+
     def locate(self,
                point: hints.Point[hints.Scalar],
                edges: t.Sequence[Edge[hints.Scalar]],
@@ -32,7 +34,9 @@ class Leaf(Node[hints.Scalar]):
 
     __slots__ = 'trapezoid',
 
-    def __init__(self, trapezoid: Trapezoid[hints.Scalar], /) -> None:
+    def __new__(cls, trapezoid: Trapezoid[hints.Scalar], /) -> te.Self:
+        self = super().__new__(cls)
         self.trapezoid = trapezoid
+        return self
 
-    __repr__ = generate_repr(__init__)
+    __repr__ = generate_repr(__new__)

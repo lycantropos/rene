@@ -15,10 +15,6 @@ from rene._utils import locate_point_in_segment
 
 
 class Segment:
-    _context: Context[Fraction]
-    _end: hints.Point[Fraction]
-    _start: hints.Point[Fraction]
-
     @property
     def bounding_box(self) -> hints.Box[Fraction]:
         return self._context.box_cls(min(self._end.x, self._start.x),
@@ -46,6 +42,10 @@ class Segment:
         elif isinstance(other, self._context.contour_cls):
             return segment.relate_to_contour(self, other)
         raise TypeError(f'Unsupported type: {type(other)!r}.')
+
+    _context: t.ClassVar[Context[Fraction]]
+    _end: hints.Point[Fraction]
+    _start: hints.Point[Fraction]
 
     __module__ = 'rene.exact'
     __slots__ = '_end', '_start'

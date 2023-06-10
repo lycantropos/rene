@@ -13,17 +13,23 @@ from .event import (Event,
 
 
 class EventsQueueKey(t.Generic[Scalar]):
+    endpoints: Map[Event, Point[Scalar]]
+    opposites: Map[Event, Event]
+    event: Event
+
     __slots__ = 'endpoints', 'event', 'opposites'
 
-    def __init__(self,
-                 endpoints: Map[Event, Point[Scalar]],
-                 opposites: Map[Event, Event],
-                 event: Event,
-                 /) -> None:
+    def __new__(cls,
+                endpoints: Map[Event, Point[Scalar]],
+                opposites: Map[Event, Event],
+                event: Event,
+                /) -> te.Self:
+        self = super().__new__(cls)
         self.endpoints, self.event, self.opposites = (endpoints, event,
                                                       opposites)
+        return self
 
-    __repr__ = generate_repr(__init__)
+    __repr__ = generate_repr(__new__)
 
     def __lt__(self, other: te.Self, /) -> bool:
         """

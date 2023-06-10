@@ -1,5 +1,6 @@
 import typing as t
 
+import typing_extensions as te
 from reprit.base import generate_repr
 
 from rene import (Location,
@@ -10,6 +11,10 @@ from .node import Node
 
 
 class YNode(Node[hints.Scalar]):
+    above_node_index: int
+    below_node_index: int
+    edge_index: int
+
     def locate(self,
                point: hints.Point[hints.Scalar],
                edges: t.Sequence[Edge[hints.Scalar]],
@@ -39,13 +44,15 @@ class YNode(Node[hints.Scalar]):
 
     __slots__ = 'above_node_index', 'below_node_index', 'edge_index'
 
-    def __init__(self,
-                 edge_index: int,
-                 below_node_index: int,
-                 above_node_index: int,
-                 /) -> None:
+    def __new__(cls,
+                edge_index: int,
+                below_node_index: int,
+                above_node_index: int,
+                /) -> te.Self:
+        self = super().__new__(cls)
         self.above_node_index, self.below_node_index, self.edge_index = (
             above_node_index, below_node_index, edge_index
         )
+        return self
 
-    __repr__ = generate_repr(__init__)
+    __repr__ = generate_repr(__new__)

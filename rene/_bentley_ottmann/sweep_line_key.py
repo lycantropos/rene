@@ -3,25 +3,31 @@ import typing as t
 import typing_extensions as te
 from reprit.base import generate_repr
 
+from rene import hints
 from rene._hints import Map
 from rene._rene import Orientation
 from rene._utils import orient
-from rene.hints import Point, Scalar
 from .event import Event
 
 
-class SweepLineKey(t.Generic[Scalar]):
+class SweepLineKey(t.Generic[hints.Scalar]):
+    endpoints: Map[Event, hints.Point[hints.Scalar]]
+    opposites: Map[Event, Event]
+    event: Event
+
     __slots__ = 'endpoints', 'event', 'opposites'
 
-    def __init__(self,
-                 endpoints: Map[Event, Point[Scalar]],
-                 opposites: Map[Event, Event],
-                 event: Event,
-                 /) -> None:
+    def __new__(cls,
+                endpoints: Map[Event, hints.Point[hints.Scalar]],
+                opposites: Map[Event, Event],
+                event: Event,
+                /) -> te.Self:
+        self = super().__new__(cls)
         self.endpoints, self.event, self.opposites = (endpoints, event,
                                                       opposites)
+        return self
 
-    __repr__ = generate_repr(__init__)
+    __repr__ = generate_repr(__new__)
 
     def __lt__(self, other: te.Self, /) -> bool:
         """

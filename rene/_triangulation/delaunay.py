@@ -72,15 +72,21 @@ class DelaunayTriangulation(t.Generic[Scalar]):
                 result.append((first_vertex, second_vertex, third_vertex))
         return result
 
+    _left_side: QuadEdge
+    _right_side: QuadEdge
+    _mesh: Mesh[Scalar]
+
     __slots__ = '_left_side', '_mesh', '_right_side'
 
-    def __init__(self,
-                 left_side: QuadEdge,
-                 right_side: QuadEdge,
-                 mesh: Mesh[Scalar],
-                 /) -> None:
+    def __new__(cls,
+                left_side: QuadEdge,
+                right_side: QuadEdge,
+                mesh: Mesh[Scalar],
+                /) -> te.Self:
+        self = super().__new__(cls)
         self._left_side, self._mesh, self._right_side = (
             left_side, mesh, right_side
         )
+        return self
 
-    __repr__ = generate_repr(__init__)
+    __repr__ = generate_repr(__new__)

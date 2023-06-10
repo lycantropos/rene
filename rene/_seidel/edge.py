@@ -12,6 +12,10 @@ from rene._utils import orient
 
 
 class Edge(t.Generic[hints.Scalar]):
+    left_point: hints.Point[hints.Scalar]
+    right_point: hints.Point[hints.Scalar]
+    interior_to_left: bool
+
     @classmethod
     def from_endpoints(cls,
                        left_point: hints.Point[hints.Scalar],
@@ -27,15 +31,19 @@ class Edge(t.Generic[hints.Scalar]):
 
     __slots__ = 'interior_to_left', 'left_point', 'right_point'
 
-    def __init__(self,
-                 left_point: hints.Point[hints.Scalar],
-                 right_point: hints.Point[hints.Scalar],
-                 interior_to_left: bool,
-                 /) -> None:
+    def __new__(cls,
+                left_point: hints.Point[hints.Scalar],
+                right_point: hints.Point[hints.Scalar],
+                interior_to_left: bool,
+                /) -> te.Self:
         assert left_point < right_point, 'Incorrect endpoints order'
+        self = super().__new__(cls)
         (
             self.interior_to_left, self.left_point, self.right_point
         ) = interior_to_left, left_point, right_point
+        return self
+
+    __repr__ = generate_repr(__new__)
 
     def __lt__(self, other: te.Self, /) -> Any:
         """Checks if the edge is lower than the other."""
@@ -58,5 +66,3 @@ class Edge(t.Generic[hints.Scalar]):
                     if right_orientation is Orientation.COLLINEAR
                     # crossing edges are incomparable
                     else False)
-
-    __repr__ = generate_repr(__init__)

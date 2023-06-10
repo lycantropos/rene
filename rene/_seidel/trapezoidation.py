@@ -85,10 +85,10 @@ class Trapezoidation(t.Generic[hints.Scalar]):
         """
         return self._root.locate(point, self._edges, self._nodes)
 
-    __slots__ = '_edges', '_nodes'
-
     _edges: t.Sequence[Edge[hints.Scalar]]
     _nodes: t.Sequence[Node[hints.Scalar]]
+
+    __slots__ = '_edges', '_nodes'
 
     def __new__(cls,
                 edges: t.Sequence[Edge[hints.Scalar]],

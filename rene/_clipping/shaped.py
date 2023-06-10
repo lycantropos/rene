@@ -48,10 +48,6 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         self._current_endpoint_first_event = first_event
         return self
 
-    @property
-    def segments_count(self) -> int:
-        return self._first_segments_count + self._second_segments_count
-
     def reduce_events(
             self,
             events: t.List[Event],
@@ -130,34 +126,35 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         return self.to_event_start(self._to_opposite_event(event))
 
     def to_event_start(self, event: Event, /) -> hints.Point[hints.Scalar]:
-        return self._endpoints[event]
+        return self.endpoints[event]
 
     _sweep_line_data: KeyedSet[SweepLineKey[hints.Scalar], Event]
 
     __slots__ = (
-        '_first_segments_count', '_are_from_result',
+        'first_segments_count', '_are_from_result',
         '_other_have_interior_to_left', '_below_event_from_result',
-        '_current_endpoint_first_event', '_current_endpoint_id', '_endpoints',
-        '_events_queue_data', '_have_interior_to_left', '_opposites',
+        '_current_endpoint_first_event', '_current_endpoint_id', 'endpoints',
+        '_events_queue_data', 'have_interior_to_left', '_opposites',
         '_overlap_kinds', '_segments_ids', '_starts_ids', '_sweep_line_data'
     )
 
     def __init__(self,
-                 _first_segments_count: int,
-                 _second_segments_count: int,
-                 _endpoints: t.List[hints.Point[hints.Scalar]],
-                 _have_interior_to_left: t.Sequence[bool],
+                 first_segments_count: int,
+                 second_segments_count: int,
+                 endpoints: t.List[hints.Point[hints.Scalar]],
+                 have_interior_to_left: t.Sequence[bool],
                  /) -> None:
-        segments_count = _first_segments_count + _second_segments_count
+        (
+            self.endpoints, self.first_segments_count,
+            self.have_interior_to_left, self.second_segments_count
+        ) = (endpoints, first_segments_count, have_interior_to_left,
+             second_segments_count)
+        segments_count = first_segments_count + second_segments_count
         initial_events_count = 2 * segments_count
-        self._first_segments_count = _first_segments_count
-        self._second_segments_count = _second_segments_count
         self._are_from_result = [False] * segments_count
         self._below_event_from_result = [UNDEFINED_EVENT] * segments_count
         self._current_endpoint_first_event = UNDEFINED_EVENT
         self._current_endpoint_id = 0
-        self._endpoints = _endpoints
-        self._have_interior_to_left = _have_interior_to_left
         self._opposites = [Event(((index >> 1) << 1) + is_even(index))
                            for index in range(initial_events_count)]
         self._other_have_interior_to_left = [False] * segments_count
@@ -173,7 +170,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 key=lambda event: EventsQueueKey(
                         event,
                         self._is_from_first_operand_event(event),
-                        self._endpoints, self._opposites
+                        self.endpoints, self._opposites
                 )
         )
         self._sweep_line_data = red_black.set_(key=self._to_sweep_line_key)
@@ -223,7 +220,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
 
     @property
     def _events_count(self) -> int:
-        return len(self._endpoints)
+        return len(self.endpoints)
 
     @property
     def _unique_visited_endpoints_count(self) -> int:
@@ -261,7 +258,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 self._other_have_interior_to_left[below_event_position]
                 if (self._is_left_event_from_first_operand(event)
                     is self._is_left_event_from_first_operand(below_event))
-                else self._have_interior_to_left[
+                else self.have_interior_to_left[
                     self._left_event_to_segment_id(below_event)
                 ]
             )
@@ -386,9 +383,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                     self._push(min_end_max_end_event)
                 overlap_kind = (
                     OverlapKind.SAME_ORIENTATION
-                    if self._have_interior_to_left[
+                    if self.have_interior_to_left[
                            self._left_event_to_segment_id(event)
-                       ] is self._have_interior_to_left[
+                       ] is self.have_interior_to_left[
                            self._left_event_to_segment_id(below_event)
                        ]
                     else OverlapKind.DIFFERENT_ORIENTATION
@@ -439,9 +436,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
     ) -> t.Tuple[Event, Event]:
         assert is_left_event(event)
         opposite_event = self._to_opposite_event(event)
-        mid_point_to_event_end_event: Event = Event(len(self._endpoints))
+        mid_point_to_event_end_event: Event = Event(len(self.endpoints))
         self._segments_ids.append(self._left_event_to_segment_id(event))
-        self._endpoints.append(mid_point)
+        self.endpoints.append(mid_point)
         self._opposites.append(opposite_event)
         self._opposites[opposite_event] = mid_point_to_event_end_event
         self._other_have_interior_to_left.append(False)
@@ -449,8 +446,8 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         self._below_event_from_result.append(UNDEFINED_EVENT)
         self._overlap_kinds.append(OverlapKind.NONE)
         self._starts_ids.append(UNDEFINED_INDEX)
-        mid_point_to_event_start_event = Event(len(self._endpoints))
-        self._endpoints.append(mid_point)
+        mid_point_to_event_start_event = Event(len(self.endpoints))
+        self.endpoints.append(mid_point)
         self._opposites.append(event)
         self._opposites[event] = mid_point_to_event_start_event
         self._starts_ids.append(UNDEFINED_INDEX)
@@ -566,7 +563,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
 
     def _is_left_event_from_first_operand(self, event: Event, /) -> bool:
         return (self._left_event_to_segment_id(event)
-                < self._first_segments_count)
+                < self.first_segments_count)
 
     def _is_outside_left_event(self, event: Event, /) -> bool:
         event_position = left_event_to_position(event)
@@ -686,7 +683,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
     ) -> SweepLineKey[hints.Scalar]:
         return SweepLineKey(
                 event, self._is_left_event_from_first_operand(event),
-                self._endpoints, self._opposites
+                self.endpoints, self._opposites
         )
 
 

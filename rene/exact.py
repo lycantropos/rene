@@ -64,9 +64,9 @@ else:
         def locate(self, point: Point, /) -> _Location:
             return self._raw.locate(point)
 
-        __slots__ = '_raw',
-
         _raw: _RawTrapezoidation
+
+        __slots__ = '_raw',
 
         def __new__(cls, raw: _RawTrapezoidation, /) -> _te.Self:
             self = super().__new__(cls)

@@ -61,16 +61,16 @@ class Trapezoid(t.Generic[hints.Scalar]):
             self._upper_right_leaf_index = value.leaf_index
             value._upper_left_leaf_index = self.leaf_index
 
+    _lower_left_leaf_index: t.Optional[int]
+    _lower_right_leaf_index: t.Optional[int]
+    _upper_left_leaf_index: t.Optional[int]
+    _upper_right_leaf_index: t.Optional[int]
+
     __slots__ = (
         'above_edge_index', 'below_edge_index', 'leaf_index', 'left_point',
         'right_point', '_lower_left_leaf_index', '_lower_right_leaf_index',
         '_upper_left_leaf_index', '_upper_right_leaf_index'
     )
-
-    _lower_left_leaf_index: t.Optional[int]
-    _lower_right_leaf_index: t.Optional[int]
-    _upper_left_leaf_index: t.Optional[int]
-    _upper_right_leaf_index: t.Optional[int]
 
     def __init__(self,
                  left_point: hints.Point[hints.Scalar],

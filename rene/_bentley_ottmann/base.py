@@ -1,6 +1,7 @@
 import typing as t
 from itertools import combinations
 
+import typing_extensions as te
 from reprit.base import generate_repr
 
 from rene import (Relation,
@@ -29,22 +30,30 @@ class Intersection(t.Generic[hints.Scalar]):
     def start(self) -> hints.Point[hints.Scalar]:
         return self._start
 
+    _end: hints.Point[hints.Scalar]
+    _first_segment_id: int
+    _relation: Relation
+    _second_segment_id: int
+    _start: hints.Point[hints.Scalar]
+
     __slots__ = ('_end', '_first_segment_id', '_relation',
                  '_second_segment_id', '_start')
 
-    def __init__(self,
-                 first_segment_id: int,
-                 second_segment_id: int,
-                 relation: Relation,
-                 start: hints.Point[hints.Scalar],
-                 end: hints.Point[hints.Scalar],
-                 /) -> None:
+    def __new__(cls,
+                first_segment_id: int,
+                second_segment_id: int,
+                relation: Relation,
+                start: hints.Point[hints.Scalar],
+                end: hints.Point[hints.Scalar],
+                /) -> te.Self:
+        self = super().__new__(cls)
         (
             self._end, self._first_segment_id, self._relation,
             self._second_segment_id, self._start
         ) = end, first_segment_id, relation, second_segment_id, start
+        return self
 
-    __repr__ = generate_repr(__init__)
+    __repr__ = generate_repr(__new__)
 
 
 def sweep(
