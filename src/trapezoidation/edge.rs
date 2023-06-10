@@ -56,17 +56,15 @@ impl<Point: PartialEq + Orient> PartialOrd for Edge<Point> {
             } else {
                 Some(Ordering::Greater)
             }
-        } else {
-            if right_orientation == Orientation::Collinear {
-                if left_orientation == Orientation::Clockwise {
-                    Some(Ordering::Less)
-                } else {
-                    Some(Ordering::Greater)
-                }
+        } else if right_orientation == Orientation::Collinear {
+            if left_orientation == Orientation::Clockwise {
+                Some(Ordering::Less)
             } else {
-                // crossing edges are incomparable
-                None
+                Some(Ordering::Greater)
             }
+        } else {
+            // crossing edges are incomparable
+            None
         }
     }
 }
