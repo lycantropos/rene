@@ -70,11 +70,11 @@ class Context(Generic[hints.Scalar]):
                 segment_cls: Type[hints.Segment[hints.Scalar]]) -> te.Self:
         self = super().__new__(cls)
         (
-            self._box_cls, self._empty_cls, self._multipolygon_cls,
-            self._multisegment_cls, self._point_cls, self._polygon_cls,
-            self._segment_cls
-        ) = (box_cls, empty_cls, multipolygon_cls, multisegment_cls, point_cls,
-             polygon_cls, segment_cls)
+            self._box_cls, self._contour_cls, self._empty_cls,
+            self._multipolygon_cls, self._multisegment_cls, self._point_cls,
+            self._polygon_cls, self._segment_cls
+        ) = (box_cls, contour_cls, empty_cls, multipolygon_cls,
+             multisegment_cls, point_cls, polygon_cls, segment_cls)
         return self
 
     __repr__ = generate_repr(__new__,
