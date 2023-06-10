@@ -25,8 +25,7 @@ class EventsRegistry(_t.Generic[_hints.Scalar]):
     def from_segments(cls,
                       segments: _t.Sequence[_hints.Segment[_hints.Scalar]],
                       *,
-                      unique: bool,
-                      /) -> EventsRegistry[_hints.Scalar]:
+                      unique: bool) -> EventsRegistry[_hints.Scalar]:
         result = cls(unique=unique)
         for segment_id, segment in enumerate(segments):
             left_event = segment_id_to_left_event(segment_id)
@@ -80,7 +79,7 @@ class EventsRegistry(_t.Generic[_hints.Scalar]):
                  '_min_collinear_segments_ids', '_opposites', '_segments_ids',
                  '_sweep_line_data', '_unique')
 
-    def __init__(self, *, unique: bool, /) -> None:
+    def __init__(self, *, unique: bool) -> None:
         self._unique = unique
         self._opposites: _t.List[Event] = []
         self._endpoints: _t.List[_hints.Point[_hints.Scalar]] = []
