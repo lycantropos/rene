@@ -86,7 +86,6 @@ where
 
 pub(crate) fn to_unique_non_crossing_or_overlapping_segments<
     Point: Clone,
-    Scalar,
     Segment: From<(Point, Point)> + Segmental<Endpoint = Point>,
 >(
     segments: &[Segment],
