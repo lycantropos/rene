@@ -9,8 +9,8 @@ from typing import (Callable,
 
 from rene import (MIN_CONTOUR_VERTICES_COUNT,
                   exact)
-from rene._rene import (Location,
-                        Orientation)
+from rene import (Location,
+                  Orientation)
 from rene._utils import (deduplicate,
                          locate_point_in_point_point_point_circle,
                          orient)
