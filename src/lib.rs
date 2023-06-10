@@ -408,22 +408,27 @@ impl PyExactBox {
         try_fraction_to_py_fraction(self.0.get_min_y())
     }
 
+    #[pyo3(signature = (other, /))]
     fn covers(&self, other: &Self) -> bool {
         self.0.covers(&other.0)
     }
 
+    #[pyo3(signature = (other, /))]
     fn disjoint_with(&self, other: &Self) -> bool {
         self.0.disjoint_with(&other.0)
     }
 
+    #[pyo3(signature = (other, /))]
     fn enclosed_by(&self, other: &Self) -> bool {
         self.0.enclosed_by(&other.0)
     }
 
+    #[pyo3(signature = (other, /))]
     fn encloses(&self, other: &Self) -> bool {
         self.0.encloses(&other.0)
     }
 
+    #[pyo3(signature = (other, /))]
     fn equals_to(&self, other: &Self) -> bool {
         self.0.equals_to(&other.0)
     }
@@ -432,18 +437,22 @@ impl PyExactBox {
         self.0.get_min_x() <= self.0.get_max_x() && self.0.get_min_y() <= self.0.get_max_y()
     }
 
+    #[pyo3(signature = (other, /))]
     fn overlaps(&self, other: &Self) -> bool {
         self.0.overlaps(&other.0)
     }
 
+    #[pyo3(signature = (other, /))]
     fn relate_to(&self, other: &Self) -> PyResult<&PyAny> {
         try_relation_to_py_relation(self.0.relate_to(&other.0))
     }
 
+    #[pyo3(signature = (other, /))]
     fn touches(&self, other: &Self) -> bool {
         self.0.touches(&other.0)
     }
 
+    #[pyo3(signature = (other, /))]
     fn within(&self, other: &Self) -> bool {
         self.0.within(&other.0)
     }
@@ -494,6 +503,7 @@ impl PyExactBox {
 #[pymethods]
 impl PyExactConstrainedDelaunayTriangulation {
     #[classmethod]
+    #[pyo3(signature = (polygon, /))]
     fn from_polygon(_: &PyType, polygon: &PyExactPolygon) -> Self {
         PyExactConstrainedDelaunayTriangulation(ConstrainedDelaunayTriangulation::from(&polygon.0))
     }
@@ -631,6 +641,7 @@ impl PyExactContour {
 #[pymethods]
 impl PyExactDelaunayTriangulation {
     #[classmethod]
+    #[pyo3(signature = (points, /))]
     fn from_points(_: &PyType, points: &PySequence) -> PyResult<Self> {
         Ok(PyExactDelaunayTriangulation(DelaunayTriangulation::from(
             extract_from_sequence::<PyExactPoint, ExactPoint>(points)?,
@@ -1341,6 +1352,7 @@ impl PyExactSegment {
         PyExactPoint(self.0.start())
     }
 
+    #[pyo3(signature = (other, /))]
     fn relate_to(&self, other: &Self) -> PyResult<&PyAny> {
         try_relation_to_py_relation(self.0.relate_to(&other.0))
     }
