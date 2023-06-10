@@ -8,7 +8,7 @@ use crate::bounded::Box;
 use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 use crate::locatable::Location;
 use crate::oriented::Orientation;
-use crate::relatable::{Relatable, Relation};
+use crate::relatable::Relatable;
 use crate::traits::{Elemental, Multisegmental, Segmental};
 
 pub(crate) fn ceil_log2<
