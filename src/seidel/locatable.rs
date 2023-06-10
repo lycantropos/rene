@@ -1,8 +1,8 @@
 use crate::locatable::{Locatable, Location};
 use crate::operations::Orient;
 use crate::oriented::Orientation;
-use crate::trapezoidation::edge::Edge;
-use crate::trapezoidation::trapezoid::Trapezoid;
+use crate::seidel::edge::Edge;
+use crate::seidel::trapezoid::Trapezoid;
 
 use super::node::Node;
 use super::trapezoidation::Trapezoidation;

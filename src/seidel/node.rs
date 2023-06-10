@@ -128,7 +128,7 @@ impl<Point> Node<Point> {
                 left_node_index,
                 right_node_index,
                 point,
-            } => &nodes[if edge.left_point.lt(point) {
+            } => nodes[if edge.left_point.lt(point) {
                 *left_node_index
             } else {
                 *right_node_index
@@ -138,7 +138,7 @@ impl<Point> Node<Point> {
                 above_node_index,
                 below_node_index,
                 edge_index,
-            } => nodes[if edges[*edge_index].lt(&edge) {
+            } => nodes[if edges[*edge_index].lt(edge) {
                 *above_node_index
             } else {
                 *below_node_index

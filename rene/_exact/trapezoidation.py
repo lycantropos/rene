@@ -7,7 +7,7 @@ import typing_extensions as _te
 from rithm.fraction import Fraction as _Fraction
 
 from rene import Location
-from rene._trapezoidation.trapezoidation import (
+from rene._seidel.trapezoidation import (
     Trapezoidation as _RawTrapezoidation
 )
 from rene._utils import validate_seed as _validate_seed

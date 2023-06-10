@@ -1,15 +1,15 @@
-use traiter::numbers::{Unitary, Zeroable};
-
 use std::ops::{Add, Sub};
+
+use traiter::numbers::{Unitary, Zeroable};
 
 use crate::bounded;
 use crate::operations::Orient;
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{Contoural, Multisegmental, Polygonal, Segmental};
-use crate::trapezoidation::node::Node;
-use crate::trapezoidation::trapezoid::Trapezoid;
 
 use super::edge::Edge;
+use super::node::Node;
+use super::trapezoid::Trapezoid;
 
 #[derive(Clone)]
 pub(crate) struct Trapezoidation<Point> {
@@ -627,7 +627,7 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
     fn maybe_set_as_lower_left(
         leaf_index: usize,
         lower_left_leaf_index: Option<usize>,
-        nodes: &mut Vec<Node<Point>>,
+        nodes: &mut [Node<Point>],
     ) {
         match lower_left_leaf_index {
             Some(lower_left_leaf_index) => {
@@ -641,7 +641,7 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
     fn maybe_set_as_lower_right(
         leaf_index: usize,
         lower_right_leaf_index: Option<usize>,
-        nodes: &mut Vec<Node<Point>>,
+        nodes: &mut [Node<Point>],
     ) {
         match lower_right_leaf_index {
             Some(lower_right_leaf_index) => {
@@ -655,7 +655,7 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
     fn maybe_set_as_upper_left(
         leaf_index: usize,
         upper_left_leaf_index: Option<usize>,
-        nodes: &mut Vec<Node<Point>>,
+        nodes: &mut [Node<Point>],
     ) {
         match upper_left_leaf_index {
             Some(upper_left_leaf_index) => {
@@ -669,7 +669,7 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
     fn maybe_set_as_upper_right(
         leaf_index: usize,
         upper_right_leaf_index: Option<usize>,
-        nodes: &mut Vec<Node<Point>>,
+        nodes: &mut [Node<Point>],
     ) {
         match upper_right_leaf_index {
             Some(upper_right_leaf_index) => {
@@ -683,18 +683,14 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
     fn set_as_lower_left(
         leaf_index: usize,
         lower_left_leaf_index: usize,
-        nodes: &mut Vec<Node<Point>>,
+        nodes: &mut [Node<Point>],
     ) {
         unsafe { &mut (*(Self::get_trapezoid_mut(leaf_index, nodes) as *mut Trapezoid<Point>)) }
             .set_as_lower_left(Self::get_trapezoid_mut(lower_left_leaf_index, nodes));
     }
 
     #[inline]
-    fn set_as_lower_right(
-        leaf_index: usize,
-        lower_right_index: usize,
-        nodes: &mut Vec<Node<Point>>,
-    ) {
+    fn set_as_lower_right(leaf_index: usize, lower_right_index: usize, nodes: &mut [Node<Point>]) {
         unsafe { &mut (*(Self::get_trapezoid_mut(leaf_index, nodes) as *mut Trapezoid<Point>)) }
             .set_as_lower_right(Self::get_trapezoid_mut(lower_right_index, nodes));
     }
@@ -703,18 +699,14 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
     fn set_as_upper_left(
         leaf_index: usize,
         upper_left_leaf_index: usize,
-        nodes: &mut Vec<Node<Point>>,
+        nodes: &mut [Node<Point>],
     ) {
         unsafe { &mut (*(Self::get_trapezoid_mut(leaf_index, nodes) as *mut Trapezoid<Point>)) }
             .set_as_upper_left(Self::get_trapezoid_mut(upper_left_leaf_index, nodes));
     }
 
     #[inline]
-    fn set_as_upper_right(
-        leaf_index: usize,
-        upper_right_index: usize,
-        nodes: &mut Vec<Node<Point>>,
-    ) {
+    fn set_as_upper_right(leaf_index: usize, upper_right_index: usize, nodes: &mut [Node<Point>]) {
         unsafe { &mut (*(Self::get_trapezoid_mut(leaf_index, nodes) as *mut Trapezoid<Point>)) }
             .set_as_upper_right(Self::get_trapezoid_mut(upper_right_index, nodes));
     }
