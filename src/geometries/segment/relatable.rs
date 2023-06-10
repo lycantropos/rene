@@ -1,6 +1,7 @@
 use crate::geometries::Point;
-use crate::operations::{segment_in_segment, Orient};
+use crate::operations::Orient;
 use crate::relatable::{Relatable, Relation};
+use crate::relating::segment;
 
 use super::types::Segment;
 
@@ -14,6 +15,6 @@ where
     }
 
     fn relate_to(self, other: Self) -> Relation {
-        segment_in_segment(&self.start, &self.end, &other.start, &other.end)
+        segment::relate_segment(&self.start, &self.end, &other.start, &other.end)
     }
 }

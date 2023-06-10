@@ -2,8 +2,9 @@ use core::convert::From;
 use std::cmp::Ordering;
 
 use crate::iteration::PairwiseCombinations;
-use crate::operations::{segment_in_segment, Orient};
+use crate::operations::Orient;
 use crate::relatable::Relation;
+use crate::relating::segment;
 
 use super::event::Event;
 use super::events_registry::EventsRegistry;
@@ -108,7 +109,7 @@ where
             };
             debug_assert_eq!(
                 relation,
-                segment_in_segment(first_start, first_end, second_start, second_end)
+                segment::relate_segment(first_start, first_end, second_start, second_end)
             );
             Some(Intersection {
                 first_segment_id,

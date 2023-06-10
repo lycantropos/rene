@@ -41,6 +41,7 @@ pub mod locatable;
 mod operations;
 pub mod oriented;
 pub mod relatable;
+mod relating;
 mod seidel;
 pub mod traits;
 mod triangulation;
