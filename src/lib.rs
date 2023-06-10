@@ -711,14 +711,23 @@ impl PyExactEmpty {
 
     fn __and__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
-        if other.is_instance(PyExactEmpty::type_object(py))? {
+        if other.is_instance(PyExactContour::type_object(py))? {
+            let other = other.extract::<PyExactContour>()?;
+            Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactEmpty::type_object(py))? {
             let other = other.extract::<PyExactEmpty>()?;
             Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
             let other = other.extract::<PyExactMultipolygon>()?;
             Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactMultisegment::type_object(py))? {
+            let other = other.extract::<PyExactMultisegment>()?;
+            Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyExactPolygon>()?;
+            Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactSegment::type_object(py))? {
+            let other = other.extract::<PyExactSegment>()?;
             Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
         } else {
             Ok(py.NotImplemented())
@@ -735,15 +744,24 @@ impl PyExactEmpty {
 
     fn __or__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
-        if other.is_instance(PyExactEmpty::type_object(py))? {
+        if other.is_instance(PyExactContour::type_object(py))? {
+            let other = other.extract::<PyExactContour>()?;
+            Ok(PyExactContour((&self.0).union(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactEmpty::type_object(py))? {
             let other = other.extract::<PyExactEmpty>()?;
             Ok(PyExactEmpty((&self.0).union(&other.0)).into_py(py))
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
             let other = other.extract::<PyExactMultipolygon>()?;
             Ok((&self.0).union(&other.0).into_py(py))
+        } else if other.is_instance(PyExactMultisegment::type_object(py))? {
+            let other = other.extract::<PyExactMultisegment>()?;
+            Ok(PyExactMultisegment((&self.0).union(&other.0)).into_py(py))
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyExactPolygon>()?;
             Ok((&self.0).union(&other.0).into_py(py))
+        } else if other.is_instance(PyExactSegment::type_object(py))? {
+            let other = other.extract::<PyExactSegment>()?;
+            Ok(PyExactSegment((&self.0).union(&other.0)).into_py(py))
         } else {
             Ok(py.NotImplemented())
         }
@@ -773,15 +791,24 @@ impl PyExactEmpty {
 
     fn __sub__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
-        if other.is_instance(PyExactEmpty::type_object(py))? {
+        if other.is_instance(PyExactContour::type_object(py))? {
+            let other = other.extract::<PyExactContour>()?;
+            Ok(PyExactEmpty((&self.0).difference(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactEmpty::type_object(py))? {
             let other = other.extract::<PyExactEmpty>()?;
-            Ok(PyExactEmpty((&self.0).difference(other.0)).into_py(py))
+            Ok(PyExactEmpty((&self.0).difference(&other.0)).into_py(py))
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
             let other = other.extract::<PyExactMultipolygon>()?;
-            Ok(PyExactEmpty((&self.0).difference(other.0)).into_py(py))
+            Ok(PyExactEmpty((&self.0).difference(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactMultisegment::type_object(py))? {
+            let other = other.extract::<PyExactMultisegment>()?;
+            Ok(PyExactEmpty((&self.0).difference(&other.0)).into_py(py))
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyExactPolygon>()?;
-            Ok(PyExactEmpty((&self.0).difference(other.0)).into_py(py))
+            Ok(PyExactEmpty((&self.0).difference(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactSegment::type_object(py))? {
+            let other = other.extract::<PyExactSegment>()?;
+            Ok(PyExactEmpty((&self.0).difference(&other.0)).into_py(py))
         } else {
             Ok(py.NotImplemented())
         }
@@ -789,15 +816,24 @@ impl PyExactEmpty {
 
     fn __xor__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
-        if other.is_instance(PyExactEmpty::type_object(py))? {
+        if other.is_instance(PyExactContour::type_object(py))? {
+            let other = other.extract::<PyExactContour>()?;
+            Ok(PyExactContour((&self.0).symmetric_difference(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactEmpty::type_object(py))? {
             let other = other.extract::<PyExactEmpty>()?;
             Ok(PyExactEmpty((&self.0).symmetric_difference(&other.0)).into_py(py))
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
             let other = other.extract::<PyExactMultipolygon>()?;
             Ok((&self.0).symmetric_difference(&other.0).into_py(py))
+        } else if other.is_instance(PyExactMultisegment::type_object(py))? {
+            let other = other.extract::<PyExactMultisegment>()?;
+            Ok(PyExactMultisegment((&self.0).symmetric_difference(&other.0)).into_py(py))
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyExactPolygon>()?;
             Ok((&self.0).symmetric_difference(&other.0).into_py(py))
+        } else if other.is_instance(PyExactSegment::type_object(py))? {
+            let other = other.extract::<PyExactSegment>()?;
+            Ok(PyExactSegment((&self.0).symmetric_difference(&other.0)).into_py(py))
         } else {
             Ok(py.NotImplemented())
         }
