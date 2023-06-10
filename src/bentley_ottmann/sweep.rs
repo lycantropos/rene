@@ -109,7 +109,7 @@ where
             };
             debug_assert_eq!(
                 relation,
-                segment::relate_segment(first_start, first_end, second_start, second_end)
+                segment::relate_to_segment(first_start, first_end, second_start, second_end)
             );
             Some(Intersection {
                 first_segment_id,

@@ -357,7 +357,7 @@ fn detect_crossings<Endpoint: Orient + PartialEq + PartialOrd>(
     while mesh.get_start(candidate).ne(constraint_end) {
         let last_crossing = candidate;
         debug_assert_eq!(
-            segment::relate_segment(
+            segment::relate_to_segment(
                 mesh.get_start(last_crossing),
                 mesh.get_end(last_crossing),
                 constraint_start,
@@ -564,7 +564,7 @@ fn resolve_crossings<Endpoint: Orient + PartialOrd>(
     while let Some(edge) = crossings_queue.pop_back() {
         if is_convex_quadrilateral_diagonal(mesh, edge) {
             mesh.swap_diagonal(edge);
-            match segment::relate_segment(
+            match segment::relate_to_segment(
                 mesh.get_start(edge),
                 mesh.get_end(edge),
                 constraint_start,

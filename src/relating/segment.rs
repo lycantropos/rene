@@ -2,7 +2,7 @@ use crate::operations::{to_sorted_pair, Orient};
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
 
-pub(crate) fn relate_segment<Point: Orient + PartialOrd>(
+pub(crate) fn relate_to_segment<Point: Orient + PartialOrd>(
     first_start: &Point,
     first_end: &Point,
     second_start: &Point,

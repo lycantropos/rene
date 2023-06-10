@@ -15,6 +15,6 @@ where
     }
 
     fn relate_to(self, other: Self) -> Relation {
-        segment::relate_segment(&self.start, &self.end, &other.start, &other.end)
+        segment::relate_to_segment(&self.start, &self.end, &other.start, &other.end)
     }
 }
