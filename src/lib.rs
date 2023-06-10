@@ -572,6 +572,7 @@ impl PyExactContour {
         is_contour_valid(&self.0)
     }
 
+    #[pyo3(signature = (point, /))]
     fn locate(&self, point: &PyExactPoint) -> PyResult<&PyAny> {
         try_location_to_py_location(self.0.locate(&point.0))
     }
@@ -821,6 +822,7 @@ impl PyExactMultipolygon {
         self.0.segments_count()
     }
 
+    #[pyo3(signature = (point, /))]
     fn locate(&self, point: &PyExactPoint) -> PyResult<&PyAny> {
         try_location_to_py_location(self.0.locate(&point.0))
     }
@@ -1003,6 +1005,7 @@ impl PyExactMultisegment {
         is_multisegment_valid(&self.0)
     }
 
+    #[pyo3(signature = (point, /))]
     fn locate(&self, point: &PyExactPoint) -> PyResult<&PyAny> {
         try_location_to_py_location(self.0.locate(&point.0))
     }
@@ -1152,6 +1155,7 @@ impl PyExactPolygon {
         self.0.segments_count()
     }
 
+    #[pyo3(signature = (point, /))]
     fn locate(&self, point: &PyExactPoint) -> PyResult<&PyAny> {
         try_location_to_py_location(self.0.locate(&point.0))
     }
@@ -1341,6 +1345,7 @@ impl PyExactSegment {
         try_relation_to_py_relation(self.0.relate_to(&other.0))
     }
 
+    #[pyo3(signature = (point, /))]
     fn locate(&self, point: &PyExactPoint) -> PyResult<&PyAny> {
         try_location_to_py_location(self.0.locate(&point.0))
     }
@@ -1387,25 +1392,20 @@ impl PyExactSegment {
 #[pymethods]
 impl PyExactTrapezoidation {
     #[classmethod]
-    #[pyo3(signature = (_multisegment, _seed))]
-    fn from_multisegment(
-        _: &PyType,
-        _multisegment: &PyExactMultisegment,
-        _seed: usize,
-    ) -> PyResult<Self> {
-        Ok(PyExactTrapezoidation(Trapezoidation::from_multisegment(
-            &_multisegment.0,
-            |values| permute(values, _seed),
-        )))
+    #[pyo3(signature = (multisegment, seed, /))]
+    fn from_multisegment(_: &PyType, multisegment: &PyExactMultisegment, seed: usize) -> Self {
+        PyExactTrapezoidation(Trapezoidation::from_multisegment(
+            &multisegment.0,
+            |values| permute(values, seed),
+        ))
     }
 
     #[classmethod]
-    #[pyo3(signature = (_polygon, _seed))]
-    fn from_polygon(_: &PyType, _polygon: &PyExactPolygon, _seed: usize) -> PyResult<Self> {
-        Ok(PyExactTrapezoidation(Trapezoidation::from_polygon(
-            &_polygon.0,
-            |values| permute(values, _seed),
-        )))
+    #[pyo3(signature = (polygon, seed, /))]
+    fn from_polygon(_: &PyType, polygon: &PyExactPolygon, seed: usize) -> Self {
+        PyExactTrapezoidation(Trapezoidation::from_polygon(&polygon.0, |values| {
+            permute(values, seed);
+        }))
     }
 
     #[getter]
@@ -1413,6 +1413,7 @@ impl PyExactTrapezoidation {
         self.0.height()
     }
 
+    #[pyo3(signature = (point, /))]
     fn locate(&self, point: &PyExactPoint) -> PyResult<&PyAny> {
         try_location_to_py_location(self.0.locate(&point.0))
     }
