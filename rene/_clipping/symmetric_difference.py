@@ -12,13 +12,14 @@ from .event import Event
 
 
 class ShapedSymmetricDifference(shaped.Operation[_hints.Scalar]):
-    def _detect_if_left_event_from_result(self, event: Event) -> bool:
+    def _detect_if_left_event_from_result(self, event: Event, /) -> bool:
         return not self._is_overlap_left_event(event)
 
 
 def symmetric_subtract_multipolygon_with_polygon(
         first: _hints.Multipolygon[_hints.Scalar],
-        second: _hints.Polygon[_hints.Scalar]
+        second: _hints.Polygon[_hints.Scalar],
+        /
 ) -> List[_hints.Polygon[_hints.Scalar]]:
     first_polygons = first.polygons
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
@@ -60,7 +61,8 @@ def symmetric_subtract_multipolygon_with_polygon(
 
 def symmetric_subtract_multipolygons(
         first: _hints.Multipolygon[_hints.Scalar],
-        second: _hints.Multipolygon[_hints.Scalar]
+        second: _hints.Multipolygon[_hints.Scalar],
+        /
 ) -> List[_hints.Polygon[_hints.Scalar]]:
     first_polygons, second_polygons = first.polygons, second.polygons
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
@@ -124,7 +126,8 @@ def symmetric_subtract_multipolygons(
 
 def symmetric_subtract_polygon_with_multipolygon(
         first: _hints.Polygon[_hints.Scalar],
-        second: _hints.Multipolygon[_hints.Scalar]
+        second: _hints.Multipolygon[_hints.Scalar],
+        /
 ) -> List[_hints.Polygon[_hints.Scalar]]:
     second_polygons = second.polygons
     second_boxes = [polygon.bounding_box for polygon in second_polygons]
@@ -166,7 +169,8 @@ def symmetric_subtract_polygon_with_multipolygon(
 
 def symmetric_subtract_polygons(
         first: _hints.Polygon[_hints.Scalar],
-        second: _hints.Polygon[_hints.Scalar]
+        second: _hints.Polygon[_hints.Scalar],
+        /
 ) -> List[_hints.Polygon[_hints.Scalar]]:
     first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)

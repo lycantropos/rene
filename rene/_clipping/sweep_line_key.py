@@ -23,7 +23,8 @@ class BinarySweepLineKey(_t.Generic[Scalar]):
                  event: Event,
                  is_from_first_operand: bool,
                  endpoints: Map[Event, Point[Scalar]],
-                 opposites: Map[Event, Event]) -> None:
+                 opposites: Map[Event, Event],
+                 /) -> None:
         (
             self.endpoints, self.event, self.is_from_first_operand,
             self.opposites
@@ -31,7 +32,7 @@ class BinarySweepLineKey(_t.Generic[Scalar]):
 
     __repr__ = generate_repr(__init__)
 
-    def __lt__(self, other: _te.Self) -> bool:
+    def __lt__(self, other: _te.Self, /) -> bool:
         """
         Checks if the segment associated with event is lower than other's.
         """

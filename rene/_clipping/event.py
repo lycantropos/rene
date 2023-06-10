@@ -12,6 +12,6 @@ is_left_event = is_even
 is_right_event = is_odd
 
 
-def left_event_to_position(event: Event) -> int:
+def left_event_to_position(event: Event, /) -> int:
     assert is_left_event(event)
     return event // 2

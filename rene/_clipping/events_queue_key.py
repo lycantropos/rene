@@ -18,7 +18,8 @@ class BinaryEventsQueueKey(_t.Generic[_hints.Scalar]):
                  event: Event,
                  is_from_first_operand: bool,
                  endpoints: Map[Event, _hints.Point[_hints.Scalar]],
-                 opposites: Map[Event, Event]) -> None:
+                 opposites: Map[Event, Event],
+                 /) -> None:
         (
             self.endpoints, self.event, self.is_from_first_operand,
             self.opposites
@@ -26,7 +27,7 @@ class BinaryEventsQueueKey(_t.Generic[_hints.Scalar]):
 
     __repr__ = generate_repr(__init__)
 
-    def __lt__(self, other: _te.Self) -> bool:
+    def __lt__(self, other: _te.Self, /) -> bool:
         """
         Checks if the event should be processed before the other.
         """
