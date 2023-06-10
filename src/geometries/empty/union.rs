@@ -1,7 +1,45 @@
-use crate::geometries::{Multipolygon, Polygon};
+use crate::geometries::{Contour, Multipolygon, Multisegment, Polygon, Segment};
 use crate::traits::Union;
 
 use super::types::Empty;
+
+impl<Scalar> Union<Contour<Scalar>> for Empty {
+    type Output = Contour<Scalar>;
+
+    fn union(self, other: Contour<Scalar>) -> Self::Output {
+        other
+    }
+}
+
+impl<Scalar> Union<&Contour<Scalar>> for Empty
+where
+    Contour<Scalar>: Clone,
+{
+    type Output = Contour<Scalar>;
+
+    fn union(self, other: &Contour<Scalar>) -> Self::Output {
+        other.clone()
+    }
+}
+
+impl<Scalar> Union<Contour<Scalar>> for &Empty {
+    type Output = Contour<Scalar>;
+
+    fn union(self, other: Contour<Scalar>) -> Self::Output {
+        other
+    }
+}
+
+impl<Scalar> Union<&Contour<Scalar>> for &Empty
+where
+    Contour<Scalar>: Clone,
+{
+    type Output = Contour<Scalar>;
+
+    fn union(self, other: &Contour<Scalar>) -> Self::Output {
+        other.clone()
+    }
+}
 
 impl Union for Empty {
     type Output = Self;
@@ -32,6 +70,82 @@ impl Union for &Empty {
 
     fn union(self, other: Self) -> Self::Output {
         *other
+    }
+}
+
+impl<Scalar> Union<Multipolygon<Scalar>> for Empty {
+    type Output = Multipolygon<Scalar>;
+
+    fn union(self, other: Multipolygon<Scalar>) -> Self::Output {
+        other
+    }
+}
+
+impl<Scalar> Union<&Multipolygon<Scalar>> for Empty
+where
+    Multipolygon<Scalar>: Clone,
+{
+    type Output = Multipolygon<Scalar>;
+
+    fn union(self, other: &Multipolygon<Scalar>) -> Self::Output {
+        other.clone()
+    }
+}
+
+impl<Scalar> Union<Multipolygon<Scalar>> for &Empty {
+    type Output = Multipolygon<Scalar>;
+
+    fn union(self, other: Multipolygon<Scalar>) -> Self::Output {
+        other
+    }
+}
+
+impl<Scalar> Union<&Multipolygon<Scalar>> for &Empty
+where
+    Multipolygon<Scalar>: Clone,
+{
+    type Output = Multipolygon<Scalar>;
+
+    fn union(self, other: &Multipolygon<Scalar>) -> Self::Output {
+        other.clone()
+    }
+}
+
+impl<Scalar> Union<Multisegment<Scalar>> for Empty {
+    type Output = Multisegment<Scalar>;
+
+    fn union(self, other: Multisegment<Scalar>) -> Self::Output {
+        other
+    }
+}
+
+impl<Scalar> Union<&Multisegment<Scalar>> for Empty
+where
+    Multisegment<Scalar>: Clone,
+{
+    type Output = Multisegment<Scalar>;
+
+    fn union(self, other: &Multisegment<Scalar>) -> Self::Output {
+        other.clone()
+    }
+}
+
+impl<Scalar> Union<Multisegment<Scalar>> for &Empty {
+    type Output = Multisegment<Scalar>;
+
+    fn union(self, other: Multisegment<Scalar>) -> Self::Output {
+        other
+    }
+}
+
+impl<Scalar> Union<&Multisegment<Scalar>> for &Empty
+where
+    Multisegment<Scalar>: Clone,
+{
+    type Output = Multisegment<Scalar>;
+
+    fn union(self, other: &Multisegment<Scalar>) -> Self::Output {
+        other.clone()
     }
 }
 
@@ -73,40 +187,40 @@ where
     }
 }
 
-impl<Scalar> Union<Multipolygon<Scalar>> for Empty {
-    type Output = Multipolygon<Scalar>;
+impl<Scalar> Union<Segment<Scalar>> for Empty {
+    type Output = Segment<Scalar>;
 
-    fn union(self, other: Multipolygon<Scalar>) -> Self::Output {
+    fn union(self, other: Segment<Scalar>) -> Self::Output {
         other
     }
 }
 
-impl<Scalar> Union<&Multipolygon<Scalar>> for Empty
+impl<Scalar> Union<&Segment<Scalar>> for Empty
 where
-    Multipolygon<Scalar>: Clone,
+    Segment<Scalar>: Clone,
 {
-    type Output = Multipolygon<Scalar>;
+    type Output = Segment<Scalar>;
 
-    fn union(self, other: &Multipolygon<Scalar>) -> Self::Output {
+    fn union(self, other: &Segment<Scalar>) -> Self::Output {
         other.clone()
     }
 }
 
-impl<Scalar> Union<Multipolygon<Scalar>> for &Empty {
-    type Output = Multipolygon<Scalar>;
+impl<Scalar> Union<Segment<Scalar>> for &Empty {
+    type Output = Segment<Scalar>;
 
-    fn union(self, other: Multipolygon<Scalar>) -> Self::Output {
+    fn union(self, other: Segment<Scalar>) -> Self::Output {
         other
     }
 }
 
-impl<Scalar> Union<&Multipolygon<Scalar>> for &Empty
+impl<Scalar> Union<&Segment<Scalar>> for &Empty
 where
-    Multipolygon<Scalar>: Clone,
+    Segment<Scalar>: Clone,
 {
-    type Output = Multipolygon<Scalar>;
+    type Output = Segment<Scalar>;
 
-    fn union(self, other: &Multipolygon<Scalar>) -> Self::Output {
+    fn union(self, other: &Segment<Scalar>) -> Self::Output {
         other.clone()
     }
 }
