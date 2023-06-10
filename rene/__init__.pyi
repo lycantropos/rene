@@ -18,11 +18,11 @@ class Location:
     INTERIOR: _t.ClassVar[_te.Self] = ...
 
     @_t.overload
-    def __eq__(self, other: _te.Self) -> bool:
+    def __eq__(self, other: _te.Self, /) -> bool:
         ...
 
     @_t.overload
-    def __eq__(self, other: _t.Any) -> _t.Any:
+    def __eq__(self, other: _t.Any, /) -> _t.Any:
         ...
 
     def __repr__(self) -> str:
@@ -39,11 +39,11 @@ class Orientation:
     COUNTERCLOCKWISE: _te.Self = ...
 
     @_t.overload
-    def __eq__(self, other: _te.Self) -> bool:
+    def __eq__(self, other: _te.Self, /) -> bool:
         ...
 
     @_t.overload
-    def __eq__(self, other: _t.Any) -> _t.Any:
+    def __eq__(self, other: _t.Any, /) -> _t.Any:
         ...
 
     def __repr__(self) -> str:
@@ -72,11 +72,11 @@ class Relation:
         ...
 
     @_t.overload
-    def __eq__(self, other: _te.Self) -> bool:
+    def __eq__(self, other: _te.Self, /) -> bool:
         ...
 
     @_t.overload
-    def __eq__(self, other: _t.Any) -> _t.Any:
+    def __eq__(self, other: _t.Any, /) -> _t.Any:
         ...
 
     def __repr__(self) -> str:
