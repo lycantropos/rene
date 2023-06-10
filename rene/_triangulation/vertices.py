@@ -17,7 +17,7 @@ class ContourVertex(_t.Generic[Scalar]):
     __slots__ = 'contour_index', 'index', 'point'
 
     def __new__(
-            cls, contour_index: int, index: int, point: Point[Scalar]
+            cls, contour_index: int, index: int, point: Point[Scalar], /
     ) -> _te.Self:
         self = super().__new__(cls)
         self.contour_index, self.index, self.point = (
@@ -33,22 +33,22 @@ class ContourVertex(_t.Generic[Scalar]):
     def y(self) -> Scalar:
         return self.point.y
 
-    def __ge__(self, other: _t.Any) -> _t.Any:
+    def __ge__(self, other: _t.Any, /) -> _t.Any:
         return (self.point >= other.point
                 if isinstance(other, ContourVertex)
                 else NotImplemented)
 
-    def __gt__(self, other: _t.Any) -> _t.Any:
+    def __gt__(self, other: _t.Any, /) -> _t.Any:
         return (self.point > other.point
                 if isinstance(other, ContourVertex)
                 else NotImplemented)
 
-    def __le__(self, other: _t.Any) -> _t.Any:
+    def __le__(self, other: _t.Any, /) -> _t.Any:
         return (self.point <= other.point
                 if isinstance(other, ContourVertex)
                 else NotImplemented)
 
-    def __lt__(self, other: _t.Any) -> _t.Any:
+    def __lt__(self, other: _t.Any, /) -> _t.Any:
         return (self.point < other.point
                 if isinstance(other, ContourVertex)
                 else NotImplemented)
@@ -62,32 +62,32 @@ class PolygonVertexPosition:
 
     __slots__ = 'contour_index', 'index'
 
-    def __new__(cls,
-                contour_index: int,
-                index: int) -> PolygonVertexPosition:
+    def __new__(
+            cls, contour_index: int, index: int, /
+    ) -> PolygonVertexPosition:
         self = super().__new__(cls)
         self.contour_index, self.index = contour_index, index
         return self
 
-    def __ge__(self, other: _t.Any) -> _t.Any:
+    def __ge__(self, other: _t.Any, /) -> _t.Any:
         return ((self.contour_index, self.index)
                 >= (other.contour_index, other.index)
                 if isinstance(other, ContourVertex)
                 else NotImplemented)
 
-    def __gt__(self, other: _t.Any) -> _t.Any:
+    def __gt__(self, other: _t.Any, /) -> _t.Any:
         return ((self.contour_index, self.index)
                 > (other.contour_index, other.index)
                 if isinstance(other, ContourVertex)
                 else NotImplemented)
 
-    def __le__(self, other: _t.Any) -> _t.Any:
+    def __le__(self, other: _t.Any, /) -> _t.Any:
         return ((self.contour_index, self.index)
                 <= (other.contour_index, other.index)
                 if isinstance(other, ContourVertex)
                 else NotImplemented)
 
-    def __lt__(self, other: _t.Any) -> _t.Any:
+    def __lt__(self, other: _t.Any, /) -> _t.Any:
         return ((self.contour_index, self.index)
                 < (other.contour_index, other.index)
                 if isinstance(other, ContourVertex)

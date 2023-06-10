@@ -18,7 +18,7 @@ from .quad_edge import (QuadEdge,
 
 class DelaunayTriangulation(_t.Generic[Scalar]):
     @classmethod
-    def from_points(cls, points: _t.Sequence[Point[Scalar]]) -> _te.Self:
+    def from_points(cls, points: _t.Sequence[Point[Scalar]], /) -> _te.Self:
         endpoints = list(points)
         endpoints.sort()
         mesh = Mesh.from_points(deduplicate(endpoints))
@@ -77,7 +77,8 @@ class DelaunayTriangulation(_t.Generic[Scalar]):
     def __init__(self,
                  left_side: QuadEdge,
                  right_side: QuadEdge,
-                 mesh: Mesh[Scalar]) -> None:
+                 mesh: Mesh[Scalar],
+                 /) -> None:
         self._left_side, self._mesh, self._right_side = (
             left_side, mesh, right_side
         )
