@@ -1,12 +1,12 @@
-import typing as _t
+import typing as t
 from numbers import Rational
 
-import typing_extensions as _te
+import typing_extensions as te
 from reprit.base import generate_repr
 from rithm.fraction import Fraction
 from rithm.integer import Int
 
-_Coordinate = _t.Union[Fraction, Int, Rational, float, int]
+_Coordinate = t.Union[Fraction, Int, Rational, float, int]
 
 
 class Point:
@@ -24,46 +24,46 @@ class Point:
     __module__ = 'rene.exact'
     __slots__ = '_x', '_y'
 
-    def __new__(cls, x: _Coordinate, y: _Coordinate, /) -> _te.Self:
+    def __new__(cls, x: _Coordinate, y: _Coordinate, /) -> te.Self:
         self = super().__new__(cls)
         self._x, self._y = Fraction(x), Fraction(y)
         return self
 
-    @_t.overload
-    def __eq__(self, other: _te.Self, /) -> bool:
+    @t.overload
+    def __eq__(self, other: te.Self, /) -> bool:
         ...
 
-    @_t.overload
-    def __eq__(self, other: _t.Any, /) -> _t.Any:
+    @t.overload
+    def __eq__(self, other: t.Any, /) -> t.Any:
         ...
 
-    def __eq__(self, other: _t.Any, /) -> _t.Any:
+    def __eq__(self, other: t.Any, /) -> t.Any:
         return (self.x == other.x and self.y == other.y
                 if isinstance(other, Point)
                 else NotImplemented)
 
-    @_t.overload
-    def __ge__(self, other: _te.Self, /) -> bool:
+    @t.overload
+    def __ge__(self, other: te.Self, /) -> bool:
         ...
 
-    @_t.overload
-    def __ge__(self, other: _t.Any, /) -> _t.Any:
+    @t.overload
+    def __ge__(self, other: t.Any, /) -> t.Any:
         ...
 
-    def __ge__(self, other: _t.Any, /) -> _t.Any:
+    def __ge__(self, other: t.Any, /) -> t.Any:
         return (self.x > other.x or self.x == other.x and self.y >= other.y
                 if isinstance(other, Point)
                 else NotImplemented)
 
-    @_t.overload
-    def __gt__(self, other: _te.Self, /) -> bool:
+    @t.overload
+    def __gt__(self, other: te.Self, /) -> bool:
         ...
 
-    @_t.overload
-    def __gt__(self, other: _t.Any, /) -> _t.Any:
+    @t.overload
+    def __gt__(self, other: t.Any, /) -> t.Any:
         ...
 
-    def __gt__(self, other: _t.Any, /) -> _t.Any:
+    def __gt__(self, other: t.Any, /) -> t.Any:
         return (self.x > other.x or self.x == other.x and self.y > other.y
                 if isinstance(other, Point)
                 else NotImplemented)
@@ -71,28 +71,28 @@ class Point:
     def __hash__(self) -> int:
         return hash((self.x, self.y))
 
-    @_t.overload
-    def __le__(self, other: _te.Self, /) -> bool:
+    @t.overload
+    def __le__(self, other: te.Self, /) -> bool:
         ...
 
-    @_t.overload
-    def __le__(self, other: _t.Any, /) -> _t.Any:
+    @t.overload
+    def __le__(self, other: t.Any, /) -> t.Any:
         ...
 
-    def __le__(self, other: _t.Any, /) -> _t.Any:
+    def __le__(self, other: t.Any, /) -> t.Any:
         return (self.x < other.x or self.x == other.x and self.y <= other.y
                 if isinstance(other, Point)
                 else NotImplemented)
 
-    @_t.overload
-    def __lt__(self, other: _te.Self, /) -> bool:
+    @t.overload
+    def __lt__(self, other: te.Self, /) -> bool:
         ...
 
-    @_t.overload
-    def __lt__(self, other: _t.Any, /) -> _t.Any:
+    @t.overload
+    def __lt__(self, other: t.Any, /) -> t.Any:
         ...
 
-    def __lt__(self, other: _t.Any, /) -> _t.Any:
+    def __lt__(self, other: t.Any, /) -> t.Any:
         return (self.x < other.x or self.x == other.x and self.y < other.y
                 if isinstance(other, Point)
                 else NotImplemented)

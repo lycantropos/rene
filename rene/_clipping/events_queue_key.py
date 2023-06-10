@@ -1,9 +1,9 @@
-import typing as _t
+import typing as t
 
-import typing_extensions as _te
+import typing_extensions as te
 from reprit.base import generate_repr
 
-from rene import hints as _hints
+from rene import hints
 from rene._hints import Map
 from rene._rene import Orientation
 from rene._utils import orient
@@ -11,13 +11,13 @@ from .event import (Event,
                     is_left_event)
 
 
-class BinaryEventsQueueKey(_t.Generic[_hints.Scalar]):
+class BinaryEventsQueueKey(t.Generic[hints.Scalar]):
     __slots__ = 'endpoints', 'event', 'is_from_first_operand', 'opposites'
 
     def __init__(self,
                  event: Event,
                  is_from_first_operand: bool,
-                 endpoints: Map[Event, _hints.Point[_hints.Scalar]],
+                 endpoints: Map[Event, hints.Point[hints.Scalar]],
                  opposites: Map[Event, Event],
                  /) -> None:
         (
@@ -27,7 +27,7 @@ class BinaryEventsQueueKey(_t.Generic[_hints.Scalar]):
 
     __repr__ = generate_repr(__init__)
 
-    def __lt__(self, other: _te.Self, /) -> bool:
+    def __lt__(self, other: te.Self, /) -> bool:
         """
         Checks if the event should be processed before the other.
         """

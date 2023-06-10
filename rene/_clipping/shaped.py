@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import typing as _t
+import typing as t
 from abc import (ABC,
                  abstractmethod)
 
@@ -9,8 +9,8 @@ from dendroid.hints import KeyedSet
 from prioq.base import PriorityQueue
 from reprit.base import generate_repr
 
-from rene import (Orientation as _Orientation,
-                  hints as _hints)
+from rene import (Orientation,
+                  hints)
 from rene._utils import (intersect_crossing_segments,
                          is_even,
                          is_odd,
@@ -27,16 +27,16 @@ from .overlap_kind import OverlapKind
 from .sweep_line_key import BinarySweepLineKey as SweepLineKey
 
 
-class Operation(ABC, _t.Generic[_hints.Scalar]):
+class Operation(ABC, t.Generic[hints.Scalar]):
     @classmethod
     def from_segments_iterables(
             cls,
-            first: _t.Iterable[_hints.Segment[_hints.Scalar]],
-            second: _t.Iterable[_hints.Segment[_hints.Scalar]],
+            first: t.Iterable[hints.Segment[hints.Scalar]],
+            second: t.Iterable[hints.Segment[hints.Scalar]],
             /
-    ) -> Operation[_hints.Scalar]:
-        endpoints: _t.List[_hints.Point[_hints.Scalar]] = []
-        have_interior_to_left: _t.List[bool] = []
+    ) -> Operation[hints.Scalar]:
+        endpoints: t.List[hints.Point[hints.Scalar]] = []
+        have_interior_to_left: t.List[bool] = []
         _populate_with_segments(first, endpoints, have_interior_to_left)
         first_segments_count = len(have_interior_to_left)
         _populate_with_segments(second, endpoints, have_interior_to_left)
@@ -54,11 +54,11 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
 
     def reduce_events(
             self,
-            events: _t.List[Event],
-            contour_cls: _t.Type[_hints.Contour[_hints.Scalar]],
-            polygon_cls: _t.Type[_hints.Polygon[_hints.Scalar]],
+            events: t.List[Event],
+            contour_cls: t.Type[hints.Contour[hints.Scalar]],
+            polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
             /
-    ) -> _t.List[_hints.Polygon[_hints.Scalar]]:
+    ) -> t.List[hints.Polygon[hints.Scalar]]:
         events = [event
                   for event in events
                   if self._is_from_result_event(event)]
@@ -74,13 +74,13 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
         )
         are_events_processed = [False] * len(events)
         are_from_in_to_out = [False] * len(events)
-        are_internal: _t.List[bool] = []
+        are_internal: t.List[bool] = []
         connectivity = self._events_to_connectivity(events)
         contours_ids = [UNDEFINED_INDEX] * len(events)
-        contours_vertices: _t.List[_t.List[_hints.Point[_hints.Scalar]]] = []
-        depths: _t.List[int] = []
-        holes: _t.List[_t.List[int]] = []
-        parents: _t.List[int] = []
+        contours_vertices: t.List[t.List[hints.Point[hints.Scalar]]] = []
+        depths: t.List[int] = []
+        holes: t.List[t.List[int]] = []
+        parents: t.List[int] = []
         visited_endpoints_positions = ([UNDEFINED_INDEX]
                                        * self._unique_visited_endpoints_count)
         for event_id, event in enumerate(events):
@@ -102,7 +102,7 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
             if is_odd(depths[contour_id]):
                 vertices = vertices[:1] + vertices[:0:-1]
             contours_vertices.append(vertices)
-        result: _t.List[_hints.Polygon[_hints.Scalar]] = []
+        result: t.List[hints.Polygon[hints.Scalar]] = []
         for contour_id, contour_vertices in enumerate(contours_vertices):
             if are_internal[contour_id]:
                 # hole of a hole is an external polygon
@@ -126,13 +126,13 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
                 )
         return result
 
-    def to_event_end(self, event: Event, /) -> _hints.Point[_hints.Scalar]:
+    def to_event_end(self, event: Event, /) -> hints.Point[hints.Scalar]:
         return self.to_event_start(self._to_opposite_event(event))
 
-    def to_event_start(self, event: Event, /) -> _hints.Point[_hints.Scalar]:
+    def to_event_start(self, event: Event, /) -> hints.Point[hints.Scalar]:
         return self._endpoints[event]
 
-    _sweep_line_data: KeyedSet[SweepLineKey[_hints.Scalar], Event]
+    _sweep_line_data: KeyedSet[SweepLineKey[hints.Scalar], Event]
 
     __slots__ = (
         '_first_segments_count', '_are_from_result',
@@ -145,8 +145,8 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
     def __init__(self,
                  _first_segments_count: int,
                  _second_segments_count: int,
-                 _endpoints: _t.List[_hints.Point[_hints.Scalar]],
-                 _have_interior_to_left: _t.Sequence[bool],
+                 _endpoints: t.List[hints.Point[hints.Scalar]],
+                 _have_interior_to_left: t.Sequence[bool],
                  /) -> None:
         segments_count = _first_segments_count + _second_segments_count
         initial_events_count = 2 * segments_count
@@ -163,11 +163,11 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
         self._other_have_interior_to_left = [False] * segments_count
         self._overlap_kinds = [OverlapKind.NONE] * segments_count
         self._segments_ids = list(range(segments_count))
-        self._starts_ids: _t.List[int] = (
+        self._starts_ids: t.List[int] = (
                 [UNDEFINED_INDEX] * initial_events_count
         )
         self._events_queue_data: PriorityQueue[
-            EventsQueueKey[_hints.Scalar], Event
+            EventsQueueKey[hints.Scalar], Event
         ] = PriorityQueue(
                 *range(initial_events_count),
                 key=lambda event: EventsQueueKey(
@@ -183,7 +183,7 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
     def __bool__(self) -> bool:
         return bool(self._events_queue_data)
 
-    def __iter__(self) -> _t.Iterator[Event]:
+    def __iter__(self) -> t.Iterator[Event]:
         while self:
             event = self._pop()
             if (self.to_event_start(self._current_endpoint_first_event)
@@ -233,7 +233,7 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
     def _detect_if_left_event_from_result(self, event: Event, /) -> bool:
         pass
 
-    def _above(self, event: Event, /) -> _t.Optional[Event]:
+    def _above(self, event: Event, /) -> t.Optional[Event]:
         assert is_left_event(event)
         try:
             return self._sweep_line_data.next(event)
@@ -244,7 +244,7 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
         assert is_left_event(event)
         self._sweep_line_data.add(event)
 
-    def _below(self, event: Event, /) -> _t.Optional[Event]:
+    def _below(self, event: Event, /) -> t.Optional[Event]:
         assert is_left_event(event)
         try:
             return self._sweep_line_data.prev(event)
@@ -252,7 +252,7 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
             return None
 
     def _compute_left_event_fields(
-            self, event: Event, below_event: _t.Optional[Event], /
+            self, event: Event, below_event: t.Optional[Event], /
     ) -> None:
         event_position = left_event_to_position(event)
         if below_event is not None:
@@ -279,13 +279,13 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
             self,
             event: Event,
             contour_id: int,
-            are_internal: _t.List[bool],
-            depths: _t.List[int],
-            holes: _t.List[_t.List[int]],
-            parents: _t.List[int],
-            are_from_in_to_out: _t.Sequence[bool],
-            contours_ids: _t.Sequence[int],
-            events_ids: _t.Sequence[int],
+            are_internal: t.List[bool],
+            depths: t.List[int],
+            holes: t.List[t.List[int]],
+            parents: t.List[int],
+            are_from_in_to_out: t.Sequence[bool],
+            contours_ids: t.Sequence[int],
+            events_ids: t.Sequence[int],
             /
     ) -> None:
         assert is_left_event(event)
@@ -316,8 +316,8 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
         are_internal.append(is_internal)
 
     def _contour_events_to_vertices(
-            self, events: _t.Sequence[Event], /
-    ) -> _t.List[_hints.Point[_hints.Scalar]]:
+            self, events: t.Sequence[Event], /
+    ) -> t.List[hints.Point[hints.Scalar]]:
         result = ([self.to_event_start(events[0])]
                   + [self.to_event_end(event) for event in events[:-1]])
         return shrink_collinear_vertices(result)
@@ -333,16 +333,16 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
                                          event_start)
         event_end_orientation = orient(below_event_end, below_event_start,
                                        event_end)
-        if (event_start_orientation is not _Orientation.COLLINEAR
-                and event_end_orientation is not _Orientation.COLLINEAR):
+        if (event_start_orientation is not Orientation.COLLINEAR
+                and event_end_orientation is not Orientation.COLLINEAR):
             if event_start_orientation is not event_end_orientation:
                 below_event_start_orientation = orient(event_start, event_end,
                                                        below_event_start)
                 below_event_end_orientation = orient(event_start, event_end,
                                                      below_event_end)
-                if (below_event_start_orientation is not _Orientation.COLLINEAR
+                if (below_event_start_orientation is not Orientation.COLLINEAR
                         and (below_event_end_orientation
-                             is not _Orientation.COLLINEAR)):
+                             is not Orientation.COLLINEAR)):
                     if (below_event_start_orientation
                             is not below_event_end_orientation):
                         point = intersect_crossing_segments(
@@ -353,18 +353,18 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
                         assert below_event_start < point < below_event_end
                         self._divide_event_by_midpoint(below_event, point)
                         self._divide_event_by_midpoint(event, point)
-                elif below_event_start_orientation != _Orientation.COLLINEAR:
+                elif below_event_start_orientation != Orientation.COLLINEAR:
                     if event_start < below_event_end < event_end:
                         point = below_event_end
                         self._divide_event_by_midpoint(event, point)
                 elif event_start < below_event_start < event_end:
                     point = below_event_start
                     self._divide_event_by_midpoint(event, point)
-        elif event_end_orientation is not _Orientation.COLLINEAR:
+        elif event_end_orientation is not Orientation.COLLINEAR:
             if below_event_start < event_start < below_event_end:
                 point = event_start
                 self._divide_event_by_midpoint(below_event, point)
-        elif event_start_orientation is not _Orientation.COLLINEAR:
+        elif event_start_orientation is not Orientation.COLLINEAR:
             if below_event_start < event_end < below_event_end:
                 point = event_end
                 self._divide_event_by_midpoint(below_event, point)
@@ -435,8 +435,8 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
         return False
 
     def _divide(
-            self, event: Event, mid_point: _hints.Point[_hints.Scalar], /
-    ) -> _t.Tuple[Event, Event]:
+            self, event: Event, mid_point: hints.Point[hints.Scalar], /
+    ) -> t.Tuple[Event, Event]:
         assert is_left_event(event)
         opposite_event = self._to_opposite_event(event)
         mid_point_to_event_end_event: Event = Event(len(self._endpoints))
@@ -467,16 +467,16 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
     def _divide_event_by_mid_segment_event_endpoints(
             self,
             event: Event,
-            mid_segment_event_start: _hints.Point[_hints.Scalar],
-            mid_segment_event_end: _hints.Point[_hints.Scalar],
+            mid_segment_event_start: hints.Point[hints.Scalar],
+            mid_segment_event_end: hints.Point[hints.Scalar],
             /
     ) -> None:
         self._divide_event_by_midpoint(event, mid_segment_event_end)
         self._divide_event_by_midpoint(event, mid_segment_event_start)
 
-    def _divide_event_by_midpoint(self, event: Event,
-                                  point: _hints.Point[_hints.Scalar],
-                                  /) -> None:
+    def _divide_event_by_midpoint(
+            self, event: Event, point: hints.Point[hints.Scalar], /
+    ) -> None:
         point_to_event_start_event, point_to_event_end_event = self._divide(
                 event, point
         )
@@ -487,16 +487,16 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
             self,
             min_start_event: Event,
             max_start_event: Event,
-            max_start: _hints.Point[_hints.Scalar],
-            min_end: _hints.Point[_hints.Scalar],
+            max_start: hints.Point[hints.Scalar],
+            min_end: hints.Point[hints.Scalar],
             /
     ) -> None:
         self._divide_event_by_midpoint(max_start_event, min_end)
         self._divide_event_by_midpoint(min_start_event, max_start)
 
     def _events_to_connectivity(
-            self, events: _t.Sequence[Event], /
-    ) -> _t.List[int]:
+            self, events: t.Sequence[Event], /
+    ) -> t.List[int]:
         events_count = len(events)
         result = [0] * events_count
         event_id = 0
@@ -530,7 +530,7 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
                 )
         return result
 
-    def _find(self, event: Event, /) -> _t.Optional[Event]:
+    def _find(self, event: Event, /) -> t.Optional[Event]:
         assert is_left_event(event)
         candidate = self._sweep_line_data.tree.find(
                 self._to_sweep_line_key(event)
@@ -593,12 +593,12 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
         return self._events_queue_data.pop()
 
     def _process_contour_events(self,
-                                contour_events: _t.Sequence[Event],
+                                contour_events: t.Sequence[Event],
                                 contour_id: int,
-                                are_events_processed: _t.List[bool],
-                                are_from_in_to_out: _t.List[bool],
-                                contours_ids: _t.List[int],
-                                events_ids: _t.Sequence[int],
+                                are_events_processed: t.List[bool],
+                                are_from_in_to_out: t.List[bool],
+                                contours_ids: t.List[int],
+                                events_ids: t.Sequence[int],
                                 /) -> None:
         for event in contour_events:
             are_events_processed[events_ids[event]] = True
@@ -626,13 +626,13 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
     def _to_contour_events(
             self,
             event: Event,
-            events: _t.Sequence[Event],
-            events_ids: _t.Sequence[int],
-            connectivity: _t.Sequence[int],
-            are_events_processed: _t.Sequence[bool],
-            visited_endpoints_positions: _t.List[int],
+            events: t.Sequence[Event],
+            events_ids: t.Sequence[int],
+            connectivity: t.Sequence[int],
+            are_events_processed: t.Sequence[bool],
+            visited_endpoints_positions: t.List[int],
             /
-    ) -> _t.List[Event]:
+    ) -> t.List[Event]:
         assert is_left_event(event)
         result = [event]
         visited_endpoints_positions[self._to_start_id(event)] = 0
@@ -683,7 +683,7 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
 
     def _to_sweep_line_key(
             self, event: Event, /
-    ) -> SweepLineKey[_hints.Scalar]:
+    ) -> SweepLineKey[hints.Scalar]:
         return SweepLineKey(
                 event, self._is_left_event_from_first_operand(event),
                 self._endpoints, self._opposites
@@ -691,9 +691,9 @@ class Operation(ABC, _t.Generic[_hints.Scalar]):
 
 
 def _populate_with_segments(
-        segments: _t.Iterable[_hints.Segment[_hints.Scalar]],
-        endpoints: _t.List[_hints.Point[_hints.Scalar]],
-        have_interior_to_left: _t.List[bool],
+        segments: t.Iterable[hints.Segment[hints.Scalar]],
+        endpoints: t.List[hints.Point[hints.Scalar]],
+        have_interior_to_left: t.List[bool],
         /
 ) -> None:
     for segment in segments:
@@ -708,8 +708,8 @@ def _populate_with_segments(
 
 
 def _multisegmentals_to_segments_count(
-        multisegmentals: _t.Sequence[
-            _hints.Multisegmental[_hints.Segment[_hints.Scalar]]
+        multisegmentals: t.Sequence[
+            hints.Multisegmental[hints.Segment[hints.Scalar]]
         ],
         /
 ) -> int:
@@ -717,8 +717,8 @@ def _multisegmentals_to_segments_count(
 
 
 def _to_next_event_id(event_id: int,
-                      are_events_processed: _t.Sequence[bool],
-                      connectivity: _t.Sequence[int],
+                      are_events_processed: t.Sequence[bool],
+                      connectivity: t.Sequence[int],
                       /) -> int:
     candidate = event_id
     while True:

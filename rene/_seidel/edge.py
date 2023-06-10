@@ -1,35 +1,35 @@
 from __future__ import annotations
 
-import typing as _t
+import typing as t
 from typing import Any
 
-import typing_extensions as _te
+import typing_extensions as te
 from reprit.base import generate_repr
 
 from rene import (Orientation,
-                  hints as _hints)
+                  hints)
 from rene._utils import orient
 
 
-class Edge(_t.Generic[_hints.Scalar]):
+class Edge(t.Generic[hints.Scalar]):
     @classmethod
     def from_endpoints(cls,
-                       left_point: _hints.Point[_hints.Scalar],
-                       right_point: _hints.Point[_hints.Scalar],
+                       left_point: hints.Point[hints.Scalar],
+                       right_point: hints.Point[hints.Scalar],
                        interior_to_left: bool,
-                       /) -> _te.Self:
+                       /) -> te.Self:
         return cls(left_point, right_point, interior_to_left)
 
     def orientation_of(self,
-                       point: _hints.Point[_hints.Scalar],
+                       point: hints.Point[hints.Scalar],
                        /) -> Orientation:
         return orient(self.left_point, self.right_point, point)
 
     __slots__ = 'interior_to_left', 'left_point', 'right_point'
 
     def __init__(self,
-                 left_point: _hints.Point[_hints.Scalar],
-                 right_point: _hints.Point[_hints.Scalar],
+                 left_point: hints.Point[hints.Scalar],
+                 right_point: hints.Point[hints.Scalar],
                  interior_to_left: bool,
                  /) -> None:
         assert left_point < right_point, 'Incorrect endpoints order'
@@ -37,7 +37,7 @@ class Edge(_t.Generic[_hints.Scalar]):
             self.interior_to_left, self.left_point, self.right_point
         ) = interior_to_left, left_point, right_point
 
-    def __lt__(self, other: _te.Self, /) -> Any:
+    def __lt__(self, other: te.Self, /) -> Any:
         """Checks if the edge is lower than the other."""
         other_left_orientation = self.orientation_of(other.left_point)
         other_right_orientation = self.orientation_of(other.right_point)

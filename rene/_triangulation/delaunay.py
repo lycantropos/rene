@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import typing as _t
+import typing as t
 
-import typing_extensions as _te
+import typing_extensions as te
 from reprit.base import generate_repr
 
 from rene._rene import Orientation
@@ -16,9 +16,9 @@ from .quad_edge import (QuadEdge,
                         to_opposite_edge)
 
 
-class DelaunayTriangulation(_t.Generic[Scalar]):
+class DelaunayTriangulation(t.Generic[Scalar]):
     @classmethod
-    def from_points(cls, points: _t.Sequence[Point[Scalar]], /) -> _te.Self:
+    def from_points(cls, points: t.Sequence[Point[Scalar]], /) -> te.Self:
         endpoints = list(points)
         endpoints.sort()
         mesh = Mesh.from_points(deduplicate(endpoints))
@@ -37,7 +37,7 @@ class DelaunayTriangulation(_t.Generic[Scalar]):
     def right_side(self) -> QuadEdge:
         return self._right_side
 
-    def to_boundary_points(self) -> _t.List[Point[Scalar]]:
+    def to_boundary_points(self) -> t.List[Point[Scalar]]:
         if self:
             result = []
             start = self.left_side
@@ -54,7 +54,7 @@ class DelaunayTriangulation(_t.Generic[Scalar]):
 
     def triangles_vertices(
             self
-    ) -> _t.List[_t.Tuple[Point[Scalar], Point[Scalar], Point[Scalar]]]:
+    ) -> t.List[t.Tuple[Point[Scalar], Point[Scalar], Point[Scalar]]]:
         mesh = self.mesh
         result = []
         for edge in mesh.to_edges():

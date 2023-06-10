@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import typing as _t
+import typing as t
 
-import typing_extensions as _te
+import typing_extensions as te
 from reprit.base import generate_repr
 from rithm.fraction import Fraction
 
@@ -39,10 +39,12 @@ class Segment:
             return locate_point_in_segment(self.start, self.end, other)
         raise TypeError(f'Unsupported type: {type(other)!r}.')
 
-    def relate_to(self, other: _te.Self, /) -> Relation:
+    def relate_to(self, other: hints.Compound[Fraction], /) -> Relation:
         if isinstance(other, self._context.segment_cls):
             return segment.relate_to_segment(self.start, self.end,
                                              other.start, other.end)
+        elif isinstance(other, self._context.contour_cls):
+            return segment.relate_to_contour(self, other)
         raise TypeError(f'Unsupported type: {type(other)!r}.')
 
     __module__ = 'rene.exact'
@@ -51,7 +53,7 @@ class Segment:
     def __new__(cls,
                 start: hints.Point[Fraction],
                 end: hints.Point[Fraction],
-                /) -> _te.Self:
+                /) -> te.Self:
         self = super().__new__(cls)
         self._end, self._start = end, start
         return self
@@ -62,15 +64,15 @@ class Segment:
     def __hash__(self) -> int:
         return hash(frozenset((self.start, self.end)))
 
-    @_t.overload
+    @t.overload
     def __eq__(self, other: Segment, /) -> bool:
         pass
 
-    @_t.overload
-    def __eq__(self, other: _t.Any, /) -> _t.Any:
+    @t.overload
+    def __eq__(self, other: t.Any, /) -> t.Any:
         pass
 
-    def __eq__(self, other: _t.Any, /) -> _t.Any:
+    def __eq__(self, other: t.Any, /) -> t.Any:
         return (self.start == other.start and self.end == other.end
                 or self.end == other.start and self.start == other.end
                 if isinstance(other, Segment)

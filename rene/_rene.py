@@ -1,7 +1,7 @@
 from enum import (IntEnum,
                   unique)
 
-import typing_extensions as _te
+import typing_extensions as te
 
 MIN_CONTOUR_VERTICES_COUNT = 3
 MIN_MULTIPOLYGON_POLYGONS_COUNT = 2
@@ -19,7 +19,7 @@ class Base(IntEnum):
         return f'{type(self).__qualname__}.{self.name}'
 
 
-@_te.final
+@te.final
 @unique
 class Location(Base):
     #: point lies on the boundary of the geometry
@@ -30,7 +30,7 @@ class Location(Base):
     INTERIOR = 1
 
 
-@_te.final
+@te.final
 @unique
 class Orientation(Base):
     CLOCKWISE = -1
@@ -38,7 +38,7 @@ class Orientation(Base):
     COUNTERCLOCKWISE = 1
 
 
-@_te.final
+@te.final
 @unique
 class Relation(Base):
     """
@@ -86,7 +86,7 @@ class Relation(Base):
     WITHIN = 10
 
     @property
-    def complement(self) -> _te.Self:
+    def complement(self) -> te.Self:
         if (self is Relation.CROSS
                 or self is Relation.DISJOINT
                 or self is Relation.EQUAL

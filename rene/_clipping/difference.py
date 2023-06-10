@@ -1,7 +1,7 @@
 from itertools import chain
 from typing import List
 
-from rene import hints as _hints
+from rene import hints
 from rene._utils import (do_boxes_have_no_common_area,
                          flags_to_false_indices,
                          flags_to_true_indices,
@@ -12,7 +12,7 @@ from . import shaped
 from .event import Event
 
 
-class ShapedDifference(shaped.Operation[_hints.Scalar]):
+class ShapedDifference(shaped.Operation[hints.Scalar]):
     def _detect_if_left_event_from_result(self, event: Event, /) -> bool:
         return (self._is_outside_left_event(event)
                 if self._is_left_event_from_first_operand(event)
@@ -21,10 +21,10 @@ class ShapedDifference(shaped.Operation[_hints.Scalar]):
 
 
 def subtract_multipolygons(
-        first: _hints.Multipolygon[_hints.Scalar],
-        second: _hints.Multipolygon[_hints.Scalar], 
+        first: hints.Multipolygon[hints.Scalar],
+        second: hints.Multipolygon[hints.Scalar],
         /
-) -> List[_hints.Polygon[_hints.Scalar]]:
+) -> List[hints.Polygon[hints.Scalar]]:
     first_polygons, second_polygons = first.polygons, second.polygons
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
     second_boxes = [polygon.bounding_box for polygon in second_polygons]
@@ -83,10 +83,10 @@ def subtract_multipolygons(
 
 
 def subtract_polygon_from_multipolygon(
-        first: _hints.Multipolygon[_hints.Scalar],
-        second: _hints.Polygon[_hints.Scalar], 
+        first: hints.Multipolygon[hints.Scalar],
+        second: hints.Polygon[hints.Scalar],
         /
-) -> List[_hints.Polygon[_hints.Scalar]]:
+) -> List[hints.Polygon[hints.Scalar]]:
     first_polygons = first.polygons
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
     first_bounding_box, second_bounding_box = (
@@ -133,10 +133,10 @@ def subtract_polygon_from_multipolygon(
 
 
 def subtract_multipolygon_from_polygon(
-        first: _hints.Polygon[_hints.Scalar],
-        second: _hints.Multipolygon[_hints.Scalar],
+        first: hints.Polygon[hints.Scalar],
+        second: hints.Multipolygon[hints.Scalar],
         /
-) -> List[_hints.Polygon[_hints.Scalar]]:
+) -> List[hints.Polygon[hints.Scalar]]:
     second_polygons = second.polygons
     second_boxes = [polygon.bounding_box for polygon in second_polygons]
     first_bounding_box, second_bounding_box = (first.bounding_box,
@@ -171,10 +171,10 @@ def subtract_multipolygon_from_polygon(
 
 
 def subtract_polygons(
-        first: _hints.Polygon[_hints.Scalar],
-        second: _hints.Polygon[_hints.Scalar],
+        first: hints.Polygon[hints.Scalar],
+        second: hints.Polygon[hints.Scalar],
         /
-) -> List[_hints.Polygon[_hints.Scalar]]:
+) -> List[hints.Polygon[hints.Scalar]]:
     first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)
     if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):

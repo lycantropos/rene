@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import typing as _t
+import typing as t
 
-import typing_extensions as _te
-from rithm.fraction import Fraction as _Fraction
+import typing_extensions as te
+from rithm.fraction import Fraction
 
 from rene._rene import MIN_CONTOUR_VERTICES_COUNT
 from rene._triangulation.constrained_delaunay import (
@@ -20,9 +20,7 @@ from .polygon import Polygon
 
 class ConstrainedDelaunayTriangulation:
     @classmethod
-    def from_polygon(
-            cls, polygon: Polygon, /
-    ) -> ConstrainedDelaunayTriangulation:
+    def from_polygon(cls, polygon: Polygon, /) -> te.Self:
         return cls(_RawConstrainedDelaunayTriangulation.from_polygon(polygon))
 
     @property
@@ -33,11 +31,11 @@ class ConstrainedDelaunayTriangulation:
                        else shrink_collinear_vertices(boundary_points))
 
     @property
-    def triangles(self) -> _t.Sequence[Contour]:
+    def triangles(self) -> t.Sequence[Contour]:
         return [Contour(vertices)
                 for vertices in self._raw.triangles_vertices()]
 
-    _raw: _RawConstrainedDelaunayTriangulation[_Fraction]
+    _raw: _RawConstrainedDelaunayTriangulation[Fraction]
 
     __module__ = 'rene.exact'
     __slots__ = '_raw',
@@ -46,8 +44,8 @@ class ConstrainedDelaunayTriangulation:
         return bool(self._raw)
 
     def __new__(
-            cls, raw: _RawConstrainedDelaunayTriangulation[_Fraction], /
-    ) -> _te.Self:
+            cls, raw: _RawConstrainedDelaunayTriangulation[Fraction], /
+    ) -> te.Self:
         self = super().__new__(cls)
         self._raw = raw
         return self
@@ -55,7 +53,7 @@ class ConstrainedDelaunayTriangulation:
 
 class DelaunayTriangulation:
     @classmethod
-    def from_points(cls, points: _t.Sequence[Point], /) -> _te.Self:
+    def from_points(cls, points: t.Sequence[Point], /) -> te.Self:
         return cls(_RawDelaunayTriangulation.from_points(points))
 
     @property
@@ -66,11 +64,11 @@ class DelaunayTriangulation:
                        else shrink_collinear_vertices(boundary_points))
 
     @property
-    def triangles(self) -> _t.Sequence[Contour]:
+    def triangles(self) -> t.Sequence[Contour]:
         return [Contour(vertices)
                 for vertices in self._raw.triangles_vertices()]
 
-    _raw: _RawDelaunayTriangulation[_Fraction]
+    _raw: _RawDelaunayTriangulation[Fraction]
 
     __module__ = 'rene.exact'
     __slots__ = '_raw',
@@ -78,7 +76,7 @@ class DelaunayTriangulation:
     def __bool__(self) -> bool:
         return bool(self._raw)
 
-    def __new__(cls, raw: _RawDelaunayTriangulation[_Fraction], /) -> _te.Self:
+    def __new__(cls, raw: _RawDelaunayTriangulation[Fraction], /) -> te.Self:
         self = super().__new__(cls)
         self._raw = raw
         return self

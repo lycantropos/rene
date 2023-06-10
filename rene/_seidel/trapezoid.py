@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-import typing as _t
+import typing as t
 
-import typing_extensions as _te
+import typing_extensions as te
 from reprit.base import generate_repr
 
-from rene import hints as _hints
+from rene import hints
 from .edge import Edge
 
 
-class Trapezoid(_t.Generic[_hints.Scalar]):
-    def is_component(self, edges: _t.Sequence[Edge[_hints.Scalar]], /) -> bool:
+class Trapezoid(t.Generic[hints.Scalar]):
+    def is_component(self, edges: t.Sequence[Edge[hints.Scalar]], /) -> bool:
         """
         Checks if the trapezoid is a component of decomposed geometry.
         """
@@ -18,43 +18,43 @@ class Trapezoid(_t.Generic[_hints.Scalar]):
                 and not edges[self.above_edge_index].interior_to_left)
 
     @property
-    def lower_left_leaf_index(self) -> _t.Optional[int]:
+    def lower_left_leaf_index(self) -> t.Optional[int]:
         return self._lower_left_leaf_index
 
     @property
-    def lower_right_leaf_index(self) -> _t.Optional[int]:
+    def lower_right_leaf_index(self) -> t.Optional[int]:
         return self._lower_right_leaf_index
 
     @property
-    def upper_left_leaf_index(self) -> _t.Optional[int]:
+    def upper_left_leaf_index(self) -> t.Optional[int]:
         return self._upper_left_leaf_index
 
     @property
-    def upper_right_leaf_index(self) -> _t.Optional[int]:
+    def upper_right_leaf_index(self) -> t.Optional[int]:
         return self._upper_right_leaf_index
 
-    def set_as_lower_left(self, value: _t.Optional[_te.Self], /) -> None:
+    def set_as_lower_left(self, value: t.Optional[te.Self], /) -> None:
         if value is None:
             self._lower_left_leaf_index = None
         else:
             self._lower_left_leaf_index = value.leaf_index
             value._lower_right_leaf_index = self.leaf_index
 
-    def set_as_lower_right(self, value: _t.Optional[_te.Self], /) -> None:
+    def set_as_lower_right(self, value: t.Optional[te.Self], /) -> None:
         if value is None:
             self._lower_right_leaf_index = None
         else:
             self._lower_right_leaf_index = value.leaf_index
             value._lower_left_leaf_index = self.leaf_index
 
-    def set_as_upper_left(self, value: _t.Optional[_te.Self], /) -> None:
+    def set_as_upper_left(self, value: t.Optional[te.Self], /) -> None:
         if value is None:
             self._upper_left_leaf_index = None
         else:
             self._upper_left_leaf_index = value.leaf_index
             value._upper_right_leaf_index = self.leaf_index
 
-    def set_as_upper_right(self, value: _t.Optional[_te.Self], /) -> None:
+    def set_as_upper_right(self, value: t.Optional[te.Self], /) -> None:
         if value is None:
             self._upper_right_leaf_index = None
         else:
@@ -67,14 +67,14 @@ class Trapezoid(_t.Generic[_hints.Scalar]):
         '_upper_left_leaf_index', '_upper_right_leaf_index'
     )
 
-    _lower_left_leaf_index: _t.Optional[int]
-    _lower_right_leaf_index: _t.Optional[int]
-    _upper_left_leaf_index: _t.Optional[int]
-    _upper_right_leaf_index: _t.Optional[int]
+    _lower_left_leaf_index: t.Optional[int]
+    _lower_right_leaf_index: t.Optional[int]
+    _upper_left_leaf_index: t.Optional[int]
+    _upper_right_leaf_index: t.Optional[int]
 
     def __init__(self,
-                 left_point: _hints.Point[_hints.Scalar],
-                 right_point: _hints.Point[_hints.Scalar],
+                 left_point: hints.Point[hints.Scalar],
+                 right_point: hints.Point[hints.Scalar],
                  below_edge_index: int,
                  above_edge_index: int,
                  leaf_index: int,

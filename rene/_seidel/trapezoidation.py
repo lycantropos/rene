@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-import typing as _t
+import typing as t
 from itertools import repeat
 
-import typing_extensions as _te
+import typing_extensions as te
 
 from rene import (Location,
                   Orientation,
-                  hints as _hints)
+                  hints)
 from rene._utils import (permute,
                          to_arg_min,
                          to_contour_orientation)
@@ -19,12 +19,12 @@ from .x_node import XNode
 from .y_node import YNode
 
 
-class Trapezoidation(_t.Generic[_hints.Scalar]):
+class Trapezoidation(t.Generic[hints.Scalar]):
     @classmethod
     def from_multisegment(cls,
-                          multisegment: _hints.Multisegment[_hints.Scalar],
+                          multisegment: hints.Multisegment[hints.Scalar],
                           seed: int,
-                          /) -> _te.Self:
+                          /) -> te.Self:
         assert seed >= 0, f'Seed should be non-negative, but got {seed}.'
         edges = [(Edge.from_endpoints(segment.start, segment.end, False)
                   if segment.start < segment.end
@@ -35,9 +35,9 @@ class Trapezoidation(_t.Generic[_hints.Scalar]):
 
     @classmethod
     def from_polygon(cls,
-                     polygon: _hints.Polygon[_hints.Scalar],
+                     polygon: hints.Polygon[hints.Scalar],
                      seed: int,
-                     /) -> _te.Self:
+                     /) -> te.Self:
         border = polygon.border
         is_border_positively_oriented = (
                 to_contour_orientation(border.vertices,
@@ -74,7 +74,7 @@ class Trapezoidation(_t.Generic[_hints.Scalar]):
     def height(self) -> int:
         return self._root.to_height(self._nodes)
 
-    def locate(self, point: _hints.Point[_hints.Scalar], /) -> Location:
+    def locate(self, point: hints.Point[hints.Scalar], /) -> Location:
         """
         Finds location of point relative to decomposed geometry.
 
@@ -87,18 +87,18 @@ class Trapezoidation(_t.Generic[_hints.Scalar]):
 
     __slots__ = '_edges', '_nodes'
 
-    _edges: _t.Sequence[Edge[_hints.Scalar]]
-    _nodes: _t.Sequence[Node[_hints.Scalar]]
+    _edges: t.Sequence[Edge[hints.Scalar]]
+    _nodes: t.Sequence[Node[hints.Scalar]]
 
     def __new__(cls,
-                edges: _t.Sequence[Edge[_hints.Scalar]],
-                nodes: _t.Sequence[Node[_hints.Scalar]],
-                /) -> _te.Self:
+                edges: t.Sequence[Edge[hints.Scalar]],
+                nodes: t.Sequence[Node[hints.Scalar]],
+                /) -> te.Self:
         self = super().__new__(cls)
         self._edges, self._nodes = edges, nodes
         return self
 
-    def __contains__(self, point: _hints.Point[_hints.Scalar], /) -> bool:
+    def __contains__(self, point: hints.Point[hints.Scalar], /) -> bool:
         """
         Checks if point is contained in decomposed geometry.
 
@@ -112,10 +112,10 @@ class Trapezoidation(_t.Generic[_hints.Scalar]):
 
     @classmethod
     def _from_box_with_edges(cls,
-                             box: _hints.Box[_hints.Scalar],
-                             edges: _t.List[Edge[_hints.Scalar]],
-                             /) -> _te.Self:
-        nodes: _t.List[Node[_hints.Scalar]] = []
+                             box: hints.Box[hints.Scalar],
+                             edges: t.List[Edge[hints.Scalar]],
+                             /) -> te.Self:
+        nodes: t.List[Node[hints.Scalar]] = []
         edges_count = len(edges)
         _add_edge_to_single_trapezoid(
                 0, _box_to_trapezoid(box, edges, nodes), edges, nodes
@@ -125,13 +125,13 @@ class Trapezoidation(_t.Generic[_hints.Scalar]):
         return cls(edges, nodes)
 
     @property
-    def _root(self) -> Node[_hints.Scalar]:
+    def _root(self) -> Node[hints.Scalar]:
         return self._nodes[0]
 
 
 def _add_edge(edge_index: int,
-              edges: _t.Sequence[Edge[_hints.Scalar]],
-              nodes: _t.List[Node[_hints.Scalar]],
+              edges: t.Sequence[Edge[hints.Scalar]],
+              nodes: t.List[Node[hints.Scalar]],
               /) -> None:
     trapezoids = _find_intersecting_trapezoids(edge_index, edges, nodes)
     if len(trapezoids) == 1:
@@ -152,11 +152,11 @@ def _add_edge(edge_index: int,
 
 def _add_edge_to_first_trapezoid(
         edge_index: int,
-        trapezoid: Trapezoid[_hints.Scalar],
-        edges: _t.Sequence[Edge[_hints.Scalar]],
-        nodes: _t.List[Node[_hints.Scalar]],
+        trapezoid: Trapezoid[hints.Scalar],
+        edges: t.Sequence[Edge[hints.Scalar]],
+        nodes: t.List[Node[hints.Scalar]],
         /
-) -> _t.Tuple[Trapezoid[_hints.Scalar], Trapezoid[_hints.Scalar]]:
+) -> t.Tuple[Trapezoid[hints.Scalar], Trapezoid[hints.Scalar]]:
     edge = edges[edge_index]
     above, below = (
         _create_trapezoid(edge.left_point, trapezoid.right_point,
@@ -203,11 +203,11 @@ def _add_edge_to_first_trapezoid(
 
 def _add_edge_to_last_trapezoid(
         edge_index: int,
-        trapezoid: Trapezoid[_hints.Scalar],
-        prev_above: Trapezoid[_hints.Scalar],
-        prev_below: Trapezoid[_hints.Scalar],
-        edges: _t.Sequence[Edge[_hints.Scalar]],
-        nodes: _t.List[Node[_hints.Scalar]],
+        trapezoid: Trapezoid[hints.Scalar],
+        prev_above: Trapezoid[hints.Scalar],
+        prev_below: Trapezoid[hints.Scalar],
+        edges: t.Sequence[Edge[hints.Scalar]],
+        nodes: t.List[Node[hints.Scalar]],
         /
 ) -> None:
     edge = edges[edge_index]
@@ -267,12 +267,12 @@ def _add_edge_to_last_trapezoid(
 
 def _add_edge_to_middle_trapezoid(
         edge_index: int,
-        trapezoid: Trapezoid[_hints.Scalar],
-        prev_above: Trapezoid[_hints.Scalar],
-        prev_below: Trapezoid[_hints.Scalar],
-        nodes: _t.List[Node[_hints.Scalar]],
+        trapezoid: Trapezoid[hints.Scalar],
+        prev_above: Trapezoid[hints.Scalar],
+        prev_below: Trapezoid[hints.Scalar],
+        nodes: t.List[Node[hints.Scalar]],
         /
-) -> _t.Tuple[Trapezoid[_hints.Scalar], Trapezoid[_hints.Scalar]]:
+) -> t.Tuple[Trapezoid[hints.Scalar], Trapezoid[hints.Scalar]]:
     if prev_above.above_edge_index is trapezoid.above_edge_index:
         above = prev_above
         above.right_point = trapezoid.right_point
@@ -310,9 +310,9 @@ def _add_edge_to_middle_trapezoid(
 
 
 def _add_edge_to_single_trapezoid(edge_index: int,
-                                  trapezoid: Trapezoid[_hints.Scalar],
-                                  edges: _t.Sequence[Edge[_hints.Scalar]],
-                                  nodes: _t.List[Node[_hints.Scalar]],
+                                  trapezoid: Trapezoid[hints.Scalar],
+                                  edges: t.Sequence[Edge[hints.Scalar]],
+                                  nodes: t.List[Node[hints.Scalar]],
                                   /) -> None:
     edge = edges[edge_index]
     above, below = (
@@ -375,12 +375,10 @@ def _add_edge_to_single_trapezoid(edge_index: int,
     _replace_node(trapezoid.leaf_index, replacement_node_index, nodes)
 
 
-def _box_to_trapezoid(
-        box: _hints.Box[_hints.Scalar],
-        edges: _t.List[Edge[_hints.Scalar]],
-        nodes: _t.List[Node[_hints.Scalar]],
-        /
-) -> Trapezoid[_hints.Scalar]:
+def _box_to_trapezoid(box: hints.Box[hints.Scalar],
+                      edges: t.List[Edge[hints.Scalar]],
+                      nodes: t.List[Node[hints.Scalar]],
+                      /) -> Trapezoid[hints.Scalar]:
     min_x, min_y, max_x, max_y = box.min_x, box.min_y, box.max_x, box.max_y
     delta_x, delta_y = (max_x - min_x) or 1, (max_y - min_y) or 1
     min_x, min_y, max_x, max_y = (min_x - delta_x, min_y - delta_y,
@@ -397,24 +395,22 @@ def _box_to_trapezoid(
                              below_edge_index, above_edge_index, nodes)
 
 
-def _create_trapezoid(
-        left_point: _hints.Point[_hints.Scalar],
-        right_point: _hints.Point[_hints.Scalar],
-        below_edge_index: int,
-        above_edge_index: int,
-        nodes: _t.List[Node[_hints.Scalar]],
-        /
-) -> Trapezoid[_hints.Scalar]:
+def _create_trapezoid(left_point: hints.Point[hints.Scalar],
+                      right_point: hints.Point[hints.Scalar],
+                      below_edge_index: int,
+                      above_edge_index: int,
+                      nodes: t.List[Node[hints.Scalar]],
+                      /) -> Trapezoid[hints.Scalar]:
     leaf = Leaf(Trapezoid(left_point, right_point, below_edge_index,
                           above_edge_index, len(nodes)))
     nodes.append(leaf)
     return leaf.trapezoid
 
 
-def _create_x_node(point: _hints.Point[_hints.Scalar],
+def _create_x_node(point: hints.Point[hints.Scalar],
                    left_node_index: int,
                    right_node_index: int,
-                   nodes: _t.List[Node[_hints.Scalar]],
+                   nodes: t.List[Node[hints.Scalar]],
                    /) -> int:
     result = len(nodes)
     nodes.append(XNode(point, left_node_index, right_node_index))
@@ -424,19 +420,17 @@ def _create_x_node(point: _hints.Point[_hints.Scalar],
 def _create_y_node(edge_index: int,
                    below_index: int,
                    above_index: int,
-                   nodes: _t.List[Node[_hints.Scalar]],
+                   nodes: t.List[Node[hints.Scalar]],
                    /) -> int:
     result = len(nodes)
     nodes.append(YNode(edge_index, below_index, above_index))
     return result
 
 
-def _find_intersecting_trapezoids(
-        edge_index: int,
-        edges: _t.Sequence[Edge[_hints.Scalar]],
-        nodes: _t.Sequence[Node[_hints.Scalar]],
-        /
-) -> _t.List[Trapezoid[_hints.Scalar]]:
+def _find_intersecting_trapezoids(edge_index: int,
+                                  edges: t.Sequence[Edge[hints.Scalar]],
+                                  nodes: t.Sequence[Node[hints.Scalar]],
+                                  /) -> t.List[Trapezoid[hints.Scalar]]:
     edge = edges[edge_index]
     cursor = nodes[0]
     for _ in repeat(None, len(nodes) - 1):
@@ -466,16 +460,16 @@ def _find_intersecting_trapezoids(
 
 
 def _get_trapezoid(
-        index: int, nodes: _t.Sequence[Node[_hints.Scalar]], /
-) -> Trapezoid[_hints.Scalar]:
+        index: int, nodes: t.Sequence[Node[hints.Scalar]], /
+) -> Trapezoid[hints.Scalar]:
     node = nodes[index]
     assert isinstance(node, Leaf), node
     return node.trapezoid
 
 
 def _maybe_get_trapezoid(
-        index: _t.Optional[int], nodes: _t.Sequence[Node[_hints.Scalar]], /
-) -> _t.Optional[Trapezoid[_hints.Scalar]]:
+        index: t.Optional[int], nodes: t.Sequence[Node[hints.Scalar]], /
+) -> t.Optional[Trapezoid[hints.Scalar]]:
     if index is None:
         return None
     node = nodes[index]
@@ -485,7 +479,7 @@ def _maybe_get_trapezoid(
 
 def _replace_node(original_index: int,
                   replacement_index: int,
-                  nodes: _t.List[Node[_hints.Scalar]],
+                  nodes: t.List[Node[hints.Scalar]],
                   /) -> None:
     assert replacement_index == len(nodes) - 1, (replacement_index,
                                                  len(nodes) - 1)

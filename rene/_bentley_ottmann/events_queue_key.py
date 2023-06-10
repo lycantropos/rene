@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import typing as _t
+import typing as t
 
-import typing_extensions as _te
+import typing_extensions as te
 from reprit.base import generate_repr
 
 from rene._hints import Map
@@ -12,7 +12,7 @@ from .event import (Event,
                     is_left_event)
 
 
-class EventsQueueKey(_t.Generic[Scalar]):
+class EventsQueueKey(t.Generic[Scalar]):
     __slots__ = 'endpoints', 'event', 'opposites'
 
     def __init__(self,
@@ -25,7 +25,7 @@ class EventsQueueKey(_t.Generic[Scalar]):
 
     __repr__ = generate_repr(__init__)
 
-    def __lt__(self, other: _te.Self, /) -> bool:
+    def __lt__(self, other: te.Self, /) -> bool:
         """
         Checks if the event should be processed before the other.
         """
