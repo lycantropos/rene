@@ -20,31 +20,33 @@ from .polygon import Polygon as _Polygon
 class Trapezoidation:
     @classmethod
     def from_multisegment(cls,
-                          _multisegment: _Multisegment,
+                          multisegment: _Multisegment,
+                          /,
                           *,
                           seeder: _t.Optional[_Seeder] = None) -> _te.Self:
-        seed = (random.randint(0, _multisegment.segments_count)
+        seed = (random.randint(0, multisegment.segments_count)
                 if seeder is None
                 else seeder())
         _validate_seed(seed)
-        return cls(_RawTrapezoidation.from_multisegment(_multisegment, seed))
+        return cls(_RawTrapezoidation.from_multisegment(multisegment, seed))
 
     @classmethod
     def from_polygon(cls,
-                     _polygon: _Polygon,
+                     polygon: _Polygon,
+                     /,
                      *,
                      seeder: _t.Optional[_Seeder] = None) -> _te.Self:
-        seed = (random.randint(0, _polygon.segments_count)
+        seed = (random.randint(0, polygon.segments_count)
                 if seeder is None
                 else seeder())
         _validate_seed(seed)
-        return cls(_RawTrapezoidation.from_polygon(_polygon, seed))
+        return cls(_RawTrapezoidation.from_polygon(polygon, seed))
 
     @property
     def height(self) -> int:
         return self._raw.height
 
-    def locate(self, point: _Point) -> Location:
+    def locate(self, point: _Point, /) -> Location:
         return self._raw.locate(point)
 
     _raw: _RawTrapezoidation[_Fraction]
@@ -52,10 +54,10 @@ class Trapezoidation:
     __module__ = 'rene.exact'
     __slots__ = '_raw',
 
-    def __new__(cls, _raw: _RawTrapezoidation[_Fraction]) -> _te.Self:
+    def __new__(cls, raw: _RawTrapezoidation[_Fraction], /) -> _te.Self:
         self = super().__new__(cls)
-        self._raw = _raw
+        self._raw = raw
         return self
 
-    def __contains__(self, point: _Point) -> bool:
+    def __contains__(self, point: _Point, /) -> bool:
         return self._raw.__contains__(point)

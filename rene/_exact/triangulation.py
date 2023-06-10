@@ -20,8 +20,9 @@ from .polygon import Polygon
 
 class ConstrainedDelaunayTriangulation:
     @classmethod
-    def from_polygon(cls,
-                     polygon: Polygon) -> ConstrainedDelaunayTriangulation:
+    def from_polygon(
+            cls, polygon: Polygon, /
+    ) -> ConstrainedDelaunayTriangulation:
         return cls(_RawConstrainedDelaunayTriangulation.from_polygon(polygon))
 
     @property
@@ -45,16 +46,16 @@ class ConstrainedDelaunayTriangulation:
         return bool(self._raw)
 
     def __new__(
-            cls, _raw: _RawConstrainedDelaunayTriangulation[_Fraction]
+            cls, raw: _RawConstrainedDelaunayTriangulation[_Fraction], /
     ) -> _te.Self:
         self = super().__new__(cls)
-        self._raw = _raw
+        self._raw = raw
         return self
 
 
 class DelaunayTriangulation:
     @classmethod
-    def from_points(cls, points: _t.Sequence[Point]) -> _te.Self:
+    def from_points(cls, points: _t.Sequence[Point], /) -> _te.Self:
         return cls(_RawDelaunayTriangulation.from_points(points))
 
     @property
@@ -77,7 +78,7 @@ class DelaunayTriangulation:
     def __bool__(self) -> bool:
         return bool(self._raw)
 
-    def __new__(cls, _raw: _RawDelaunayTriangulation[_Fraction]) -> _te.Self:
+    def __new__(cls, raw: _RawDelaunayTriangulation[_Fraction], /) -> _te.Self:
         self = super().__new__(cls)
-        self._raw = _raw
+        self._raw = raw
         return self

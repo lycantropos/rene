@@ -77,7 +77,7 @@ class Contour:
             neighbour_segments_touches_count += 1
         return neighbour_segments_touches_count == len(segments)
 
-    def locate(self, point: _hints.Point[Fraction]) -> Location:
+    def locate(self, point: _hints.Point[Fraction], /) -> Location:
         return (Location.EXTERIOR
                 if all(segment.locate(point) is Location.EXTERIOR
                        for segment in self.segments)
@@ -89,7 +89,9 @@ class Contour:
     __module__ = 'rene.exact'
     __slots__ = '_vertices',
 
-    def __new__(cls, vertices: _t.Sequence[_hints.Point[Fraction]]) -> Contour:
+    def __new__(
+            cls, vertices: _t.Sequence[_hints.Point[Fraction]], /
+    ) -> Contour:
         if len(vertices) < MIN_CONTOUR_VERTICES_COUNT:
             raise ValueError('Contour should have at least '
                              f'{MIN_CONTOUR_VERTICES_COUNT} vertices, '
@@ -98,18 +100,18 @@ class Contour:
         self._vertices = list(vertices)
         return self
 
-    def __contains__(self, point: _hints.Point[Fraction]) -> bool:
+    def __contains__(self, point: _hints.Point[Fraction], /) -> bool:
         return self.locate(point) is not Location.EXTERIOR
 
     @_t.overload
-    def __eq__(self, other: _te.Self) -> bool:
+    def __eq__(self, other: _te.Self, /) -> bool:
         pass
 
     @_t.overload
-    def __eq__(self, other: _t.Any) -> _t.Any:
+    def __eq__(self, other: _t.Any, /) -> _t.Any:
         pass
 
-    def __eq__(self, other: _t.Any) -> _t.Any:
+    def __eq__(self, other: _t.Any, /) -> _t.Any:
         return (
             _are_non_empty_unique_sequences_rotationally_equivalent(
                     self.vertices, other.vertices
@@ -139,7 +141,8 @@ class Contour:
 
 def _neighbour_segments_vertices_touch(
         intersection: Intersection[Fraction],
-        segments: _t.Sequence[_hints.Segment[Fraction]]
+        segments: _t.Sequence[_hints.Segment[Fraction]],
+        /
 ) -> bool:
     first_segment = segments[intersection.first_segment_id]
     second_segment = segments[intersection.second_segment_id]
@@ -162,7 +165,7 @@ def _neighbour_segments_vertices_touch(
 
 
 def _are_non_empty_unique_sequences_rotationally_equivalent(
-        left: _t.Sequence[_t.Any], right: _t.Sequence[_t.Any]
+        left: _t.Sequence[_t.Any], right: _t.Sequence[_t.Any], /
 ) -> bool:
     assert left and right
     if len(left) != len(right):

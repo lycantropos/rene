@@ -24,46 +24,46 @@ class Point:
     __module__ = 'rene.exact'
     __slots__ = '_x', '_y'
 
-    def __new__(cls, x: _Coordinate, y: _Coordinate) -> _te.Self:
+    def __new__(cls, x: _Coordinate, y: _Coordinate, /) -> _te.Self:
         self = super().__new__(cls)
         self._x, self._y = Fraction(x), Fraction(y)
         return self
 
     @_t.overload
-    def __eq__(self, other: _te.Self) -> bool:
+    def __eq__(self, other: _te.Self, /) -> bool:
         ...
 
     @_t.overload
-    def __eq__(self, other: _t.Any) -> _t.Any:
+    def __eq__(self, other: _t.Any, /) -> _t.Any:
         ...
 
-    def __eq__(self, other: _t.Any) -> _t.Any:
+    def __eq__(self, other: _t.Any, /) -> _t.Any:
         return (self.x == other.x and self.y == other.y
                 if isinstance(other, Point)
                 else NotImplemented)
 
     @_t.overload
-    def __ge__(self, other: _te.Self) -> bool:
+    def __ge__(self, other: _te.Self, /) -> bool:
         ...
 
     @_t.overload
-    def __ge__(self, other: _t.Any) -> _t.Any:
+    def __ge__(self, other: _t.Any, /) -> _t.Any:
         ...
 
-    def __ge__(self, other: _t.Any) -> _t.Any:
+    def __ge__(self, other: _t.Any, /) -> _t.Any:
         return (self.x > other.x or self.x == other.x and self.y >= other.y
                 if isinstance(other, Point)
                 else NotImplemented)
 
     @_t.overload
-    def __gt__(self, other: _te.Self) -> bool:
+    def __gt__(self, other: _te.Self, /) -> bool:
         ...
 
     @_t.overload
-    def __gt__(self, other: _t.Any) -> _t.Any:
+    def __gt__(self, other: _t.Any, /) -> _t.Any:
         ...
 
-    def __gt__(self, other: _t.Any) -> _t.Any:
+    def __gt__(self, other: _t.Any, /) -> _t.Any:
         return (self.x > other.x or self.x == other.x and self.y > other.y
                 if isinstance(other, Point)
                 else NotImplemented)
@@ -72,27 +72,27 @@ class Point:
         return hash((self.x, self.y))
 
     @_t.overload
-    def __le__(self, other: _te.Self) -> bool:
+    def __le__(self, other: _te.Self, /) -> bool:
         ...
 
     @_t.overload
-    def __le__(self, other: _t.Any) -> _t.Any:
+    def __le__(self, other: _t.Any, /) -> _t.Any:
         ...
 
-    def __le__(self, other: _t.Any) -> _t.Any:
+    def __le__(self, other: _t.Any, /) -> _t.Any:
         return (self.x < other.x or self.x == other.x and self.y <= other.y
                 if isinstance(other, Point)
                 else NotImplemented)
 
     @_t.overload
-    def __lt__(self, other: _te.Self) -> bool:
+    def __lt__(self, other: _te.Self, /) -> bool:
         ...
 
     @_t.overload
-    def __lt__(self, other: _t.Any) -> _t.Any:
+    def __lt__(self, other: _t.Any, /) -> _t.Any:
         ...
 
-    def __lt__(self, other: _t.Any) -> _t.Any:
+    def __lt__(self, other: _t.Any, /) -> _t.Any:
         return (self.x < other.x or self.x == other.x and self.y < other.y
                 if isinstance(other, Point)
                 else NotImplemented)

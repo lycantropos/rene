@@ -46,7 +46,7 @@ class Multisegment:
     def segments_count(self) -> int:
         return len(self._segments)
 
-    def locate(self, point: _hints.Point[Fraction]) -> Location:
+    def locate(self, point: _hints.Point[Fraction], /) -> Location:
         for segment in self._segments:
             location = segment.locate(point)
             if location is not Location.EXTERIOR:
@@ -63,8 +63,9 @@ class Multisegment:
     __module__ = 'rene.exact'
     __slots__ = '_segments',
 
-    def __new__(cls,
-                segments: _t.Sequence[_hints.Segment[Fraction]]) -> _te.Self:
+    def __new__(
+            cls, segments: _t.Sequence[_hints.Segment[Fraction]], /
+    ) -> _te.Self:
         if len(segments) < MIN_MULTISEGMENT_SEGMENTS_COUNT:
             raise ValueError('Multisegment should have at least '
                              f'{MIN_MULTISEGMENT_SEGMENTS_COUNT} segments, '
@@ -73,18 +74,18 @@ class Multisegment:
         self._segments = list(segments)
         return self
 
-    def __contains__(self, point: _hints.Point[Fraction]) -> bool:
+    def __contains__(self, point: _hints.Point[Fraction], /) -> bool:
         return self.locate(point) is not Location.EXTERIOR
 
     @_t.overload
-    def __eq__(self, other: Multisegment) -> bool:
+    def __eq__(self, other: Multisegment, /) -> bool:
         ...
 
     @_t.overload
-    def __eq__(self, other: _t.Any) -> _t.Any:
+    def __eq__(self, other: _t.Any, /) -> _t.Any:
         ...
 
-    def __eq__(self, other: _t.Any) -> _t.Any:
+    def __eq__(self, other: _t.Any, /) -> _t.Any:
         return (frozenset(self.segments) == frozenset(other.segments)
                 if isinstance(other, Multisegment)
                 else NotImplemented)

@@ -43,7 +43,7 @@ class Multipolygon:
     def segments_count(self) -> int:
         return sum(polygon.segments_count for polygon in self._polygons)
 
-    def locate(self, point: _hints.Point[Fraction]) -> Location:
+    def locate(self, point: _hints.Point[Fraction], /) -> Location:
         for polygon in self._polygons:
             location = polygon.locate(point)
             if location is not Location.EXTERIOR:
@@ -56,7 +56,7 @@ class Multipolygon:
     __slots__ = '_polygons',
 
     def __new__(
-            cls, polygons: _t.Sequence[_hints.Polygon[Fraction]]
+            cls, polygons: _t.Sequence[_hints.Polygon[Fraction]], /
     ) -> _te.Self:
         if len(polygons) < MIN_MULTIPOLYGON_POLYGONS_COUNT:
             raise ValueError('Multipolygon should have at least '
@@ -67,12 +67,12 @@ class Multipolygon:
         return self
 
     @_t.overload
-    def __and__(self, other: _hints.Empty[Fraction]) -> _hints.Empty[Fraction]:
+    def __and__(self, other: _hints.Empty[Fraction], /) -> _hints.Empty[Fraction]:
         ...
 
     @_t.overload
     def __and__(
-            self, other: _hints.Multipolygon[Fraction]
+            self, other: _hints.Multipolygon[Fraction], /
     ) -> _t.Union[
         _hints.Empty[Fraction], _hints.Multipolygon[Fraction],
         _hints.Polygon[Fraction]
@@ -81,7 +81,7 @@ class Multipolygon:
 
     @_t.overload
     def __and__(
-            self, other: _hints.Polygon[Fraction]
+            self, other: _hints.Polygon[Fraction], /
     ) -> _t.Union[
         _hints.Empty[Fraction], _hints.Multipolygon[Fraction],
         _hints.Polygon[Fraction]
@@ -89,10 +89,10 @@ class Multipolygon:
         ...
 
     @_t.overload
-    def __and__(self, other: _t.Any) -> _t.Any:
+    def __and__(self, other: _t.Any, /) -> _t.Any:
         ...
 
-    def __and__(self, other: _t.Any) -> _t.Any:
+    def __and__(self, other: _t.Any, /) -> _t.Any:
         return (
             self._context.empty_cls()
             if isinstance(other, self._context.empty_cls)
@@ -114,18 +114,18 @@ class Multipolygon:
             )
         )
 
-    def __contains__(self, point: _hints.Point[Fraction]) -> bool:
+    def __contains__(self, point: _hints.Point[Fraction], /) -> bool:
         return self.locate(point) is not Location.EXTERIOR
 
     @_t.overload
-    def __eq__(self, other: _te.Self) -> bool:
+    def __eq__(self, other: _te.Self, /) -> bool:
         ...
 
     @_t.overload
-    def __eq__(self, other: _t.Any) -> _t.Any:
+    def __eq__(self, other: _t.Any, /) -> _t.Any:
         ...
 
-    def __eq__(self, other: _t.Any) -> _t.Any:
+    def __eq__(self, other: _t.Any, /) -> _t.Any:
         return (frozenset(self.polygons) == frozenset(other.polygons)
                 if isinstance(other, self._context.multipolygon_cls)
                 else NotImplemented)
@@ -134,26 +134,26 @@ class Multipolygon:
         return hash(frozenset(self.polygons))
 
     @_t.overload
-    def __or__(self, other: _hints.Empty[Fraction]) -> _te.Self:
+    def __or__(self, other: _hints.Empty[Fraction], /) -> _te.Self:
         ...
 
     @_t.overload
     def __or__(
-            self, other: _hints.Multipolygon[Fraction]
+            self, other: _hints.Multipolygon[Fraction], /
     ) -> _t.Union[_hints.Multipolygon[Fraction], _hints.Polygon[Fraction]]:
         ...
 
     @_t.overload
     def __or__(
-            self, other: _hints.Polygon[Fraction]
+            self, other: _hints.Polygon[Fraction], /
     ) -> _t.Union[_hints.Multipolygon[Fraction], _hints.Polygon[Fraction]]:
         ...
 
     @_t.overload
-    def __or__(self, other: _t.Any) -> _t.Any:
+    def __or__(self, other: _t.Any, /) -> _t.Any:
         ...
 
-    def __or__(self, other: _t.Any) -> _t.Any:
+    def __or__(self, other: _t.Any, /) -> _t.Any:
         return (
             self
             if isinstance(other, self._context.empty_cls)
@@ -175,12 +175,12 @@ class Multipolygon:
     __repr__ = generate_repr(__new__)
 
     @_t.overload
-    def __sub__(self, other: _hints.Empty[Fraction]) -> _te.Self:
+    def __sub__(self, other: _hints.Empty[Fraction], /) -> _te.Self:
         ...
 
     @_t.overload
     def __sub__(
-            self, other: _hints.Multipolygon[Fraction]
+            self, other: _hints.Multipolygon[Fraction], /
     ) -> _t.Union[
         _hints.Empty[Fraction], _hints.Multipolygon[Fraction],
         _hints.Polygon[Fraction]
@@ -189,7 +189,7 @@ class Multipolygon:
 
     @_t.overload
     def __sub__(
-            self, other: _hints.Polygon[Fraction]
+            self, other: _hints.Polygon[Fraction], /
     ) -> _t.Union[
         _hints.Empty[Fraction], _hints.Multipolygon[Fraction],
         _hints.Polygon[Fraction]
@@ -197,10 +197,10 @@ class Multipolygon:
         ...
 
     @_t.overload
-    def __sub__(self, other: _t.Any) -> _t.Any:
+    def __sub__(self, other: _t.Any, /) -> _t.Any:
         ...
 
-    def __sub__(self, other: _t.Any) -> _t.Any:
+    def __sub__(self, other: _t.Any, /) -> _t.Any:
         return (
             self
             if isinstance(other, self._context.empty_cls)
@@ -229,12 +229,12 @@ class Multipolygon:
                 .format(', '.join(map(str, self.polygons))))
 
     @_t.overload
-    def __xor__(self, other: _hints.Empty[Fraction]) -> _te.Self:
+    def __xor__(self, other: _hints.Empty[Fraction], /) -> _te.Self:
         ...
 
     @_t.overload
     def __xor__(
-            self, other: _hints.Multipolygon[Fraction]
+            self, other: _hints.Multipolygon[Fraction], /
     ) -> _t.Union[
         _hints.Empty[Fraction], _hints.Multipolygon[Fraction],
         _hints.Polygon[Fraction]
@@ -243,7 +243,7 @@ class Multipolygon:
 
     @_t.overload
     def __xor__(
-            self, other: _hints.Polygon[Fraction]
+            self, other: _hints.Polygon[Fraction], /
     ) -> _t.Union[
         _hints.Empty[Fraction], _hints.Multipolygon[Fraction],
         _hints.Polygon[Fraction]
@@ -251,10 +251,10 @@ class Multipolygon:
         ...
 
     @_t.overload
-    def __xor__(self, other: _t.Any) -> _t.Any:
+    def __xor__(self, other: _t.Any, /) -> _t.Any:
         ...
 
-    def __xor__(self, other: _t.Any) -> _t.Any:
+    def __xor__(self, other: _t.Any, /) -> _t.Any:
         return (
             self
             if isinstance(other, self._context.empty_cls)
