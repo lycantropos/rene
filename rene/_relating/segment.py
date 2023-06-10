@@ -9,16 +9,19 @@ from rene._utils import (orient,
 
 
 def relate_to_contour(
-        segment: hints.Segment[hints.Scalar],
+        start: hints.Point[hints.Scalar],
+        end: hints.Point[hints.Scalar],
         contour: hints.Contour[hints.Scalar],
         /
 ) -> Relation:
-    has_no_touch = has_no_cross = True
+    has_no_cross = has_no_touch = True
     last_touched_edge_index = last_touched_edge_start = None
-    start, end = segment.start, segment.end
-    for index, sub_segment in enumerate(contour.segments):
-        relation = relate_to_segment(sub_segment.start, sub_segment.end,
-                                     segment.start, segment.end)
+    for index, contour_segment in enumerate(contour.segments):
+        contour_segment_end, contour_segment_start = (contour_segment.end,
+                                                      contour_segment.start)
+        relation = relate_to_segment(
+                contour_segment_start, contour_segment_end, start, end
+        )
         if relation is Relation.COMPONENT or relation is Relation.EQUAL:
             return Relation.COMPONENT
         elif relation is Relation.OVERLAP or relation is Relation.COMPOSITE:
@@ -31,37 +34,34 @@ def relate_to_contour(
                 assert last_touched_edge_start is not None
                 if (
                         index - last_touched_edge_index == 1
-                        and start != sub_segment.start != end
-                        and start != sub_segment.end != end
-                        and (orient(start, end, sub_segment.start)
+                        and start != contour_segment_start != end
+                        and start != contour_segment_end != end
+                        and (orient(start, end, contour_segment_start)
                              is Orientation.COLLINEAR)
                         and
                         point_vertex_line_divides_angle(
-                                start, sub_segment.start, sub_segment.end,
-                                last_touched_edge_start
+                                start, contour_segment_start,
+                                contour_segment_end, last_touched_edge_start
                         )
                 ):
                     has_no_cross = False
             last_touched_edge_index = index
-            last_touched_edge_start = sub_segment.start
+            last_touched_edge_start = contour_segment_start
         elif has_no_cross and relation is Relation.CROSS:
             has_no_cross = False
-    if has_no_cross and not has_no_touch:
+    if (has_no_cross
+            and not has_no_touch
+            and last_touched_edge_index == contour.vertices_count - 1):
         vertices = contour.vertices
-        first_sub_segment_start, first_sub_segment_end = (vertices[-1],
-                                                          vertices[0])
-        if (last_touched_edge_index == len(vertices) - 1
-                and relate_to_segment(first_sub_segment_start,
-                                      first_sub_segment_end, segment.start,
-                                      segment.end) is Relation.TOUCH
-                and start != first_sub_segment_start != end
-                and start != first_sub_segment_end != end
-                and (orient(start, end, first_sub_segment_start)
+        if ((relate_to_segment(vertices[-1], vertices[0], start, end)
+             is Relation.TOUCH)
+                and start != vertices[-1] != end
+                and start != vertices[0] != end
+                and (orient(start, end, vertices[-1])
                      is Orientation.COLLINEAR)
-                and point_vertex_line_divides_angle(start,
-                                                    first_sub_segment_start,
-                                                    first_sub_segment_end,
-                                                    vertices[-2])):
+                and point_vertex_line_divides_angle(start, vertices[-1],
+                                                    vertices[-2],
+                                                    vertices[0])):
             has_no_cross = False
     return ((Relation.DISJOINT if has_no_touch else Relation.TOUCH)
             if has_no_cross

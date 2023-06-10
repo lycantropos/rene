@@ -531,7 +531,7 @@ class Segment:
     def locate(self, point: Point, /) -> _Location:
         ...
 
-    def relate_to(self, other: Segment, /) -> _Relation:
+    def relate_to(self, other: _Compound, /) -> _Relation:
         ...
 
     def __new__(cls, start: Point, end: Point, /) -> _te.Self:

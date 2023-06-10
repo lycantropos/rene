@@ -1390,8 +1390,19 @@ impl PyExactSegment {
     }
 
     #[pyo3(signature = (other, /))]
-    fn relate_to(&self, other: &Self) -> PyResult<&PyAny> {
-        try_relation_to_py_relation(self.0.relate_to(&other.0))
+    fn relate_to(&self, other: &PyAny) -> PyResult<&PyAny> {
+        if other.is_instance_of::<PyExactContour>() {
+            try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactContour>()?.0))
+        } else if other.is_instance_of::<PyExactEmpty>() {
+            try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactEmpty>()?.0))
+        } else if other.is_instance_of::<PyExactSegment>() {
+            try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactSegment>()?.0))
+        } else {
+            Err(PyTypeError::new_err(format!(
+                "Expected compound geometry, but got {}.",
+                other.get_type().repr()?
+            )))
+        }
     }
 
     #[pyo3(signature = (point, /))]
