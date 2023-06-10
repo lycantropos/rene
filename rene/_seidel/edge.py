@@ -37,7 +37,7 @@ class Edge(_t.Generic[_hints.Scalar]):
             self.interior_to_left, self.left_point, self.right_point
         ) = interior_to_left, left_point, right_point
 
-    def __lt__(self, other: _te.Self) -> Any:
+    def __lt__(self, other: _te.Self, /) -> Any:
         """Checks if the edge is lower than the other."""
         other_left_orientation = self.orientation_of(other.left_point)
         other_right_orientation = self.orientation_of(other.right_point)
