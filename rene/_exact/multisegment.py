@@ -6,12 +6,12 @@ import typing_extensions as te
 from reprit.base import generate_repr
 from rithm.fraction import Fraction
 
-from rene import (Location,
+from rene import (MIN_MULTISEGMENT_SEGMENTS_COUNT,
+                  Location,
                   Relation,
                   hints)
 from rene._bentley_ottmann.base import sweep
 from rene._context import Context
-from rene._rene import MIN_MULTISEGMENT_SEGMENTS_COUNT
 
 
 class Multisegment:

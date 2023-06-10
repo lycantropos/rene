@@ -11,13 +11,14 @@ from .trapezoidation import Trapezoidation
 from .triangulation import (ConstrainedDelaunayTriangulation,
                             DelaunayTriangulation)
 
-Contour._context = Empty._context = Multipolygon._context = \
+ConstrainedDelaunayTriangulation._context = Contour._context = \
+    DelaunayTriangulation._context = Empty._context = Multipolygon._context = \
     Multisegment._context = Polygon._context = Segment._context = \
-    _Context(box_cls=Box,
-             contour_cls=Contour,
-             empty_cls=Empty,
-             multipolygon_cls=Multipolygon,
-             multisegment_cls=Multisegment,
-             point_cls=Point,
-             polygon_cls=Polygon,
-             segment_cls=Segment)
+    Trapezoidation._context = _Context(box_cls=Box,
+                                       contour_cls=Contour,
+                                       empty_cls=Empty,
+                                       multipolygon_cls=Multipolygon,
+                                       multisegment_cls=Multisegment,
+                                       point_cls=Point,
+                                       polygon_cls=Polygon,
+                                       segment_cls=Segment)

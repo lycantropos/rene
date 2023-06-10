@@ -30,10 +30,8 @@ class Segment:
     def start(self) -> hints.Point[Fraction]:
         return self._start
 
-    def locate(self, other: hints.Point[Fraction], /) -> Location:
-        if isinstance(other, self._context.point_cls):
-            return locate_point_in_segment(self.start, self.end, other)
-        raise TypeError(f'Unsupported type: {type(other)!r}.')
+    def locate(self, point: hints.Point[Fraction], /) -> Location:
+        return locate_point_in_segment(self.start, self.end, point)
 
     def relate_to(self, other: hints.Compound[Fraction], /) -> Relation:
         if isinstance(other, self._context.segment_cls):

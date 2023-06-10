@@ -6,22 +6,20 @@ import typing as t
 import typing_extensions as te
 from rithm.fraction import Fraction
 
-from rene import Location
+from rene import (Location,
+                  hints)
+from rene._context import Context
 from rene._seidel.trapezoidation import Trapezoidation as _RawTrapezoidation
 from rene._utils import validate_seed
-from rene.hints import Seeder
-from .multisegment import Multisegment
-from .point import Point
-from .polygon import Polygon
 
 
 class Trapezoidation:
     @classmethod
     def from_multisegment(cls,
-                          multisegment: Multisegment,
+                          multisegment: hints.Multisegment[Fraction],
                           /,
                           *,
-                          seeder: t.Optional[Seeder] = None) -> te.Self:
+                          seeder: t.Optional[hints.Seeder] = None) -> te.Self:
         seed = (random.randint(0, multisegment.segments_count)
                 if seeder is None
                 else seeder())
@@ -30,10 +28,10 @@ class Trapezoidation:
 
     @classmethod
     def from_polygon(cls,
-                     polygon: Polygon,
+                     polygon: hints.Polygon[Fraction],
                      /,
                      *,
-                     seeder: t.Optional[Seeder] = None) -> te.Self:
+                     seeder: t.Optional[hints.Seeder] = None) -> te.Self:
         seed = (random.randint(0, polygon.segments_count)
                 if seeder is None
                 else seeder())
@@ -44,9 +42,10 @@ class Trapezoidation:
     def height(self) -> int:
         return self._raw.height
 
-    def locate(self, point: Point, /) -> Location:
+    def locate(self, point: hints.Point[Fraction], /) -> Location:
         return self._raw.locate(point)
 
+    _context: t.ClassVar[Context[Fraction]]
     _raw: _RawTrapezoidation[Fraction]
 
     __module__ = 'rene.exact'
@@ -57,5 +56,5 @@ class Trapezoidation:
         self._raw = raw
         return self
 
-    def __contains__(self, point: Point, /) -> bool:
+    def __contains__(self, point: hints.Point[Fraction], /) -> bool:
         return self._raw.__contains__(point)

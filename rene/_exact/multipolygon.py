@@ -7,7 +7,8 @@ import typing_extensions as te
 from reprit.base import generate_repr
 from rithm.fraction import Fraction
 
-from rene import (Location,
+from rene import (MIN_MULTIPOLYGON_POLYGONS_COUNT,
+                  Location,
                   hints)
 from rene._clipping import (intersect_multipolygon_with_polygon,
                             intersect_multipolygons,
@@ -18,7 +19,6 @@ from rene._clipping import (intersect_multipolygon_with_polygon,
                             unite_multipolygon_with_polygon,
                             unite_multipolygons)
 from rene._context import Context
-from rene._rene import MIN_MULTIPOLYGON_POLYGONS_COUNT
 from rene._utils import (collect_maybe_empty_polygons,
                          collect_non_empty_polygons)
 
