@@ -316,6 +316,15 @@ pub(crate) fn permute<T>(values: &mut [T], mut seed: usize) {
     }
 }
 
+pub(crate) fn point_vertex_line_divides_angle<Point: Orient>(
+    point: &Point,
+    vertex: &Point,
+    first_ray_point: &Point,
+    second_ray_point: &Point,
+) -> bool {
+    vertex.orient(first_ray_point, point) == vertex.orient(point, second_ray_point)
+}
+
 pub(crate) fn shrink_collinear_vertices<'a, Point: Orient>(
     vertices: &[&'a Point],
 ) -> Vec<&'a Point> {

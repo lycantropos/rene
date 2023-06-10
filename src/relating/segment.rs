@@ -1,6 +1,104 @@
-use crate::operations::{to_sorted_pair, Orient};
+use crate::operations::{point_vertex_line_divides_angle, to_sorted_pair, Orient};
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
+use crate::traits::{Contoural, Segmental};
+
+pub(crate) fn relate_to_contour<
+    Contour: Contoural<Segment = Segment, Vertex = Point>,
+    Point: Orient + PartialOrd,
+    Segment: Segmental<Endpoint = Point>,
+>(
+    start: &Point,
+    end: &Point,
+    contour: &Contour,
+) -> Relation {
+    let mut has_no_cross = true;
+    let mut has_no_touch = true;
+    let mut last_touched_edge_index: Option<usize> = None;
+    let mut last_touched_edge_start: Option<Point> = None;
+    for (index, contour_segment) in contour.segments().into_iter().enumerate() {
+        let (contour_segment_end, contour_segment_start) =
+            (contour_segment.end(), contour_segment.start());
+        let relation =
+            relate_to_segment(&contour_segment_start, &contour_segment_end, &start, &end);
+        match relation {
+            Relation::Component | Relation::Equal => return Relation::Component,
+            Relation::Composite | Relation::Overlap => return Relation::Overlap,
+            Relation::Cross => {
+                if has_no_cross {
+                    has_no_cross = false;
+                }
+            }
+            Relation::Touch => {
+                if has_no_touch {
+                    has_no_touch = false;
+                } else if has_no_cross {
+                    debug_assert!(last_touched_edge_index.is_some());
+                    debug_assert!(last_touched_edge_start.is_some());
+                    if index - unsafe { last_touched_edge_index.unwrap_unchecked() } == 1
+                        && contour_segment_start.ne(start)
+                        && contour_segment_start.ne(end)
+                        && contour_segment_end.ne(start)
+                        && contour_segment_end.ne(end)
+                        && matches!(
+                            start.orient(end, &contour_segment_start),
+                            Orientation::Collinear
+                        )
+                        && point_vertex_line_divides_angle(
+                            start,
+                            &contour_segment_start,
+                            &contour_segment_end,
+                            unsafe { &last_touched_edge_start.unwrap_unchecked() },
+                        )
+                    {
+                        has_no_cross = false;
+                    }
+                    last_touched_edge_index = Some(index);
+                    last_touched_edge_start = Some(contour_segment_start);
+                }
+            }
+            _ => unreachable!(),
+        }
+    }
+    if has_no_cross
+        && !has_no_touch
+        && unsafe {
+            debug_assert!(last_touched_edge_index.is_some());
+            last_touched_edge_index.unwrap_unchecked()
+        } == contour.vertices_count() - 1
+    {
+        let vertices = contour.vertices();
+        if matches!(
+            relate_to_segment(&vertices[vertices.len() - 1], &vertices[0], start, end),
+            Relation::Touch
+        ) && vertices[vertices.len() - 1].ne(start)
+            && vertices[vertices.len() - 1].ne(end)
+            && vertices[0].ne(start)
+            && vertices[0].ne(end)
+            && matches!(
+                start.orient(end, &vertices[vertices.len() - 1]),
+                Orientation::Collinear
+            )
+            && point_vertex_line_divides_angle(
+                start,
+                &vertices[vertices.len() - 1],
+                &vertices[vertices.len() - 2],
+                &vertices[0],
+            )
+        {
+            has_no_cross = false;
+        }
+    }
+    if has_no_cross {
+        if has_no_touch {
+            Relation::Disjoint
+        } else {
+            Relation::Touch
+        }
+    } else {
+        Relation::Cross
+    }
+}
 
 pub(crate) fn relate_to_segment<Point: Orient + PartialOrd>(
     first_start: &Point,
