@@ -11,54 +11,54 @@ from rene import (Location as _Location,
 
 class _Scalar(_te.Protocol):
     @_t.overload
-    def __add__(self, other: int) -> _te.Self:
+    def __add__(self, other: int, /) -> _te.Self:
         pass
 
     @_t.overload
-    def __add__(self, other: _te.Self) -> _te.Self:
+    def __add__(self, other: _te.Self, /) -> _te.Self:
         pass
 
     @_t.overload
-    def __eq__(self, other: _te.Self) -> bool:
+    def __eq__(self, other: _te.Self, /) -> bool:
         pass
 
     @_t.overload
-    def __eq__(self, other: _t.Any) -> _t.Any:
+    def __eq__(self, other: _t.Any, /) -> _t.Any:
         pass
 
     @_t.overload
-    def __ge__(self, other: _te.Self) -> bool:
+    def __ge__(self, other: _te.Self, /) -> bool:
         pass
 
     @_t.overload
-    def __ge__(self, other: _t.Any) -> _t.Any:
+    def __ge__(self, other: _t.Any, /) -> _t.Any:
         pass
 
     @_t.overload
-    def __gt__(self, other: _te.Self) -> bool:
+    def __gt__(self, other: _te.Self, /) -> bool:
         pass
 
     @_t.overload
-    def __gt__(self, other: _t.Any) -> _t.Any:
+    def __gt__(self, other: _t.Any, /) -> _t.Any:
         pass
 
     @_t.overload
-    def __le__(self, other: _te.Self) -> bool:
+    def __le__(self, other: _te.Self, /) -> bool:
         pass
 
     @_t.overload
-    def __le__(self, other: _t.Any) -> _t.Any:
+    def __le__(self, other: _t.Any, /) -> _t.Any:
         pass
 
     @_t.overload
-    def __lt__(self, other: _te.Self) -> bool:
+    def __lt__(self, other: _te.Self, /) -> bool:
         pass
 
     @_t.overload
-    def __lt__(self, other: _t.Any) -> _t.Any:
+    def __lt__(self, other: _t.Any, /) -> _t.Any:
         pass
 
-    def __mul__(self, other: _te.Self) -> _te.Self:
+    def __mul__(self, other: _te.Self, /) -> _te.Self:
         pass
 
     def __neg__(self) -> _te.Self:
@@ -68,14 +68,14 @@ class _Scalar(_te.Protocol):
         pass
 
     @_t.overload
-    def __sub__(self, other: int) -> _te.Self:
+    def __sub__(self, other: int, /) -> _te.Self:
         pass
 
     @_t.overload
-    def __sub__(self, other: _te.Self) -> _te.Self:
+    def __sub__(self, other: _te.Self, /) -> _te.Self:
         pass
 
-    def __truediv__(self, other: _te.Self) -> _te.Self:
+    def __truediv__(self, other: _te.Self, /) -> _te.Self:
         pass
 
 
@@ -88,11 +88,11 @@ Scalar_co = _t.TypeVar('Scalar_co',
 
 class _SelfComparable(_te.Protocol):
     @_t.overload
-    def __eq__(self, other: _te.Self) -> bool:
+    def __eq__(self, other: _te.Self, /) -> bool:
         ...
 
     @_t.overload
-    def __eq__(self, other: _t.Any) -> _t.Any:
+    def __eq__(self, other: _t.Any, /) -> _t.Any:
         ...
 
 
@@ -105,22 +105,22 @@ class Point(_SelfComparable, _te.Protocol[Scalar_co]):
     def y(self) -> Scalar_co:
         ...
 
-    def __new__(cls, x: Scalar_co, y: Scalar_co) -> _te.Self:
+    def __new__(cls, x: Scalar_co, y: Scalar_co, /) -> _te.Self:
         ...
 
-    def __ge__(self, other: _te.Self) -> bool:
+    def __ge__(self, other: _te.Self, /) -> bool:
         ...
 
-    def __gt__(self, other: _te.Self) -> bool:
+    def __gt__(self, other: _te.Self, /) -> bool:
         ...
 
     def __hash__(self) -> int:
         ...
 
-    def __le__(self, other: _te.Self) -> bool:
+    def __le__(self, other: _te.Self, /) -> bool:
         ...
 
-    def __lt__(self, other: _te.Self) -> bool:
+    def __lt__(self, other: _te.Self, /) -> bool:
         ...
 
     def __repr__(self) -> str:
@@ -131,10 +131,10 @@ class Point(_SelfComparable, _te.Protocol[Scalar_co]):
 
 
 class Empty(_SelfComparable, _te.Protocol[Scalar]):
-    def locate(self, point: Point[Scalar]) -> _Location:
+    def locate(self, point: Point[Scalar], /) -> _Location:
         ...
 
-    def relate_to(self, other: _t.Union[Compound[Scalar]]) -> _Relation:
+    def relate_to(self, other: _t.Union[Compound[Scalar]], /) -> _Relation:
         ...
 
     def __new__(cls) -> _te.Self:
@@ -142,26 +142,27 @@ class Empty(_SelfComparable, _te.Protocol[Scalar]):
 
     def __and__(
             self,
-            other: _t.Union[_te.Self, Multipolygon[Scalar], Polygon[Scalar]]
+            other: _t.Union[_te.Self, Multipolygon[Scalar], Polygon[Scalar]],
+            /
     ) -> _te.Self:
         ...
 
-    def __contains__(self, point: Point[Scalar]) -> bool:
+    def __contains__(self, point: Point[Scalar], /) -> bool:
         ...
 
     def __hash__(self) -> int:
         ...
 
     @_t.overload
-    def __or__(self, other: _te.Self) -> _te.Self:
+    def __or__(self, other: _te.Self, /) -> _te.Self:
         ...
 
     @_t.overload
-    def __or__(self, other: Multipolygon[Scalar]) -> Multipolygon[Scalar]:
+    def __or__(self, other: Multipolygon[Scalar], /) -> Multipolygon[Scalar]:
         ...
 
     @_t.overload
-    def __or__(self, other: Polygon[Scalar]) -> Polygon[Scalar]:
+    def __or__(self, other: Polygon[Scalar], /) -> Polygon[Scalar]:
         ...
 
     def __repr__(self) -> str:
@@ -172,20 +173,21 @@ class Empty(_SelfComparable, _te.Protocol[Scalar]):
 
     def __sub__(
             self,
-            other: _t.Union[_te.Self, Multipolygon[Scalar], Polygon[Scalar]]
+            other: _t.Union[_te.Self, Multipolygon[Scalar], Polygon[Scalar]], 
+            /
     ) -> _te.Self:
         ...
 
     @_t.overload
-    def __xor__(self, other: _te.Self) -> _te.Self:
+    def __xor__(self, other: _te.Self, /) -> _te.Self:
         ...
 
     @_t.overload
-    def __xor__(self, other: Multipolygon[Scalar]) -> Multipolygon[Scalar]:
+    def __xor__(self, other: Multipolygon[Scalar], /) -> Multipolygon[Scalar]:
         ...
 
     @_t.overload
-    def __xor__(self, other: Polygon[Scalar]) -> Polygon[Scalar]:
+    def __xor__(self, other: Polygon[Scalar], /) -> Polygon[Scalar]:
         ...
 
 
@@ -206,41 +208,42 @@ class Box(_SelfComparable, _te.Protocol[Scalar_co]):
     def min_y(self) -> Scalar_co:
         ...
 
-    def covers(self, other: _te.Self) -> bool:
+    def covers(self, other: _te.Self, /) -> bool:
         ...
 
-    def disjoint_with(self, other: _te.Self) -> bool:
+    def disjoint_with(self, other: _te.Self, /) -> bool:
         ...
 
-    def enclosed_by(self, other: _te.Self) -> bool:
+    def enclosed_by(self, other: _te.Self, /) -> bool:
         ...
 
-    def encloses(self, other: _te.Self) -> bool:
+    def encloses(self, other: _te.Self, /) -> bool:
         ...
 
-    def equals_to(self, other: _te.Self) -> bool:
+    def equals_to(self, other: _te.Self, /) -> bool:
         ...
 
     def is_valid(self) -> bool:
         ...
 
-    def overlaps(self, other: _te.Self) -> bool:
+    def overlaps(self, other: _te.Self, /) -> bool:
         ...
 
-    def relate_to(self, other: _te.Self) -> _Relation:
+    def relate_to(self, other: _te.Self, /) -> _Relation:
         ...
 
-    def touches(self, other: _te.Self) -> bool:
+    def touches(self, other: _te.Self, /) -> bool:
         ...
 
-    def within(self, other: _te.Self) -> bool:
+    def within(self, other: _te.Self, /) -> bool:
         ...
 
     def __new__(cls,
                 min_x: Scalar_co,
                 max_x: Scalar_co,
                 min_y: Scalar_co,
-                max_y: Scalar_co) -> _te.Self:
+                max_y: Scalar_co,
+                /) -> _te.Self:
         ...
 
     def __hash__(self) -> int:
@@ -266,16 +269,16 @@ class Segment(_SelfComparable, _te.Protocol[Scalar]):
     def start(self) -> Point[Scalar]:
         ...
 
-    def locate(self, point: Point[Scalar]) -> _Location:
+    def locate(self, point: Point[Scalar], /) -> _Location:
         ...
 
-    def relate_to(self, other: _te.Self) -> _Relation:
+    def relate_to(self, other: _te.Self, /) -> _Relation:
         ...
 
-    def __new__(cls, start: Point[Scalar], end: Point[Scalar]) -> _te.Self:
+    def __new__(cls, start: Point[Scalar], end: Point[Scalar], /) -> _te.Self:
         ...
 
-    def __contains__(self, point: Point[Scalar]) -> bool:
+    def __contains__(self, point: Point[Scalar], /) -> bool:
         ...
 
     def __hash__(self) -> int:
@@ -324,13 +327,13 @@ class Contour(_SelfComparable, Multisegmental[Segment[Scalar]],
     def is_valid(self) -> bool:
         ...
 
-    def locate(self, point: Point[Scalar]) -> _Location:
+    def locate(self, point: Point[Scalar], /) -> _Location:
         ...
 
-    def __new__(cls, vertices: _t.Sequence[Point[Scalar]]) -> _te.Self:
+    def __new__(cls, vertices: _t.Sequence[Point[Scalar]], /) -> _te.Self:
         ...
 
-    def __contains__(self, point: Point[Scalar]) -> bool:
+    def __contains__(self, point: Point[Scalar], /) -> bool:
         ...
 
     def __hash__(self) -> int:
@@ -352,13 +355,13 @@ class Multisegment(_SelfComparable, Multisegmental[Segment[Scalar]],
     def is_valid(self) -> bool:
         ...
 
-    def locate(self, point: Point[Scalar]) -> _Location:
+    def locate(self, point: Point[Scalar], /) -> _Location:
         ...
 
-    def __new__(cls, segments: _t.Sequence[Segment[Scalar]]) -> _te.Self:
+    def __new__(cls, segments: _t.Sequence[Segment[Scalar]], /) -> _te.Self:
         ...
 
-    def __contains__(self, point: Point[Scalar]) -> bool:
+    def __contains__(self, point: Point[Scalar], /) -> bool:
         ...
 
     def __hash__(self) -> int:
@@ -389,38 +392,38 @@ class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]],
     def holes_count(self) -> int:
         ...
 
-    def locate(self, point: Point[Scalar]) -> _Location:
+    def locate(self, point: Point[Scalar], /) -> _Location:
         ...
 
     def __new__(cls,
                 border: Contour[Scalar],
-                holes: _t.Sequence[Contour[Scalar]]) -> Polygon[Scalar]:
+                holes: _t.Sequence[Contour[Scalar]], /) -> Polygon[Scalar]:
         ...
 
     def __and__(
-            self, other: Polygon[Scalar]
+            self, other: Polygon[Scalar], /
     ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
-    def __contains__(self, point: Point[Scalar]) -> bool:
+    def __contains__(self, point: Point[Scalar], /) -> bool:
         ...
 
     def __hash__(self) -> int:
         ...
 
     @_t.overload
-    def __or__(self, other: Empty[Scalar]) -> Polygon[Scalar]:
+    def __or__(self, other: Empty[Scalar], /) -> Polygon[Scalar]:
         ...
 
     @_t.overload
     def __or__(
-            self, other: Multipolygon[Scalar]
+            self, other: Multipolygon[Scalar], /
     ) -> _t.Union[Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
     @_t.overload
     def __or__(
-            self, other: Polygon[Scalar]
+            self, other: Polygon[Scalar], /
     ) -> _t.Union[Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
@@ -431,34 +434,34 @@ class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]],
         ...
 
     @_t.overload
-    def __sub__(self, other: Empty[Scalar]) -> Polygon[Scalar]:
+    def __sub__(self, other: Empty[Scalar], /) -> Polygon[Scalar]:
         ...
 
     @_t.overload
     def __sub__(
-            self, other: Multipolygon[Scalar]
+            self, other: Multipolygon[Scalar], /
     ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
     @_t.overload
     def __sub__(
-            self, other: Polygon[Scalar]
+            self, other: Polygon[Scalar], /
     ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
     @_t.overload
-    def __xor__(self, other: Empty[Scalar]) -> Polygon[Scalar]:
+    def __xor__(self, other: Empty[Scalar], /) -> Polygon[Scalar]:
         ...
 
     @_t.overload
     def __xor__(
-            self, other: Multipolygon[Scalar]
+            self, other: Multipolygon[Scalar], /
     ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
     @_t.overload
     def __xor__(
-            self, other: Polygon[Scalar]
+            self, other: Polygon[Scalar], /
     ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
@@ -473,49 +476,49 @@ class Multipolygon(_SelfComparable, Multisegmental[Segment[Scalar]],
     def polygons_count(self) -> int:
         ...
 
-    def locate(self, point: Point[Scalar]) -> _Location:
+    def locate(self, point: Point[Scalar], /) -> _Location:
         ...
 
     def __new__(
-            cls, vertices: _t.Sequence[Polygon[Scalar]]
+            cls, vertices: _t.Sequence[Polygon[Scalar]], /
     ) -> Multipolygon[Scalar]:
         ...
 
     @_t.overload
-    def __and__(self, other: Empty[Scalar]) -> Empty[Scalar]:
+    def __and__(self, other: Empty[Scalar], /) -> Empty[Scalar]:
         ...
 
     @_t.overload
     def __and__(
-            self, other: Multipolygon[Scalar]
+            self, other: Multipolygon[Scalar], /
     ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
     @_t.overload
     def __and__(
-            self, other: Polygon[Scalar]
+            self, other: Polygon[Scalar], /
     ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
-    def __contains__(self, point: Point[Scalar]) -> bool:
+    def __contains__(self, point: Point[Scalar], /) -> bool:
         ...
 
     def __hash__(self) -> int:
         ...
 
     @_t.overload
-    def __or__(self, other: Empty[Scalar]) -> Multipolygon[Scalar]:
+    def __or__(self, other: Empty[Scalar], /) -> Multipolygon[Scalar]:
         ...
 
     @_t.overload
     def __or__(
-            self, other: Multipolygon[Scalar]
+            self, other: Multipolygon[Scalar], /
     ) -> _t.Union[Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
     @_t.overload
     def __or__(
-            self, other: Polygon[Scalar]
+            self, other: Polygon[Scalar], /
     ) -> _t.Union[Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
@@ -523,18 +526,18 @@ class Multipolygon(_SelfComparable, Multisegmental[Segment[Scalar]],
         ...
 
     @_t.overload
-    def __sub__(self, other: Empty[Scalar]) -> Multipolygon[Scalar]:
+    def __sub__(self, other: Empty[Scalar], /) -> Multipolygon[Scalar]:
         ...
 
     @_t.overload
     def __sub__(
-            self, other: Multipolygon[Scalar]
+            self, other: Multipolygon[Scalar], /
     ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
     @_t.overload
     def __sub__(
-            self, other: Polygon[Scalar]
+            self, other: Polygon[Scalar], /
     ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
@@ -542,18 +545,18 @@ class Multipolygon(_SelfComparable, Multisegmental[Segment[Scalar]],
         ...
 
     @_t.overload
-    def __xor__(self, other: Empty[Scalar]) -> Multipolygon[Scalar]:
+    def __xor__(self, other: Empty[Scalar], /) -> Multipolygon[Scalar]:
         ...
 
     @_t.overload
     def __xor__(
-            self, other: Multipolygon[Scalar]
+            self, other: Multipolygon[Scalar], /
     ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
     @_t.overload
     def __xor__(
-            self, other: Polygon[Scalar]
+            self, other: Polygon[Scalar], /
     ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
         ...
 
