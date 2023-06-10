@@ -291,14 +291,14 @@ class Segment(_SelfComparable, _te.Protocol[Scalar]):
         ...
 
 
-_Segmental = _t.TypeVar('_Segmental',
-                        bound=Segment[_t.Any],
-                        covariant=True)
+_Segmental_co = _t.TypeVar('_Segmental_co',
+                           bound=Segment[_t.Any],
+                           covariant=True)
 
 
-class Multisegmental(_te.Protocol[_Segmental]):
+class Multisegmental(_te.Protocol[_Segmental_co]):
     @property
-    def segments(self) -> _t.Sequence[_Segmental]:
+    def segments(self) -> _t.Sequence[_Segmental_co]:
         ...
 
     @property
