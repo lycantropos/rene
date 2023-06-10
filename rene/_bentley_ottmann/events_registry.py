@@ -25,7 +25,8 @@ class EventsRegistry(_t.Generic[_hints.Scalar]):
     def from_segments(cls,
                       segments: _t.Sequence[_hints.Segment[_hints.Scalar]],
                       *,
-                      unique: bool) -> EventsRegistry[_hints.Scalar]:
+                      unique: bool,
+                      /) -> EventsRegistry[_hints.Scalar]:
         result = cls(unique=unique)
         for segment_id, segment in enumerate(segments):
             left_event = segment_id_to_left_event(segment_id)
@@ -47,34 +48,39 @@ class EventsRegistry(_t.Generic[_hints.Scalar]):
 
     def are_collinear(self,
                       first_segment_id: int,
-                      second_segment_id: int) -> bool:
+                      second_segment_id: int,
+                      /) -> bool:
         return (self._to_min_collinear_segment_id(first_segment_id)
                 == self._to_min_collinear_segment_id(second_segment_id))
 
-    def to_event_end(self, event: Event) -> _hints.Point[_hints.Scalar]:
+    def to_event_end(self, event: Event, /) -> _hints.Point[_hints.Scalar]:
         return self.to_event_start(self._to_opposite_event(event))
 
-    def to_event_segment_id(self, event: Event) -> int:
+    def to_event_segment_id(self, event: Event, /) -> int:
         return self._to_left_event_segment_id(
                 event
                 if is_left_event(event)
                 else self._to_opposite_event(event)
         )
 
-    def to_event_start(self, event: Event) -> _hints.Point[_hints.Scalar]:
+    def to_event_start(self, event: Event, /) -> _hints.Point[_hints.Scalar]:
         return self._endpoints[event]
 
-    def to_segment_end(self, segment_id: int) -> _hints.Point[_hints.Scalar]:
+    def to_segment_end(
+            self, segment_id: int, /
+    ) -> _hints.Point[_hints.Scalar]:
         return self.to_event_start(segment_id_to_right_event(segment_id))
 
-    def to_segment_start(self, segment_id: int) -> _hints.Point[_hints.Scalar]:
+    def to_segment_start(
+            self, segment_id: int, /
+    ) -> _hints.Point[_hints.Scalar]:
         return self.to_event_start(segment_id_to_left_event(segment_id))
 
     __slots__ = ('_endpoints', '_events_queue_data',
                  '_min_collinear_segments_ids', '_opposites', '_segments_ids',
                  '_sweep_line_data', '_unique')
 
-    def __init__(self, *, unique: bool) -> None:
+    def __init__(self, *, unique: bool, /) -> None:
         self._unique = unique
         self._opposites: _t.List[Event] = []
         self._endpoints: _t.List[_hints.Point[_hints.Scalar]] = []
@@ -85,12 +91,13 @@ class EventsRegistry(_t.Generic[_hints.Scalar]):
         ] = PriorityQueue(key=lambda event: EventsQueueKey(self._endpoints,
                                                            self._opposites,
                                                            event))
-        self._sweep_line_data: KeyedSet[SweepLineKey[_hints.Scalar], Event] = red_black.set_(
-                key=self._event_to_sweep_line_key
-        )
+        self._sweep_line_data: KeyedSet[
+            SweepLineKey[_hints.Scalar], Event
+        ] = red_black.set_(key=self._event_to_sweep_line_key)
 
-    def _event_to_sweep_line_key(self,
-                                 event: Event) -> SweepLineKey[_hints.Scalar]:
+    def _event_to_sweep_line_key(
+            self, event: Event, /
+    ) -> SweepLineKey[_hints.Scalar]:
         return SweepLineKey(self._endpoints, self._opposites, event)
 
     __repr__ = generate_repr(__init__)
@@ -135,25 +142,27 @@ class EventsRegistry(_t.Generic[_hints.Scalar]):
                 elif not self.unique:
                     yield event
 
-    def _above(self, event: Event) -> _t.Optional[Event]:
+    def _above(self, event: Event, /) -> _t.Optional[Event]:
         assert is_left_event(event)
         try:
             return self._sweep_line_data.next(event)
         except ValueError:
             return None
 
-    def _add(self, event: Event) -> None:
+    def _add(self, event: Event, /) -> None:
         assert is_left_event(event)
         self._sweep_line_data.add(event)
 
-    def _below(self, event: Event) -> _t.Optional[Event]:
+    def _below(self, event: Event, /) -> _t.Optional[Event]:
         assert is_left_event(event)
         try:
             return self._sweep_line_data.prev(event)
         except ValueError:
             return None
 
-    def _detect_intersection(self, below_event: Event, event: Event) -> None:
+    def _detect_intersection(
+            self, below_event: Event, event: Event, /
+    ) -> None:
         event_start = self.to_event_start(event)
         event_end = self.to_event_end(event)
         below_event_start = self.to_event_start(below_event)
@@ -242,7 +251,7 @@ class EventsRegistry(_t.Generic[_hints.Scalar]):
                                                 min_end)
 
     def _divide(
-            self, event: Event, mid_point: _hints.Point[_hints.Scalar]
+            self, event: Event, mid_point: _hints.Point[_hints.Scalar], /
     ) -> _t.Tuple[Event, Event]:
         assert is_left_event(event)
         opposite_event = self._to_opposite_event(event)
@@ -262,7 +271,8 @@ class EventsRegistry(_t.Generic[_hints.Scalar]):
             event: Event,
             mid_segment_event: Event,
             mid_segment_event_start: _hints.Point[_hints.Scalar],
-            mid_segment_event_end: _hints.Point[_hints.Scalar]
+            mid_segment_event_end: _hints.Point[_hints.Scalar],
+            /
     ) -> None:
         self._divide_event_by_midpoint(event, mid_segment_event_end)
         (
@@ -275,9 +285,9 @@ class EventsRegistry(_t.Generic[_hints.Scalar]):
                 min_segment_event_start_to_min_segment_event_end_event,
         )
 
-    def _divide_event_by_midpoint(self,
-                                  event: Event,
-                                  point: _hints.Point[_hints.Scalar]) -> None:
+    def _divide_event_by_midpoint(
+            self, event: Event, point: _hints.Point[_hints.Scalar], /
+    ) -> None:
         point_to_event_start_event, point_to_event_end_event = self._divide(
                 event, point
         )
@@ -285,7 +295,7 @@ class EventsRegistry(_t.Generic[_hints.Scalar]):
         self._push(point_to_event_end_event)
 
     def _divide_event_by_midpoint_checking_above(
-            self, event: Event, point: _hints.Point[_hints.Scalar]
+            self, event: Event, point: _hints.Point[_hints.Scalar], /
     ) -> None:
         above_event = self._above(event)
         if above_event is not None:
@@ -302,7 +312,8 @@ class EventsRegistry(_t.Generic[_hints.Scalar]):
             min_start_event: Event,
             max_start_event: Event,
             max_start: _hints.Point[_hints.Scalar],
-            min_end: _hints.Point[_hints.Scalar]
+            min_end: _hints.Point[_hints.Scalar],
+            /
     ) -> None:
         self._divide_event_by_midpoint(max_start_event, min_end)
         (
@@ -312,7 +323,7 @@ class EventsRegistry(_t.Generic[_hints.Scalar]):
         self._merge_equal_segment_events(max_start_event,
                                          max_start_to_min_end_event)
 
-    def _find(self, event: Event) -> _t.Optional[Event]:
+    def _find(self, event: Event, /) -> _t.Optional[Event]:
         assert is_left_event(event)
         try:
             candidate = self._sweep_line_data.floor(event)
@@ -326,7 +337,9 @@ class EventsRegistry(_t.Generic[_hints.Scalar]):
                              == self.to_event_end(event)))
                     else None)
 
-    def _merge_equal_segment_events(self, first: Event, second: Event) -> None:
+    def _merge_equal_segment_events(
+            self, first: Event, second: Event, /
+    ) -> None:
         first_segment_id = self._to_left_event_segment_id(first)
         second_segment_id = self._to_left_event_segment_id(second)
         first_min_collinear_segment_id = (
@@ -353,18 +366,18 @@ class EventsRegistry(_t.Generic[_hints.Scalar]):
     def _pop(self) -> Event:
         return self._events_queue_data.pop()
 
-    def _push(self, event: Event) -> None:
+    def _push(self, event: Event, /) -> None:
         self._events_queue_data.push(event)
 
-    def _remove(self, event: Event) -> None:
+    def _remove(self, event: Event, /) -> None:
         assert is_left_event(event)
         self._sweep_line_data.remove(event)
 
-    def _to_left_event_segment_id(self, event: Event) -> int:
+    def _to_left_event_segment_id(self, event: Event, /) -> int:
         assert is_left_event(event)
         return self._segments_ids[event // 2]
 
-    def _to_min_collinear_segment_id(self, segment_id: int) -> int:
+    def _to_min_collinear_segment_id(self, segment_id: int, /) -> int:
         candidate = segment_id
         iterations_count = 0
         while self._min_collinear_segments_ids[candidate] != candidate:
@@ -373,5 +386,5 @@ class EventsRegistry(_t.Generic[_hints.Scalar]):
         assert iterations_count < 3
         return candidate
 
-    def _to_opposite_event(self, event: Event) -> Event:
+    def _to_opposite_event(self, event: Event, /) -> Event:
         return self._opposites[event]

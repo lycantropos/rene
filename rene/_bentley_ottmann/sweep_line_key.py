@@ -16,13 +16,14 @@ class SweepLineKey(_t.Generic[Scalar]):
     def __init__(self,
                  endpoints: Map[Event, Point[Scalar]],
                  opposites: Map[Event, Event],
-                 event: Event) -> None:
+                 event: Event,
+                 /) -> None:
         self.endpoints, self.event, self.opposites = (endpoints, event,
                                                       opposites)
 
     __repr__ = generate_repr(__init__)
 
-    def __lt__(self, other: _te.Self) -> bool:
+    def __lt__(self, other: _te.Self, /) -> bool:
         """
         Checks if the segment (or at least the point) associated with event
         is lower than other's.

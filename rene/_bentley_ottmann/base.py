@@ -37,7 +37,8 @@ class Intersection(_t.Generic[_hints.Scalar]):
                  second_segment_id: int,
                  relation: Relation,
                  start: _hints.Point[_hints.Scalar],
-                 end: _hints.Point[_hints.Scalar]) -> None:
+                 end: _hints.Point[_hints.Scalar],
+                 /) -> None:
         (
             self._end, self._first_segment_id, self._relation,
             self._second_segment_id, self._start
@@ -47,7 +48,7 @@ class Intersection(_t.Generic[_hints.Scalar]):
 
 
 def sweep(
-        segments: _t.Sequence[_hints.Segment[_hints.Scalar]]
+        segments: _t.Sequence[_hints.Segment[_hints.Scalar]], /
 ) -> _t.Iterable[Intersection[_hints.Scalar]]:
     events_registry = EventsRegistry.from_segments(segments,
                                                    unique=False)
@@ -79,7 +80,8 @@ def sweep(
 def segments_ids_containing_point_to_intersections(
         segments_ids: _t.Sequence[int],
         point: _hints.Point[_hints.Scalar],
-        events_registry: EventsRegistry[_hints.Scalar]
+        events_registry: EventsRegistry[_hints.Scalar],
+        /
 ) -> _t.Iterable[Intersection[_hints.Scalar]]:
     for first_segment_id, second_segment_id in combinations(segments_ids, 2):
         first_start = events_registry.to_segment_start(first_segment_id)
