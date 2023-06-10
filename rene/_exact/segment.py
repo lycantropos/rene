@@ -40,7 +40,7 @@ class Segment:
             return segment.relate_to_segment(self.start, self.end,
                                              other.start, other.end)
         elif isinstance(other, self._context.contour_cls):
-            return segment.relate_to_contour(self, other)
+            return segment.relate_to_contour(self.start, self.end, other)
         raise TypeError(f'Unsupported type: {type(other)!r}.')
 
     _context: t.ClassVar[Context[Fraction]]
