@@ -61,13 +61,17 @@ else:
         def height(self) -> int:
             return self._raw.height
 
-        def locate(self, point: Point) -> _Location:
+        def locate(self, point: Point, /) -> _Location:
             return self._raw.locate(point)
 
         __slots__ = '_raw',
 
-        def __init__(self, _raw: _RawTrapezoidation) -> None:
-            self._raw = _raw
+        _raw: _RawTrapezoidation
 
-        def __contains__(self, point: Point) -> bool:
+        def __new__(cls, raw: _RawTrapezoidation, /) -> _te.Self:
+            self = super().__new__(cls)
+            self._raw = raw
+            return self
+
+        def __contains__(self, point: Point, /) -> bool:
             return self._raw.__contains__(point)
