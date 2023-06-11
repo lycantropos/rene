@@ -20,7 +20,7 @@ impl<Digit, const SHIFT: usize> traits::Segmental for Segment<Fraction<BigInt<Di
 where
     BigInt<Digit, SHIFT>: Clone,
 {
-    type Endpoint = self::Point<Fraction<BigInt<Digit, SHIFT>>>;
+    type Endpoint = Point<Fraction<BigInt<Digit, SHIFT>>>;
 
     fn start(&self) -> Self::Endpoint {
         self.start.clone()

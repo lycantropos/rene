@@ -83,7 +83,7 @@ struct PolygonVertexPosition {
 
 impl<
         Endpoint: Clone + LocatePointInPointPointPointCircle + Ord + Orient + PartialOrd,
-        Polygon: self::Polygonal,
+        Polygon: Polygonal,
     > From<&Polygon> for ConstrainedDelaunayTriangulation<Endpoint>
 where
     Mesh<Endpoint>: DelaunayTriangulatable,

@@ -10,7 +10,7 @@ impl<Digit, const SHIFT: usize> Multisegmental for Multisegment<Fraction<BigInt<
 where
     BigInt<Digit, SHIFT>: Clone,
 {
-    type Segment = self::Segment<Fraction<BigInt<Digit, SHIFT>>>;
+    type Segment = Segment<Fraction<BigInt<Digit, SHIFT>>>;
 
     fn segments(&self) -> Vec<Self::Segment> {
         self.segments.clone()

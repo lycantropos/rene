@@ -10,7 +10,7 @@ impl<Digit, const SHIFT: usize> Polygonal for Polygon<Fraction<BigInt<Digit, SHI
 where
     BigInt<Digit, SHIFT>: Clone,
 {
-    type Contour = self::Contour<Fraction<BigInt<Digit, SHIFT>>>;
+    type Contour = Contour<Fraction<BigInt<Digit, SHIFT>>>;
 
     fn border(&self) -> Self::Contour {
         self.border.clone()

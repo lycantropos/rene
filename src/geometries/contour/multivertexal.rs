@@ -10,7 +10,7 @@ impl<Digit, const SHIFT: usize> Multivertexal for Contour<Fraction<BigInt<Digit,
 where
     BigInt<Digit, SHIFT>: Clone,
 {
-    type Vertex = self::Point<Fraction<BigInt<Digit, SHIFT>>>;
+    type Vertex = Point<Fraction<BigInt<Digit, SHIFT>>>;
 
     fn vertices(&self) -> Vec<Self::Vertex> {
         self.vertices.clone()

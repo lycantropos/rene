@@ -9,10 +9,10 @@ use super::types::Polygon;
 impl<Digit, const SHIFT: usize> Multisegmental for Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
     Contour<Fraction<BigInt<Digit, SHIFT>>>:
-        Multisegmental<Segment = self::Segment<Fraction<BigInt<Digit, SHIFT>>>>,
+        Multisegmental<Segment = Segment<Fraction<BigInt<Digit, SHIFT>>>>,
     Segment<Fraction<BigInt<Digit, SHIFT>>>: Segmental,
 {
-    type Segment = self::Segment<Fraction<BigInt<Digit, SHIFT>>>;
+    type Segment = Segment<Fraction<BigInt<Digit, SHIFT>>>;
 
     fn segments(&self) -> Vec<Self::Segment> {
         let mut result = Vec::<Self::Segment>::with_capacity(self.segments_count());

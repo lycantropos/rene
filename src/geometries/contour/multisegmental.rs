@@ -10,7 +10,7 @@ impl<Digit, const SHIFT: usize> Multisegmental for Contour<Fraction<BigInt<Digit
 where
     BigInt<Digit, SHIFT>: Clone,
 {
-    type Segment = self::Segment<Fraction<BigInt<Digit, SHIFT>>>;
+    type Segment = Segment<Fraction<BigInt<Digit, SHIFT>>>;
 
     fn segments(&self) -> Vec<Self::Segment> {
         let mut result = Vec::<Self::Segment>::with_capacity(self.vertices.len());
