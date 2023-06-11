@@ -1,4 +1,4 @@
-from typing import List
+import typing as t
 
 from rene import hints
 from rene._utils import (do_boxes_have_no_common_area,
@@ -17,7 +17,7 @@ class ShapedIntersection(shaped.Operation[hints.Scalar]):
 
 def intersect_multipolygons(first: hints.Multipolygon[hints.Scalar],
                             second: hints.Multipolygon[hints.Scalar],
-                            /) -> List[hints.Polygon[hints.Scalar]]:
+                            /) -> t.List[hints.Polygon[hints.Scalar]]:
     first_polygons, second_polygons = first.polygons, second.polygons
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
     second_boxes = [polygon.bounding_box for polygon in second_polygons]
@@ -76,7 +76,7 @@ def intersect_multipolygon_with_polygon(
         first: hints.Multipolygon[hints.Scalar],
         second: hints.Polygon[hints.Scalar],
         /
-) -> List[hints.Polygon[hints.Scalar]]:
+) -> t.List[hints.Polygon[hints.Scalar]]:
     first_polygons = first.polygons
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
     first_bounding_box, second_bounding_box = (merge_boxes(first_boxes),
@@ -122,7 +122,7 @@ def intersect_polygon_with_multipolygon(
         first: hints.Polygon[hints.Scalar],
         second: hints.Multipolygon[hints.Scalar],
         /
-) -> List[hints.Polygon[hints.Scalar]]:
+) -> t.List[hints.Polygon[hints.Scalar]]:
     second_polygons = second.polygons
     second_boxes = [polygon.bounding_box for polygon in second_polygons]
     first_bounding_box, second_bounding_box = (first.bounding_box,
@@ -165,7 +165,7 @@ def intersect_polygon_with_multipolygon(
 
 def intersect_polygons(first: hints.Polygon[hints.Scalar],
                        second: hints.Polygon[hints.Scalar],
-                       /) -> List[hints.Polygon[hints.Scalar]]:
+                       /) -> t.List[hints.Polygon[hints.Scalar]]:
     first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)
     if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):
