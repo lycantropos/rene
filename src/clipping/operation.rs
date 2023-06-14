@@ -975,7 +975,7 @@ impl<Point: Ord + Orient, const KIND: u8> Operation<Point, KIND> {
     {
         let segment_id_offset = self.endpoints.len() / 2;
         for (segment_index, segment) in segments.enumerate() {
-            let (mut end, mut start) = segment.endpoints();
+            let (mut start, mut end) = segment.endpoints();
             debug_assert!(start != end);
             let segment_id = segment_id_offset + segment_index;
             let is_sorted_segment = start < end;
