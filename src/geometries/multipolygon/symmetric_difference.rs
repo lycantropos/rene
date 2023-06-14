@@ -54,15 +54,14 @@ where
 impl<Digit, const SHIFT: usize> SymmetricDifference
     for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
+    Self: ReduceEvents<
+        Point<Fraction<BigInt<Digit, SHIFT>>>,
+        SYMMETRIC_DIFFERENCE,
+        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
+    >,
     for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>
-        + Clone
-        + ReduceEvents<
-            Point<Fraction<BigInt<Digit, SHIFT>>>,
-            SYMMETRIC_DIFFERENCE,
-            Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-        >,
+    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>> + Clone,
     for<'a> Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, SYMMETRIC_DIFFERENCE>: From<(
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
@@ -127,7 +126,7 @@ where
         for event in operation.by_ref() {
             events.push(event);
         }
-        let mut result = Multipolygon::<_>::reduce_events(events, &mut operation);
+        let mut result = Self::reduce_events(events, &mut operation);
         result.reserve(
             (self.polygons.len() - common_continuum_polygons.len())
                 + (other.polygons.len() - other_common_continuum_polygons.len()),
@@ -149,20 +148,20 @@ where
 impl<Digit, const SHIFT: usize> SymmetricDifference<&Polygon<Fraction<BigInt<Digit, SHIFT>>>>
     for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
+    Self: ReduceEvents<
+        Point<Fraction<BigInt<Digit, SHIFT>>>,
+        SYMMETRIC_DIFFERENCE,
+        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
+    >,
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>
-        + ReduceEvents<
-            Point<Fraction<BigInt<Digit, SHIFT>>>,
-            SYMMETRIC_DIFFERENCE,
-            Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-        >,
+    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>,
+    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>> + Clone,
+    for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, SYMMETRIC_DIFFERENCE>: From<(
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
         )> + Iterator<Item = Event>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>> + Clone,
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
@@ -201,7 +200,7 @@ where
         for event in operation.by_ref() {
             events.push(event);
         }
-        let mut result = Multipolygon::<_>::reduce_events(events, &mut operation);
+        let mut result = Self::reduce_events(events, &mut operation);
         result.reserve(self.polygons.len() - common_continuum_polygons.len());
         result.extend(
             flags_to_false_indices(&boxes_have_common_continuum)
@@ -215,21 +214,20 @@ where
 impl<Digit, const SHIFT: usize> SymmetricDifference<&Multipolygon<Fraction<BigInt<Digit, SHIFT>>>>
     for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
+    Self: ReduceEvents<
+        Point<Fraction<BigInt<Digit, SHIFT>>>,
+        SYMMETRIC_DIFFERENCE,
+        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
+    >,
+    Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
+    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>,
+    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>> + Clone,
     for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, SYMMETRIC_DIFFERENCE>: From<(
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
         )> + Iterator<Item = Event>,
-    Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>
-        + Clone
-        + ReduceEvents<
-            Point<Fraction<BigInt<Digit, SHIFT>>>,
-            SYMMETRIC_DIFFERENCE,
-            Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-        >,
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
@@ -274,7 +272,7 @@ where
         for event in operation.by_ref() {
             events.push(event);
         }
-        let mut result = Polygon::<_>::reduce_events(events, &mut operation);
+        let mut result = Self::reduce_events(events, &mut operation);
         result.reserve(other.polygons.len() - other_common_continuum_polygons.len());
         result.extend(
             flags_to_false_indices(&other_boxes_have_common_continuum)

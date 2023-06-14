@@ -7,4 +7,5 @@ mod hash;
 mod locatable;
 mod partial_eq;
 mod relatable;
+mod segmental;
 mod types;

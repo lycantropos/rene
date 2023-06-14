@@ -8,39 +8,44 @@ pub trait Elemental {
 pub trait Segmental {
     type Endpoint: Elemental;
 
-    fn start(&self) -> Self::Endpoint;
-    fn end(&self) -> Self::Endpoint;
+    fn start(self) -> Self::Endpoint;
+    fn end(self) -> Self::Endpoint;
+    fn endpoints(self) -> (Self::Endpoint, Self::Endpoint);
 }
 
 pub trait Multisegmental {
     type Segment: Segmental;
+    type Segments: Iterator<Item = Self::Segment>;
 
-    fn segments(&self) -> Vec<Self::Segment>;
-    fn segments_count(&self) -> usize;
+    fn segments(self) -> Self::Segments;
+    fn segments_count(self) -> usize;
 }
 
 pub trait Multivertexal {
     type Vertex: Elemental;
+    type Vertices: Iterator<Item = Self::Vertex>;
 
-    fn vertices(&self) -> Vec<Self::Vertex>;
-    fn vertices_count(&self) -> usize;
+    fn vertices(self) -> Self::Vertices;
+    fn vertices_count(self) -> usize;
 }
 
 pub trait Contoural: Multisegmental + Multivertexal {}
 
 pub trait Polygonal {
     type Contour: Contoural;
+    type Holes: Iterator<Item = Self::Contour>;
 
-    fn border(&self) -> Self::Contour;
-    fn holes(&self) -> Vec<Self::Contour>;
-    fn holes_count(&self) -> usize;
+    fn border(self) -> Self::Contour;
+    fn holes(self) -> Self::Holes;
+    fn holes_count(self) -> usize;
 }
 
 pub trait Multipolygonal {
     type Polygon: Polygonal;
+    type Polygons: Iterator<Item = Self::Polygon>;
 
-    fn polygons(&self) -> Vec<Self::Polygon>;
-    fn polygons_count(&self) -> usize;
+    fn polygons(self) -> Self::Polygons;
+    fn polygons_count(self) -> usize;
 }
 
 pub type ElementalCoordinate<T> = <T as Elemental>::Coordinate;

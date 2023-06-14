@@ -26,3 +26,12 @@ where
         )
     }
 }
+
+impl<Scalar: Ord> Oriented for &Contour<Scalar>
+where
+    Point<Scalar>: Orient,
+{
+    fn to_orientation(&self) -> Orientation {
+        (*self).to_orientation()
+    }
+}

@@ -7,7 +7,7 @@ use crate::operations::{shrink_collinear_vertices, LocatePointInPointPointPointC
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
 use crate::relating::segment;
-use crate::traits::{Contoural, Multivertexal, Polygonal};
+use crate::traits::{Contoural, Multivertexal, Polygonal, PolygonalContour};
 
 use super::mesh::Mesh;
 use super::operations::{BoundaryEndpoints, DelaunayTriangulatable};
@@ -82,21 +82,23 @@ struct PolygonVertexPosition {
 }
 
 impl<
+        'a,
         Endpoint: Clone + LocatePointInPointPointPointCircle + Ord + Orient + PartialOrd,
-        Polygon: Polygonal,
-    > From<&Polygon> for ConstrainedDelaunayTriangulation<Endpoint>
+        Polygon,
+    > From<&'a Polygon> for ConstrainedDelaunayTriangulation<Endpoint>
 where
+    &'a Polygon: Polygonal,
     Mesh<Endpoint>: DelaunayTriangulatable,
-    <Polygon as Polygonal>::Contour: Contoural<Vertex = Endpoint>,
+    PolygonalContour<&'a Polygon>: Contoural<Vertex = Endpoint>,
 {
-    fn from(polygon: &Polygon) -> Self {
+    fn from(polygon: &'a Polygon) -> Self {
         let mut contours_vertices = Vec::with_capacity(1 + polygon.holes_count());
-        contours_vertices.push(polygon.border().vertices());
+        contours_vertices.push(polygon.border().vertices().into_iter().collect::<Vec<_>>());
         for hole in polygon.holes() {
-            contours_vertices.push(hole.vertices());
+            contours_vertices.push(hole.vertices().into_iter().collect::<Vec<_>>());
         }
         let mut polygon_endpoints =
-            Vec::with_capacity(contours_vertices.iter().map(std::vec::Vec::len).sum());
+            Vec::with_capacity(contours_vertices.iter().map(Vec::len).sum());
         for (contour_index, contour_vertices) in contours_vertices.iter().enumerate() {
             polygon_endpoints.extend(contour_vertices.iter().enumerate().map(
                 |(vertex_index, point)| PolygonEndpoint {

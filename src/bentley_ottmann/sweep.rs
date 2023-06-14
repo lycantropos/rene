@@ -16,12 +16,12 @@ pub(crate) struct Sweep<Point> {
     start_event: Option<usize>,
 }
 
-impl<Point, Segment> From<&[Segment]> for Sweep<Point>
+impl<'a, Point, Input> From<Input> for Sweep<Point>
 where
-    for<'a> EventsRegistry<Point, false>: From<&'a [Segment]> + Iterator<Item = Event>,
+    EventsRegistry<Point, false>: From<Input> + Iterator<Item = Event>,
 {
-    fn from(segments: &[Segment]) -> Self {
-        let mut events_registry = EventsRegistry::from(segments);
+    fn from(input: Input) -> Self {
+        let mut events_registry = EventsRegistry::from(input);
         let next_start_event = events_registry.next();
         Self {
             events_registry,

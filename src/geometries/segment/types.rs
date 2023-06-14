@@ -1,8 +1,4 @@
-use rithm::big_int::BigInt;
-use rithm::fraction::Fraction;
-
 use crate::geometries::Point;
-use crate::traits::Segmental;
 
 #[derive(Clone)]
 pub struct Segment<Scalar> {
@@ -13,20 +9,5 @@ pub struct Segment<Scalar> {
 impl<Scalar> Segment<Scalar> {
     pub fn new(start: Point<Scalar>, end: Point<Scalar>) -> Self {
         Self { start, end }
-    }
-}
-
-impl<Digit, const SHIFT: usize> Segmental for Segment<Fraction<BigInt<Digit, SHIFT>>>
-where
-    BigInt<Digit, SHIFT>: Clone,
-{
-    type Endpoint = Point<Fraction<BigInt<Digit, SHIFT>>>;
-
-    fn start(&self) -> Self::Endpoint {
-        self.start.clone()
-    }
-
-    fn end(&self) -> Self::Endpoint {
-        self.end.clone()
     }
 }

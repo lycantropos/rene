@@ -8,13 +8,12 @@ use traiter::numbers::Parity;
 use crate::bentley_ottmann::traits::{EventsQueue, SweepLine};
 use crate::clipping::constants::UNDEFINED_INDEX;
 use crate::clipping::event::is_right_event;
-use crate::geometries::{Multipolygon, Polygon};
+use crate::geometries::{Contour, Multipolygon, Polygon};
 use crate::operations::{shrink_collinear_vertices, IntersectCrossingSegments, Orient};
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{
     Elemental, Multipolygonal, MultipolygonalPolygon, MultipolygonalVertex, Multisegmental,
-    MultisegmentalSegment, Multivertexal, MultivertexalVertex, Polygonal, PolygonalContour,
-    PolygonalVertex, Segmental,
+    MultisegmentalSegment, Polygonal, PolygonalContour, PolygonalVertex, Segmental,
 };
 
 use super::event::{
@@ -43,17 +42,15 @@ pub(crate) struct Operation<Point, const KIND: u8> {
     sweep_line_data: BTreeSet<SweepLineKey<Point>>,
 }
 
-impl<
-        First: IsValid + Multisegmental,
-        Point: Ord + Orient,
-        Second: IsValid + Multisegmental,
-        const KIND: u8,
-    > From<(&First, &Second)> for Operation<Point, KIND>
+impl<'a, First, Point: Ord + Orient, Second, const KIND: u8> From<(&'a First, &'a Second)>
+    for Operation<Point, KIND>
 where
-    MultisegmentalSegment<First>: Segmental<Endpoint = Point>,
-    MultisegmentalSegment<Second>: Segmental<Endpoint = Point>,
+    &'a First: IsValid + Multisegmental,
+    &'a Second: IsValid + Multisegmental,
+    MultisegmentalSegment<&'a First>: Segmental<Endpoint = Point>,
+    MultisegmentalSegment<&'a Second>: Segmental<Endpoint = Point>,
 {
-    fn from((first, second): (&First, &Second)) -> Self {
+    fn from((first, second): (&'a First, &'a Second)) -> Self {
         debug_assert!(IsValid::is_valid(first));
         debug_assert!(IsValid::is_valid(second));
         let first_segments_count = first.segments_count();
@@ -73,12 +70,13 @@ where
     }
 }
 
-impl<Element: IsValid + Multisegmental, Point: Ord + Orient, const KIND: u8>
-    From<(&[&Element], &[&Element])> for Operation<Point, KIND>
+impl<'a, Element, Point: Ord + Orient, const KIND: u8> From<(&[&'a Element], &[&'a Element])>
+    for Operation<Point, KIND>
 where
-    MultisegmentalSegment<Element>: Segmental<Endpoint = Point>,
+    &'a Element: IsValid + Multisegmental,
+    MultisegmentalSegment<&'a Element>: Segmental<Endpoint = Point>,
 {
-    fn from((first, second): (&[&Element], &[&Element])) -> Self {
+    fn from((first, second): (&[&'a Element], &[&'a Element])) -> Self {
         debug_assert!(first.iter().all(|element| element.is_valid()));
         debug_assert!(second.iter().all(|element| element.is_valid()));
         let first_segments_count = multisegments_to_segments_count(first);
@@ -102,12 +100,13 @@ where
     }
 }
 
-impl<Element: IsValid + Multisegmental, Point: Ord + Orient, const KIND: u8>
-    From<(&[&Element], &Element)> for Operation<Point, KIND>
+impl<'a, Element, Point: Ord + Orient, const KIND: u8> From<(&[&'a Element], &'a Element)>
+    for Operation<Point, KIND>
 where
-    MultisegmentalSegment<Element>: Segmental<Endpoint = Point>,
+    &'a Element: IsValid + Multisegmental,
+    MultisegmentalSegment<&'a Element>: Segmental<Endpoint = Point>,
 {
-    fn from((first, second): (&[&Element], &Element)) -> Self {
+    fn from((first, second): (&[&'a Element], &'a Element)) -> Self {
         debug_assert!(first.iter().all(|element| element.is_valid()));
         debug_assert!(second.is_valid());
         let first_segments_count = multisegments_to_segments_count(first);
@@ -129,12 +128,13 @@ where
     }
 }
 
-impl<Element: IsValid + Multisegmental, Point: Ord + Orient, const KIND: u8>
-    From<(&Element, &[&Element])> for Operation<Point, KIND>
+impl<'a, Element, Point: Ord + Orient, const KIND: u8> From<(&'a Element, &[&'a Element])>
+    for Operation<Point, KIND>
 where
-    MultisegmentalSegment<Element>: Segmental<Endpoint = Point>,
+    &'a Element: IsValid + Multisegmental,
+    MultisegmentalSegment<&'a Element>: Segmental<Endpoint = Point>,
 {
-    fn from((first, second): (&Element, &[&Element])) -> Self {
+    fn from((first, second): (&'a Element, &[&'a Element])) -> Self {
         debug_assert!(first.is_valid());
         debug_assert!(second.iter().all(|element| element.is_valid()));
         let first_segments_count = first.segments_count();
@@ -262,13 +262,14 @@ pub(crate) trait ReduceEvents<Point, const KIND: u8>: Sized {
     fn reduce_events(events: Vec<Event>, operation: &mut Operation<Point, KIND>) -> Self::Output;
 }
 
-impl<Scalar, const KIND: u8> ReduceEvents<MultipolygonalVertex<Self>, KIND> for Multipolygon<Scalar>
+impl<'a, Scalar, const KIND: u8> ReduceEvents<MultipolygonalVertex<Self>, KIND>
+    for &'a Multipolygon<Scalar>
 where
-    MultipolygonalPolygon<Self>:
-        ReduceEvents<MultipolygonalVertex<Self>, KIND, Output = Vec<MultipolygonalPolygon<Self>>>,
     Self: Multipolygonal,
+    MultipolygonalPolygon<Self>:
+        ReduceEvents<MultipolygonalVertex<Self>, KIND, Output = Vec<Polygon<Scalar>>>,
 {
-    type Output = Vec<MultipolygonalPolygon<Self>>;
+    type Output = Vec<Polygon<Scalar>>;
 
     fn reduce_events(
         events: Vec<usize>,
@@ -278,14 +279,15 @@ where
     }
 }
 
-impl<Scalar, const KIND: u8> ReduceEvents<PolygonalVertex<Self>, KIND> for Polygon<Scalar>
+impl<Scalar, const KIND: u8> ReduceEvents<PolygonalVertex<Self>, KIND> for &Polygon<Scalar>
 where
+    Self: Polygonal,
+    Contour<Scalar>: From<Vec<PolygonalVertex<Self>>>,
     EventsQueueKey<PolygonalVertex<Self>>: Ord,
-    PolygonalContour<Self>: Multivertexal + From<Vec<PolygonalVertex<Self>>>,
+    Polygon<Scalar>: From<(Contour<Scalar>, Vec<Contour<Scalar>>)>,
     PolygonalVertex<Self>: Clone + Elemental + Orient + PartialEq,
-    Self: From<(PolygonalContour<Self>, Vec<PolygonalContour<Self>>)> + Polygonal,
 {
-    type Output = Vec<Self>;
+    type Output = Vec<Polygon<Scalar>>;
 
     fn reduce_events(
         events: Vec<Event>,
@@ -365,24 +367,22 @@ where
                 // hole of a hole is an external polygon
                 result.extend(holes[contour_id].iter().map(|&hole_id| {
                     Polygon::from((
-                        multivertex_from_vertices_references(&contours_vertices[hole_id]),
+                        Contour::from(collect_references(&contours_vertices[hole_id])),
                         holes[hole_id]
                             .iter()
                             .map(|&hole_hole_id| {
-                                multivertex_from_vertices_references(
-                                    &contours_vertices[hole_hole_id],
-                                )
+                                Contour::from(collect_references(&contours_vertices[hole_hole_id]))
                             })
                             .collect(),
                     ))
                 }));
             } else {
                 result.push(Polygon::from((
-                    multivertex_from_vertices_references(contour_vertices),
+                    Contour::from(collect_references(&contour_vertices)),
                     holes[contour_id]
                         .iter()
                         .map(|&hole_id| {
-                            multivertex_from_vertices_references(&contours_vertices[hole_id])
+                            Contour::from(collect_references(&contours_vertices[hole_id]))
                         })
                         .collect(),
                 )));
@@ -969,13 +969,13 @@ where
 }
 
 impl<Point: Ord + Orient, const KIND: u8> Operation<Point, KIND> {
-    fn extend<Segment: Segmental<Endpoint = Point>>(
-        &mut self,
-        segments: impl Iterator<Item = Segment>,
-    ) {
+    fn extend<Segment>(&mut self, segments: impl Iterator<Item = Segment>)
+    where
+        Segment: Segmental<Endpoint = Point>,
+    {
         let segment_id_offset = self.endpoints.len() / 2;
         for (segment_index, segment) in segments.enumerate() {
-            let (mut start, mut end) = (segment.start(), segment.end());
+            let (mut end, mut start) = segment.endpoints();
             debug_assert!(start != end);
             let segment_id = segment_id_offset + segment_index;
             let is_sorted_segment = start < end;
@@ -1016,27 +1016,27 @@ impl<Point: Ord + Orient, const KIND: u8> Operation<Point, KIND> {
 }
 
 trait IsValid {
-    fn is_valid(&self) -> bool;
+    fn is_valid(self) -> bool;
 }
 
-impl<Scalar> IsValid for Multipolygon<Scalar>
+impl<'a, Scalar> IsValid for &'a Multipolygon<Scalar>
 where
     MultipolygonalPolygon<Self>: IsValid,
     Self: Multipolygonal,
 {
-    fn is_valid(&self) -> bool {
+    fn is_valid(self) -> bool {
         self.polygons()
             .into_iter()
             .all(|polygon| polygon.is_valid())
     }
 }
 
-impl<Scalar> IsValid for Polygon<Scalar>
+impl<'a, Scalar> IsValid for &'a Polygon<Scalar>
 where
-    PolygonalContour<Self>: Oriented,
     Self: Polygonal,
+    PolygonalContour<Self>: Oriented,
 {
-    fn is_valid(&self) -> bool {
+    fn is_valid(self) -> bool {
         self.border().to_orientation() == Orientation::Counterclockwise
             && self
                 .holes()
@@ -1045,23 +1045,17 @@ where
     }
 }
 
-fn multisegments_to_segments_count<Multisegment: Multisegmental>(
-    multisegments: &[&Multisegment],
-) -> usize {
+#[inline]
+fn collect_references<T: Clone>(vertices: &[&T]) -> Vec<T> {
+    vertices.iter().copied().cloned().collect()
+}
+
+fn multisegments_to_segments_count<'a, Multisegment>(multisegments: &[&'a Multisegment]) -> usize
+where
+    &'a Multisegment: Multisegmental,
+{
     multisegments
         .iter()
         .map(|&multisegment| multisegment.segments_count())
         .sum()
-}
-
-#[inline]
-fn multivertex_from_vertices_references<
-    Multivertex: From<Vec<MultivertexalVertex<Multivertex>>> + Multivertexal,
->(
-    vertices: &[&MultivertexalVertex<Multivertex>],
-) -> Multivertex
-where
-    MultivertexalVertex<Multivertex>: Clone,
-{
-    Multivertex::from(vertices.iter().copied().cloned().collect())
 }

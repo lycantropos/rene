@@ -54,13 +54,13 @@ where
 impl<Digit, const SHIFT: usize> Difference for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
     for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
+    Self: ReduceEvents<
+        Point<Fraction<BigInt<Digit, SHIFT>>>,
+        DIFFERENCE,
+        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
+    >,
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>
-        + ReduceEvents<
-            Point<Fraction<BigInt<Digit, SHIFT>>>,
-            DIFFERENCE,
-            Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-        >,
+    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>,
     for<'a> Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, DIFFERENCE>: From<(
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
@@ -127,7 +127,7 @@ where
             }
             events.push(event);
         }
-        let mut result = Multipolygon::<_>::reduce_events(events, &mut operation);
+        let mut result = Self::reduce_events(events, &mut operation);
         result.reserve(self.polygons.len() - common_area_polygons.len());
         result.extend(
             flags_to_false_indices(&boxes_have_common_area)
@@ -142,13 +142,13 @@ impl<Digit, const SHIFT: usize> Difference<&Polygon<Fraction<BigInt<Digit, SHIFT
     for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
     for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
+    Self: ReduceEvents<
+        Point<Fraction<BigInt<Digit, SHIFT>>>,
+        DIFFERENCE,
+        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
+    >,
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>
-        + ReduceEvents<
-            Point<Fraction<BigInt<Digit, SHIFT>>>,
-            DIFFERENCE,
-            Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-        >,
+    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>,
     for<'a> Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, DIFFERENCE>: From<(
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
@@ -198,7 +198,7 @@ where
             }
             events.push(event);
         }
-        let mut result = Multipolygon::<_>::reduce_events(events, &mut operation);
+        let mut result = Self::reduce_events(events, &mut operation);
         result.reserve(self.polygons.len() - common_area_polygons.len());
         result.extend(
             flags_to_false_indices(&boxes_have_common_area)
@@ -212,21 +212,20 @@ where
 impl<Digit, const SHIFT: usize> Difference<&Multipolygon<Fraction<BigInt<Digit, SHIFT>>>>
     for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
+    Self: ReduceEvents<
+        Point<Fraction<BigInt<Digit, SHIFT>>>,
+        DIFFERENCE,
+        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
+    >,
+    Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
+    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>,
+    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>> + Clone,
     for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, DIFFERENCE>: From<(
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
         )> + Iterator<Item = Event>,
-    Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>
-        + Clone
-        + ReduceEvents<
-            Point<Fraction<BigInt<Digit, SHIFT>>>,
-            DIFFERENCE,
-            Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-        >,
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
@@ -264,6 +263,6 @@ where
             }
             events.push(event);
         }
-        Polygon::<_>::reduce_events(events, &mut operation)
+        Self::reduce_events(events, &mut operation)
     }
 }

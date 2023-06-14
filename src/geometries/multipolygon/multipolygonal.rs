@@ -6,17 +6,19 @@ use crate::traits::Multipolygonal;
 
 use super::types::Multipolygon;
 
-impl<Digit, const SHIFT: usize> Multipolygonal for Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<'a, Digit, const SHIFT: usize> Multipolygonal
+    for &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
     BigInt<Digit, SHIFT>: Clone,
 {
-    type Polygon = self::Polygon<Fraction<BigInt<Digit, SHIFT>>>;
+    type Polygon = &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>;
+    type Polygons = std::slice::Iter<'a, Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
-    fn polygons(&self) -> Vec<Self::Polygon> {
-        self.polygons.clone()
+    fn polygons(self) -> Self::Polygons {
+        self.polygons.iter()
     }
 
-    fn polygons_count(&self) -> usize {
+    fn polygons_count(self) -> usize {
         self.polygons.len()
     }
 }

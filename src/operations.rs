@@ -9,7 +9,7 @@ use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 use crate::locatable::Location;
 use crate::oriented::Orientation;
 use crate::relatable::Relatable;
-use crate::traits::{Elemental, Multisegmental, Segmental};
+use crate::traits::{Elemental, Multisegmental, MultisegmentalSegment, Segmental};
 
 pub(crate) fn ceil_log2<
     Number: Copy + BitLength<Output = Value> + IsPowerOfTwo,
@@ -229,21 +229,19 @@ where
     }
 }
 
-pub(crate) fn locate_point_in_region<
-    Border: Multisegmental,
-    Point: Elemental + Orient + PartialEq,
->(
-    border: &Border,
+pub(crate) fn locate_point_in_region<'a, Border, Point: Elemental + Orient + PartialEq>(
+    border: &'a Border,
     point: &Point,
 ) -> Location
 where
-    <Border as Multisegmental>::Segment: Segmental<Endpoint = Point>,
+    &'a Border: Multisegmental,
+    MultisegmentalSegment<&'a Border>: Segmental<Endpoint = Point>,
     <Point as Elemental>::Coordinate: PartialOrd,
 {
     let mut result = false;
     let point_y = point.y();
     for edge in border.segments() {
-        let (start, end) = (edge.start(), edge.end());
+        let (start, end) = edge.endpoints();
         if is_point_in_segment(point, &start, &end) {
             return Location::Boundary;
         }

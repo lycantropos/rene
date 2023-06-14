@@ -9,3 +9,8 @@ impl<Digit, const SHIFT: usize> Contoural for Contour<Fraction<BigInt<Digit, SHI
     Self: Multisegmental + Multivertexal
 {
 }
+
+impl<Digit, const SHIFT: usize> Contoural for &Contour<Fraction<BigInt<Digit, SHIFT>>> where
+    Self: Multisegmental + Multivertexal
+{
+}

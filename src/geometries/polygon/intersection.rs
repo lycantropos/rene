@@ -44,19 +44,19 @@ impl<Scalar> Intersection<&Empty> for &Polygon<Scalar> {
 
 impl<Digit, const SHIFT: usize> Intersection for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
+    Self: ReduceEvents<
+        Point<Fraction<BigInt<Digit, SHIFT>>>,
+        INTERSECTION,
+        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
+    >,
+    Fraction<BigInt<Digit, SHIFT>>: Ord,
+    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>,
     for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>: From<(
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
         )> + Iterator<Item = Event>,
-    Fraction<BigInt<Digit, SHIFT>>: Ord,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>
-        + ReduceEvents<
-            Point<Fraction<BigInt<Digit, SHIFT>>>,
-            INTERSECTION,
-            Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-        >,
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
@@ -79,6 +79,6 @@ where
             }
             events.push(event);
         }
-        Polygon::<_>::reduce_events(events, &mut operation)
+        Self::reduce_events(events, &mut operation)
     }
 }

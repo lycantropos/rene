@@ -26,13 +26,13 @@ where
     }
 }
 
-impl<Scalar> Relatable<&Contour<Scalar>> for &Segment<Scalar>
+impl<'a, Scalar> Relatable<&'a Contour<Scalar>> for &Segment<Scalar>
 where
-    Contour<Scalar>: Contoural<Segment = Segment<Scalar>, Vertex = Point<Scalar>>,
-    Point<Scalar>: Orient + PartialOrd,
+    &'a Contour<Scalar>: Contoural<Segment = Segment<Scalar>, Vertex = Point<Scalar>>,
     Segment<Scalar>: Segmental<Endpoint = Point<Scalar>>,
+    Point<Scalar>: Orient + PartialOrd,
 {
-    fn relate_to(self, other: &Contour<Scalar>) -> Relation {
+    fn relate_to(self, other: &'a Contour<Scalar>) -> Relation {
         segment::relate_to_contour(&self.start, &self.end, other)
     }
 }

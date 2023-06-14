@@ -1,24 +1,27 @@
 use crate::operations::{point_vertex_line_divides_angle, to_sorted_pair, Orient};
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
-use crate::traits::{Contoural, Segmental};
+use crate::traits::{Contoural, Multisegmental, Multivertexal, Segmental};
 
 pub(crate) fn relate_to_contour<
-    Contour: Contoural<Segment = Segment, Vertex = Point>,
+    'a,
+    Contour,
     Point: Orient + PartialOrd,
     Segment: Segmental<Endpoint = Point>,
 >(
     start: &Point,
     end: &Point,
-    contour: &Contour,
-) -> Relation {
+    contour: &'a Contour,
+) -> Relation
+where
+    &'a Contour: Contoural<Segment = Segment, Vertex = Point>,
+{
     let mut has_no_cross = true;
     let mut has_no_touch = true;
     let mut last_touched_edge_index: Option<usize> = None;
     let mut last_touched_edge_start: Option<Point> = None;
-    for (index, contour_segment) in contour.segments().into_iter().enumerate() {
-        let (contour_segment_end, contour_segment_start) =
-            (contour_segment.end(), contour_segment.start());
+    for (index, contour_segment) in contour.segments().enumerate() {
+        let (contour_segment_start, contour_segment_end) = contour_segment.endpoints();
         let relation =
             relate_to_segment(&contour_segment_start, &contour_segment_end, &start, &end);
         match relation {
@@ -67,7 +70,7 @@ pub(crate) fn relate_to_contour<
             last_touched_edge_index.unwrap_unchecked()
         } == contour.vertices_count() - 1
     {
-        let vertices = contour.vertices();
+        let vertices = contour.vertices().into_iter().collect::<Vec<_>>();
         if matches!(
             relate_to_segment(&vertices[vertices.len() - 1], &vertices[0], start, end),
             Relation::Touch

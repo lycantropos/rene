@@ -1,15 +1,15 @@
 use crate::geometries::{Contour, Point};
 use crate::locatable::{Locatable, Location};
 use crate::operations::{locate_point_in_region, Orient};
-use crate::traits::{Elemental, Multisegmental, Segmental};
+use crate::traits::{Elemental, Multisegmental, MultisegmentalSegment, Segmental};
 
 use super::types::Polygon;
 
-impl<Scalar: PartialOrd> Locatable<&Point<Scalar>> for &Polygon<Scalar>
+impl<'a, Scalar: PartialOrd> Locatable<&Point<Scalar>> for &'a Polygon<Scalar>
 where
+    &'a Contour<Scalar>: Multisegmental,
+    MultisegmentalSegment<&'a Contour<Scalar>>: Segmental<Endpoint = Point<Scalar>>,
     Point<Scalar>: Elemental<Coordinate = Scalar> + Orient,
-    Contour<Scalar>: Multisegmental,
-    <Contour<Scalar> as Multisegmental>::Segment: Segmental<Endpoint = Point<Scalar>>,
 {
     fn locate(self, point: &Point<Scalar>) -> Location {
         let location_without_holes = locate_point_in_region(&self.border, point);

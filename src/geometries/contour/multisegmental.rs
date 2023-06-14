@@ -6,13 +6,14 @@ use crate::traits::Multisegmental;
 
 use super::types::Contour;
 
-impl<Digit, const SHIFT: usize> Multisegmental for Contour<Fraction<BigInt<Digit, SHIFT>>>
+impl<Digit, const SHIFT: usize> Multisegmental for &Contour<Fraction<BigInt<Digit, SHIFT>>>
 where
     BigInt<Digit, SHIFT>: Clone,
 {
     type Segment = Segment<Fraction<BigInt<Digit, SHIFT>>>;
+    type Segments = std::vec::IntoIter<Self::Segment>;
 
-    fn segments(&self) -> Vec<Self::Segment> {
+    fn segments(self) -> Self::Segments {
         let mut result = Vec::<Self::Segment>::with_capacity(self.vertices.len());
         for index in 0..self.vertices.len() - 1 {
             result.push(Segment::new(
@@ -24,10 +25,10 @@ where
             self.vertices[self.vertices.len() - 1].clone(),
             self.vertices[0].clone(),
         ));
-        result
+        result.into_iter()
     }
 
-    fn segments_count(&self) -> usize {
+    fn segments_count(self) -> usize {
         self.vertices.len()
     }
 }

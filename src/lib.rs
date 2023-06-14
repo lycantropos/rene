@@ -512,7 +512,7 @@ impl PyExactContour {
 
     #[getter]
     fn segments(&self) -> Vec<ExactSegment> {
-        self.0.segments()
+        self.0.segments().collect()
     }
 
     #[getter]
@@ -522,7 +522,7 @@ impl PyExactContour {
 
     #[getter]
     fn vertices(&self) -> Vec<ExactPoint> {
-        self.0.vertices()
+        self.0.vertices().collect()
     }
 
     #[getter]
@@ -557,7 +557,7 @@ impl PyExactContour {
     }
 
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
-        let mut vertices = self.0.vertices();
+        let mut vertices = self.0.vertices().collect::<Vec<_>>();
         let min_vertex_index = unsafe { to_arg_min(&vertices).unwrap_unchecked() };
         vertices.rotate_left(min_vertex_index);
         if self.0.to_orientation() == Orientation::Clockwise {
@@ -813,7 +813,7 @@ impl PyExactMultipolygon {
 
     #[getter]
     fn polygons(&self) -> Vec<ExactPolygon> {
-        self.0.polygons()
+        self.0.polygons().cloned().collect()
     }
 
     #[getter]
@@ -823,7 +823,7 @@ impl PyExactMultipolygon {
 
     #[getter]
     fn segments(&self) -> Vec<ExactSegment> {
-        self.0.segments()
+        self.0.segments().collect()
     }
 
     #[getter]
@@ -1004,7 +1004,7 @@ impl PyExactMultisegment {
 
     #[getter]
     fn segments(&self) -> Vec<ExactSegment> {
-        self.0.segments()
+        self.0.segments().cloned().collect()
     }
 
     #[getter]
@@ -1142,7 +1142,7 @@ impl PyExactPolygon {
 
     #[getter]
     fn border(&self) -> ExactContour {
-        self.0.border()
+        self.0.border().clone()
     }
 
     #[getter]
@@ -1152,7 +1152,7 @@ impl PyExactPolygon {
 
     #[getter]
     fn holes(&self) -> Vec<ExactContour> {
-        self.0.holes()
+        self.0.holes().cloned().collect()
     }
 
     #[getter]
@@ -1162,7 +1162,7 @@ impl PyExactPolygon {
 
     #[getter]
     fn segments(&self) -> Vec<ExactSegment> {
-        self.0.segments()
+        self.0.segments().collect()
     }
 
     #[getter]
@@ -1350,12 +1350,12 @@ impl PyExactSegment {
 
     #[getter]
     fn end(&self) -> PyExactPoint {
-        PyExactPoint(self.0.end())
+        PyExactPoint((&self.0).end())
     }
 
     #[getter]
     fn start(&self) -> PyExactPoint {
-        PyExactPoint(self.0.start())
+        PyExactPoint((&self.0).start())
     }
 
     #[pyo3(signature = (other, /))]

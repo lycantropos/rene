@@ -50,20 +50,19 @@ where
 
 impl<Digit, const SHIFT: usize> Union for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
+    Self: ReduceEvents<
+        Point<Fraction<BigInt<Digit, SHIFT>>>,
+        UNION,
+        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
+    >,
     Fraction<BigInt<Digit, SHIFT>>: PartialEq,
+    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>> + Clone,
+    for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, UNION>: From<(
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
         )> + Iterator<Item = Event>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>
-        + Clone
-        + ReduceEvents<
-            Point<Fraction<BigInt<Digit, SHIFT>>>,
-            UNION,
-            Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-        >,
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
@@ -82,6 +81,6 @@ where
         for event in operation.by_ref() {
             events.push(event);
         }
-        Polygon::<_>::reduce_events(events, &mut operation)
+        Self::reduce_events(events, &mut operation)
     }
 }

@@ -5,7 +5,7 @@ use std::ops::Bound::{Excluded, Unbounded};
 
 use crate::operations::{to_sorted_pair, IntersectCrossingSegments, Orient};
 use crate::oriented::Orientation;
-use crate::traits::Segmental;
+use crate::traits::{Multisegmental, Segmental};
 
 use super::event::{is_left_event, segment_id_to_left_event, segment_id_to_right_event, Event};
 use super::events_queue_key::EventsQueueKey;
@@ -134,12 +134,15 @@ impl<Point, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
     }
 }
 
-impl<Point: Ord, Segment: Segmental<Endpoint = Point>, const UNIQUE: bool> From<&[Segment]>
+impl<'a, Multisegment, Point: Ord, Segment, const UNIQUE: bool> From<&'a Multisegment>
     for EventsRegistry<Point, UNIQUE>
+where
+    &'a Multisegment: Multisegmental<Segment = Segment>,
+    Segment: Segmental<Endpoint = Point>,
 {
-    fn from(segments: &[Segment]) -> Self {
-        let mut result = Self::with_capacity(segments.len());
-        result.extend(segments.iter());
+    fn from(multisegment: &'a Multisegment) -> Self {
+        let mut result = Self::with_capacity(multisegment.segments_count());
+        result.extend(multisegment.segments());
         result
     }
 }
@@ -407,13 +410,13 @@ where
     }
 }
 
-impl<'a, Point: Ord, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
-    fn extend<Segment: Segmental<Endpoint = Point> + 'a>(
-        &'a mut self,
-        segments: impl Iterator<Item = &'a Segment>,
-    ) {
+impl<Point: Ord, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
+    fn extend<'a, Segment>(&mut self, segments: impl Iterator<Item = Segment>)
+    where
+        Segment: Segmental<Endpoint = Point>,
+    {
         for (segment_id, segment) in segments.enumerate() {
-            let (start, end) = to_sorted_pair((segment.start(), segment.end()));
+            let (start, end) = to_sorted_pair(segment.endpoints());
             debug_assert!(start != end);
             let left_event = segment_id_to_left_event(segment_id);
             let right_event = segment_id_to_right_event(segment_id);

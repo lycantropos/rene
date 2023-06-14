@@ -6,17 +6,19 @@ use crate::traits::Multisegmental;
 
 use super::types::Multisegment;
 
-impl<Digit, const SHIFT: usize> Multisegmental for Multisegment<Fraction<BigInt<Digit, SHIFT>>>
+impl<'a, Digit, const SHIFT: usize> Multisegmental
+    for &'a Multisegment<Fraction<BigInt<Digit, SHIFT>>>
 where
     BigInt<Digit, SHIFT>: Clone,
 {
-    type Segment = Segment<Fraction<BigInt<Digit, SHIFT>>>;
+    type Segment = &'a Segment<Fraction<BigInt<Digit, SHIFT>>>;
+    type Segments = std::slice::Iter<'a, Segment<Fraction<BigInt<Digit, SHIFT>>>>;
 
-    fn segments(&self) -> Vec<Self::Segment> {
-        self.segments.clone()
+    fn segments(self) -> Self::Segments {
+        self.segments.iter()
     }
 
-    fn segments_count(&self) -> usize {
+    fn segments_count(self) -> usize {
         self.segments.len()
     }
 }

@@ -37,26 +37,28 @@ impl<Point> Trapezoidation<Point> {
 
 impl<Point> Trapezoidation<Point> {
     pub(crate) fn from_multisegment<
-        Multisegment: bounded::Bounded<Scalar> + Multisegmental<Segment = Segment>,
+        'a,
+        Multisegment: bounded::Bounded<Scalar>,
         Scalar,
-        Segment: Segmental<Endpoint = Point>,
+        Segment,
         Shuffler: FnOnce(&mut Vec<Edge<Point>>),
     >(
-        multisegment: &Multisegment,
+        multisegment: &'a Multisegment,
         shuffler: Shuffler,
     ) -> Self
     where
+        &'a Multisegment: Multisegmental<Segment = Segment>,
         Point: Clone + From<(Scalar, Scalar)> + Orient + PartialOrd,
         Scalar: Clone + One,
+        Segment: Segmental<Endpoint = Point>,
         for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
             + Sub<Output = Scalar>
             + Zeroable,
     {
-        let segments = multisegment.segments();
-        let mut edges = Vec::<Edge<Point>>::with_capacity(segments.len());
-        for segment in segments {
-            let (start, end) = (segment.start(), segment.end());
+        let mut edges = Vec::<Edge<Point>>::with_capacity(multisegment.segments_count());
+        for segment in multisegment.segments() {
+            let (start, end) = segment.endpoints();
             edges.push(if start < end {
                 Edge::<Point> {
                     left_point: start,
@@ -76,22 +78,25 @@ impl<Point> Trapezoidation<Point> {
     }
 
     pub(crate) fn from_polygon<
-        Polygon: bounded::Bounded<Scalar> + Polygonal<Contour = Contour> + Multisegmental,
+        'a,
         Scalar,
         Contour: Contoural<Segment = Segment> + Oriented,
-        Segment: Segmental<Endpoint = Point>,
+        Polygon: bounded::Bounded<Scalar>,
+        Segment,
         Shuffler: FnOnce(&mut Vec<Edge<Point>>),
     >(
-        polygon: &Polygon,
+        polygon: &'a Polygon,
         shuffler: Shuffler,
     ) -> Self
     where
+        &'a Polygon: Polygonal<Contour = Contour> + Multisegmental,
         Point: Clone + From<(Scalar, Scalar)> + Orient + PartialOrd,
         Scalar: Clone + One,
         for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
             + Sub<Output = Scalar>
             + Zeroable,
+        Segment: Segmental<Endpoint = Point>,
     {
         let mut edges = Vec::<Edge<Point>>::with_capacity(polygon.segments_count());
         Self::populate_edges_from_contour(polygon.border(), &mut edges);
@@ -102,19 +107,17 @@ impl<Point> Trapezoidation<Point> {
         Self::from_box_with_edges(polygon.to_bounding_box(), edges)
     }
 
-    fn populate_edges_from_contour<
-        Contour: Contoural<Segment = Segment> + Oriented,
-        Segment: Segmental<Endpoint = Point>,
-    >(
+    fn populate_edges_from_contour<Contour: Contoural<Segment = Segment> + Oriented, Segment>(
         contour: Contour,
         edges: &mut Vec<Edge<Point>>,
     ) where
         Point: PartialOrd,
+        Segment: Segmental<Endpoint = Point>,
     {
         let is_border_positively_oriented =
             contour.to_orientation() == Orientation::Counterclockwise;
         for segment in contour.segments() {
-            let (start, end) = (segment.start(), segment.end());
+            let (start, end) = segment.endpoints();
             edges.push(if start < end {
                 Edge::<Point> {
                     left_point: start,

@@ -50,6 +50,11 @@ where
 
 impl<Digit, const SHIFT: usize> Difference for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
+    Self: ReduceEvents<
+        Point<Fraction<BigInt<Digit, SHIFT>>>,
+        DIFFERENCE,
+        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
+    >,
     for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, DIFFERENCE>: From<(
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
@@ -57,13 +62,7 @@ where
         )> + Iterator<Item = Event>,
     Fraction<BigInt<Digit, SHIFT>>: PartialOrd,
     Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>
-        + Clone
-        + ReduceEvents<
-            Point<Fraction<BigInt<Digit, SHIFT>>>,
-            DIFFERENCE,
-            Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-        >,
+    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>> + Clone,
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
@@ -86,6 +85,6 @@ where
             }
             events.push(event);
         }
-        Polygon::<_>::reduce_events(events, &mut operation)
+        Self::reduce_events(events, &mut operation)
     }
 }
