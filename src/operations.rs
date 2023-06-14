@@ -2,7 +2,7 @@ use std::ops::{Add, Div, Mul, Sub};
 
 use rithm::big_int::BigInt;
 use rithm::fraction::Fraction;
-use traiter::numbers::{BitLength, IsPowerOfTwo, Sign, Signed, Unitary};
+use traiter::numbers::{BitLength, IsPowerOfTwo, One, Sign, Signed};
 
 use crate::bounded::Box;
 use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
@@ -13,7 +13,7 @@ use crate::traits::{Elemental, Multisegmental, Segmental};
 
 pub(crate) fn ceil_log2<
     Number: Copy + BitLength<Output = Value> + IsPowerOfTwo,
-    Value: Sub<Output = Value> + Unitary,
+    Value: Sub<Output = Value> + One,
 >(
     number: Number,
 ) -> Value {
@@ -199,10 +199,10 @@ pub(crate) trait LocatePointInPointPointPointCircle {
 impl<Digit, const SHIFT: usize, Point: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>>
     LocatePointInPointPointPointCircle for Point
 where
-    for<'a> &'a <Point as Elemental>::Coordinate: Mul<Output = <Point as Elemental>::Coordinate>,
+    for<'a> &'a <Point as Elemental>::Coordinate:
+        Mul<Output = <Point as Elemental>::Coordinate> + Signed,
     <Point as Elemental>::Coordinate: Add<Output = <Point as Elemental>::Coordinate>
         + Mul<Output = <Point as Elemental>::Coordinate>
-        + Signed
         + Sub<Output = <Point as Elemental>::Coordinate>,
 {
     fn locate_point_in_point_point_point_circle(
@@ -291,7 +291,7 @@ pub(crate) trait Orient {
 
 impl<Point: CrossMultiply> Orient for Point
 where
-    <Self as CrossMultiply>::Output: Signed,
+    for<'a> &'a <Self as CrossMultiply>::Output: Signed,
 {
     fn orient(&self, first_ray_point: &Self, second_ray_point: &Self) -> Orientation {
         match Self::cross_multiply(self, first_ray_point, self, second_ray_point).sign() {

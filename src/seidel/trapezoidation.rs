@@ -1,6 +1,6 @@
 use std::ops::{Add, Sub};
 
-use traiter::numbers::{Unitary, Zeroable};
+use traiter::numbers::{One, Zeroable};
 
 use crate::bounded;
 use crate::operations::Orient;
@@ -47,9 +47,11 @@ impl<Point> Trapezoidation<Point> {
     ) -> Self
     where
         Point: Clone + From<(Scalar, Scalar)> + Orient + PartialOrd,
-        Scalar: Clone + Unitary + Zeroable,
-        for<'b> &'b Scalar:
-            Add<Scalar, Output = Scalar> + Sub<Scalar, Output = Scalar> + Sub<Output = Scalar>,
+        Scalar: Clone + One,
+        for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
+            + Sub<Scalar, Output = Scalar>
+            + Sub<Output = Scalar>
+            + Zeroable,
     {
         let segments = multisegment.segments();
         let mut edges = Vec::<Edge<Point>>::with_capacity(segments.len());
@@ -85,9 +87,11 @@ impl<Point> Trapezoidation<Point> {
     ) -> Self
     where
         Point: Clone + From<(Scalar, Scalar)> + Orient + PartialOrd,
-        Scalar: Clone + Unitary + Zeroable,
-        for<'b> &'b Scalar:
-            Add<Scalar, Output = Scalar> + Sub<Scalar, Output = Scalar> + Sub<Output = Scalar>,
+        Scalar: Clone + One,
+        for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
+            + Sub<Scalar, Output = Scalar>
+            + Sub<Output = Scalar>
+            + Zeroable,
     {
         let mut edges = Vec::<Edge<Point>>::with_capacity(polygon.segments_count());
         Self::populate_edges_from_contour(polygon.border(), &mut edges);
@@ -130,9 +134,11 @@ impl<Point> Trapezoidation<Point> {
     fn from_box_with_edges<Scalar>(box_: bounded::Box<Scalar>, mut edges: Vec<Edge<Point>>) -> Self
     where
         Point: Clone + From<(Scalar, Scalar)> + Orient + PartialOrd,
-        Scalar: Clone + Unitary + Zeroable,
-        for<'b> &'b Scalar:
-            Add<Scalar, Output = Scalar> + Sub<Scalar, Output = Scalar> + Sub<Output = Scalar>,
+        Scalar: Clone + One,
+        for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
+            + Sub<Scalar, Output = Scalar>
+            + Sub<Output = Scalar>
+            + Zeroable,
     {
         debug_assert!(!edges.is_empty());
         let mut nodes = Vec::<Node<Point>>::new();
@@ -152,9 +158,11 @@ impl<Point> Trapezoidation<Point> {
     ) -> usize
     where
         Point: Clone + From<(Scalar, Scalar)> + Orient + PartialOrd,
-        Scalar: Clone + Unitary + Zeroable,
-        for<'b> &'b Scalar:
-            Add<Scalar, Output = Scalar> + Sub<Scalar, Output = Scalar> + Sub<Output = Scalar>,
+        Scalar: Clone + One,
+        for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
+            + Sub<Scalar, Output = Scalar>
+            + Sub<Output = Scalar>
+            + Zeroable,
     {
         let (min_x, min_y, max_x, max_y) = (
             box_.get_min_x(),

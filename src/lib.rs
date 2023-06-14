@@ -10,7 +10,7 @@ use pyo3::{
     ffi, intern, AsPyPointer, FromPyObject, IntoPy, Py, PyAny, PyErr, PyObject, ToPyObject,
 };
 use rithm::{big_int, fraction};
-use traiter::numbers::{Endianness, FromBytes, ToBytes, Zeroable};
+use traiter::numbers::{Endianness, FromBytes, ToBytes, Zero};
 
 use crate::bentley_ottmann::{is_contour_valid, is_multisegment_valid};
 use crate::bounded::Bounded;
