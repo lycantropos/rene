@@ -180,18 +180,8 @@ impl PyLocation {
 
     fn __repr__(&self) -> String {
         format!(
-            "rene.Location.{}",
-            match self.0 {
-                Location::Boundary => "BOUNDARY",
-                Location::Exterior => "EXTERIOR",
-                Location::Interior => "INTERIOR",
-            }
-        )
-    }
-
-    fn __str__(&self) -> String {
-        format!(
-            "Location.{}",
+            "{}.{}",
+            Self::NAME,
             match self.0 {
                 Location::Boundary => "BOUNDARY",
                 Location::Exterior => "EXTERIOR",
@@ -217,18 +207,8 @@ impl PyOrientation {
 
     fn __repr__(&self) -> String {
         format!(
-            "rene.Orientation.{}",
-            match self.0 {
-                Orientation::Clockwise => "CLOCKWISE",
-                Orientation::Collinear => "COLLINEAR",
-                Orientation::Counterclockwise => "COUNTERCLOCKWISE",
-            }
-        )
-    }
-
-    fn __str__(&self) -> String {
-        format!(
-            "Orientation.{}",
+            "{}.{}",
+            Self::NAME,
             match self.0 {
                 Orientation::Clockwise => "CLOCKWISE",
                 Orientation::Collinear => "COLLINEAR",
@@ -295,26 +275,8 @@ impl PyRelation {
 
     fn __repr__(&self) -> String {
         format!(
-            "rene.Relation.{}",
-            match self.0 {
-                Relation::Component => "COMPONENT",
-                Relation::Composite => "COMPOSITE",
-                Relation::Cover => "COVER",
-                Relation::Cross => "CROSS",
-                Relation::Disjoint => "DISJOINT",
-                Relation::Enclosed => "ENCLOSED",
-                Relation::Encloses => "ENCLOSES",
-                Relation::Equal => "EQUAL",
-                Relation::Overlap => "OVERLAP",
-                Relation::Touch => "TOUCH",
-                Relation::Within => "WITHIN",
-            }
-        )
-    }
-
-    fn __str__(&self) -> String {
-        format!(
-            "Relation.{}",
+            "{}.{}",
+            Self::NAME,
             match self.0 {
                 Relation::Component => "COMPONENT",
                 Relation::Composite => "COMPOSITE",
@@ -468,7 +430,8 @@ impl PyExactBox {
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!(
-            "Box({}, {}, {}, {})",
+            "{}({}, {}, {}, {})",
+            Self::NAME,
             self.min_x()?.repr()?.extract::<String>()?,
             self.max_x()?.repr()?.extract::<String>()?,
             self.min_y()?.repr()?.extract::<String>()?,
@@ -492,7 +455,8 @@ impl PyExactBox {
 
     fn __str__(&self) -> PyResult<String> {
         Ok(format!(
-            "Box({}, {}, {}, {})",
+            "{}({}, {}, {}, {})",
+            Self::NAME,
             self.min_x()?.str()?.extract::<String>()?,
             self.max_x()?.str()?.extract::<String>()?,
             self.min_y()?.str()?.extract::<String>()?,
@@ -604,7 +568,8 @@ impl PyExactContour {
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
         Ok(format!(
-            "Contour({})",
+            "{}({})",
+            Self::NAME,
             self.vertices()
                 .into_py(py)
                 .as_ref(py)
@@ -767,8 +732,8 @@ impl PyExactEmpty {
         }
     }
 
-    fn __repr__(&self) -> &'static str {
-        "Empty()"
+    fn __repr__(&self) -> String {
+        format!("{}()", Self::NAME)
     }
 
     fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
@@ -783,10 +748,6 @@ impl PyExactEmpty {
         } else {
             Ok(py.NotImplemented())
         }
-    }
-
-    fn __str__(&self) -> &'static str {
-        "Empty()"
     }
 
     fn __sub__(&self, other: &PyAny) -> PyResult<PyObject> {
@@ -937,7 +898,8 @@ impl PyExactMultipolygon {
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
         Ok(format!(
-            "Multipolygon({})",
+            "{}({})",
+            Self::NAME,
             self.polygons()
                 .into_py(py)
                 .as_ref(py)
@@ -962,7 +924,8 @@ impl PyExactMultipolygon {
 
     fn __str__(&self) -> PyResult<String> {
         Ok(format!(
-            "Multipolygon([{}])",
+            "{}([{}])",
+            Self::NAME,
             self.polygons()
                 .into_iter()
                 .map(|polygon| PyExactPolygon(polygon).__str__())
@@ -1068,7 +1031,8 @@ impl PyExactMultisegment {
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
         Ok(format!(
-            "Multisegment({})",
+            "{}({})",
+            Self::NAME,
             self.segments()
                 .into_py(py)
                 .as_ref(py)
@@ -1093,7 +1057,8 @@ impl PyExactMultisegment {
 
     fn __str__(&self) -> PyResult<String> {
         Ok(format!(
-            "Multisegment([{}])",
+            "{}([{}])",
+            Self::NAME,
             self.segments()
                 .into_iter()
                 .map(|segment| PyExactSegment(segment).__str__())
@@ -1130,7 +1095,8 @@ impl PyExactPoint {
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!(
-            "Point({}, {})",
+            "{}({}, {})",
+            Self::NAME,
             self.x()?.repr()?.extract::<String>()?,
             self.y()?.repr()?.extract::<String>()?,
         ))
@@ -1155,7 +1121,8 @@ impl PyExactPoint {
 
     fn __str__(&self) -> PyResult<String> {
         Ok(format!(
-            "Point({}, {})",
+            "{}({}, {})",
+            Self::NAME,
             self.x()?.str()?.extract::<String>()?,
             self.y()?.str()?.extract::<String>()?,
         ))
@@ -1277,7 +1244,8 @@ impl PyExactPolygon {
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
         Ok(format!(
-            "Polygon({}, {})",
+            "{}({}, {})",
+            Self::NAME,
             PyExactContour(self.border()).__repr__(py)?,
             self.holes()
                 .into_py(py)
@@ -1303,7 +1271,8 @@ impl PyExactPolygon {
 
     fn __str__(&self) -> PyResult<String> {
         Ok(format!(
-            "Polygon({}, [{}])",
+            "{}({}, [{}])",
+            Self::NAME,
             PyExactContour(self.border()).__str__()?,
             self.holes()
                 .into_iter()
@@ -1420,7 +1389,8 @@ impl PyExactSegment {
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!(
-            "Segment({}, {})",
+            "{}({}, {})",
+            Self::NAME,
             self.start().__repr__()?,
             self.end().__repr__()?,
         ))
@@ -1442,7 +1412,8 @@ impl PyExactSegment {
 
     fn __str__(&self) -> PyResult<String> {
         Ok(format!(
-            "Segment({}, {})",
+            "{}({}, {})",
+            Self::NAME,
             self.start().__str__()?,
             self.end().__str__()?,
         ))
