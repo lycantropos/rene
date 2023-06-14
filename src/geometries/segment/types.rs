@@ -2,7 +2,7 @@ use rithm::big_int::BigInt;
 use rithm::fraction::Fraction;
 
 use crate::geometries::Point;
-use crate::traits;
+use crate::traits::Segmental;
 
 #[derive(Clone)]
 pub struct Segment<Scalar> {
@@ -16,7 +16,7 @@ impl<Scalar> Segment<Scalar> {
     }
 }
 
-impl<Digit, const SHIFT: usize> traits::Segmental for Segment<Fraction<BigInt<Digit, SHIFT>>>
+impl<Digit, const SHIFT: usize> Segmental for Segment<Fraction<BigInt<Digit, SHIFT>>>
 where
     BigInt<Digit, SHIFT>: Clone,
 {
