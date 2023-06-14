@@ -1,6 +1,6 @@
 use core::convert::From;
 
-use crate::constants::{MIN_CONTOUR_VERTICES_COUNT, MIN_MULTISEGMENT_SEGMENTS_COUNT};
+use crate::constants::MIN_MULTISEGMENT_SEGMENTS_COUNT;
 use crate::contracts::are_contour_vertices_non_degenerate;
 use crate::operations::Orient;
 use crate::relatable::Relation;
@@ -18,47 +18,45 @@ where
     Segment: Segmental<Endpoint = Point>,
     Sweep<Point>: From<&'a Contour> + Iterator<Item = Intersection<Point>>,
 {
-    are_contour_vertices_non_degenerate(&contour.vertices().into_iter().collect::<Vec<_>>()) && {
-        contour.segments_count() >= MIN_CONTOUR_VERTICES_COUNT && {
-            contour.segments().all(|segment| {
-                let (start, end) = segment.endpoints();
-                start != end
-            }) && {
-                let mut sweep = Sweep::from(contour);
-                let mut neighbour_segments_touches_count = 0usize;
-                while let Some(intersection) = sweep.next() {
-                    debug_assert_eq!(
-                        intersection.start == intersection.end,
-                        matches!(intersection.relation, Relation::Touch | Relation::Cross)
-                    );
-                    let touches_at_vertices = intersection.relation == Relation::Touch
-                        && (intersection
+    are_contour_vertices_non_degenerate(&contour.vertices().collect::<Vec<_>>()) && {
+        contour.segments().all(|segment| {
+            let (start, end) = segment.endpoints();
+            start != end
+        }) && {
+            let mut sweep = Sweep::from(contour);
+            let mut neighbour_segments_touches_count = 0usize;
+            while let Some(intersection) = sweep.next() {
+                debug_assert_eq!(
+                    intersection.start == intersection.end,
+                    matches!(intersection.relation, Relation::Touch | Relation::Cross)
+                );
+                let touches_at_vertices = intersection.relation == Relation::Touch
+                    && (intersection
+                        .start
+                        .eq(sweep.get_segment_start(intersection.first_segment_id))
+                        || intersection
                             .start
-                            .eq(sweep.get_segment_start(intersection.first_segment_id))
-                            || intersection
-                                .start
-                                .eq(sweep.get_segment_end(intersection.first_segment_id)))
-                        && (intersection
+                            .eq(sweep.get_segment_end(intersection.first_segment_id)))
+                    && (intersection
+                        .start
+                        .eq(sweep.get_segment_start(intersection.second_segment_id))
+                        || intersection
                             .start
-                            .eq(sweep.get_segment_start(intersection.second_segment_id))
-                            || intersection
-                                .start
-                                .eq(sweep.get_segment_end(intersection.second_segment_id)));
-                    let neighbour_segments_intersection = intersection
-                        .first_segment_id
-                        .abs_diff(intersection.second_segment_id)
-                        == 1
-                        || (intersection.first_segment_id == contour.segments_count() - 1
-                            && intersection.second_segment_id == 0)
-                        || (intersection.second_segment_id == contour.segments_count() - 1
-                            && intersection.first_segment_id == 0);
-                    if !(touches_at_vertices && neighbour_segments_intersection) {
-                        return false;
-                    }
-                    neighbour_segments_touches_count += 1;
+                            .eq(sweep.get_segment_end(intersection.second_segment_id)));
+                let neighbour_segments_intersection = intersection
+                    .first_segment_id
+                    .abs_diff(intersection.second_segment_id)
+                    == 1
+                    || (intersection.first_segment_id == contour.segments_count() - 1
+                        && intersection.second_segment_id == 0)
+                    || (intersection.second_segment_id == contour.segments_count() - 1
+                        && intersection.first_segment_id == 0);
+                if !(touches_at_vertices && neighbour_segments_intersection) {
+                    return false;
                 }
-                neighbour_segments_touches_count == contour.segments_count()
+                neighbour_segments_touches_count += 1;
             }
+            neighbour_segments_touches_count == contour.segments_count()
         }
     }
 }
