@@ -1,5 +1,3 @@
-import sys
-
 from hypothesis import given
 
 from rene import Orientation
@@ -10,4 +8,4 @@ from . import strategies
 def test_round_trip(orientation: Orientation) -> None:
     result = repr(orientation)
 
-    assert eval(result, sys.modules) is orientation
+    assert eval(result, {Orientation.__qualname__: Orientation}) is orientation

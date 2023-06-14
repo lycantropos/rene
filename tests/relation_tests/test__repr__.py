@@ -1,5 +1,3 @@
-import sys
-
 from hypothesis import given
 
 from rene import Relation
@@ -10,4 +8,4 @@ from . import strategies
 def test_round_trip(relation: Relation) -> None:
     result = repr(relation)
 
-    assert eval(result, sys.modules) is relation
+    assert eval(result, {Relation.__qualname__: Relation}) is relation
