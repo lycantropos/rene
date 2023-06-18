@@ -1,13 +1,14 @@
 use super::edge::Edge;
 use super::trapezoid::Trapezoid;
+use crate::operations::Orient;
 
 #[derive(Clone)]
-pub(crate) enum Node<Point> {
+pub(crate) enum Node {
     Leaf {
-        trapezoid: Trapezoid<Point>,
+        trapezoid: Trapezoid,
     },
     XNode {
-        point: Point,
+        point_index: usize,
         left_node_index: usize,
         right_node_index: usize,
     },
@@ -18,19 +19,22 @@ pub(crate) enum Node<Point> {
     },
 }
 
-impl<Point> Node<Point> {
+impl Node {
     pub(super) fn new_leaf(
-        left_point: Point,
-        right_point: Point,
+        left_point_index: usize,
+        right_point_index: usize,
         below_edge_index: usize,
         above_edge_index: usize,
+        edges: &[Edge],
         nodes: &mut Vec<Self>,
     ) -> usize {
         let result = nodes.len();
         let node = Self::Leaf {
-            trapezoid: Trapezoid::<Point>::new(
-                left_point,
-                right_point,
+            trapezoid: Trapezoid::new(
+                edges[below_edge_index].interior_to_left
+                    && !edges[above_edge_index].interior_to_left,
+                left_point_index,
+                right_point_index,
                 below_edge_index,
                 above_edge_index,
                 result,
@@ -41,14 +45,14 @@ impl<Point> Node<Point> {
     }
 
     pub(super) fn new_x_node(
-        point: Point,
+        point_index: usize,
         left_node_index: usize,
         right_node_index: usize,
         nodes: &mut Vec<Self>,
     ) -> usize {
         let result = nodes.len();
         let node = Self::XNode {
-            point,
+            point_index,
             left_node_index,
             right_node_index,
         };
@@ -98,52 +102,49 @@ impl<Point> Node<Point> {
         }
     }
 
-    pub(super) fn get_trapezoid(&self) -> &Trapezoid<Point> {
+    pub(super) fn get_trapezoid(&self) -> &Trapezoid {
         match self {
             Self::Leaf { trapezoid } => trapezoid,
             _ => unreachable!("Only leaves have trapezoids."),
         }
     }
 
-    pub(super) fn get_trapezoid_mut(&mut self) -> &mut Trapezoid<Point> {
+    pub(super) fn get_trapezoid_mut(&mut self) -> &mut Trapezoid {
         match self {
             Self::Leaf { trapezoid } => trapezoid,
             _ => unreachable!("Only leaves have trapezoids."),
         }
     }
 
-    pub(super) fn search_intersecting_trapezoid<'a>(
+    pub(super) fn search_intersecting_trapezoid<'a, Point: Orient + PartialOrd>(
         &'a self,
-        edge: &Edge<Point>,
-        edges: &[Edge<Point>],
-        nodes: &'a [Node<Point>],
-    ) -> &'a Trapezoid<Point>
-    where
-        Point: PartialOrd,
-        Edge<Point>: PartialOrd,
-    {
+        edge: &Edge,
+        edges: &[Edge],
+        endpoints: &[Point],
+        nodes: &'a [Node],
+    ) -> &'a Trapezoid {
         match self {
             Self::Leaf { trapezoid } => trapezoid,
             Self::XNode {
                 left_node_index,
                 right_node_index,
-                point,
-            } => nodes[if edge.left_point.lt(point) {
+                point_index,
+            } => nodes[if endpoints[edge.left_point_index].lt(&endpoints[*point_index]) {
                 *left_node_index
             } else {
                 *right_node_index
             }]
-            .search_intersecting_trapezoid(edge, edges, nodes),
+            .search_intersecting_trapezoid(edge, edges, endpoints, nodes),
             Self::YNode {
                 above_node_index,
                 below_node_index,
                 edge_index,
-            } => nodes[if edges[*edge_index].lt(edge) {
+            } => nodes[if edges[*edge_index].is_under(edge, endpoints) {
                 *above_node_index
             } else {
                 *below_node_index
             }]
-            .search_intersecting_trapezoid(edge, edges, nodes),
+            .search_intersecting_trapezoid(edge, edges, endpoints, nodes),
         }
     }
 }

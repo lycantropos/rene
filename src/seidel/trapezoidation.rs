@@ -13,20 +13,25 @@ use super::trapezoid::Trapezoid;
 
 #[derive(Clone)]
 pub(crate) struct Trapezoidation<Point> {
-    edges: Vec<Edge<Point>>,
-    nodes: Vec<Node<Point>>,
+    edges: Vec<Edge>,
+    endpoints: Vec<Point>,
+    nodes: Vec<Node>,
 }
 
 impl<Point> Trapezoidation<Point> {
-    pub(super) fn get_root(&self) -> &Node<Point> {
+    pub(super) fn get_root(&self) -> &Node {
         &self.nodes[0]
     }
 
-    pub(super) fn get_edges(&self) -> &[Edge<Point>] {
+    pub(super) fn get_edges(&self) -> &[Edge] {
         &self.edges
     }
 
-    pub(super) fn get_nodes(&self) -> &[Node<Point>] {
+    pub(super) fn get_endpoints(&self) -> &[Point] {
+        &self.endpoints
+    }
+
+    pub(super) fn get_nodes(&self) -> &[Node] {
         &self.nodes
     }
 
@@ -41,14 +46,14 @@ impl<Point> Trapezoidation<Point> {
         Multisegment: bounded::Bounded<Scalar>,
         Scalar,
         Segment,
-        Shuffler: FnOnce(&mut Vec<Edge<Point>>),
+        Shuffler: FnOnce(&mut Vec<Edge>),
     >(
         multisegment: &'a Multisegment,
         shuffler: Shuffler,
     ) -> Self
     where
         &'a Multisegment: Multisegmental<Segment = Segment>,
-        Point: Clone + From<(Scalar, Scalar)> + Orient + PartialOrd,
+        Point: From<(Scalar, Scalar)> + Orient + PartialOrd,
         Scalar: Clone + One,
         Segment: Segmental<Endpoint = Point>,
         for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
@@ -56,87 +61,73 @@ impl<Point> Trapezoidation<Point> {
             + Sub<Output = Scalar>
             + Zeroable,
     {
-        let mut edges = Vec::<Edge<Point>>::with_capacity(multisegment.segments_count());
+        let mut edges = Vec::<Edge>::with_capacity(multisegment.segments_count());
+        let mut endpoints = Vec::<Point>::with_capacity(2 * multisegment.segments_count());
         for segment in multisegment.segments() {
             let (start, end) = segment.endpoints();
+            let start_index = endpoints.len();
+            let end_index = endpoints.len() + 1;
             edges.push(if start < end {
-                Edge::<Point> {
-                    left_point: start,
-                    right_point: end,
+                Edge {
+                    left_point_index: start_index,
+                    right_point_index: end_index,
                     interior_to_left: false,
                 }
             } else {
-                Edge::<Point> {
-                    left_point: end,
-                    right_point: start,
+                Edge {
+                    left_point_index: end_index,
+                    right_point_index: start_index,
                     interior_to_left: false,
                 }
-            })
+            });
+            endpoints.push(start);
+            endpoints.push(end);
         }
         shuffler(&mut edges);
-        Self::from_box_with_edges(multisegment.to_bounding_box(), edges)
+        Self::from_box(multisegment.to_bounding_box(), edges, endpoints)
     }
 
     pub(crate) fn from_polygon<
         'a,
         Scalar,
-        Contour: Contoural<Segment = Segment> + Oriented,
+        Contour: Contoural<Vertex = Point> + Oriented,
         Polygon: bounded::Bounded<Scalar>,
-        Segment,
-        Shuffler: FnOnce(&mut Vec<Edge<Point>>),
+        Shuffler: FnOnce(&mut Vec<Edge>),
     >(
         polygon: &'a Polygon,
         shuffler: Shuffler,
     ) -> Self
     where
         &'a Polygon: Polygonal<Contour = Contour> + Multisegmental,
-        Point: Clone + From<(Scalar, Scalar)> + Orient + PartialOrd,
+        Point: From<(Scalar, Scalar)> + Orient + PartialOrd,
         Scalar: Clone + One,
         for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
             + Sub<Output = Scalar>
             + Zeroable,
-        Segment: Segmental<Endpoint = Point>,
     {
-        let mut edges = Vec::<Edge<Point>>::with_capacity(polygon.segments_count());
-        Self::populate_edges_from_contour(polygon.border(), &mut edges);
+        let mut edges = Vec::<Edge>::with_capacity(polygon.segments_count());
+        let mut endpoints = Vec::<Point>::with_capacity(polygon.segments_count());
+        Self::populate_from_contour(
+            polygon.border(),
+            Orientation::Counterclockwise,
+            &mut edges,
+            &mut endpoints,
+        );
         for hole in polygon.holes() {
-            Self::populate_edges_from_contour(hole, &mut edges);
+            Self::populate_from_contour(hole, Orientation::Clockwise, &mut edges, &mut endpoints);
         }
         shuffler(&mut edges);
-        Self::from_box_with_edges(polygon.to_bounding_box(), edges)
+        Self::from_box(polygon.to_bounding_box(), edges, endpoints)
     }
 
-    fn populate_edges_from_contour<Contour: Contoural<Segment = Segment> + Oriented, Segment>(
-        contour: Contour,
-        edges: &mut Vec<Edge<Point>>,
-    ) where
-        Point: PartialOrd,
-        Segment: Segmental<Endpoint = Point>,
-    {
-        let is_border_positively_oriented =
-            contour.to_orientation() == Orientation::Counterclockwise;
-        for segment in contour.segments() {
-            let (start, end) = segment.endpoints();
-            edges.push(if start < end {
-                Edge::<Point> {
-                    left_point: start,
-                    right_point: end,
-                    interior_to_left: is_border_positively_oriented,
-                }
-            } else {
-                Edge::<Point> {
-                    left_point: end,
-                    right_point: start,
-                    interior_to_left: !is_border_positively_oriented,
-                }
-            })
-        }
-    }
-
-    fn from_box_with_edges<Scalar>(box_: bounded::Box<Scalar>, mut edges: Vec<Edge<Point>>) -> Self
+    fn from_box<Scalar>(
+        box_: bounded::Box<Scalar>,
+        mut edges: Vec<Edge>,
+        mut endpoints: Vec<Point>,
+    ) -> Self
     where
-        Point: Clone + From<(Scalar, Scalar)> + Orient + PartialOrd,
+        Point: From<(Scalar, Scalar)> + Orient + PartialOrd,
         Scalar: Clone + One,
         for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
@@ -144,23 +135,29 @@ impl<Point> Trapezoidation<Point> {
             + Zeroable,
     {
         debug_assert!(!edges.is_empty());
-        let mut nodes = Vec::<Node<Point>>::new();
-        let first_leaf_index = Self::leaf_from_box_with_edges(box_, &mut edges, &mut nodes);
+        let mut nodes = Vec::<Node>::new();
+        let first_leaf_index =
+            Self::leaf_from_box_with_edges(box_, &mut edges, &mut endpoints, &mut nodes);
         debug_assert_eq!(first_leaf_index, 0usize);
         Self::add_edge_to_single_trapezoid(0usize, 0usize, &edges, &mut nodes);
         for edge_index in 1..edges.len() - 2 {
-            Self::add_edge(edge_index, &edges, &mut nodes)
+            Self::add_edge(edge_index, &edges, &endpoints, &mut nodes)
         }
-        Self { edges, nodes }
+        Self {
+            edges,
+            endpoints,
+            nodes,
+        }
     }
 
     fn leaf_from_box_with_edges<Scalar>(
         box_: bounded::Box<Scalar>,
-        edges: &mut Vec<Edge<Point>>,
-        nodes: &mut Vec<Node<Point>>,
+        edges: &mut Vec<Edge>,
+        endpoints: &mut Vec<Point>,
+        nodes: &mut Vec<Node>,
     ) -> usize
     where
-        Point: Clone + From<(Scalar, Scalar)> + Orient + PartialOrd,
+        Point: From<(Scalar, Scalar)> + Orient + PartialOrd,
         Scalar: Clone + One,
         for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
@@ -186,32 +183,89 @@ impl<Point> Trapezoidation<Point> {
         } else {
             (min_y - &delta_y, max_y + delta_y)
         };
-        let below_edge_index = edges.len();
-        edges.push(Edge::<Point> {
-            left_point: Point::from((min_x.clone(), min_y.clone())),
-            right_point: Point::from((max_x.clone(), min_y.clone())),
-            interior_to_left: false,
-        });
+        let above_edge_left_point_index = endpoints.len();
+        endpoints.push(Point::from((min_x.clone(), max_y.clone())));
+        let above_edge_right_point_index = endpoints.len();
+        endpoints.push(Point::from((max_x.clone(), max_y)));
         let above_edge_index = edges.len();
-        edges.push(Edge::<Point> {
-            left_point: Point::from((min_x.clone(), max_y.clone())),
-            right_point: Point::from((max_x.clone(), max_y)),
+        edges.push(Edge {
+            left_point_index: above_edge_left_point_index,
+            right_point_index: above_edge_right_point_index,
             interior_to_left: true,
         });
-        Node::<Point>::new_leaf(
-            Point::from((min_x, min_y.clone())),
-            Point::from((max_x, min_y)),
+        let below_edge_left_point_index = endpoints.len();
+        endpoints.push(Point::from((min_x, min_y.clone())));
+        let below_edge_right_point_index = endpoints.len();
+        endpoints.push(Point::from((max_x, min_y)));
+        let below_edge_index = edges.len();
+        edges.push(Edge {
+            left_point_index: below_edge_left_point_index,
+            right_point_index: below_edge_right_point_index,
+            interior_to_left: false,
+        });
+        Node::new_leaf(
+            below_edge_left_point_index,
+            below_edge_right_point_index,
             below_edge_index,
             above_edge_index,
+            edges,
             nodes,
         )
     }
+
+    fn populate_from_contour<Contour: Contoural<Vertex = Point> + Oriented>(
+        contour: Contour,
+        correct_orientation: Orientation,
+        edges: &mut Vec<Edge>,
+        endpoints: &mut Vec<Point>,
+    ) where
+        Point: PartialOrd,
+    {
+        let is_contour_correctly_oriented = contour.to_orientation() == correct_orientation;
+        let first_start_index = endpoints.len();
+        let mut start_index = endpoints.len();
+        endpoints.extend(contour.vertices());
+        let mut start = &endpoints[start_index];
+        for (end_offset, end) in endpoints[first_start_index + 1..].iter().enumerate() {
+            let end_index = first_start_index + 1 + end_offset;
+            edges.push(if start < end {
+                Edge {
+                    left_point_index: start_index,
+                    right_point_index: end_index,
+                    interior_to_left: is_contour_correctly_oriented,
+                }
+            } else {
+                Edge {
+                    left_point_index: end_index,
+                    right_point_index: start_index,
+                    interior_to_left: !is_contour_correctly_oriented,
+                }
+            });
+            (start, start_index) = (end, end_index);
+        }
+        let last_end_index = endpoints.len() - 1;
+        edges.push(
+            if endpoints[first_start_index] < endpoints[last_end_index] {
+                Edge {
+                    left_point_index: first_start_index,
+                    right_point_index: last_end_index,
+                    interior_to_left: is_contour_correctly_oriented,
+                }
+            } else {
+                Edge {
+                    left_point_index: last_end_index,
+                    right_point_index: first_start_index,
+                    interior_to_left: !is_contour_correctly_oriented,
+                }
+            },
+        );
+    }
 }
 
-impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
-    fn add_edge(edge_index: usize, edges: &[Edge<Point>], nodes: &mut Vec<Node<Point>>) {
+impl<Point: Orient + PartialOrd> Trapezoidation<Point> {
+    fn add_edge(edge_index: usize, edges: &[Edge], endpoints: &[Point], nodes: &mut Vec<Node>) {
         let trapezoids_leaves_indices =
-            Self::find_intersecting_trapezoids_leaves_indices(edge_index, edges, nodes);
+            Self::find_intersecting_trapezoids_leaves_indices(edge_index, edges, endpoints, nodes);
         debug_assert!(!trapezoids_leaves_indices.is_empty());
         if let [trapezoid_leaf_index] = trapezoids_leaves_indices.as_slice() {
             Self::add_edge_to_single_trapezoid(edge_index, *trapezoid_leaf_index, edges, nodes);
@@ -244,6 +298,7 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
                     middle_trapezoid_leaf_index,
                     prev_above_leaf_index,
                     prev_below_leaf_index,
+                    edges,
                     nodes,
                 );
             }
@@ -261,33 +316,33 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
     fn add_edge_to_first_trapezoid(
         edge_index: usize,
         trapezoid_leaf_index: usize,
-        edges: &[Edge<Point>],
-        nodes: &mut Vec<Node<Point>>,
+        edges: &[Edge],
+        nodes: &mut Vec<Node>,
     ) -> (usize, usize) {
         let edge = &edges[edge_index];
         let (above_leaf_index, below_leaf_index) = (
-            Node::<Point>::new_leaf(
-                edge.left_point.clone(),
-                Self::get_trapezoid(trapezoid_leaf_index, nodes)
-                    .right_point
-                    .clone(),
+            Node::new_leaf(
+                edge.left_point_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index,
                 edge_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index,
+                edges,
                 nodes,
             ),
-            Node::<Point>::new_leaf(
-                edge.left_point.clone(),
-                Self::get_trapezoid(trapezoid_leaf_index, nodes)
-                    .right_point
-                    .clone(),
+            Node::new_leaf(
+                edge.left_point_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index,
                 edge_index,
+                edges,
                 nodes,
             ),
         );
         let mut replacement_node_index =
-            Node::<Point>::new_y_node(edge_index, below_leaf_index, above_leaf_index, nodes);
-        if edge.left_point == Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point {
+            Node::new_y_node(edge_index, below_leaf_index, above_leaf_index, nodes);
+        if edge.left_point_index
+            == Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point_index
+        {
             Self::maybe_set_as_upper_left(
                 above_leaf_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).get_upper_left_leaf_index(),
@@ -299,13 +354,12 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
                 nodes,
             );
         } else {
-            let left_leaf_index = Node::<Point>::new_leaf(
-                Self::get_trapezoid(trapezoid_leaf_index, nodes)
-                    .left_point
-                    .clone(),
-                edge.left_point.clone(),
+            let left_leaf_index = Node::new_leaf(
+                Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point_index,
+                edge.left_point_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index,
+                edges,
                 nodes,
             );
             Self::maybe_set_as_lower_left(
@@ -320,8 +374,8 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
             );
             Self::set_as_lower_right(left_leaf_index, below_leaf_index, nodes);
             Self::set_as_upper_right(left_leaf_index, above_leaf_index, nodes);
-            replacement_node_index = Node::<Point>::new_x_node(
-                edge.left_point.clone(),
+            replacement_node_index = Node::new_x_node(
+                edge.left_point_index,
                 left_leaf_index,
                 replacement_node_index,
                 nodes,
@@ -346,26 +400,22 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
         trapezoid_leaf_index: usize,
         prev_above_leaf_index: usize,
         prev_below_leaf_index: usize,
-        nodes: &mut Vec<Node<Point>>,
+        edges: &[Edge],
+        nodes: &mut Vec<Node>,
     ) -> (usize, usize) {
         let above_leaf_index = if Self::get_trapezoid(prev_above_leaf_index, nodes).above_edge_index
             == Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index
         {
-            Self::get_trapezoid_mut(prev_above_leaf_index, nodes).right_point =
-                Self::get_trapezoid(trapezoid_leaf_index, nodes)
-                    .right_point
-                    .clone();
+            Self::get_trapezoid_mut(prev_above_leaf_index, nodes).right_point_index =
+                Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index;
             prev_above_leaf_index
         } else {
-            let above_leaf_index = Node::<Point>::new_leaf(
-                Self::get_trapezoid(trapezoid_leaf_index, nodes)
-                    .left_point
-                    .clone(),
-                Self::get_trapezoid(trapezoid_leaf_index, nodes)
-                    .right_point
-                    .clone(),
+            let above_leaf_index = Node::new_leaf(
+                Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index,
                 edge_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index,
+                edges,
                 nodes,
             );
             Self::maybe_set_as_upper_left(
@@ -379,21 +429,16 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
         let below_leaf_index = if Self::get_trapezoid(prev_below_leaf_index, nodes).below_edge_index
             == Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index
         {
-            Self::get_trapezoid_mut(prev_below_leaf_index, nodes).right_point =
-                Self::get_trapezoid(trapezoid_leaf_index, nodes)
-                    .right_point
-                    .clone();
+            Self::get_trapezoid_mut(prev_below_leaf_index, nodes).right_point_index =
+                Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index;
             prev_below_leaf_index
         } else {
-            let below_leaf_index = Node::<Point>::new_leaf(
-                Self::get_trapezoid(trapezoid_leaf_index, nodes)
-                    .left_point
-                    .clone(),
-                Self::get_trapezoid(trapezoid_leaf_index, nodes)
-                    .right_point
-                    .clone(),
+            let below_leaf_index = Node::new_leaf(
+                Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index,
                 edge_index,
+                edges,
                 nodes,
             );
             Self::set_as_upper_left(below_leaf_index, prev_below_leaf_index, nodes);
@@ -416,7 +461,7 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
         );
         {
             let replacement_node_index =
-                Node::<Point>::new_y_node(edge_index, below_leaf_index, above_leaf_index, nodes);
+                Node::new_y_node(edge_index, below_leaf_index, above_leaf_index, nodes);
             Self::replace_node(trapezoid_leaf_index, replacement_node_index, nodes)
         };
         (above_leaf_index, below_leaf_index)
@@ -427,24 +472,23 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
         trapezoid_leaf_index: usize,
         prev_above_leaf_index: usize,
         prev_below_leaf_index: usize,
-        edges: &[Edge<Point>],
-        nodes: &mut Vec<Node<Point>>,
+        edges: &[Edge],
+        nodes: &mut Vec<Node>,
     ) {
         let edge = &edges[edge_index];
         let above_leaf_index = if Self::get_trapezoid(prev_above_leaf_index, nodes).above_edge_index
             == Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index
         {
-            Self::get_trapezoid_mut(prev_above_leaf_index, nodes).right_point =
-                edge.right_point.clone();
+            Self::get_trapezoid_mut(prev_above_leaf_index, nodes).right_point_index =
+                edge.right_point_index;
             prev_above_leaf_index
         } else {
-            let above_leaf_index = Node::<Point>::new_leaf(
-                Self::get_trapezoid(trapezoid_leaf_index, nodes)
-                    .left_point
-                    .clone(),
-                edge.right_point.clone(),
+            let above_leaf_index = Node::new_leaf(
+                Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point_index,
+                edge.right_point_index,
                 edge_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index,
+                edges,
                 nodes,
             );
             Self::maybe_set_as_upper_left(
@@ -458,17 +502,16 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
         let below_leaf_index = if Self::get_trapezoid(prev_below_leaf_index, nodes).below_edge_index
             == Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index
         {
-            Self::get_trapezoid_mut(prev_below_leaf_index, nodes).right_point =
-                edge.right_point.clone();
+            Self::get_trapezoid_mut(prev_below_leaf_index, nodes).right_point_index =
+                edge.right_point_index;
             prev_below_leaf_index
         } else {
-            let below_leaf_index = Node::<Point>::new_leaf(
-                Self::get_trapezoid(trapezoid_leaf_index, nodes)
-                    .left_point
-                    .clone(),
-                edge.right_point.clone(),
+            let below_leaf_index = Node::new_leaf(
+                Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point_index,
+                edge.right_point_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index,
                 edge_index,
+                edges,
                 nodes,
             );
             Self::maybe_set_as_lower_left(
@@ -480,8 +523,10 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
             below_leaf_index
         };
         let mut replacement_node_index =
-            Node::<Point>::new_y_node(edge_index, below_leaf_index, above_leaf_index, nodes);
-        if edge.right_point == Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point {
+            Node::new_y_node(edge_index, below_leaf_index, above_leaf_index, nodes);
+        if edge.right_point_index
+            == Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index
+        {
             Self::maybe_set_as_upper_right(
                 above_leaf_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).get_upper_right_leaf_index(),
@@ -493,13 +538,12 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
                 nodes,
             );
         } else {
-            let right_leaf_index = Node::<Point>::new_leaf(
-                edge.right_point.clone(),
-                Self::get_trapezoid(trapezoid_leaf_index, nodes)
-                    .right_point
-                    .clone(),
+            let right_leaf_index = Node::new_leaf(
+                edge.right_point_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index,
+                edges,
                 nodes,
             );
             Self::maybe_set_as_lower_right(
@@ -514,8 +558,8 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
             );
             Self::set_as_lower_left(right_leaf_index, below_leaf_index, nodes);
             Self::set_as_upper_left(right_leaf_index, above_leaf_index, nodes);
-            replacement_node_index = Node::<Point>::new_x_node(
-                edge.right_point.clone(),
+            replacement_node_index = Node::new_x_node(
+                edge.right_point_index,
                 replacement_node_index,
                 right_leaf_index,
                 nodes,
@@ -527,31 +571,35 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
     fn add_edge_to_single_trapezoid(
         edge_index: usize,
         trapezoid_leaf_index: usize,
-        edges: &[Edge<Point>],
-        nodes: &mut Vec<Node<Point>>,
+        edges: &[Edge],
+        nodes: &mut Vec<Node>,
     ) where
-        Point: PartialOrd + Clone,
+        Point: PartialOrd,
     {
         let edge = &edges[edge_index];
         let (above_leaf_index, below_leaf_index) = (
-            Node::<Point>::new_leaf(
-                edge.left_point.clone(),
-                edge.right_point.clone(),
+            Node::new_leaf(
+                edge.left_point_index,
+                edge.right_point_index,
                 edge_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index,
+                edges,
                 nodes,
             ),
-            Node::<Point>::new_leaf(
-                edge.left_point.clone(),
-                edge.right_point.clone(),
+            Node::new_leaf(
+                edge.left_point_index,
+                edge.right_point_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index,
                 edge_index,
+                edges,
                 nodes,
             ),
         );
         let mut replacement_node_index =
-            Node::<Point>::new_y_node(edge_index, below_leaf_index, above_leaf_index, nodes);
-        if edge.right_point == Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point {
+            Node::new_y_node(edge_index, below_leaf_index, above_leaf_index, nodes);
+        if edge.right_point_index
+            == Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index
+        {
             Self::maybe_set_as_upper_right(
                 above_leaf_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).get_upper_right_leaf_index(),
@@ -563,13 +611,12 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
                 nodes,
             );
         } else {
-            let right_leaf_index = Node::<Point>::new_leaf(
-                edge.right_point.clone(),
-                Self::get_trapezoid(trapezoid_leaf_index, nodes)
-                    .right_point
-                    .clone(),
+            let right_leaf_index = Node::new_leaf(
+                edge.right_point_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index,
+                edges,
                 nodes,
             );
             Self::maybe_set_as_lower_right(
@@ -584,14 +631,16 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
             );
             Self::set_as_lower_left(right_leaf_index, below_leaf_index, nodes);
             Self::set_as_upper_left(right_leaf_index, above_leaf_index, nodes);
-            replacement_node_index = Node::<Point>::new_x_node(
-                edge.right_point.clone(),
+            replacement_node_index = Node::new_x_node(
+                edge.right_point_index,
                 replacement_node_index,
                 right_leaf_index,
                 nodes,
             );
         }
-        if edge.left_point == Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point {
+        if edge.left_point_index
+            == Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point_index
+        {
             Self::maybe_set_as_upper_left(
                 above_leaf_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).get_upper_left_leaf_index(),
@@ -603,13 +652,12 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
                 nodes,
             );
         } else {
-            let left_leaf_index = Node::<Point>::new_leaf(
-                Self::get_trapezoid(trapezoid_leaf_index, nodes)
-                    .left_point
-                    .clone(),
-                edge.left_point.clone(),
+            let left_leaf_index = Node::new_leaf(
+                Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point_index,
+                edge.left_point_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index,
                 Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index,
+                edges,
                 nodes,
             );
             Self::maybe_set_as_lower_left(
@@ -624,8 +672,8 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
             );
             Self::set_as_lower_right(left_leaf_index, below_leaf_index, nodes);
             Self::set_as_upper_right(left_leaf_index, above_leaf_index, nodes);
-            replacement_node_index = Node::<Point>::new_x_node(
-                edge.left_point.clone(),
+            replacement_node_index = Node::new_x_node(
+                edge.left_point_index,
                 left_leaf_index,
                 replacement_node_index,
                 nodes,
@@ -638,7 +686,7 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
     fn maybe_set_as_lower_left(
         leaf_index: usize,
         lower_left_leaf_index: Option<usize>,
-        nodes: &mut [Node<Point>],
+        nodes: &mut [Node],
     ) {
         match lower_left_leaf_index {
             Some(lower_left_leaf_index) => {
@@ -652,7 +700,7 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
     fn maybe_set_as_lower_right(
         leaf_index: usize,
         lower_right_leaf_index: Option<usize>,
-        nodes: &mut [Node<Point>],
+        nodes: &mut [Node],
     ) {
         match lower_right_leaf_index {
             Some(lower_right_leaf_index) => {
@@ -666,7 +714,7 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
     fn maybe_set_as_upper_left(
         leaf_index: usize,
         upper_left_leaf_index: Option<usize>,
-        nodes: &mut [Node<Point>],
+        nodes: &mut [Node],
     ) {
         match upper_left_leaf_index {
             Some(upper_left_leaf_index) => {
@@ -680,7 +728,7 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
     fn maybe_set_as_upper_right(
         leaf_index: usize,
         upper_right_leaf_index: Option<usize>,
-        nodes: &mut [Node<Point>],
+        nodes: &mut [Node],
     ) {
         match upper_right_leaf_index {
             Some(upper_right_leaf_index) => {
@@ -691,57 +739,51 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
     }
 
     #[inline]
-    fn set_as_lower_left(
-        leaf_index: usize,
-        lower_left_leaf_index: usize,
-        nodes: &mut [Node<Point>],
-    ) {
-        unsafe { &mut (*(Self::get_trapezoid_mut(leaf_index, nodes) as *mut Trapezoid<Point>)) }
+    fn set_as_lower_left(leaf_index: usize, lower_left_leaf_index: usize, nodes: &mut [Node]) {
+        unsafe { &mut (*(Self::get_trapezoid_mut(leaf_index, nodes) as *mut Trapezoid)) }
             .set_as_lower_left(Self::get_trapezoid_mut(lower_left_leaf_index, nodes));
     }
 
     #[inline]
-    fn set_as_lower_right(leaf_index: usize, lower_right_index: usize, nodes: &mut [Node<Point>]) {
-        unsafe { &mut (*(Self::get_trapezoid_mut(leaf_index, nodes) as *mut Trapezoid<Point>)) }
+    fn set_as_lower_right(leaf_index: usize, lower_right_index: usize, nodes: &mut [Node]) {
+        unsafe { &mut (*(Self::get_trapezoid_mut(leaf_index, nodes) as *mut Trapezoid)) }
             .set_as_lower_right(Self::get_trapezoid_mut(lower_right_index, nodes));
     }
 
     #[inline]
-    fn set_as_upper_left(
-        leaf_index: usize,
-        upper_left_leaf_index: usize,
-        nodes: &mut [Node<Point>],
-    ) {
-        unsafe { &mut (*(Self::get_trapezoid_mut(leaf_index, nodes) as *mut Trapezoid<Point>)) }
+    fn set_as_upper_left(leaf_index: usize, upper_left_leaf_index: usize, nodes: &mut [Node]) {
+        unsafe { &mut (*(Self::get_trapezoid_mut(leaf_index, nodes) as *mut Trapezoid)) }
             .set_as_upper_left(Self::get_trapezoid_mut(upper_left_leaf_index, nodes));
     }
 
     #[inline]
-    fn set_as_upper_right(leaf_index: usize, upper_right_index: usize, nodes: &mut [Node<Point>]) {
-        unsafe { &mut (*(Self::get_trapezoid_mut(leaf_index, nodes) as *mut Trapezoid<Point>)) }
+    fn set_as_upper_right(leaf_index: usize, upper_right_index: usize, nodes: &mut [Node]) {
+        unsafe { &mut (*(Self::get_trapezoid_mut(leaf_index, nodes) as *mut Trapezoid)) }
             .set_as_upper_right(Self::get_trapezoid_mut(upper_right_index, nodes));
     }
 
     #[inline]
-    fn get_trapezoid(leaf_index: usize, nodes: &[Node<Point>]) -> &Trapezoid<Point> {
+    fn get_trapezoid(leaf_index: usize, nodes: &[Node]) -> &Trapezoid {
         nodes[leaf_index].get_trapezoid()
     }
 
     #[inline]
-    fn get_trapezoid_mut(leaf_index: usize, nodes: &mut [Node<Point>]) -> &mut Trapezoid<Point> {
+    fn get_trapezoid_mut(leaf_index: usize, nodes: &mut [Node]) -> &mut Trapezoid {
         nodes[leaf_index].get_trapezoid_mut()
     }
 
     fn find_intersecting_trapezoids_leaves_indices(
         edge_index: usize,
-        edges: &[Edge<Point>],
-        nodes: &[Node<Point>],
+        edges: &[Edge],
+        endpoints: &[Point],
+        nodes: &[Node],
     ) -> Vec<usize> {
         let edge = &edges[edge_index];
-        let mut trapezoid = nodes[0].search_intersecting_trapezoid(edge, edges, nodes);
-        let mut result = vec![trapezoid.leaf_index()];
-        while trapezoid.right_point < edge.right_point {
-            let leaf_index = if edge.orientation_of(&trapezoid.right_point)
+        let mut trapezoid = nodes[0].search_intersecting_trapezoid(edge, edges, endpoints, nodes);
+        let mut result = vec![trapezoid.get_leaf_index()];
+        while endpoints[trapezoid.right_point_index].lt(&endpoints[edge.right_point_index]) {
+            let leaf_index = if edge
+                .orientation_of(&endpoints[trapezoid.right_point_index], endpoints)
                 == Orientation::Clockwise
             {
                 match trapezoid.get_upper_right_leaf_index() {
@@ -761,7 +803,7 @@ impl<Point: Orient + PartialOrd + Clone> Trapezoidation<Point> {
     }
 
     #[inline]
-    fn replace_node(original_index: usize, replacement_index: usize, nodes: &mut Vec<Node<Point>>) {
+    fn replace_node(original_index: usize, replacement_index: usize, nodes: &mut Vec<Node>) {
         debug_assert!(nodes.len() > 1);
         debug_assert_eq!(replacement_index, nodes.len() - 1);
         nodes[original_index] = unsafe { nodes.pop().unwrap_unchecked() };

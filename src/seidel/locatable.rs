@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use crate::locatable::{Locatable, Location};
 use crate::operations::Orient;
 use crate::oriented::Orientation;
@@ -7,38 +9,41 @@ use crate::seidel::trapezoid::Trapezoid;
 use super::node::Node;
 use super::trapezoidation::Trapezoidation;
 
-impl<Point: Orient + PartialOrd> Node<Point> {
-    fn locate_trapezoid<'a>(
+impl Node {
+    fn locate_trapezoid<'a, Point: Orient + PartialOrd>(
         &'a self,
         point: &Point,
-        edges: &[Edge<Point>],
-        nodes: &'a [Node<Point>],
-    ) -> Option<&'a Trapezoid<Point>> {
+        edges: &[Edge],
+        endpoints: &[Point],
+        nodes: &'a [Node],
+    ) -> Option<&'a Trapezoid> {
         match self {
-            Node::<Point>::Leaf { trapezoid } => Some(trapezoid),
-            Node::<Point>::XNode {
+            Self::Leaf { trapezoid } => Some(trapezoid),
+            Self::XNode {
                 left_node_index,
                 right_node_index,
-                point: node_point,
-            } => {
-                if point < node_point {
-                    nodes[*left_node_index].locate_trapezoid(point, edges, nodes)
-                } else if node_point < point {
-                    nodes[*right_node_index].locate_trapezoid(point, edges, nodes)
-                } else {
-                    None
-                }
-            }
-            Node::<Point>::YNode {
+                point_index,
+            } => point
+                .partial_cmp(&endpoints[*point_index])
+                .and_then(|ordering| match ordering {
+                    Ordering::Less => {
+                        nodes[*left_node_index].locate_trapezoid(point, edges, endpoints, nodes)
+                    }
+                    Ordering::Greater => {
+                        nodes[*right_node_index].locate_trapezoid(point, edges, endpoints, nodes)
+                    }
+                    Ordering::Equal => None,
+                }),
+            Self::YNode {
                 above_node_index,
                 below_node_index,
                 edge_index,
-            } => match edges[*edge_index].orientation_of(point) {
+            } => match edges[*edge_index].orientation_of(point, endpoints) {
                 Orientation::Counterclockwise => {
-                    nodes[*above_node_index].locate_trapezoid(point, edges, nodes)
+                    nodes[*above_node_index].locate_trapezoid(point, edges, endpoints, nodes)
                 }
                 Orientation::Clockwise => {
-                    nodes[*below_node_index].locate_trapezoid(point, edges, nodes)
+                    nodes[*below_node_index].locate_trapezoid(point, edges, endpoints, nodes)
                 }
                 Orientation::Collinear => None,
             },
@@ -48,14 +53,14 @@ impl<Point: Orient + PartialOrd> Node<Point> {
 
 impl<Point: Orient + PartialOrd> Locatable<&Point> for &Trapezoidation<Point> {
     fn locate(self, point: &Point) -> Location {
-        match self
-            .get_root()
-            .locate_trapezoid(point, self.get_edges(), self.get_nodes())
-        {
+        match self.get_root().locate_trapezoid(
+            point,
+            self.get_edges(),
+            self.get_endpoints(),
+            self.get_nodes(),
+        ) {
             Some(trapezoid) => {
-                if self.get_edges()[trapezoid.below_edge_index].interior_to_left
-                    && !self.get_edges()[trapezoid.above_edge_index].interior_to_left
-                {
+                if trapezoid.is_component {
                     Location::Interior
                 } else {
                     Location::Exterior
