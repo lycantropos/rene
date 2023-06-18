@@ -2,92 +2,77 @@ from __future__ import annotations
 
 import typing as t
 
-import typing_extensions as te
-from reprit.base import generate_repr
 
-from rene import hints
-from .edge import Edge
-
-
-class Trapezoid(t.Generic[hints.Scalar]):
-    def is_component(self, edges: t.Sequence[Edge[hints.Scalar]], /) -> bool:
-        """
-        Checks if the trapezoid is a component of decomposed geometry.
-        """
-        return (edges[self.below_edge_index].interior_to_left
-                and not edges[self.above_edge_index].interior_to_left)
+class Trapezoid:
+    @property
+    def lower_left_node_index(self) -> t.Optional[int]:
+        return self._lower_left_node_index
 
     @property
-    def lower_left_leaf_index(self) -> t.Optional[int]:
-        return self._lower_left_leaf_index
+    def lower_right_node_index(self) -> t.Optional[int]:
+        return self._lower_right_node_index
 
     @property
-    def lower_right_leaf_index(self) -> t.Optional[int]:
-        return self._lower_right_leaf_index
+    def upper_left_node_index(self) -> t.Optional[int]:
+        return self._upper_left_node_index
 
     @property
-    def upper_left_leaf_index(self) -> t.Optional[int]:
-        return self._upper_left_leaf_index
+    def upper_right_node_index(self) -> t.Optional[int]:
+        return self._upper_right_node_index
 
-    @property
-    def upper_right_leaf_index(self) -> t.Optional[int]:
-        return self._upper_right_leaf_index
+    def reset_lower_left(self) -> None:
+        self._lower_left_node_index = None
 
-    def set_as_lower_left(self, value: t.Optional[te.Self], /) -> None:
-        if value is None:
-            self._lower_left_leaf_index = None
-        else:
-            self._lower_left_leaf_index = value.leaf_index
-            value._lower_right_leaf_index = self.leaf_index
+    def reset_lower_right(self) -> None:
+        self._lower_right_node_index = None
 
-    def set_as_lower_right(self, value: t.Optional[te.Self], /) -> None:
-        if value is None:
-            self._lower_right_leaf_index = None
-        else:
-            self._lower_right_leaf_index = value.leaf_index
-            value._lower_left_leaf_index = self.leaf_index
+    def reset_upper_left(self) -> None:
+        self._upper_left_node_index = None
 
-    def set_as_upper_left(self, value: t.Optional[te.Self], /) -> None:
-        if value is None:
-            self._upper_left_leaf_index = None
-        else:
-            self._upper_left_leaf_index = value.leaf_index
-            value._upper_right_leaf_index = self.leaf_index
+    def reset_upper_right(self) -> None:
+        self._upper_right_node_index = None
 
-    def set_as_upper_right(self, value: t.Optional[te.Self], /) -> None:
-        if value is None:
-            self._upper_right_leaf_index = None
-        else:
-            self._upper_right_leaf_index = value.leaf_index
-            value._upper_left_leaf_index = self.leaf_index
+    def set_as_lower_left(self, value: Trapezoid) -> None:
+        self._lower_left_node_index = value.leaf_index
+        value._lower_right_node_index = self.leaf_index
 
-    _lower_left_leaf_index: t.Optional[int]
-    _lower_right_leaf_index: t.Optional[int]
-    _upper_left_leaf_index: t.Optional[int]
-    _upper_right_leaf_index: t.Optional[int]
+    def set_as_lower_right(self, value: Trapezoid) -> None:
+        self._lower_right_node_index = value.leaf_index
+        value._lower_left_node_index = self.leaf_index
+
+    def set_as_upper_left(self, value: Trapezoid) -> None:
+        self._upper_left_node_index = value.leaf_index
+        value._upper_right_node_index = self.leaf_index
+
+    def set_as_upper_right(self, value: Trapezoid) -> None:
+        self._upper_right_node_index = value.leaf_index
+        value._upper_left_node_index = self.leaf_index
+
+    _lower_left_node_index: t.Optional[int]
+    _lower_right_node_index: t.Optional[int]
+    _upper_left_node_index: t.Optional[int]
+    _upper_right_node_index: t.Optional[int]
 
     __slots__ = (
-        'above_edge_index', 'below_edge_index', 'leaf_index', 'left_point',
-        'right_point', '_lower_left_leaf_index', '_lower_right_leaf_index',
-        '_upper_left_leaf_index', '_upper_right_leaf_index'
+        'above_edge_index', 'below_edge_index', 'is_component', 'leaf_index',
+        'left_point_index', 'right_point_index', '_lower_left_node_index',
+        '_lower_right_node_index', '_upper_left_node_index',
+        '_upper_right_node_index'
     )
 
     def __init__(self,
-                 left_point: hints.Point[hints.Scalar],
-                 right_point: hints.Point[hints.Scalar],
+                 is_component: bool,
+                 left_point_index: int,
+                 right_point_index: int,
                  below_edge_index: int,
                  above_edge_index: int,
-                 leaf_index: int,
-                 /) -> None:
-        assert left_point < right_point, 'Incorrect endpoints order'
+                 leaf_index: int) -> None:
         (
-            self.above_edge_index, self.below_edge_index, self.left_point,
-            self.leaf_index, self.right_point
+            self.above_edge_index, self.below_edge_index, self.is_component,
+            self.left_point_index, self.leaf_index, self.right_point_index
         ) = (
-            above_edge_index, below_edge_index, left_point, leaf_index,
-            right_point
+            above_edge_index, below_edge_index, is_component, left_point_index,
+            leaf_index, right_point_index
         )
-        self._lower_left_leaf_index = self._lower_right_leaf_index = None
-        self._upper_left_leaf_index = self._upper_right_leaf_index = None
-
-    __repr__ = generate_repr(__init__)
+        self._lower_left_node_index = self._lower_right_node_index = None
+        self._upper_left_node_index = self._upper_right_node_index = None
