@@ -22,7 +22,7 @@ where
     let mut last_touched_edge_start: Option<Point> = None;
     for (index, contour_segment) in contour.segments().enumerate() {
         let (contour_segment_start, contour_segment_end) = contour_segment.endpoints();
-        let relation = relate_to_segment(&contour_segment_start, &contour_segment_end, start, end);
+        let relation = relate_to_segment(start, end, &contour_segment_start, &contour_segment_end);
         match relation {
             Relation::Component | Relation::Equal => return Relation::Component,
             Relation::Composite | Relation::Overlap => return Relation::Overlap,
@@ -52,36 +52,39 @@ where
                     {
                         has_no_cross = false;
                     }
-                    last_touched_edge_index = Some(index);
-                    last_touched_edge_start = Some(contour_segment_start);
                 }
+                last_touched_edge_index = Some(index);
+                last_touched_edge_start = Some(contour_segment_start);
             }
+            Relation::Disjoint => {}
             _ => unreachable!(),
         }
     }
-    if has_no_cross
-        && !has_no_touch
+    if !has_no_touch
+        && has_no_cross
         && unsafe {
             debug_assert!(last_touched_edge_index.is_some());
             last_touched_edge_index.unwrap_unchecked()
-        } == contour.vertices_count() - 1
+        } == contour.segments_count() - 1
     {
-        let vertices = contour.vertices().collect::<Vec<_>>();
-        if relate_to_segment(&vertices[vertices.len() - 1], &vertices[0], start, end)
-            == Relation::Touch
-            && vertices[vertices.len() - 1].ne(start)
-            && vertices[vertices.len() - 1].ne(end)
-            && vertices[0].ne(start)
-            && vertices[0].ne(end)
-            && start.orient(end, &vertices[vertices.len() - 1]) == Orientation::Collinear
+        let (first_contour_segment_start, first_contour_segment_end) =
+            unsafe { contour.segments().next().unwrap_unchecked() }.endpoints();
+        if first_contour_segment_start.ne(start)
+            && first_contour_segment_start.ne(end)
+            && first_contour_segment_end.ne(start)
+            && first_contour_segment_end.ne(end)
+            && start.orient(end, &first_contour_segment_start) == Orientation::Collinear
             && point_vertex_line_divides_angle(
                 start,
-                &vertices[vertices.len() - 1],
-                &vertices[vertices.len() - 2],
-                &vertices[0],
+                &first_contour_segment_start,
+                &first_contour_segment_end,
+                unsafe {
+                    debug_assert!(last_touched_edge_start.is_some());
+                    &last_touched_edge_start.unwrap_unchecked()
+                },
             )
         {
-            has_no_cross = false;
+            has_no_cross = false
         }
     }
     if has_no_cross {
