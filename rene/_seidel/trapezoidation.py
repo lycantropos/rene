@@ -102,8 +102,9 @@ class Trapezoidation(t.Generic[hints.Scalar]):
         return self
 
     def __contains__(self, point: hints.Point[hints.Scalar]) -> bool:
-        return bool(self._root.locate(point, self._edges, self._endpoints,
-                                      self._nodes))
+        return self._root.locate(
+                point, self._edges, self._endpoints, self._nodes
+        ) is not Location.EXTERIOR
 
 
 def _add_edge(edge_index: int,
