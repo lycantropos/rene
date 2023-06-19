@@ -93,9 +93,9 @@ where
 {
     fn from(polygon: &'a Polygon) -> Self {
         let mut contours_vertices = Vec::with_capacity(1 + polygon.holes_count());
-        contours_vertices.push(polygon.border().vertices().into_iter().collect::<Vec<_>>());
+        contours_vertices.push(polygon.border().vertices().collect::<Vec<_>>());
         for hole in polygon.holes() {
-            contours_vertices.push(hole.vertices().into_iter().collect::<Vec<_>>());
+            contours_vertices.push(hole.vertices().collect::<Vec<_>>());
         }
         let mut polygon_endpoints =
             Vec::with_capacity(contours_vertices.iter().map(Vec::len).sum());

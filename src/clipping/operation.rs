@@ -62,8 +62,8 @@ where
         result
             .are_from_first_operand
             .append(&mut vec![false; second_segments_count]);
-        result.extend(first.segments().into_iter());
-        result.extend(second.segments().into_iter());
+        result.extend(first.segments());
+        result.extend(second.segments());
         let first_event = unsafe { result.peek().unwrap_unchecked() };
         result.current_endpoint_first_event = first_event;
         result
@@ -89,10 +89,10 @@ where
             .are_from_first_operand
             .append(&mut vec![false; second_segments_count]);
         for element in first {
-            result.extend(element.segments().into_iter());
+            result.extend(element.segments());
         }
         for element in second {
-            result.extend(element.segments().into_iter());
+            result.extend(element.segments());
         }
         let first_event = unsafe { result.peek().unwrap_unchecked() };
         result.current_endpoint_first_event = first_event;
@@ -119,9 +119,9 @@ where
             .are_from_first_operand
             .append(&mut vec![false; second_segments_count]);
         for element in first {
-            result.extend(element.segments().into_iter());
+            result.extend(element.segments());
         }
-        result.extend(second.segments().into_iter());
+        result.extend(second.segments());
         let first_event = unsafe { result.peek().unwrap_unchecked() };
         result.current_endpoint_first_event = first_event;
         result
@@ -146,9 +146,9 @@ where
         result
             .are_from_first_operand
             .append(&mut vec![false; second_segments_count]);
-        result.extend(first.segments().into_iter());
+        result.extend(first.segments());
         for element in second {
-            result.extend(element.segments().into_iter());
+            result.extend(element.segments());
         }
         let first_event = unsafe { result.peek().unwrap_unchecked() };
         result.current_endpoint_first_event = first_event;
@@ -378,7 +378,7 @@ where
                 }));
             } else {
                 result.push(Polygon::from((
-                    Contour::from(collect_references(&contour_vertices)),
+                    Contour::from(collect_references(contour_vertices)),
                     holes[contour_id]
                         .iter()
                         .map(|&hole_id| {
@@ -1025,9 +1025,7 @@ where
     Self: Multipolygonal,
 {
     fn is_valid(self) -> bool {
-        self.polygons()
-            .into_iter()
-            .all(|polygon| polygon.is_valid())
+        self.polygons().all(|polygon| polygon.is_valid())
     }
 }
 
@@ -1040,7 +1038,6 @@ where
         self.border().to_orientation() == Orientation::Counterclockwise
             && self
                 .holes()
-                .into_iter()
                 .all(|hole| hole.to_orientation() == Orientation::Clockwise)
     }
 }

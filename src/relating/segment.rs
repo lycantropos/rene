@@ -22,8 +22,7 @@ where
     let mut last_touched_edge_start: Option<Point> = None;
     for (index, contour_segment) in contour.segments().enumerate() {
         let (contour_segment_start, contour_segment_end) = contour_segment.endpoints();
-        let relation =
-            relate_to_segment(&contour_segment_start, &contour_segment_end, &start, &end);
+        let relation = relate_to_segment(&contour_segment_start, &contour_segment_end, start, end);
         match relation {
             Relation::Component | Relation::Equal => return Relation::Component,
             Relation::Composite | Relation::Overlap => return Relation::Overlap,
@@ -70,7 +69,7 @@ where
             last_touched_edge_index.unwrap_unchecked()
         } == contour.vertices_count() - 1
     {
-        let vertices = contour.vertices().into_iter().collect::<Vec<_>>();
+        let vertices = contour.vertices().collect::<Vec<_>>();
         if matches!(
             relate_to_segment(&vertices[vertices.len() - 1], &vertices[0], start, end),
             Relation::Touch
