@@ -289,7 +289,7 @@ pub(crate) trait Orient {
 
 impl<Point: CrossMultiply> Orient for Point
 where
-    for<'a> &'a <Self as CrossMultiply>::Output: Signed,
+    for<'a> &'a <Point as CrossMultiply>::Output: Signed,
 {
     fn orient(&self, first_ray_point: &Self, second_ray_point: &Self) -> Orientation {
         match Self::cross_multiply(self, first_ray_point, self, second_ray_point).sign() {
