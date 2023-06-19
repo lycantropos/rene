@@ -42,10 +42,7 @@ where
                         && contour_segment_start.ne(end)
                         && contour_segment_end.ne(start)
                         && contour_segment_end.ne(end)
-                        && matches!(
-                            start.orient(end, &contour_segment_start),
-                            Orientation::Collinear
-                        )
+                        && start.orient(end, &contour_segment_start) == Orientation::Collinear
                         && point_vertex_line_divides_angle(
                             start,
                             &contour_segment_start,
@@ -70,17 +67,13 @@ where
         } == contour.vertices_count() - 1
     {
         let vertices = contour.vertices().collect::<Vec<_>>();
-        if matches!(
-            relate_to_segment(&vertices[vertices.len() - 1], &vertices[0], start, end),
-            Relation::Touch
-        ) && vertices[vertices.len() - 1].ne(start)
+        if relate_to_segment(&vertices[vertices.len() - 1], &vertices[0], start, end)
+            == Relation::Touch
+            && vertices[vertices.len() - 1].ne(start)
             && vertices[vertices.len() - 1].ne(end)
             && vertices[0].ne(start)
             && vertices[0].ne(end)
-            && matches!(
-                start.orient(end, &vertices[vertices.len() - 1]),
-                Orientation::Collinear
-            )
+            && start.orient(end, &vertices[vertices.len() - 1]) == Orientation::Collinear
             && point_vertex_line_divides_angle(
                 start,
                 &vertices[vertices.len() - 1],

@@ -43,77 +43,77 @@ pub trait Relatable<Other = Self> {
     where
         Self: Sized,
     {
-        matches!(self.relate_to(other), Relation::Component)
+        self.relate_to(other) == Relation::Component
     }
 
     fn composite_with(self, other: Other) -> bool
     where
         Self: Sized,
     {
-        matches!(self.relate_to(other), Relation::Composite)
+        self.relate_to(other) == Relation::Composite
     }
 
     fn covers(self, other: Other) -> bool
     where
         Self: Sized,
     {
-        matches!(self.relate_to(other), Relation::Cover)
+        self.relate_to(other) == Relation::Cover
     }
 
     fn crosses(self, other: Other) -> bool
     where
         Self: Sized,
     {
-        matches!(self.relate_to(other), Relation::Cross)
+        self.relate_to(other) == Relation::Cross
     }
 
     fn disjoint_with(self, other: Other) -> bool
     where
         Self: Sized,
     {
-        matches!(self.relate_to(other), Relation::Disjoint)
+        self.relate_to(other) == Relation::Disjoint
     }
 
     fn enclosed_by(self, other: Other) -> bool
     where
         Self: Sized,
     {
-        matches!(self.relate_to(other), Relation::Enclosed)
+        self.relate_to(other) == Relation::Enclosed
     }
 
     fn encloses(self, other: Other) -> bool
     where
         Self: Sized,
     {
-        matches!(self.relate_to(other), Relation::Encloses)
+        self.relate_to(other) == Relation::Encloses
     }
 
     fn equals_to(self, other: Other) -> bool
     where
         Self: Sized,
     {
-        matches!(self.relate_to(other), Relation::Equal)
+        self.relate_to(other) == Relation::Equal
     }
 
     fn overlaps(self, other: Other) -> bool
     where
         Self: Sized,
     {
-        matches!(self.relate_to(other), Relation::Overlap)
+        self.relate_to(other) == Relation::Overlap
     }
 
     fn touches(self, other: Other) -> bool
     where
         Self: Sized,
     {
-        matches!(self.relate_to(other), Relation::Touch)
+        self.relate_to(other) == Relation::Touch
     }
 
     fn within(self, other: Other) -> bool
     where
         Self: Sized,
     {
-        matches!(self.relate_to(other), Relation::Within)
+        self.relate_to(other) == Relation::Within
     }
 
     fn relate_to(self, other: Other) -> Relation;
