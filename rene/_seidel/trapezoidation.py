@@ -359,8 +359,9 @@ def _create_trapezoid(left_point_index: int,
                       /) -> Trapezoid:
     is_component = (edges[below_edge_index].interior_to_left
                     and not edges[above_edge_index].interior_to_left)
-    leaf = Leaf(is_component, left_point_index, right_point_index,
-                below_edge_index, above_edge_index, len(nodes))
+    leaf: Leaf[hints.Scalar] = Leaf(is_component, left_point_index,
+                                    right_point_index, below_edge_index,
+                                    above_edge_index, len(nodes))
     nodes.append(leaf)
     return leaf.trapezoid
 
