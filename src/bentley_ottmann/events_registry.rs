@@ -411,7 +411,7 @@ where
 }
 
 impl<Point: Ord, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
-    fn extend<'a, Segment>(&mut self, segments: impl Iterator<Item = Segment>)
+    fn extend<Segment>(&mut self, segments: impl Iterator<Item = Segment>)
     where
         Segment: Segmental<Endpoint = Point>,
     {

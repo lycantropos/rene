@@ -16,7 +16,7 @@ pub(crate) struct Sweep<Point> {
     start_event: Option<usize>,
 }
 
-impl<'a, Point, Input> From<Input> for Sweep<Point>
+impl<Point, Input> From<Input> for Sweep<Point>
 where
     EventsRegistry<Point, false>: From<Input> + Iterator<Item = Event>,
 {
