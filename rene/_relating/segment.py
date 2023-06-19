@@ -16,11 +16,13 @@ def relate_to_contour(
 ) -> Relation:
     has_no_cross = has_no_touch = True
     last_touched_edge_index = last_touched_edge_start = None
-    for index, contour_segment in enumerate(contour.segments):
-        contour_segment_end, contour_segment_start = (contour_segment.end,
-                                                      contour_segment.start)
+    contour_segments = contour.segments
+    first_contour_segment = contour_segments[0]
+    for index, contour_segment in enumerate(contour_segments):
+        contour_segment_start, contour_segment_end = (contour_segment.start,
+                                                      contour_segment.end)
         relation = relate_to_segment(
-                contour_segment_start, contour_segment_end, start, end
+                start, end, contour_segment_start, contour_segment_end
         )
         if relation is Relation.COMPONENT or relation is Relation.EQUAL:
             return Relation.COMPONENT
@@ -47,23 +49,23 @@ def relate_to_contour(
                     has_no_cross = False
             last_touched_edge_index = index
             last_touched_edge_start = contour_segment_start
-        else:
-            assert relation is Relation.CROSS, relation
+        elif relation is Relation.CROSS:
             if has_no_cross:
                 has_no_cross = False
-    if (has_no_cross
-            and not has_no_touch
-            and last_touched_edge_index == contour.vertices_count - 1):
-        vertices = contour.vertices
-        if ((relate_to_segment(vertices[-1], vertices[0], start, end)
-             is Relation.TOUCH)
-                and start != vertices[-1] != end
-                and start != vertices[0] != end
-                and (orient(start, end, vertices[-1])
-                     is Orientation.COLLINEAR)
-                and point_vertex_line_divides_angle(start, vertices[-1],
-                                                    vertices[-2],
-                                                    vertices[0])):
+        else:
+            assert relation is Relation.DISJOINT
+    if (not has_no_touch
+            and has_no_cross
+            and last_touched_edge_index == contour.segments_count - 1
+            and start != first_contour_segment.start != end
+            and start != first_contour_segment.end != end
+            and (orient(start, end, first_contour_segment.start)
+                 is Orientation.COLLINEAR)):
+        assert last_touched_edge_start is not None
+        if point_vertex_line_divides_angle(start,
+                                           first_contour_segment.start,
+                                           first_contour_segment.end,
+                                           last_touched_edge_start):
             has_no_cross = False
     return ((Relation.DISJOINT if has_no_touch else Relation.TOUCH)
             if has_no_cross
