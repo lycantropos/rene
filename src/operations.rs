@@ -203,15 +203,15 @@ where
 
 pub(crate) trait LocatePointInPointPointPointCircle {
     fn locate_point_in_point_point_point_circle(
-        &self,
-        first: &Self,
-        second: &Self,
-        third: &Self,
+        self,
+        first: Self,
+        second: Self,
+        third: Self,
     ) -> Location;
 }
 
 impl<Digit, const SHIFT: usize, Point: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>>
-    LocatePointInPointPointPointCircle for Point
+    LocatePointInPointPointPointCircle for &Point
 where
     <Point as Elemental>::Coordinate: Add<Output = <Point as Elemental>::Coordinate>
         + Mul<Output = <Point as Elemental>::Coordinate>
@@ -220,10 +220,10 @@ where
         Mul<Output = <Point as Elemental>::Coordinate> + Signed,
 {
     fn locate_point_in_point_point_point_circle(
-        &self,
-        first: &Self,
-        second: &Self,
-        third: &Self,
+        self,
+        first: Self,
+        second: Self,
+        third: Self,
     ) -> Location {
         let (first_dx, first_dy) = (first.x() - self.x(), first.y() - self.y());
         let (second_dx, second_dy) = (second.x() - self.x(), second.y() - self.y());

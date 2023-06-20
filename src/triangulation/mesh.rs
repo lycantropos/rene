@@ -189,9 +189,9 @@ impl<Endpoint> Mesh<Endpoint> {
     }
 }
 
-impl<Endpoint: PartialEq + LocatePointInPointPointPointCircle> Mesh<Endpoint>
+impl<Endpoint: PartialEq> Mesh<Endpoint>
 where
-    for<'a> &'a Endpoint: Orient,
+    for<'a> &'a Endpoint: LocatePointInPointPointPointCircle + Orient,
 {
     fn build_base_edge(
         &mut self,
@@ -367,10 +367,9 @@ where
     }
 }
 
-impl<Endpoint: Clone + LocatePointInPointPointPointCircle + Ord> DelaunayTriangulatable
-    for Mesh<Endpoint>
+impl<Endpoint: Clone + Ord> DelaunayTriangulatable for Mesh<Endpoint>
 where
-    for<'a> &'a Endpoint: Orient,
+    for<'a> &'a Endpoint: LocatePointInPointPointPointCircle + Orient,
 {
     fn delaunay_triangulation(&mut self) -> (usize, usize) {
         let endpoints_count = self.get_endpoints().len();
