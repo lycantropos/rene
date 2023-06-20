@@ -59,19 +59,22 @@ where
     }
 }
 
-pub(crate) fn do_boxes_have_common_area<Scalar>(first: &Box<Scalar>, second: &Box<Scalar>) -> bool
+pub(crate) fn do_boxes_have_common_area<'a, Scalar>(
+    first: &'a Box<Scalar>,
+    second: &'a Box<Scalar>,
+) -> bool
 where
-    for<'a> &'a Box<Scalar>: Relatable,
+    &'a Box<Scalar>: Relatable,
 {
     !first.disjoint_with(second) && !first.touches(second)
 }
 
-pub(crate) fn do_boxes_have_common_continuum<Scalar: PartialEq>(
-    first: &Box<Scalar>,
-    second: &Box<Scalar>,
+pub(crate) fn do_boxes_have_common_continuum<'a, Scalar: PartialEq>(
+    first: &'a Box<Scalar>,
+    second: &'a Box<Scalar>,
 ) -> bool
 where
-    for<'a> &'a Box<Scalar>: Relatable,
+    &'a Box<Scalar>: Relatable,
 {
     !first.disjoint_with(second)
         && (!first.touches(second)
@@ -79,22 +82,22 @@ where
             || (first.get_min_x() != second.get_max_x() && second.get_min_x() != first.get_max_x()))
 }
 
-pub(crate) fn do_boxes_have_no_common_area<Scalar>(
-    first: &Box<Scalar>,
-    second: &Box<Scalar>,
+pub(crate) fn do_boxes_have_no_common_area<'a, Scalar>(
+    first: &'a Box<Scalar>,
+    second: &'a Box<Scalar>,
 ) -> bool
 where
-    for<'a> &'a Box<Scalar>: Relatable,
+    &'a Box<Scalar>: Relatable,
 {
     first.disjoint_with(second) || first.touches(second)
 }
 
-pub(crate) fn do_boxes_have_no_common_continuum<Scalar: PartialEq>(
-    first: &Box<Scalar>,
-    second: &Box<Scalar>,
+pub(crate) fn do_boxes_have_no_common_continuum<'a, Scalar: PartialEq>(
+    first: &'a Box<Scalar>,
+    second: &'a Box<Scalar>,
 ) -> bool
 where
-    for<'a> &'a Box<Scalar>: Relatable,
+    &'a Box<Scalar>: Relatable,
 {
     first.disjoint_with(second)
         || (first.touches(second)
@@ -205,11 +208,11 @@ pub(crate) trait LocatePointInPointPointPointCircle {
 impl<Digit, const SHIFT: usize, Point: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>>
     LocatePointInPointPointPointCircle for Point
 where
-    for<'a> &'a <Point as Elemental>::Coordinate:
-        Mul<Output = <Point as Elemental>::Coordinate> + Signed,
     <Point as Elemental>::Coordinate: Add<Output = <Point as Elemental>::Coordinate>
         + Mul<Output = <Point as Elemental>::Coordinate>
         + Sub<Output = <Point as Elemental>::Coordinate>,
+    for<'a> &'a <Point as Elemental>::Coordinate:
+        Mul<Output = <Point as Elemental>::Coordinate> + Signed,
 {
     fn locate_point_in_point_point_point_circle(
         &self,
