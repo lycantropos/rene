@@ -28,30 +28,34 @@ pub(crate) trait CrossMultiply {
     type Output;
 
     fn cross_multiply(
-        first_start: &Self,
-        first_end: &Self,
-        second_start: &Self,
-        second_end: &Self,
+        first_start: Self,
+        first_end: Self,
+        second_start: Self,
+        second_end: Self,
     ) -> Self::Output;
 }
 
 impl<Digit, const SHIFT: usize, Point: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>>
-    CrossMultiply for Point
+    CrossMultiply for &Point
 where
     BigInt<Digit, SHIFT>: Clone,
-    <Self as Elemental>::Coordinate: Mul<Output = <Self as Elemental>::Coordinate>
-        + Sub<Output = <Self as Elemental>::Coordinate>,
+    <Point as Elemental>::Coordinate: Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    Fraction<BigInt<Digit, SHIFT>>: Mul<Output = Fraction<BigInt<Digit, SHIFT>>>,
 {
-    type Output = <Self as Elemental>::Coordinate;
+    type Output = Fraction<BigInt<Digit, SHIFT>>;
 
     fn cross_multiply(
-        first_start: &Self,
-        first_end: &Self,
-        second_start: &Self,
-        second_end: &Self,
+        first_start: Self,
+        first_end: Self,
+        second_start: Self,
+        second_end: Self,
     ) -> Self::Output {
-        (first_end.x() - first_start.x()) * (second_end.y() - second_start.y())
-            - (first_end.y() - first_start.y()) * (second_end.x() - second_start.x())
+        let (first_start_x, first_start_y) = first_start.coordinates();
+        let (first_end_x, first_end_y) = first_end.coordinates();
+        let (second_start_x, second_start_y) = second_start.coordinates();
+        let (second_end_x, second_end_y) = second_end.coordinates();
+        (first_end_x - first_start_x) * (second_end_y - second_start_y)
+            - (first_end_y - first_start_y) * (second_end_x - second_start_x)
     }
 }
 
@@ -128,13 +132,13 @@ pub(crate) trait IntersectCrossingSegments {
 impl<
         Digit,
         const SHIFT: usize,
-        Point: CrossMultiply<Output = <Point as Elemental>::Coordinate>
-            + From<(
+        Point: From<(
                 <Point as Elemental>::Coordinate,
                 <Point as Elemental>::Coordinate,
             )> + Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
     > IntersectCrossingSegments for Point
 where
+    for<'a> &'a Point: CrossMultiply<Output = Fraction<BigInt<Digit, SHIFT>>>,
     for<'a> <Point as Elemental>::Coordinate: Add<Output = <Point as Elemental>::Coordinate>
         + Div<Output = <Point as Elemental>::Coordinate>
         + Mul<&'a <Point as Elemental>::Coordinate, Output = <Point as Elemental>::Coordinate>
@@ -147,8 +151,9 @@ where
         second_start: &Self,
         second_end: &Self,
     ) -> Self {
-        let scale = Self::cross_multiply(first_start, second_start, second_start, second_end)
-            / Self::cross_multiply(first_start, first_end, second_start, second_end);
+        let scale =
+            CrossMultiply::cross_multiply(first_start, second_start, second_start, second_end)
+                / CrossMultiply::cross_multiply(first_start, first_end, second_start, second_end);
         Point::from((
             first_start.x() + (first_end.x() - first_start.x()) * &scale,
             first_start.y() + (first_end.y() - first_start.y()) * scale,
@@ -287,12 +292,13 @@ pub(crate) trait Orient {
     fn orient(&self, first_ray_point: &Self, second_ray_point: &Self) -> Orientation;
 }
 
-impl<Point: CrossMultiply> Orient for Point
+impl<Point> Orient for Point
 where
-    for<'a> &'a <Point as CrossMultiply>::Output: Signed,
+    for<'a> &'a Point: CrossMultiply,
+    for<'a> <&'a Point as CrossMultiply>::Output: Signed,
 {
     fn orient(&self, first_ray_point: &Self, second_ray_point: &Self) -> Orientation {
-        match Self::cross_multiply(self, first_ray_point, self, second_ray_point).sign() {
+        match CrossMultiply::cross_multiply(self, first_ray_point, self, second_ray_point).sign() {
             Sign::Negative => Orientation::Clockwise,
             Sign::Positive => Orientation::Counterclockwise,
             Sign::Zero => Orientation::Collinear,
