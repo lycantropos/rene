@@ -6,7 +6,7 @@ use super::types::Contour;
 
 impl<Scalar: Hash + Ord> Hash for Contour<Scalar>
 where
-    Self: Oriented,
+    for<'a> &'a Self: Oriented,
 {
     fn hash<H: Hasher>(&self, state: &mut H) {
         let min_vertex_index = self.to_min_vertex_index();

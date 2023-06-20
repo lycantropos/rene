@@ -90,7 +90,7 @@ impl<Point> Trapezoidation<Point> {
     pub(crate) fn from_polygon<
         'a,
         Scalar,
-        Contour: Contoural<Vertex = Point> + Oriented,
+        Contour: 'a,
         Polygon: bounded::Bounded<Scalar>,
         Shuffler: FnOnce(&mut Vec<Edge>),
     >(
@@ -98,7 +98,8 @@ impl<Point> Trapezoidation<Point> {
         shuffler: Shuffler,
     ) -> Self
     where
-        &'a Polygon: Polygonal<Contour = Contour> + Multisegmental,
+        &'a Contour: Contoural<Vertex = Point> + Oriented,
+        &'a Polygon: Polygonal<Contour = &'a Contour> + Multisegmental,
         Point: From<(Scalar, Scalar)> + Orient + PartialOrd,
         Scalar: Clone + One,
         for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
@@ -108,14 +109,24 @@ impl<Point> Trapezoidation<Point> {
     {
         let mut edges = Vec::<Edge>::with_capacity(polygon.segments_count());
         let mut endpoints = Vec::<Point>::with_capacity(polygon.segments_count());
-        Self::populate_from_contour(
-            polygon.border(),
-            Orientation::Counterclockwise,
-            &mut edges,
-            &mut endpoints,
-        );
+        {
+            let border = polygon.border();
+            let is_border_correctly_oriented =
+                border.to_orientation() == Orientation::Counterclockwise;
+            Self::populate_from_contour(
+                border,
+                is_border_correctly_oriented,
+                &mut edges,
+                &mut endpoints,
+            );
+        }
         for hole in polygon.holes() {
-            Self::populate_from_contour(hole, Orientation::Clockwise, &mut edges, &mut endpoints);
+            Self::populate_from_contour(
+                hole,
+                hole.to_orientation() == Orientation::Clockwise,
+                &mut edges,
+                &mut endpoints,
+            );
         }
         shuffler(&mut edges);
         Self::from_box(polygon.to_bounding_box(), edges, endpoints)
@@ -213,15 +224,14 @@ impl<Point> Trapezoidation<Point> {
         )
     }
 
-    fn populate_from_contour<Contour: Contoural<Vertex = Point> + Oriented>(
+    fn populate_from_contour<Contour: Contoural<Vertex = Point>>(
         contour: Contour,
-        correct_orientation: Orientation,
+        is_contour_correctly_oriented: bool,
         edges: &mut Vec<Edge>,
         endpoints: &mut Vec<Point>,
     ) where
         Point: PartialOrd,
     {
-        let is_contour_correctly_oriented = contour.to_orientation() == correct_orientation;
         let first_start_index = endpoints.len();
         let mut start_index = endpoints.len();
         endpoints.extend(contour.vertices());

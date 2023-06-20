@@ -4,11 +4,11 @@ use crate::oriented::{Orientation, Oriented};
 
 use super::types::Contour;
 
-impl<Scalar: Ord> Oriented for Contour<Scalar>
+impl<Scalar: Ord> Oriented for &Contour<Scalar>
 where
     Point<Scalar>: Orient,
 {
-    fn to_orientation(&self) -> Orientation {
+    fn to_orientation(self) -> Orientation {
         let min_vertex_index = self.to_min_vertex_index();
         let previous_to_min_vertex_index = if min_vertex_index == 0 {
             self.vertices.len() - 1
@@ -24,14 +24,5 @@ where
             &self.vertices[min_vertex_index],
             &self.vertices[next_to_min_vertex_index],
         )
-    }
-}
-
-impl<Scalar: Ord> Oriented for &Contour<Scalar>
-where
-    Point<Scalar>: Orient,
-{
-    fn to_orientation(&self) -> Orientation {
-        (*self).to_orientation()
     }
 }
