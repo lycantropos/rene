@@ -124,40 +124,45 @@ pub(crate) fn flags_to_true_indices(flags: &[bool]) -> Vec<usize> {
 }
 
 pub(crate) trait IntersectCrossingSegments {
+    type Output;
+
     fn intersect_crossing_segments(
-        first_start: &Self,
-        first_end: &Self,
-        second_start: &Self,
-        second_end: &Self,
-    ) -> Self;
+        first_start: Self,
+        first_end: Self,
+        second_start: Self,
+        second_end: Self,
+    ) -> Self::Output;
 }
 
 impl<
+        'a,
         Digit,
         const SHIFT: usize,
         Point: From<(
-                <Point as Elemental>::Coordinate,
-                <Point as Elemental>::Coordinate,
+                Fraction<BigInt<Digit, SHIFT>>,
+                Fraction<BigInt<Digit, SHIFT>>,
             )> + Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    > IntersectCrossingSegments for Point
+    > IntersectCrossingSegments for &'a Point
 where
-    for<'a> &'a Point: CrossMultiply<Output = Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> <Point as Elemental>::Coordinate: Add<Output = <Point as Elemental>::Coordinate>
+    &'a Point: CrossMultiply<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    <Point as Elemental>::Coordinate: Add<Output = <Point as Elemental>::Coordinate>
         + Div<Output = <Point as Elemental>::Coordinate>
-        + Mul<&'a <Point as Elemental>::Coordinate, Output = <Point as Elemental>::Coordinate>
+        + for<'b> Mul<&'b <Point as Elemental>::Coordinate, Output = <Point as Elemental>::Coordinate>
         + Mul<Output = <Point as Elemental>::Coordinate>
         + Sub<Output = <Point as Elemental>::Coordinate>,
 {
+    type Output = Point;
+
     fn intersect_crossing_segments(
-        first_start: &Self,
-        first_end: &Self,
-        second_start: &Self,
-        second_end: &Self,
-    ) -> Self {
+        first_start: Self,
+        first_end: Self,
+        second_start: Self,
+        second_end: Self,
+    ) -> Self::Output {
         let scale =
             CrossMultiply::cross_multiply(first_start, second_start, second_start, second_end)
                 / CrossMultiply::cross_multiply(first_start, first_end, second_start, second_end);
-        Point::from((
+        Self::Output::from((
             first_start.x() + (first_end.x() - first_start.x()) * &scale,
             first_start.y() + (first_end.y() - first_start.y()) * scale,
         ))

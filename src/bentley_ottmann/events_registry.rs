@@ -21,11 +21,10 @@ pub(crate) struct EventsRegistry<Point, const UNIQUE: bool> {
     sweep_line_data: BTreeSet<SweepLineKey<Point>>,
 }
 
-impl<Point: Clone + IntersectCrossingSegments + PartialOrd, const UNIQUE: bool> Iterator
-    for EventsRegistry<Point, UNIQUE>
+impl<Point: Clone + PartialOrd, const UNIQUE: bool> Iterator for EventsRegistry<Point, UNIQUE>
 where
     Self: EventsQueue + SweepLine,
-    for<'a> &'a Point: Orient,
+    for<'a> &'a Point: IntersectCrossingSegments<Output = Point> + Orient,
 {
     type Item = Event;
 
@@ -148,11 +147,10 @@ where
     }
 }
 
-impl<Point: Clone + IntersectCrossingSegments + PartialOrd, const UNIQUE: bool>
-    EventsRegistry<Point, UNIQUE>
+impl<Point: Clone + PartialOrd, const UNIQUE: bool> EventsRegistry<Point, UNIQUE>
 where
     Self: EventsQueue + SweepLine,
-    for<'a> &'a Point: Orient,
+    for<'a> &'a Point: IntersectCrossingSegments<Output = Point> + Orient,
 {
     pub(super) fn detect_intersection(&mut self, below_event: Event, event: Event) {
         debug_assert_ne!(below_event, event);
@@ -175,7 +173,7 @@ where
                     && below_event_end_orientation != Orientation::Collinear
                 {
                     if below_event_start_orientation != below_event_end_orientation {
-                        let point = Point::intersect_crossing_segments(
+                        let point = IntersectCrossingSegments::intersect_crossing_segments(
                             event_start,
                             event_end,
                             below_event_start,

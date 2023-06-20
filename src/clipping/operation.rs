@@ -196,12 +196,11 @@ impl<Point> DetectIfLeftEventFromResult for Operation<Point, UNION> {
     }
 }
 
-impl<'a, Point: Clone + Elemental + IntersectCrossingSegments + PartialOrd, const KIND: u8> Iterator
-    for Operation<Point, KIND>
+impl<'a, Point: Clone + Elemental + PartialOrd, const KIND: u8> Iterator for Operation<Point, KIND>
 where
     Self: EventsQueue + DetectIfLeftEventFromResult + SweepLine,
     <Point as Elemental>::Coordinate: PartialEq,
-    for<'b> &'b Point: Orient,
+    for<'b> &'b Point: IntersectCrossingSegments<Output = Point> + Orient,
 {
     type Item = Event;
 
@@ -727,10 +726,10 @@ fn to_next_event_id(
     }
 }
 
-impl<Point: Clone + IntersectCrossingSegments + PartialOrd, const KIND: u8> Operation<Point, KIND>
+impl<Point: Clone + PartialOrd, const KIND: u8> Operation<Point, KIND>
 where
     Self: EventsQueue + SweepLine,
-    for<'a> &'a Point: Orient,
+    for<'a> &'a Point: IntersectCrossingSegments<Output = Point> + Orient,
 {
     pub(super) fn detect_intersection(&mut self, below_event: Event, event: Event) -> bool {
         debug_assert_ne!(below_event, event);
@@ -753,7 +752,7 @@ where
                     && below_event_end_orientation != Orientation::Collinear
                 {
                     if below_event_start_orientation != below_event_end_orientation {
-                        let point = Point::intersect_crossing_segments(
+                        let point = IntersectCrossingSegments::intersect_crossing_segments(
                             event_start,
                             event_end,
                             below_event_start,
