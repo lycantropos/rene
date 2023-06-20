@@ -1,7 +1,7 @@
 use crate::operations::{point_vertex_line_divides_angle, to_sorted_pair, Orient};
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
-use crate::traits::{Contoural, Multisegmental, Multivertexal, Segmental};
+use crate::traits::{Contoural, Multisegmental, Segmental};
 
 pub(crate) fn relate_to_contour<
     'a,
