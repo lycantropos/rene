@@ -12,7 +12,10 @@ pub(crate) struct DelaunayTriangulation<Endpoint> {
     right_side: QuadEdge,
 }
 
-impl<Endpoint: Orient> BoundaryEndpoints<Endpoint> for DelaunayTriangulation<Endpoint> {
+impl<Endpoint> BoundaryEndpoints<Endpoint> for DelaunayTriangulation<Endpoint>
+where
+    for<'a> &'a Endpoint: Orient,
+{
     fn get_boundary_points(&self) -> Vec<&Endpoint> {
         let endpoints = self.mesh.get_endpoints();
         if endpoints.len() < MIN_CONTOUR_VERTICES_COUNT {
@@ -60,7 +63,10 @@ impl<Endpoint> DelaunayTriangulation<Endpoint> {
     }
 }
 
-impl<Endpoint: Orient + PartialOrd> DelaunayTriangulation<Endpoint> {
+impl<Endpoint: PartialOrd> DelaunayTriangulation<Endpoint>
+where
+    for<'a> &'a Endpoint: Orient,
+{
     pub(crate) fn iter_triangles_vertices(
         &self,
     ) -> impl Iterator<Item = (&Endpoint, &Endpoint, &Endpoint)> {

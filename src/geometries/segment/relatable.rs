@@ -14,7 +14,8 @@ impl<Scalar> Relatable<&Empty> for &Segment<Scalar> {
 
 impl<Scalar> Relatable for &Segment<Scalar>
 where
-    Point<Scalar>: Orient + PartialOrd,
+    Point<Scalar>: PartialOrd,
+    for<'a> &'a Point<Scalar>: Orient,
 {
     fn equals_to(self, other: Self) -> bool {
         self.start.eq(&other.start) && self.end.eq(&other.end)
@@ -30,7 +31,8 @@ impl<'a, Scalar> Relatable<&'a Contour<Scalar>> for &Segment<Scalar>
 where
     &'a Contour<Scalar>: Contoural<Segment = Segment<Scalar>, Vertex = Point<Scalar>>,
     Segment<Scalar>: Segmental<Endpoint = Point<Scalar>>,
-    Point<Scalar>: Orient + PartialOrd,
+    Point<Scalar>: PartialOrd,
+    for<'b> &'b Point<Scalar>: Orient,
 {
     fn relate_to(self, other: &'a Contour<Scalar>) -> Relation {
         segment::relate_to_contour(&self.start, &self.end, other)

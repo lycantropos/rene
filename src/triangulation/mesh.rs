@@ -163,7 +163,8 @@ impl<Endpoint> Mesh<Endpoint> {
 impl<Endpoint> Mesh<Endpoint> {
     pub(super) fn to_triangles_base_edges(&self) -> impl Iterator<Item = QuadEdge> + '_
     where
-        Endpoint: Orient + PartialOrd,
+        Endpoint: PartialOrd,
+        for<'a> &'a Endpoint: Orient,
     {
         self.iter_edges().filter(move |&edge| {
             let first_vertex = self.get_start(edge);
@@ -188,7 +189,10 @@ impl<Endpoint> Mesh<Endpoint> {
     }
 }
 
-impl<Endpoint: Orient + PartialEq + LocatePointInPointPointPointCircle> Mesh<Endpoint> {
+impl<Endpoint: PartialEq + LocatePointInPointPointPointCircle> Mesh<Endpoint>
+where
+    for<'a> &'a Endpoint: Orient,
+{
     fn build_base_edge(
         &mut self,
         mut first_right_side: QuadEdge,
@@ -327,8 +331,11 @@ impl<Endpoint: Orient + PartialEq + LocatePointInPointPointPointCircle> Mesh<End
     }
 }
 
-impl<Endpoint: Orient> Mesh<Endpoint> {
-    pub(in crate::triangulation) fn create_triangle(
+impl<Endpoint> Mesh<Endpoint>
+where
+    for<'a> &'a Endpoint: Orient,
+{
+    fn create_triangle(
         &mut self,
         left_point_index: usize,
         mid_point_index: usize,
@@ -351,14 +358,19 @@ impl<Endpoint: Orient> Mesh<Endpoint> {
     }
 }
 
-impl<Endpoint: Orient> Mesh<Endpoint> {
+impl<Endpoint> Mesh<Endpoint>
+where
+    for<'a> &'a Endpoint: Orient,
+{
     pub(super) fn orient_point_to_edge(&self, edge: usize, point: &Endpoint) -> Orientation {
         self.get_start(edge).orient(self.get_end(edge), point)
     }
 }
 
-impl<Endpoint: Clone + LocatePointInPointPointPointCircle + Ord + Orient> DelaunayTriangulatable
+impl<Endpoint: Clone + LocatePointInPointPointPointCircle + Ord> DelaunayTriangulatable
     for Mesh<Endpoint>
+where
+    for<'a> &'a Endpoint: Orient,
 {
     fn delaunay_triangulation(&mut self) -> (usize, usize) {
         let endpoints_count = self.get_endpoints().len();

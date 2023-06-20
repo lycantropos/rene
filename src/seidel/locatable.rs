@@ -10,13 +10,16 @@ use super::node::Node;
 use super::trapezoidation::Trapezoidation;
 
 impl Node {
-    fn locate_trapezoid<'a, Point: Orient + PartialOrd>(
+    fn locate_trapezoid<'a, Point: PartialOrd>(
         &'a self,
         point: &Point,
         edges: &[Edge],
         endpoints: &[Point],
         nodes: &'a [Node],
-    ) -> Option<&'a Trapezoid> {
+    ) -> Option<&'a Trapezoid>
+    where
+        for<'b> &'b Point: Orient,
+    {
         match self {
             Self::Leaf { trapezoid } => Some(trapezoid),
             Self::XNode {
@@ -51,7 +54,10 @@ impl Node {
     }
 }
 
-impl<Point: Orient + PartialOrd> Locatable<&Point> for &Trapezoidation<Point> {
+impl<Point: PartialOrd> Locatable<&Point> for &Trapezoidation<Point>
+where
+    for<'a> &'a Point: Orient,
+{
     fn locate(self, point: &Point) -> Location {
         match self.get_root().locate_trapezoid(
             point,

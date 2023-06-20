@@ -22,8 +22,9 @@ pub(crate) struct ConstrainedDelaunayTriangulation<Endpoint> {
     triangular_holes_indices: Vec<usize>,
 }
 
-impl<Endpoint: Clone + Orient> BoundaryEndpoints<Endpoint>
-    for ConstrainedDelaunayTriangulation<Endpoint>
+impl<Endpoint: Clone> BoundaryEndpoints<Endpoint> for ConstrainedDelaunayTriangulation<Endpoint>
+where
+    for<'a> &'a Endpoint: Orient,
 {
     fn get_boundary_points(&self) -> Vec<&Endpoint> {
         debug_assert!(self.mesh.get_endpoints().len() >= MIN_CONTOUR_VERTICES_COUNT);
@@ -81,15 +82,13 @@ struct PolygonVertexPosition {
     vertex_index: usize,
 }
 
-impl<
-        'a,
-        Endpoint: Clone + LocatePointInPointPointPointCircle + Ord + Orient + PartialOrd,
-        Polygon,
-    > From<&'a Polygon> for ConstrainedDelaunayTriangulation<Endpoint>
+impl<'a, Endpoint: Clone + LocatePointInPointPointPointCircle + Ord + PartialOrd, Polygon>
+    From<&'a Polygon> for ConstrainedDelaunayTriangulation<Endpoint>
 where
     &'a Polygon: Polygonal,
     Mesh<Endpoint>: DelaunayTriangulatable,
     PolygonalContour<&'a Polygon>: Contoural<Vertex = Endpoint>,
+    for<'b> &'b Endpoint: Orient,
 {
     fn from(polygon: &'a Polygon) -> Self {
         let mut contours_vertices = Vec::with_capacity(1 + polygon.holes_count());
@@ -195,7 +194,10 @@ impl<Endpoint> ConstrainedDelaunayTriangulation<Endpoint> {
     }
 }
 
-impl<Endpoint: Orient + PartialOrd> ConstrainedDelaunayTriangulation<Endpoint> {
+impl<Endpoint: PartialOrd> ConstrainedDelaunayTriangulation<Endpoint>
+where
+    for<'a> &'a Endpoint: Orient,
+{
     pub(crate) fn to_triangles_vertices(
         &self,
     ) -> impl Iterator<Item = (&Endpoint, &Endpoint, &Endpoint)> + '_ {
@@ -215,8 +217,10 @@ impl<Endpoint: Orient + PartialOrd> ConstrainedDelaunayTriangulation<Endpoint> {
     }
 }
 
-impl<Endpoint: LocatePointInPointPointPointCircle + Orient + PartialOrd>
+impl<Endpoint: LocatePointInPointPointPointCircle + PartialOrd>
     ConstrainedDelaunayTriangulation<Endpoint>
+where
+    for<'a> &'a Endpoint: Orient,
 {
     fn bound(&mut self, contours_sizes: &[usize]) {
         let mut extraneous_mouths = self
@@ -302,13 +306,16 @@ impl<Endpoint: LocatePointInPointPointPointCircle + Orient + PartialOrd>
     }
 }
 
-fn angle_contains_point<Point: Orient>(
-    vertex: &Point,
-    first_ray_point: &Point,
-    second_ray_point: &Point,
+fn angle_contains_point<'a, Point>(
+    vertex: &'a Point,
+    first_ray_point: &'a Point,
+    second_ray_point: &'a Point,
     angle_orientation: Orientation,
-    point: &Point,
-) -> bool {
+    point: &'a Point,
+) -> bool
+where
+    &'a Point: Orient,
+{
     debug_assert!(angle_orientation != Orientation::Collinear);
     let first_half_orientation = vertex.orient(first_ray_point, point);
     let second_half_orientation = second_ray_point.orient(vertex, point);
@@ -348,12 +355,15 @@ fn are_triangular_hole_vertices(
         .any(|contour_index| triangular_holes_indices.contains(&contour_index))
 }
 
-fn detect_crossings<Endpoint: Orient + PartialEq + PartialOrd>(
+fn detect_crossings<Endpoint: PartialEq + PartialOrd>(
     mesh: &Mesh<Endpoint>,
     base_edge: QuadEdge,
     constraint_start: &Endpoint,
     constraint_end: &Endpoint,
-) -> Vec<QuadEdge> {
+) -> Vec<QuadEdge>
+where
+    for<'a> &'a Endpoint: Orient,
+{
     let mut candidate = mesh.to_left_from_end(base_edge);
     let mut result = Vec::new();
     while mesh.get_start(candidate).ne(constraint_end) {
@@ -379,10 +389,13 @@ fn detect_crossings<Endpoint: Orient + PartialEq + PartialOrd>(
     result
 }
 
-fn edge_should_be_swapped<Endpoint: LocatePointInPointPointPointCircle + Orient>(
+fn edge_should_be_swapped<Endpoint: LocatePointInPointPointPointCircle>(
     mesh: &Mesh<Endpoint>,
     edge: QuadEdge,
-) -> bool {
+) -> bool
+where
+    for<'a> &'a Endpoint: Orient,
+{
     is_convex_quadrilateral_diagonal(mesh, edge)
         && ((mesh
             .get_end(mesh.to_right_from_start(edge))
@@ -439,12 +452,15 @@ fn intersect_polygon_vertices_positions_slices_impl<
     result
 }
 
-fn is_edge_inside_hole<Endpoint: Orient>(
+fn is_edge_inside_hole<Endpoint>(
     mesh: &Mesh<Endpoint>,
     edge: QuadEdge,
     contours_vertices: &[Vec<Endpoint>],
     polygon_vertices_positions: &[Vec<PolygonVertexPosition>],
-) -> bool {
+) -> bool
+where
+    for<'a> &'a Endpoint: Orient,
+{
     let (start_index, end_index) = (mesh.to_start_index(edge), mesh.to_end_index(edge));
     debug_assert_ne!(start_index, end_index);
     let (start, end) = {
@@ -509,10 +525,10 @@ fn is_edge_inside_hole<Endpoint: Orient>(
     false
 }
 
-fn is_convex_quadrilateral_diagonal<Endpoint: Orient>(
-    mesh: &Mesh<Endpoint>,
-    edge: QuadEdge,
-) -> bool {
+fn is_convex_quadrilateral_diagonal<Endpoint>(mesh: &Mesh<Endpoint>, edge: QuadEdge) -> bool
+where
+    for<'a> &'a Endpoint: Orient,
+{
     mesh.orient_point_to_edge(mesh.to_left_from_end(edge), mesh.get_start(edge))
         == Orientation::Counterclockwise
         && mesh.orient_point_to_edge(mesh.to_right_from_start(edge), mesh.get_end(edge))
@@ -555,12 +571,15 @@ fn mouth_edge_to_incidents<Endpoint>(
     (left_from_start, mesh.to_right_from_end(left_from_start))
 }
 
-fn resolve_crossings<Endpoint: Orient + PartialOrd>(
+fn resolve_crossings<Endpoint: PartialOrd>(
     mesh: &mut Mesh<Endpoint>,
     crossings: Vec<QuadEdge>,
     constraint_start: &Endpoint,
     constraint_end: &Endpoint,
-) -> Vec<QuadEdge> {
+) -> Vec<QuadEdge>
+where
+    for<'a> &'a Endpoint: Orient,
+{
     let mut result = Vec::with_capacity(crossings.len());
     let mut crossings_queue = VecDeque::from(crossings);
     while let Some(edge) = crossings_queue.pop_back() {
@@ -583,20 +602,24 @@ fn resolve_crossings<Endpoint: Orient + PartialOrd>(
     result
 }
 
-fn set_constraint<Endpoint: LocatePointInPointPointPointCircle + Orient + PartialOrd>(
+fn set_constraint<Endpoint: LocatePointInPointPointPointCircle + PartialOrd>(
     mesh: &mut Mesh<Endpoint>,
     constraint_start: &Endpoint,
     constraint_end: &Endpoint,
     crossings: Vec<QuadEdge>,
-) {
+) where
+    for<'a> &'a Endpoint: Orient,
+{
     let new_edges = resolve_crossings(mesh, crossings, constraint_start, constraint_end);
     set_criterion(mesh, new_edges);
 }
 
-fn set_criterion<Endpoint: LocatePointInPointPointPointCircle + Orient>(
+fn set_criterion<Endpoint: LocatePointInPointPointPointCircle>(
     mesh: &mut Mesh<Endpoint>,
     mut candidates: Vec<QuadEdge>,
-) {
+) where
+    for<'a> &'a Endpoint: Orient,
+{
     loop {
         let mut next_target_edges = Vec::with_capacity(candidates.capacity());
         let mut edges_to_swap = Vec::with_capacity(candidates.capacity());
@@ -617,11 +640,14 @@ fn set_criterion<Endpoint: LocatePointInPointPointPointCircle + Orient>(
     }
 }
 
-fn to_angle_containing_constraint_base<Endpoint: Orient + PartialEq>(
+fn to_angle_containing_constraint_base<Endpoint: PartialEq>(
     mesh: &Mesh<Endpoint>,
     mut edge: QuadEdge,
     constraint_end: &Endpoint,
-) -> QuadEdge {
+) -> QuadEdge
+where
+    for<'a> &'a Endpoint: Orient,
+{
     if mesh.get_end(edge).ne(constraint_end) {
         let mut orientation = mesh.orient_point_to_edge(edge, constraint_end);
         if orientation == Orientation::Counterclockwise {

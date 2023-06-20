@@ -53,9 +53,10 @@ impl<Point> Trapezoidation<Point> {
     ) -> Self
     where
         &'a Multisegment: Multisegmental<Segment = Segment>,
-        Point: From<(Scalar, Scalar)> + Orient + PartialOrd,
+        Point: From<(Scalar, Scalar)> + PartialOrd,
         Scalar: Clone + One,
         Segment: Segmental<Endpoint = Point>,
+        for<'b> &'b Point: Orient,
         for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
             + Sub<Output = Scalar>
@@ -100,8 +101,9 @@ impl<Point> Trapezoidation<Point> {
     where
         &'a Contour: Contoural<Vertex = Point> + Oriented,
         &'a Polygon: Polygonal<Contour = &'a Contour> + Multisegmental,
-        Point: From<(Scalar, Scalar)> + Orient + PartialOrd,
+        Point: From<(Scalar, Scalar)> + PartialOrd,
         Scalar: Clone + One,
+        for<'b> &'b Point: Orient,
         for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
             + Sub<Output = Scalar>
@@ -132,15 +134,15 @@ impl<Point> Trapezoidation<Point> {
         Self::from_box(polygon.to_bounding_box(), edges, endpoints)
     }
 
-    fn from_box<Scalar>(
+    fn from_box<Scalar: Clone + One>(
         box_: bounded::Box<Scalar>,
         mut edges: Vec<Edge>,
         mut endpoints: Vec<Point>,
     ) -> Self
     where
-        Point: From<(Scalar, Scalar)> + Orient + PartialOrd,
-        Scalar: Clone + One,
-        for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
+        Point: From<(Scalar, Scalar)> + PartialOrd,
+        for<'a> &'a Point: Orient,
+        for<'a> &'a Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
             + Sub<Output = Scalar>
             + Zeroable,
@@ -161,16 +163,16 @@ impl<Point> Trapezoidation<Point> {
         }
     }
 
-    fn leaf_from_box_with_edges<Scalar>(
+    fn leaf_from_box_with_edges<Scalar: Clone + One>(
         box_: bounded::Box<Scalar>,
         edges: &mut Vec<Edge>,
         endpoints: &mut Vec<Point>,
         nodes: &mut Vec<Node>,
     ) -> usize
     where
-        Point: From<(Scalar, Scalar)> + Orient + PartialOrd,
-        Scalar: Clone + One,
-        for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
+        Point: From<(Scalar, Scalar)> + PartialOrd,
+        for<'a> &'a Point: Orient,
+        for<'a> &'a Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
             + Sub<Output = Scalar>
             + Zeroable,
@@ -272,7 +274,10 @@ impl<Point> Trapezoidation<Point> {
     }
 }
 
-impl<Point: Orient + PartialOrd> Trapezoidation<Point> {
+impl<Point: PartialOrd> Trapezoidation<Point>
+where
+    for<'a> &'a Point: Orient,
+{
     fn add_edge(edge_index: usize, edges: &[Edge], endpoints: &[Point], nodes: &mut Vec<Node>) {
         let trapezoids_leaves_indices =
             Self::find_intersecting_trapezoids_leaves_indices(edge_index, edges, endpoints, nodes);

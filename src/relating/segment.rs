@@ -6,7 +6,7 @@ use crate::traits::{Contoural, Multisegmental, Segmental};
 pub(crate) fn relate_to_contour<
     'a,
     Contour,
-    Point: Orient + PartialOrd,
+    Point: PartialOrd,
     Segment: Segmental<Endpoint = Point>,
 >(
     start: &Point,
@@ -15,6 +15,7 @@ pub(crate) fn relate_to_contour<
 ) -> Relation
 where
     &'a Contour: Contoural<Segment = Segment, Vertex = Point>,
+    for<'b> &'b Point: Orient,
 {
     let mut has_no_cross = true;
     let mut has_no_touch = true;
@@ -98,12 +99,15 @@ where
     }
 }
 
-pub(crate) fn relate_to_segment<Point: Orient + PartialOrd>(
+pub(crate) fn relate_to_segment<Point: PartialOrd>(
     first_start: &Point,
     first_end: &Point,
     second_start: &Point,
     second_end: &Point,
-) -> Relation {
+) -> Relation
+where
+    for<'a> &'a Point: Orient,
+{
     let (first_start, first_end) = to_sorted_pair((first_start, first_end));
     let (second_start, second_end) = to_sorted_pair((second_start, second_end));
     let starts_equal = second_start == first_start;

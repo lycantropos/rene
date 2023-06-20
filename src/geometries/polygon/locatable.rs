@@ -9,7 +9,8 @@ impl<'a, Scalar: PartialOrd> Locatable<&Point<Scalar>> for &'a Polygon<Scalar>
 where
     &'a Contour<Scalar>: Multisegmental,
     MultisegmentalSegment<&'a Contour<Scalar>>: Segmental<Endpoint = Point<Scalar>>,
-    Point<Scalar>: Elemental<Coordinate = Scalar> + Orient,
+    Point<Scalar>: Elemental<Coordinate = Scalar>,
+    for<'b> &'b Point<Scalar>: Orient,
 {
     fn locate(self, point: &Point<Scalar>) -> Location {
         let location_without_holes = locate_point_in_region(&self.border, point);

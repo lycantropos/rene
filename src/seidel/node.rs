@@ -116,13 +116,16 @@ impl Node {
         }
     }
 
-    pub(super) fn search_intersecting_trapezoid<'a, Point: Orient + PartialOrd>(
+    pub(super) fn search_intersecting_trapezoid<'a, Point: PartialOrd>(
         &'a self,
         edge: &Edge,
         edges: &[Edge],
         endpoints: &[Point],
         nodes: &'a [Node],
-    ) -> &'a Trapezoid {
+    ) -> &'a Trapezoid
+    where
+        for<'b> &'b Point: Orient,
+    {
         match self {
             Self::Leaf { trapezoid } => trapezoid,
             Self::XNode {

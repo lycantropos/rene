@@ -4,9 +4,9 @@ use crate::oriented::{Orientation, Oriented};
 
 use super::types::Contour;
 
-impl<Scalar: Ord> Oriented for &Contour<Scalar>
+impl<'a, Scalar: Ord> Oriented for &'a Contour<Scalar>
 where
-    Point<Scalar>: Orient,
+    &'a Point<Scalar>: Orient,
 {
     fn to_orientation(self) -> Orientation {
         let min_vertex_index = self.to_min_vertex_index();

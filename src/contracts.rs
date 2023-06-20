@@ -2,7 +2,10 @@ use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 use crate::operations::Orient;
 use crate::oriented::Orientation;
 
-pub(crate) fn are_contour_vertices_non_degenerate<Point: Orient>(vertices: &[Point]) -> bool {
+pub(crate) fn are_contour_vertices_non_degenerate<'a, Point>(vertices: &'a [Point]) -> bool
+where
+    &'a Point: Orient,
+{
     vertices.len() >= MIN_CONTOUR_VERTICES_COUNT && {
         let mut first_vertex = &vertices[vertices.len() - 2];
         let mut second_vertex = &vertices[vertices.len() - 1];

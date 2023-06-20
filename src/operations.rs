@@ -161,13 +161,14 @@ where
     }
 }
 
-pub(crate) fn is_point_in_segment<Point: Elemental + Orient + PartialEq>(
-    point: &Point,
-    start: &Point,
-    end: &Point,
+pub(crate) fn is_point_in_segment<'a, Point: Elemental + PartialEq>(
+    point: &'a Point,
+    start: &'a Point,
+    end: &'a Point,
 ) -> bool
 where
     <Point as Elemental>::Coordinate: PartialOrd,
+    &'a Point: Orient,
 {
     start.eq(point)
         || end.eq(point)
@@ -234,7 +235,7 @@ where
     }
 }
 
-pub(crate) fn locate_point_in_region<'a, Border, Point: Elemental + Orient + PartialEq>(
+pub(crate) fn locate_point_in_region<'a, Border, Point: Elemental + PartialEq>(
     border: &'a Border,
     point: &Point,
 ) -> Location
@@ -242,6 +243,7 @@ where
     &'a Border: Multisegmental,
     MultisegmentalSegment<&'a Border>: Segmental<Endpoint = Point>,
     <Point as Elemental>::Coordinate: PartialOrd,
+    for<'b> &'b Point: Orient,
 {
     let mut result = false;
     let point_y = point.y();
@@ -289,15 +291,15 @@ pub(crate) fn merge_boxes<Scalar: Clone + PartialOrd>(boxes: &[Box<Scalar>]) -> 
 }
 
 pub(crate) trait Orient {
-    fn orient(&self, first_ray_point: &Self, second_ray_point: &Self) -> Orientation;
+    fn orient(self, first_ray_point: Self, second_ray_point: Self) -> Orientation;
 }
 
-impl<Point> Orient for Point
+impl<'a, Point> Orient for &'a Point
 where
-    for<'a> &'a Point: CrossMultiply,
-    for<'a> <&'a Point as CrossMultiply>::Output: Signed,
+    &'a Point: CrossMultiply,
+    <&'a Point as CrossMultiply>::Output: Signed,
 {
-    fn orient(&self, first_ray_point: &Self, second_ray_point: &Self) -> Orientation {
+    fn orient(self, first_ray_point: Self, second_ray_point: Self) -> Orientation {
         match CrossMultiply::cross_multiply(self, first_ray_point, self, second_ray_point).sign() {
             Sign::Negative => Orientation::Clockwise,
             Sign::Positive => Orientation::Counterclockwise,
@@ -320,18 +322,22 @@ pub(crate) fn permute<T>(values: &mut [T], mut seed: usize) {
     }
 }
 
-pub(crate) fn point_vertex_line_divides_angle<Point: Orient>(
-    point: &Point,
-    vertex: &Point,
-    first_ray_point: &Point,
-    second_ray_point: &Point,
-) -> bool {
+pub(crate) fn point_vertex_line_divides_angle<'a, Point>(
+    point: &'a Point,
+    vertex: &'a Point,
+    first_ray_point: &'a Point,
+    second_ray_point: &'a Point,
+) -> bool
+where
+    &'a Point: Orient,
+{
     vertex.orient(first_ray_point, point) == vertex.orient(point, second_ray_point)
 }
 
-pub(crate) fn shrink_collinear_vertices<'a, Point: Orient>(
-    vertices: &[&'a Point],
-) -> Vec<&'a Point> {
+pub(crate) fn shrink_collinear_vertices<'a, Point>(vertices: &[&'a Point]) -> Vec<&'a Point>
+where
+    for<'b> &'b Point: Orient,
+{
     debug_assert!(vertices.len() >= MIN_CONTOUR_VERTICES_COUNT);
     let mut result = Vec::with_capacity(vertices.len());
     result.push(vertices[0]);

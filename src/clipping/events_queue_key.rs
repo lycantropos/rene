@@ -45,7 +45,10 @@ impl<Point: PartialEq> PartialEq for EventsQueueKey<Point> {
 
 impl<Point: Eq> Eq for EventsQueueKey<Point> {}
 
-impl<Point: Ord + Orient> PartialOrd for EventsQueueKey<Point> {
+impl<Point: Ord> PartialOrd for EventsQueueKey<Point>
+where
+    for<'a> &'a Point: Orient,
+{
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(compare_events(
             self.event,
@@ -58,7 +61,10 @@ impl<Point: Ord + Orient> PartialOrd for EventsQueueKey<Point> {
     }
 }
 
-impl<Point: Ord + Orient> Ord for EventsQueueKey<Point> {
+impl<Point: Ord> Ord for EventsQueueKey<Point>
+where
+    for<'a> &'a Point: Orient,
+{
     fn cmp(&self, other: &Self) -> Ordering {
         compare_events(
             self.event,
@@ -71,14 +77,17 @@ impl<Point: Ord + Orient> Ord for EventsQueueKey<Point> {
     }
 }
 
-fn compare_events<Point: Ord + Orient>(
+fn compare_events<Point: Ord>(
     first_event: Event,
     second_event: Event,
     is_first_event_from_first_operand: bool,
     is_second_event_from_first_operand: bool,
     endpoints: &[Point],
     opposites: &[Event],
-) -> Ordering {
+) -> Ordering
+where
+    for<'a> &'a Point: Orient,
+{
     match endpoints[first_event].cmp(&endpoints[second_event]) {
         Ordering::Equal => {
             if is_left_event(first_event) == is_left_event(second_event) {

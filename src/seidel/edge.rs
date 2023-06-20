@@ -9,11 +9,10 @@ pub(crate) struct Edge {
 }
 
 impl Edge {
-    pub(super) fn is_under<Point: PartialEq + Orient>(
-        &self,
-        other: &Self,
-        endpoints: &[Point],
-    ) -> bool {
+    pub(super) fn is_under<Point: PartialEq>(&self, other: &Self, endpoints: &[Point]) -> bool
+    where
+        for<'a> &'a Point: Orient,
+    {
         let other_left_orientation =
             self.orientation_of(&endpoints[other.left_point_index], endpoints);
         let other_right_orientation =
@@ -42,11 +41,10 @@ impl Edge {
         }
     }
 
-    pub(super) fn orientation_of<Point: Orient>(
-        &self,
-        point: &Point,
-        endpoints: &[Point],
-    ) -> Orientation {
+    pub(super) fn orientation_of<Point>(&self, point: &Point, endpoints: &[Point]) -> Orientation
+    where
+        for<'a> &'a Point: Orient,
+    {
         endpoints[self.left_point_index].orient(&endpoints[self.right_point_index], point)
     }
 }

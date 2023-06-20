@@ -42,13 +42,14 @@ pub(crate) struct Operation<Point, const KIND: u8> {
     sweep_line_data: BTreeSet<SweepLineKey<Point>>,
 }
 
-impl<'a, First, Point: Ord + Orient, Second, const KIND: u8> From<(&'a First, &'a Second)>
+impl<'a, First, Point: Ord, Second, const KIND: u8> From<(&'a First, &'a Second)>
     for Operation<Point, KIND>
 where
     &'a First: IsValid + Multisegmental,
     &'a Second: IsValid + Multisegmental,
     MultisegmentalSegment<&'a First>: Segmental<Endpoint = Point>,
     MultisegmentalSegment<&'a Second>: Segmental<Endpoint = Point>,
+    for<'b> &'b Point: Orient,
 {
     fn from((first, second): (&'a First, &'a Second)) -> Self {
         debug_assert!(IsValid::is_valid(first));
@@ -70,11 +71,12 @@ where
     }
 }
 
-impl<'a, Element, Point: Ord + Orient, const KIND: u8> From<(&[&'a Element], &[&'a Element])>
+impl<'a, Element, Point: Ord, const KIND: u8> From<(&[&'a Element], &[&'a Element])>
     for Operation<Point, KIND>
 where
     &'a Element: IsValid + Multisegmental,
     MultisegmentalSegment<&'a Element>: Segmental<Endpoint = Point>,
+    for<'b> &'b Point: Orient,
 {
     fn from((first, second): (&[&'a Element], &[&'a Element])) -> Self {
         debug_assert!(first.iter().all(|element| element.is_valid()));
@@ -100,11 +102,12 @@ where
     }
 }
 
-impl<'a, Element, Point: Ord + Orient, const KIND: u8> From<(&[&'a Element], &'a Element)>
+impl<'a, Element, Point: Ord, const KIND: u8> From<(&[&'a Element], &'a Element)>
     for Operation<Point, KIND>
 where
     &'a Element: IsValid + Multisegmental,
     MultisegmentalSegment<&'a Element>: Segmental<Endpoint = Point>,
+    for<'b> &'b Point: Orient,
 {
     fn from((first, second): (&[&'a Element], &'a Element)) -> Self {
         debug_assert!(first.iter().all(|element| element.is_valid()));
@@ -128,11 +131,12 @@ where
     }
 }
 
-impl<'a, Element, Point: Ord + Orient, const KIND: u8> From<(&'a Element, &[&'a Element])>
+impl<'a, Element, Point: Ord, const KIND: u8> From<(&'a Element, &[&'a Element])>
     for Operation<Point, KIND>
 where
     &'a Element: IsValid + Multisegmental,
     MultisegmentalSegment<&'a Element>: Segmental<Endpoint = Point>,
+    for<'b> &'b Point: Orient,
 {
     fn from((first, second): (&'a Element, &[&'a Element])) -> Self {
         debug_assert!(first.is_valid());
@@ -192,13 +196,12 @@ impl<Point> DetectIfLeftEventFromResult for Operation<Point, UNION> {
     }
 }
 
-impl<
-        Point: Clone + Elemental + IntersectCrossingSegments + Orient + PartialOrd,
-        const KIND: u8,
-    > Iterator for Operation<Point, KIND>
+impl<'a, Point: Clone + Elemental + IntersectCrossingSegments + PartialOrd, const KIND: u8> Iterator
+    for Operation<Point, KIND>
 where
-    <Point as Elemental>::Coordinate: PartialEq,
     Self: EventsQueue + DetectIfLeftEventFromResult + SweepLine,
+    <Point as Elemental>::Coordinate: PartialEq,
+    for<'b> &'b Point: Orient,
 {
     type Item = Event;
 
@@ -285,7 +288,8 @@ where
     Contour<Scalar>: From<Vec<PolygonalVertex<Self>>>,
     EventsQueueKey<PolygonalVertex<Self>>: Ord,
     Polygon<Scalar>: From<(Contour<Scalar>, Vec<Contour<Scalar>>)>,
-    PolygonalVertex<Self>: Clone + Elemental + Orient + PartialEq,
+    PolygonalVertex<Self>: Clone + Elemental + PartialEq,
+    for<'a> &'a PolygonalVertex<Self>: Orient,
 {
     type Output = Vec<Polygon<Scalar>>;
 
@@ -474,7 +478,7 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
 
     fn contour_events_to_vertices(&self, events: &[Event]) -> Vec<&Point>
     where
-        Point: Orient,
+        for<'a> &'a Point: Orient,
     {
         let mut result = Vec::with_capacity(events.len());
         result.push(self.get_event_start(events[0]));
@@ -723,10 +727,10 @@ fn to_next_event_id(
     }
 }
 
-impl<Point: Clone + IntersectCrossingSegments + Orient + PartialOrd, const KIND: u8>
-    Operation<Point, KIND>
+impl<Point: Clone + IntersectCrossingSegments + PartialOrd, const KIND: u8> Operation<Point, KIND>
 where
     Self: EventsQueue + SweepLine,
+    for<'a> &'a Point: Orient,
 {
     pub(super) fn detect_intersection(&mut self, below_event: Event, event: Event) -> bool {
         debug_assert_ne!(below_event, event);
@@ -920,7 +924,10 @@ impl<Point: Clone, const KIND: u8> Operation<Point, KIND> {
     }
 }
 
-impl<Point: Ord + Orient, const KIND: u8> EventsQueue for Operation<Point, KIND> {
+impl<Point: Ord, const KIND: u8> EventsQueue for Operation<Point, KIND>
+where
+    for<'a> &'a Point: Orient,
+{
     fn peek(&mut self) -> Option<Event> {
         self.events_queue_data.peek().map(|key| key.0.event)
     }
@@ -968,7 +975,10 @@ where
     }
 }
 
-impl<Point: Ord + Orient, const KIND: u8> Operation<Point, KIND> {
+impl<Point: Ord, const KIND: u8> Operation<Point, KIND>
+where
+    for<'a> &'a Point: Orient,
+{
     fn extend<Segment>(&mut self, segments: impl Iterator<Item = Segment>)
     where
         Segment: Segmental<Endpoint = Point>,

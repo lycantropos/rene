@@ -7,7 +7,8 @@ use super::types::Contour;
 
 impl<Scalar: PartialOrd> Locatable<&Point<Scalar>> for &Contour<Scalar>
 where
-    Point<Scalar>: Elemental<Coordinate = Scalar> + Orient + PartialEq,
+    Point<Scalar>: Elemental<Coordinate = Scalar> + PartialEq,
+    for<'a> &'a Point<Scalar>: Orient,
 {
     fn locate(self, point: &Point<Scalar>) -> Location {
         for index in 0..self.vertices.len() - 1 {

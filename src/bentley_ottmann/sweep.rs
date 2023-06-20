@@ -50,9 +50,10 @@ pub(crate) struct Intersection<Point> {
     pub(super) end: Point,
 }
 
-impl<Point: Clone + Orient + Ord> Iterator for Sweep<Point>
+impl<Point: Clone + Ord> Iterator for Sweep<Point>
 where
     EventsRegistry<Point, false>: Iterator<Item = Event>,
+    for<'a> &'a Point: Orient,
 {
     type Item = Intersection<Point>;
 
