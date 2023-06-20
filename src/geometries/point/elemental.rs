@@ -11,6 +11,10 @@ where
 {
     type Coordinate = Fraction<BigInt<Digit, SHIFT>>;
 
+    fn coordinates(&self) -> (Self::Coordinate, Self::Coordinate) {
+        (self.x.clone(), self.y.clone())
+    }
+
     fn x(&self) -> Self::Coordinate {
         self.x.clone()
     }

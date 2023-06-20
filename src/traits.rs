@@ -1,6 +1,7 @@
 pub trait Elemental {
     type Coordinate;
 
+    fn coordinates(&self) -> (Self::Coordinate, Self::Coordinate);
     fn x(&self) -> Self::Coordinate;
     fn y(&self) -> Self::Coordinate;
 }
