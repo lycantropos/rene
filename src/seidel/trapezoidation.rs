@@ -99,9 +99,9 @@ impl<Point> Trapezoidation<Point> {
         shuffler: Shuffler,
     ) -> Self
     where
-        &'a Contour: Contoural<Vertex = Point> + Oriented,
+        &'a Contour: Contoural<Vertex = &'a Point> + Oriented,
         &'a Polygon: Polygonal<Contour = &'a Contour> + Multisegmental,
-        Point: From<(Scalar, Scalar)> + PartialOrd,
+        Point: 'a + Clone + From<(Scalar, Scalar)> + PartialOrd,
         Scalar: Clone + One,
         for<'b> &'b Point: Orient,
         for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
@@ -226,17 +226,17 @@ impl<Point> Trapezoidation<Point> {
         )
     }
 
-    fn populate_from_contour<Contour: Contoural<Vertex = Point>>(
+    fn populate_from_contour<'a, Contour: Contoural<Vertex = &'a Point>>(
         contour: Contour,
         is_contour_correctly_oriented: bool,
         edges: &mut Vec<Edge>,
         endpoints: &mut Vec<Point>,
     ) where
-        Point: PartialOrd,
+        Point: 'a + Clone + PartialOrd,
     {
         let first_start_index = endpoints.len();
         let mut start_index = endpoints.len();
-        endpoints.extend(contour.vertices());
+        endpoints.extend(contour.vertices().cloned());
         let mut start = &endpoints[start_index];
         for (end_offset, end) in endpoints[first_start_index + 1..].iter().enumerate() {
             let end_index = first_start_index + 1 + end_offset;

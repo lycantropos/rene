@@ -29,9 +29,9 @@ where
 
 impl<'a, Scalar> Relatable<&'a Contour<Scalar>> for &Segment<Scalar>
 where
-    &'a Contour<Scalar>: Contoural<Segment = Segment<Scalar>, Vertex = Point<Scalar>>,
     Segment<Scalar>: Segmental<Endpoint = Point<Scalar>>,
     Point<Scalar>: PartialOrd,
+    for<'b> &'b Contour<Scalar>: Contoural<Segment = Segment<Scalar>, Vertex = &'b Point<Scalar>>,
     for<'b> &'b Point<Scalar>: Orient,
 {
     fn relate_to(self, other: &'a Contour<Scalar>) -> Relation {

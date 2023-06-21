@@ -14,9 +14,9 @@ pub(crate) fn is_contour_valid<'a, Contour, Point: Ord, Scalar, Segment: 'a>(
     contour: &'a Contour,
 ) -> bool
 where
-    &'a Contour: Contoural<Vertex = Point, Segment = Segment>,
     Segment: Segmental<Endpoint = Point>,
     Sweep<Point>: From<&'a Contour> + Iterator<Item = Intersection<Point>>,
+    for<'b> &'b Contour: Contoural<Vertex = &'b Point, Segment = Segment>,
     for<'b> &'b Point: Elemental<Coordinate = &'b Scalar> + Orient,
 {
     are_contour_vertices_non_degenerate(&contour.vertices().collect::<Vec<_>>()) && {

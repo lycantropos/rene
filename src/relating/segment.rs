@@ -14,7 +14,7 @@ pub(crate) fn relate_to_contour<
     contour: &'a Contour,
 ) -> Relation
 where
-    &'a Contour: Contoural<Segment = Segment, Vertex = Point>,
+    &'a Contour: Contoural<Segment = Segment>,
     for<'b> &'b Point: Orient,
 {
     let mut has_no_cross = true;

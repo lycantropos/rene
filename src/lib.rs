@@ -522,7 +522,7 @@ impl PyExactContour {
 
     #[getter]
     fn vertices(&self) -> Vec<ExactPoint> {
-        self.0.vertices().collect()
+        self.0.vertices().cloned().collect()
     }
 
     #[getter]

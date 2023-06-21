@@ -6,15 +6,12 @@ use crate::traits::Multivertexal;
 
 use super::types::Contour;
 
-impl<Digit, const SHIFT: usize> Multivertexal for &Contour<Fraction<BigInt<Digit, SHIFT>>>
-where
-    BigInt<Digit, SHIFT>: Clone,
-{
-    type Vertex = Point<Fraction<BigInt<Digit, SHIFT>>>;
-    type Vertices = std::vec::IntoIter<Self::Vertex>;
+impl<'a, Digit, const SHIFT: usize> Multivertexal for &'a Contour<Fraction<BigInt<Digit, SHIFT>>> {
+    type Vertex = &'a Point<Fraction<BigInt<Digit, SHIFT>>>;
+    type Vertices = std::slice::Iter<'a, Point<Fraction<BigInt<Digit, SHIFT>>>>;
 
     fn vertices(self) -> Self::Vertices {
-        self.vertices.clone().into_iter()
+        self.vertices.iter()
     }
 
     fn vertices_count(self) -> usize {

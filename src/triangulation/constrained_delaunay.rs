@@ -7,7 +7,7 @@ use crate::operations::{shrink_collinear_vertices, LocatePointInPointPointPointC
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
 use crate::relating::segment;
-use crate::traits::{Contoural, Multivertexal, Polygonal, PolygonalContour};
+use crate::traits::{Contoural, Multivertexal, Polygonal};
 
 use super::mesh::Mesh;
 use super::operations::{BoundaryEndpoints, DelaunayTriangulatable};
@@ -82,24 +82,25 @@ struct PolygonVertexPosition {
     vertex_index: usize,
 }
 
-impl<'a, Endpoint: Clone + Ord + PartialOrd, Polygon> From<&'a Polygon>
+impl<Contour, Endpoint: Clone + Ord + PartialOrd, Polygon> From<&Polygon>
     for ConstrainedDelaunayTriangulation<Endpoint>
 where
-    &'a Polygon: Polygonal,
     Mesh<Endpoint>: DelaunayTriangulatable,
-    PolygonalContour<&'a Polygon>: Contoural<Vertex = Endpoint>,
-    for<'b> &'b Endpoint: LocatePointInPointPointPointCircle + Orient,
+    for<'a> &'a Contour: Contoural<Vertex = &'a Endpoint>,
+    for<'a> &'a Endpoint: LocatePointInPointPointPointCircle + Orient,
+    for<'a> &'a Polygon: Polygonal<Contour = &'a Contour>,
 {
-    fn from(polygon: &'a Polygon) -> Self {
+    fn from(polygon: &Polygon) -> Self {
         let mut contours_vertices = Vec::with_capacity(1 + polygon.holes_count());
         contours_vertices.push(polygon.border().vertices().collect::<Vec<_>>());
         for hole in polygon.holes() {
             contours_vertices.push(hole.vertices().collect::<Vec<_>>());
         }
-        let mut polygon_endpoints =
-            Vec::with_capacity(contours_vertices.iter().map(Vec::len).sum());
+        let mut polygon_endpoints = Vec::<PolygonEndpoint<Endpoint>>::with_capacity(
+            contours_vertices.iter().map(Vec::len).sum(),
+        );
         for (contour_index, contour_vertices) in contours_vertices.iter().enumerate() {
-            polygon_endpoints.extend(contour_vertices.iter().enumerate().map(
+            polygon_endpoints.extend(contour_vertices.iter().copied().enumerate().map(
                 |(vertex_index, point)| PolygonEndpoint {
                     contour_index,
                     vertex_index,
@@ -256,7 +257,7 @@ where
         }
     }
 
-    fn constrain(&mut self, contours_sizes: &[usize], contours_vertices: &[Vec<Endpoint>]) {
+    fn constrain(&mut self, contours_sizes: &[usize], contours_vertices: &[Vec<&Endpoint>]) {
         let mut contours_constraints_flags = to_contours_constraints_flags(
             &self.mesh,
             contours_sizes,
@@ -272,8 +273,8 @@ where
                 let next_vertex_index = (vertex_index + 1) % contours_sizes[contour_index];
                 let constraint_index = to_constraint_index(vertex_index, next_vertex_index);
                 if !contours_constraints_flags[contour_index][constraint_index] {
-                    let vertex_point = &contours_vertices[contour_index][vertex_index];
-                    let next_vertex_point = &contours_vertices[contour_index][next_vertex_index];
+                    let vertex_point = contours_vertices[contour_index][vertex_index];
+                    let next_vertex_point = contours_vertices[contour_index][next_vertex_index];
                     let angle_base_edge =
                         to_angle_containing_constraint_base(&self.mesh, edge, next_vertex_point);
                     let crossings = detect_crossings(
@@ -291,7 +292,7 @@ where
         }
     }
 
-    fn cut(&mut self, contours_vertices: &[Vec<Endpoint>]) {
+    fn cut(&mut self, contours_vertices: &[Vec<&Endpoint>]) {
         for edge in self.mesh.to_unique_edges() {
             if is_edge_inside_hole(
                 &self.mesh,
@@ -451,7 +452,7 @@ fn intersect_polygon_vertices_positions_slices_impl<
 fn is_edge_inside_hole<Endpoint>(
     mesh: &Mesh<Endpoint>,
     edge: QuadEdge,
-    contours_vertices: &[Vec<Endpoint>],
+    contours_vertices: &[Vec<&Endpoint>],
     polygon_vertices_positions: &[Vec<PolygonVertexPosition>],
 ) -> bool
 where
@@ -484,18 +485,18 @@ where
         if are_polygon_edge_indices(start_vertex_index, end_vertex_index, hole_size) {
             return false;
         }
-        let prior_to_start_point = &hole_vertices[if start_vertex_index == 0 {
+        let prior_to_start_point = hole_vertices[if start_vertex_index == 0 {
             hole_size - 1
         } else {
             start_vertex_index - 1
         }];
-        let prior_to_end_point = &hole_vertices[if end_vertex_index == 0 {
+        let prior_to_end_point = hole_vertices[if end_vertex_index == 0 {
             hole_size - 1
         } else {
             end_vertex_index - 1
         }];
-        let next_to_start_point = &hole_vertices[(start_vertex_index + 1) % hole_size];
-        let next_to_end_point = &hole_vertices[(end_vertex_index + 1) % hole_size];
+        let next_to_start_point = hole_vertices[(start_vertex_index + 1) % hole_size];
+        let next_to_end_point = hole_vertices[(end_vertex_index + 1) % hole_size];
         let start_angle_orientation = start.orient(prior_to_start_point, next_to_start_point);
         let end_angle_orientation = end.orient(prior_to_end_point, next_to_end_point);
         if ((end_angle_orientation == Orientation::Counterclockwise)

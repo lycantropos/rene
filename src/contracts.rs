@@ -2,7 +2,7 @@ use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 use crate::operations::Orient;
 use crate::oriented::Orientation;
 
-pub(crate) fn are_contour_vertices_non_degenerate<'a, Point>(vertices: &'a [Point]) -> bool
+pub(crate) fn are_contour_vertices_non_degenerate<'a, Point>(vertices: &[&'a Point]) -> bool
 where
     &'a Point: Orient,
 {
