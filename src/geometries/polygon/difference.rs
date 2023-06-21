@@ -57,12 +57,13 @@ where
             Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
         >,
     Fraction<BigInt<Digit, SHIFT>>: PartialOrd,
+    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, DIFFERENCE>: Iterator<Item = Event>
+        + for<'a> From<(
+            &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
+            &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
+        )>,
     Polygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
     for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, DIFFERENCE>: From<(
-            &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-            &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-        )> + Iterator<Item = Event>,
     for<'a> &'a Point<Fraction<BigInt<Digit, SHIFT>>>:
         Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
 {
