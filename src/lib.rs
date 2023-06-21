@@ -507,7 +507,7 @@ impl PyExactContour {
 
     #[getter]
     fn bounding_box(&self) -> ExactBox {
-        self.0.to_bounding_box()
+        (&self.0).to_bounding_box()
     }
 
     #[getter]
@@ -999,7 +999,7 @@ impl PyExactMultisegment {
 
     #[getter]
     fn bounding_box(&self) -> ExactBox {
-        self.0.to_bounding_box()
+        (&self.0).to_bounding_box()
     }
 
     #[getter]
@@ -1147,7 +1147,7 @@ impl PyExactPolygon {
 
     #[getter]
     fn bounding_box(&self) -> ExactBox {
-        self.0.to_bounding_box()
+        (&self.0).to_bounding_box()
     }
 
     #[getter]
@@ -1345,7 +1345,7 @@ impl PyExactSegment {
 
     #[getter]
     fn bounding_box(&self) -> ExactBox {
-        self.0.to_bounding_box()
+        (&self.0).to_bounding_box()
     }
 
     #[getter]

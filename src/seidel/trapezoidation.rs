@@ -3,6 +3,7 @@ use std::ops::{Add, Sub};
 use traiter::numbers::{One, Zeroable};
 
 use crate::bounded;
+use crate::bounded::Bounded;
 use crate::operations::Orient;
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{Contoural, Multisegmental, Polygonal, Segmental};
@@ -43,7 +44,7 @@ impl<Point> Trapezoidation<Point> {
 impl<Point> Trapezoidation<Point> {
     pub(crate) fn from_multisegment<
         'a,
-        Multisegment: bounded::Bounded<Scalar>,
+        Multisegment,
         Scalar,
         Segment,
         Shuffler: FnOnce(&mut Vec<Edge>),
@@ -52,7 +53,7 @@ impl<Point> Trapezoidation<Point> {
         shuffler: Shuffler,
     ) -> Self
     where
-        &'a Multisegment: Multisegmental<Segment = Segment>,
+        &'a Multisegment: bounded::Bounded<Scalar> + Multisegmental<Segment = Segment>,
         Point: From<(Scalar, Scalar)> + PartialOrd,
         Scalar: Clone + One,
         Segment: Segmental<Endpoint = Point>,
@@ -88,19 +89,13 @@ impl<Point> Trapezoidation<Point> {
         Self::from_box(multisegment.to_bounding_box(), edges, endpoints)
     }
 
-    pub(crate) fn from_polygon<
-        'a,
-        Scalar,
-        Contour: 'a,
-        Polygon: bounded::Bounded<Scalar>,
-        Shuffler: FnOnce(&mut Vec<Edge>),
-    >(
+    pub(crate) fn from_polygon<'a, Scalar, Contour: 'a, Polygon, Shuffler: FnOnce(&mut Vec<Edge>)>(
         polygon: &'a Polygon,
         shuffler: Shuffler,
     ) -> Self
     where
         &'a Contour: Contoural<Vertex = &'a Point> + Oriented,
-        &'a Polygon: Polygonal<Contour = &'a Contour> + Multisegmental,
+        &'a Polygon: bounded::Bounded<Scalar> + Polygonal<Contour = &'a Contour> + Multisegmental,
         Point: 'a + Clone + From<(Scalar, Scalar)> + PartialOrd,
         Scalar: Clone + One,
         for<'b> &'b Point: Orient,

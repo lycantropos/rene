@@ -50,13 +50,14 @@ where
 
 impl<Digit, const SHIFT: usize> SymmetricDifference for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    Self: ReduceEvents<
-        Point<Fraction<BigInt<Digit, SHIFT>>>,
-        SYMMETRIC_DIFFERENCE,
-        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-    >,
+    Self: Bounded<Fraction<BigInt<Digit, SHIFT>>>
+        + ReduceEvents<
+            Point<Fraction<BigInt<Digit, SHIFT>>>,
+            SYMMETRIC_DIFFERENCE,
+            Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
+        >,
     Fraction<BigInt<Digit, SHIFT>>: PartialEq,
-    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>> + Clone,
+    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
     for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, SYMMETRIC_DIFFERENCE>: From<(
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,

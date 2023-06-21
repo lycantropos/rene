@@ -54,20 +54,23 @@ where
 impl<Digit, const SHIFT: usize> SymmetricDifference
     for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    Self: ReduceEvents<
-        Point<Fraction<BigInt<Digit, SHIFT>>>,
-        SYMMETRIC_DIFFERENCE,
-        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-    >,
-    for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
+    Self: Bounded<Fraction<BigInt<Digit, SHIFT>>>
+        + ReduceEvents<
+            Point<Fraction<BigInt<Digit, SHIFT>>>,
+            SYMMETRIC_DIFFERENCE,
+            Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
+        >,
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>> + Clone,
-    for<'a> Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, SYMMETRIC_DIFFERENCE>: From<(
+    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
+    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, SYMMETRIC_DIFFERENCE>: Iterator<Item = Event>
+        + for<'a> From<(
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
-        )> + Iterator<Item = Event>,
+        )>,
     Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>> + Clone,
+    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
+    for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
+    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>,
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
@@ -148,20 +151,22 @@ where
 impl<Digit, const SHIFT: usize> SymmetricDifference<&Polygon<Fraction<BigInt<Digit, SHIFT>>>>
     for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    Self: ReduceEvents<
-        Point<Fraction<BigInt<Digit, SHIFT>>>,
-        SYMMETRIC_DIFFERENCE,
-        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-    >,
+    Self: Bounded<Fraction<BigInt<Digit, SHIFT>>>
+        + ReduceEvents<
+            Point<Fraction<BigInt<Digit, SHIFT>>>,
+            SYMMETRIC_DIFFERENCE,
+            Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
+        >,
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>> + Clone,
-    for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, SYMMETRIC_DIFFERENCE>: From<(
+    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, SYMMETRIC_DIFFERENCE>: Iterator<Item = Event>
+        + for<'a> From<(
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-        )> + Iterator<Item = Event>,
+        )>,
+    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
+    for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
+    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>,
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
@@ -220,14 +225,17 @@ where
         Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
     >,
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>> + Clone,
-    for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, SYMMETRIC_DIFFERENCE>: From<(
+    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, SYMMETRIC_DIFFERENCE>: Iterator<Item = Event>
+        + for<'a> From<(
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
-        )> + Iterator<Item = Event>,
+        )>,
+    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
+    for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
+    for<'a> &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>:
+        Bounded<Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>,
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 

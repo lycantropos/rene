@@ -4,7 +4,7 @@ use rithm::big_int::BigInt;
 use rithm::fraction::Fraction;
 use traiter::numbers::{BitLength, IsPowerOfTwo, One, Sign, Signed};
 
-use crate::bounded::Box;
+use crate::bounded;
 use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 use crate::locatable::Location;
 use crate::oriented::Orientation;
@@ -60,21 +60,21 @@ where
 }
 
 pub(crate) fn do_boxes_have_common_area<'a, Scalar>(
-    first: &'a Box<Scalar>,
-    second: &'a Box<Scalar>,
+    first: &'a bounded::Box<Scalar>,
+    second: &'a bounded::Box<Scalar>,
 ) -> bool
 where
-    &'a Box<Scalar>: Relatable,
+    &'a bounded::Box<Scalar>: Relatable,
 {
     !first.disjoint_with(second) && !first.touches(second)
 }
 
 pub(crate) fn do_boxes_have_common_continuum<'a, Scalar: PartialEq>(
-    first: &'a Box<Scalar>,
-    second: &'a Box<Scalar>,
+    first: &'a bounded::Box<Scalar>,
+    second: &'a bounded::Box<Scalar>,
 ) -> bool
 where
-    &'a Box<Scalar>: Relatable,
+    &'a bounded::Box<Scalar>: Relatable,
 {
     !first.disjoint_with(second)
         && (!first.touches(second)
@@ -83,21 +83,21 @@ where
 }
 
 pub(crate) fn do_boxes_have_no_common_area<'a, Scalar>(
-    first: &'a Box<Scalar>,
-    second: &'a Box<Scalar>,
+    first: &'a bounded::Box<Scalar>,
+    second: &'a bounded::Box<Scalar>,
 ) -> bool
 where
-    &'a Box<Scalar>: Relatable,
+    &'a bounded::Box<Scalar>: Relatable,
 {
     first.disjoint_with(second) || first.touches(second)
 }
 
 pub(crate) fn do_boxes_have_no_common_continuum<'a, Scalar: PartialEq>(
-    first: &'a Box<Scalar>,
-    second: &'a Box<Scalar>,
+    first: &'a bounded::Box<Scalar>,
+    second: &'a bounded::Box<Scalar>,
 ) -> bool
 where
-    &'a Box<Scalar>: Relatable,
+    &'a bounded::Box<Scalar>: Relatable,
 {
     first.disjoint_with(second)
         || (first.touches(second)
@@ -284,7 +284,33 @@ where
     }
 }
 
-pub(crate) fn merge_boxes<Scalar: Clone + PartialOrd>(boxes: &[Box<Scalar>]) -> Box<Scalar> {
+pub(crate) fn merge_bounds<
+    Scalar: PartialOrd,
+    Iterator: std::iter::Iterator<Item = (Scalar, Scalar, Scalar, Scalar)>,
+>(
+    mut bounds: Iterator,
+) -> (Scalar, Scalar, Scalar, Scalar) {
+    let (mut min_x, mut max_x, mut min_y, mut max_y) = unsafe { bounds.next().unwrap_unchecked() };
+    for (segment_min_x, segment_max_x, segment_min_y, segment_max_y) in bounds {
+        if min_x.gt(&segment_min_x) {
+            min_x = segment_min_x;
+        }
+        if max_x.gt(&segment_max_x) {
+            max_x = segment_max_x;
+        }
+        if min_y.gt(&segment_min_y) {
+            min_y = segment_min_y;
+        }
+        if max_y.gt(&segment_max_y) {
+            max_y = segment_max_y;
+        }
+    }
+    (min_x, max_x, min_y, max_y)
+}
+
+pub(crate) fn merge_boxes<Scalar: Clone + PartialOrd>(
+    boxes: &[bounded::Box<Scalar>],
+) -> bounded::Box<Scalar> {
     debug_assert!(!boxes.is_empty());
     let first_box = &boxes[0];
     let mut max_x = first_box.get_max_x();
@@ -305,7 +331,32 @@ pub(crate) fn merge_boxes<Scalar: Clone + PartialOrd>(boxes: &[Box<Scalar>]) -> 
             min_y = box_.get_min_y();
         }
     }
-    Box::new(min_x.clone(), max_x.clone(), min_y.clone(), max_y.clone())
+    bounded::Box::new(min_x.clone(), max_x.clone(), min_y.clone(), max_y.clone())
+}
+
+pub(crate) fn coordinates_iterator_to_bounds<
+    Iterator: std::iter::Iterator<Item = (Scalar, Scalar)>,
+    Scalar: PartialOrd,
+>(
+    mut coordinates: Iterator,
+) -> (Scalar, Scalar, Scalar, Scalar) {
+    let (first_x, first_y) = unsafe { coordinates.next().unwrap_unchecked() };
+    let (second_x, second_y) = unsafe { coordinates.next().unwrap_unchecked() };
+    let (mut min_x, mut max_x) = to_sorted_pair((first_x, second_x));
+    let (mut min_y, mut max_y) = to_sorted_pair((first_y, second_y));
+    for (x, y) in coordinates {
+        if min_x.gt(&x) {
+            min_x = x;
+        } else if max_x.lt(&x) {
+            max_x = x;
+        }
+        if min_y.gt(&y) {
+            min_y = y;
+        } else if max_y.lt(&y) {
+            max_y = y;
+        }
+    }
+    (min_x, max_x, min_y, max_y)
 }
 
 pub(crate) trait Orient {
@@ -375,11 +426,11 @@ where
 }
 
 pub(crate) fn to_boxes_have_common_area_with_box<Scalar>(
-    boxes: &[Box<Scalar>],
-    target_box: &Box<Scalar>,
+    boxes: &[bounded::Box<Scalar>],
+    target_box: &bounded::Box<Scalar>,
 ) -> Vec<bool>
 where
-    for<'a> &'a Box<Scalar>: Relatable,
+    for<'a> &'a bounded::Box<Scalar>: Relatable,
 {
     boxes
         .iter()
@@ -388,11 +439,11 @@ where
 }
 
 pub(crate) fn to_boxes_have_common_continuum_with_box<Scalar: PartialEq>(
-    boxes: &[Box<Scalar>],
-    target_box: &Box<Scalar>,
+    boxes: &[bounded::Box<Scalar>],
+    target_box: &bounded::Box<Scalar>,
 ) -> Vec<bool>
 where
-    for<'a> &'a Box<Scalar>: Relatable,
+    for<'a> &'a bounded::Box<Scalar>: Relatable,
 {
     boxes
         .iter()
@@ -405,11 +456,11 @@ pub(crate) fn to_arg_min<Value: Ord>(values: &[Value]) -> Option<usize> {
 }
 
 pub(crate) fn to_boxes_ids_with_common_area_with_box<Scalar>(
-    boxes: &[Box<Scalar>],
-    target_box: &Box<Scalar>,
+    boxes: &[bounded::Box<Scalar>],
+    target_box: &bounded::Box<Scalar>,
 ) -> Vec<usize>
 where
-    for<'a> &'a Box<Scalar>: Relatable,
+    for<'a> &'a bounded::Box<Scalar>: Relatable,
 {
     (0..boxes.len())
         .filter(|&index| do_boxes_have_common_area(&boxes[index], target_box))
