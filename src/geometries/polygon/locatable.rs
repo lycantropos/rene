@@ -10,7 +10,7 @@ where
     &'a Contour<Scalar>: Multisegmental,
     MultisegmentalSegment<&'a Contour<Scalar>>: Segmental<Endpoint = Point<Scalar>>,
     Point<Scalar>: Elemental<Coordinate = Scalar>,
-    for<'b> &'b Point<Scalar>: Orient,
+    for<'b> &'b Point<Scalar>: Elemental<Coordinate = &'b Scalar> + Orient,
 {
     fn locate(self, point: &Point<Scalar>) -> Location {
         let location_without_holes = locate_point_in_region(&self.border, point);

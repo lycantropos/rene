@@ -196,11 +196,11 @@ impl<Point> DetectIfLeftEventFromResult for Operation<Point, UNION> {
     }
 }
 
-impl<'a, Point: Clone + Elemental + PartialOrd, const KIND: u8> Iterator for Operation<Point, KIND>
+impl<'a, Point: Clone + PartialOrd, const KIND: u8> Iterator for Operation<Point, KIND>
 where
     Self: EventsQueue + DetectIfLeftEventFromResult + SweepLine,
-    <Point as Elemental>::Coordinate: PartialEq,
-    for<'b> &'b Point: IntersectCrossingSegments<Output = Point> + Orient,
+    for<'b> &'b Point: Elemental + IntersectCrossingSegments<Output = Point> + Orient,
+    for<'b> <&'b Point as Elemental>::Coordinate: PartialEq,
 {
     type Item = Event;
 
@@ -287,8 +287,8 @@ where
     Contour<Scalar>: From<Vec<PolygonalVertex<Self>>>,
     EventsQueueKey<PolygonalVertex<Self>>: Ord,
     Polygon<Scalar>: From<(Contour<Scalar>, Vec<Contour<Scalar>>)>,
-    PolygonalVertex<Self>: Clone + Elemental + PartialEq,
-    for<'a> &'a PolygonalVertex<Self>: Orient,
+    PolygonalVertex<Self>: Clone + PartialEq,
+    for<'a> &'a PolygonalVertex<Self>: Elemental + Orient,
 {
     type Output = Vec<Polygon<Scalar>>;
 
@@ -406,9 +406,9 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
 
     fn compute_left_event_fields(&mut self, event: Event, maybe_below_event: Option<Event>)
     where
-        Point: Elemental,
-        <Point as Elemental>::Coordinate: PartialEq,
         Self: DetectIfLeftEventFromResult,
+        for<'a> &'a Point: Elemental,
+        for<'a> <&'a Point as Elemental>::Coordinate: PartialEq,
     {
         let event_position = left_event_to_position(event);
         if let Some(below_event) = maybe_below_event {
@@ -587,8 +587,8 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
 
     fn is_vertical_left_event(&self, event: Event) -> bool
     where
-        Point: Elemental,
-        <Point as Elemental>::Coordinate: PartialEq,
+        for<'a> &'a Point: Elemental,
+        for<'a> <&'a Point as Elemental>::Coordinate: PartialEq,
     {
         debug_assert!(is_left_event(event));
         self.get_event_start(event).x() == self.get_event_end(event).x()

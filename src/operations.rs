@@ -35,12 +35,12 @@ pub(crate) trait CrossMultiply {
     ) -> Self::Output;
 }
 
-impl<Digit, const SHIFT: usize, Point: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>>
-    CrossMultiply for &Point
+impl<Digit, const SHIFT: usize, Point> CrossMultiply for &Point
 where
-    BigInt<Digit, SHIFT>: Clone,
-    <Point as Elemental>::Coordinate: Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
-    Fraction<BigInt<Digit, SHIFT>>: Mul<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    Fraction<BigInt<Digit, SHIFT>>:
+        Mul<Output = Fraction<BigInt<Digit, SHIFT>>> + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Fraction<BigInt<Digit, SHIFT>>: Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
 {
     type Output = Fraction<BigInt<Digit, SHIFT>>;
 
@@ -135,21 +135,23 @@ pub(crate) trait IntersectCrossingSegments {
 }
 
 impl<
-        'a,
         Digit,
         const SHIFT: usize,
         Point: From<(
-                Fraction<BigInt<Digit, SHIFT>>,
-                Fraction<BigInt<Digit, SHIFT>>,
-            )> + Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    > IntersectCrossingSegments for &'a Point
+            Fraction<BigInt<Digit, SHIFT>>,
+            Fraction<BigInt<Digit, SHIFT>>,
+        )>,
+    > IntersectCrossingSegments for &Point
 where
-    &'a Point: CrossMultiply<Output = Fraction<BigInt<Digit, SHIFT>>>,
-    <Point as Elemental>::Coordinate: Add<Output = <Point as Elemental>::Coordinate>
-        + Div<Output = <Point as Elemental>::Coordinate>
-        + for<'b> Mul<&'b <Point as Elemental>::Coordinate, Output = <Point as Elemental>::Coordinate>
-        + Mul<Output = <Point as Elemental>::Coordinate>
-        + Sub<Output = <Point as Elemental>::Coordinate>,
+    Fraction<BigInt<Digit, SHIFT>>: Add<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Div<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + for<'a> Mul<&'a Fraction<BigInt<Digit, SHIFT>>, Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Mul<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Fraction<BigInt<Digit, SHIFT>>: Add<Fraction<BigInt<Digit, SHIFT>>, Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Point: CrossMultiply<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
 {
     type Output = Point;
 
@@ -169,14 +171,14 @@ where
     }
 }
 
-pub(crate) fn is_point_in_segment<'a, Point: Elemental + PartialEq>(
+pub(crate) fn is_point_in_segment<'a, Point: PartialEq>(
     point: &'a Point,
     start: &'a Point,
     end: &'a Point,
 ) -> bool
 where
-    <Point as Elemental>::Coordinate: PartialOrd,
-    &'a Point: Orient,
+    &'a Point: Elemental + Orient,
+    <&'a Point as Elemental>::Coordinate: PartialOrd,
 {
     start.eq(point)
         || end.eq(point)
@@ -210,14 +212,15 @@ pub(crate) trait LocatePointInPointPointPointCircle {
     ) -> Location;
 }
 
-impl<Digit, const SHIFT: usize, Point: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>>
-    LocatePointInPointPointPointCircle for &Point
+impl<'a, Digit: 'a, const SHIFT: usize, Point> LocatePointInPointPointPointCircle for &'a Point
 where
-    <Point as Elemental>::Coordinate: Add<Output = <Point as Elemental>::Coordinate>
-        + Mul<Output = <Point as Elemental>::Coordinate>
-        + Sub<Output = <Point as Elemental>::Coordinate>,
-    for<'a> &'a <Point as Elemental>::Coordinate:
-        Mul<Output = <Point as Elemental>::Coordinate> + Signed,
+    &'a Point: Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
+    Fraction<BigInt<Digit, SHIFT>>: Add<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Mul<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    for<'b> &'b Fraction<BigInt<Digit, SHIFT>>: Mul<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Signed
+        + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
 {
     fn locate_point_in_point_point_point_circle(
         self,
@@ -243,15 +246,20 @@ where
     }
 }
 
-pub(crate) fn locate_point_in_region<'a, Border, Point: Elemental + PartialEq>(
+pub(crate) fn locate_point_in_region<
+    'a,
+    Border,
+    Point: Elemental<Coordinate = Scalar> + PartialEq,
+    Scalar,
+>(
     border: &'a Border,
     point: &Point,
 ) -> Location
 where
     &'a Border: Multisegmental,
     MultisegmentalSegment<&'a Border>: Segmental<Endpoint = Point>,
-    <Point as Elemental>::Coordinate: PartialOrd,
-    for<'b> &'b Point: Orient,
+    for<'b> &'b Point: Elemental<Coordinate = &'b Scalar> + Orient,
+    Scalar: PartialOrd,
 {
     let mut result = false;
     let point_y = point.y();
@@ -260,8 +268,10 @@ where
         if is_point_in_segment(point, &start, &end) {
             return Location::Boundary;
         }
-        if (start.y() > point_y) != (end.y() > point_y)
-            && ((end.y() > start.y())
+        let start_y = (&start).y();
+        let end_y = (&end).y();
+        if (start_y.gt(point_y)) != (end_y.gt(point_y))
+            && ((end_y.gt(&start_y))
                 == (start.orient(&end, point) == Orientation::Counterclockwise))
         {
             result = !result;

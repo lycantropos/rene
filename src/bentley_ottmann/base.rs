@@ -4,18 +4,20 @@ use crate::constants::MIN_MULTISEGMENT_SEGMENTS_COUNT;
 use crate::contracts::are_contour_vertices_non_degenerate;
 use crate::operations::Orient;
 use crate::relatable::Relation;
-use crate::traits::{Contoural, Multisegmental, Multivertexal, Segmental};
+use crate::traits::{Contoural, Elemental, Multisegmental, Multivertexal, Segmental};
 
 use super::event::{is_left_event, Event};
 use super::events_registry::EventsRegistry;
 use super::sweep::{Intersection, Sweep};
 
-pub(crate) fn is_contour_valid<'a, Contour, Point: Ord, Segment: 'a>(contour: &'a Contour) -> bool
+pub(crate) fn is_contour_valid<'a, Contour, Point: Ord, Scalar, Segment: 'a>(
+    contour: &'a Contour,
+) -> bool
 where
     &'a Contour: Contoural<Vertex = Point, Segment = Segment>,
     Segment: Segmental<Endpoint = Point>,
     Sweep<Point>: From<&'a Contour> + Iterator<Item = Intersection<Point>>,
-    for<'b> &'b Point: Orient,
+    for<'b> &'b Point: Elemental<Coordinate = &'b Scalar> + Orient,
 {
     are_contour_vertices_non_degenerate(&contour.vertices().collect::<Vec<_>>()) && {
         contour.segments().all(|segment| {

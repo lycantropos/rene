@@ -5,21 +5,37 @@ use crate::traits::Elemental;
 
 use super::types::Point;
 
-impl<Digit, const SHIFT: usize> Elemental for Point<Fraction<BigInt<Digit, SHIFT>>>
+impl<'a, Digit, const SHIFT: usize> Elemental for &'a Point<Fraction<BigInt<Digit, SHIFT>>>
 where
-    BigInt<Digit, SHIFT>: Clone,
+    Fraction<BigInt<Digit, SHIFT>>: Clone,
 {
+    type Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>;
+
+    fn coordinates(self) -> (Self::Coordinate, Self::Coordinate) {
+        (&self.x, &self.y)
+    }
+
+    fn x(self) -> Self::Coordinate {
+        &self.x
+    }
+
+    fn y(self) -> Self::Coordinate {
+        &self.y
+    }
+}
+
+impl<Digit, const SHIFT: usize> Elemental for Point<Fraction<BigInt<Digit, SHIFT>>> {
     type Coordinate = Fraction<BigInt<Digit, SHIFT>>;
 
-    fn coordinates(&self) -> (Self::Coordinate, Self::Coordinate) {
-        (self.x.clone(), self.y.clone())
+    fn coordinates(self) -> (Self::Coordinate, Self::Coordinate) {
+        (self.x, self.y)
     }
 
-    fn x(&self) -> Self::Coordinate {
-        self.x.clone()
+    fn x(self) -> Self::Coordinate {
+        self.x
     }
 
-    fn y(&self) -> Self::Coordinate {
-        self.y.clone()
+    fn y(self) -> Self::Coordinate {
+        self.y
     }
 }

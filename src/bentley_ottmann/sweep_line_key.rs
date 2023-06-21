@@ -40,10 +40,10 @@ impl<Point: PartialEq> PartialEq for SweepLineKey<Point> {
 
 impl<Point: Eq> Eq for SweepLineKey<Point> {}
 
-impl<Scalar: Ord, Point: Elemental<Coordinate = Scalar>> PartialOrd for SweepLineKey<Point>
+impl<Scalar: Ord, Point> PartialOrd for SweepLineKey<Point>
 where
     Self: PartialEq,
-    for<'a> &'a Point: Orient,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
 {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(compare_sweep_line_keys(
@@ -55,10 +55,10 @@ where
     }
 }
 
-impl<Scalar: Ord, Point: Elemental<Coordinate = Scalar>> Ord for SweepLineKey<Point>
+impl<Scalar: Ord, Point> Ord for SweepLineKey<Point>
 where
     Self: Eq + PartialOrd,
-    for<'a> &'a Point: Orient,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
 {
     fn cmp(&self, other: &Self) -> Ordering {
         compare_sweep_line_keys(
@@ -70,14 +70,14 @@ where
     }
 }
 
-fn compare_sweep_line_keys<Scalar: Ord, Point: Elemental<Coordinate = Scalar>>(
+fn compare_sweep_line_keys<Scalar: Ord, Point>(
     left_event: Event,
     right_event: Event,
     endpoints: &[Point],
     opposites: &[Event],
 ) -> Ordering
 where
-    for<'a> &'a Point: Orient,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
 {
     compare_segments_position(
         &endpoints[left_event],
@@ -87,14 +87,14 @@ where
     )
 }
 
-fn compare_segments_position<Scalar: Ord, Point: Elemental<Coordinate = Scalar>>(
+fn compare_segments_position<Scalar: Ord, Point>(
     first_start: &Point,
     first_end: &Point,
     second_start: &Point,
     second_end: &Point,
 ) -> Ordering
 where
-    for<'a> &'a Point: Orient,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
 {
     let other_start_orientation = first_start.orient(first_end, second_start);
     let other_end_orientation = first_start.orient(first_end, second_end);

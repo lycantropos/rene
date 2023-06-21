@@ -1081,12 +1081,12 @@ impl PyExactPoint {
 
     #[getter]
     fn x(&self) -> PyResult<&PyAny> {
-        try_fraction_to_py_fraction(&self.0.x())
+        try_fraction_to_py_fraction((&self.0).x())
     }
 
     #[getter]
     fn y(&self) -> PyResult<&PyAny> {
-        try_fraction_to_py_fraction(&self.0.y())
+        try_fraction_to_py_fraction((&self.0).y())
     }
 
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
