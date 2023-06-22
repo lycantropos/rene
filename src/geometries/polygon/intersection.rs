@@ -44,21 +44,22 @@ impl<Scalar> Intersection<&Empty> for &Polygon<Scalar> {
 
 impl<Digit, const SHIFT: usize> Intersection for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    Self: Bounded<Fraction<BigInt<Digit, SHIFT>>>
-        + ReduceEvents<
-            Point<Fraction<BigInt<Digit, SHIFT>>>,
-            INTERSECTION,
-            Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-        >,
+    Self: ReduceEvents<
+        Point<Fraction<BigInt<Digit, SHIFT>>>,
+        INTERSECTION,
+        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
+    >,
     Fraction<BigInt<Digit, SHIFT>>: Ord,
     Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>: Iterator<Item = Event>
         + for<'a> From<(
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
         )>,
-    for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
+    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> &'a Point<Fraction<BigInt<Digit, SHIFT>>>:
         Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>:
+        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 

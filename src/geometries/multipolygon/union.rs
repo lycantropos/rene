@@ -53,12 +53,11 @@ where
 
 impl<Digit, const SHIFT: usize> Union for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    Self: Bounded<Fraction<BigInt<Digit, SHIFT>>>
-        + ReduceEvents<
-            Point<Fraction<BigInt<Digit, SHIFT>>>,
-            UNION,
-            Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-        >,
+    Self: ReduceEvents<
+        Point<Fraction<BigInt<Digit, SHIFT>>>,
+        UNION,
+        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
+    >,
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
     Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
     Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, UNION>: Iterator<Item = Event>
@@ -68,8 +67,11 @@ where
         )>,
     Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
     Polygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
-    for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
+    for<'a> &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>:
+        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>:
+        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
@@ -150,22 +152,24 @@ where
 impl<Digit, const SHIFT: usize> Union<&Polygon<Fraction<BigInt<Digit, SHIFT>>>>
     for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    Self: Bounded<Fraction<BigInt<Digit, SHIFT>>>
-        + ReduceEvents<
-            Point<Fraction<BigInt<Digit, SHIFT>>>,
-            UNION,
-            Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-        >,
+    Self: ReduceEvents<
+        Point<Fraction<BigInt<Digit, SHIFT>>>,
+        UNION,
+        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
+    >,
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
-    for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>,
     Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, UNION>: Iterator<Item = Event>
         + for<'a> From<(
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
         )>,
+    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
+    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
+    for<'a> &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>:
+        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>:
+        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
@@ -230,10 +234,11 @@ where
         )>,
     Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
     Polygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
-    for<'a> &'a Box<Fraction<BigInt<Digit, SHIFT>>>: Relatable,
+    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>: Bounded<Fraction<BigInt<Digit, SHIFT>>>,
+        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>:
+        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 

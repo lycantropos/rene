@@ -6,57 +6,53 @@ use crate::traits::Elemental;
 
 use super::types::Contour;
 
-impl<'a, Scalar: Clone + Ord> Bounded<Scalar> for &'a Contour<Scalar>
+impl<'a, Scalar: Ord> Bounded<&'a Scalar> for &'a Contour<Scalar>
 where
     &'a Point<Scalar>: Elemental<Coordinate = &'a Scalar>,
 {
-    fn to_bounding_box(self) -> bounded::Box<Scalar> {
+    fn to_bounding_box(self) -> bounded::Box<&'a Scalar> {
         let (min_x, max_x, min_y, max_y) =
             coordinates_iterator_to_bounds(self.vertices.iter().map(Elemental::coordinates));
-        bounded::Box::new(min_x.clone(), max_x.clone(), min_y.clone(), max_y.clone())
+        bounded::Box::new(min_x, max_x, min_y, max_y)
     }
 
-    fn to_max_x(self) -> Scalar {
+    fn to_max_x(self) -> &'a Scalar {
         unsafe {
             self.vertices
                 .iter()
                 .map(Elemental::x)
                 .max()
                 .unwrap_unchecked()
-                .clone()
         }
     }
 
-    fn to_max_y(self) -> Scalar {
+    fn to_max_y(self) -> &'a Scalar {
         unsafe {
             self.vertices
                 .iter()
                 .map(Elemental::y)
                 .max()
                 .unwrap_unchecked()
-                .clone()
         }
     }
 
-    fn to_min_x(self) -> Scalar {
+    fn to_min_x(self) -> &'a Scalar {
         unsafe {
             self.vertices
                 .iter()
                 .map(Elemental::x)
                 .min()
                 .unwrap_unchecked()
-                .clone()
         }
     }
 
-    fn to_min_y(self) -> Scalar {
+    fn to_min_y(self) -> &'a Scalar {
         unsafe {
             self.vertices
                 .iter()
                 .map(Elemental::y)
                 .min()
                 .unwrap_unchecked()
-                .clone()
         }
     }
 }

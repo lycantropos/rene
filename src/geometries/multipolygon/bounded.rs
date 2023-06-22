@@ -6,11 +6,11 @@ use crate::traits::{Contoural, Elemental, Polygonal};
 
 use super::types::Multipolygon;
 
-impl<'a, Scalar: Ord> Bounded<Scalar> for &'a Multipolygon<Scalar>
+impl<'a, Scalar: Ord> Bounded<&'a Scalar> for &'a Multipolygon<Scalar>
 where
-    &'a Polygon<Scalar>: Bounded<Scalar>,
+    &'a Polygon<Scalar>: Bounded<&'a Scalar>,
 {
-    fn to_bounding_box(self) -> bounded::Box<Scalar> {
+    fn to_bounding_box(self) -> bounded::Box<&'a Scalar> {
         bounded::Box::new(
             self.to_min_x(),
             self.to_max_x(),
@@ -19,7 +19,7 @@ where
         )
     }
 
-    fn to_max_x(self) -> Scalar {
+    fn to_max_x(self) -> &'a Scalar {
         unsafe {
             self.polygons
                 .iter()
@@ -29,7 +29,7 @@ where
         }
     }
 
-    fn to_max_y(self) -> Scalar {
+    fn to_max_y(self) -> &'a Scalar {
         unsafe {
             self.polygons
                 .iter()
@@ -39,7 +39,7 @@ where
         }
     }
 
-    fn to_min_x(self) -> Scalar {
+    fn to_min_x(self) -> &'a Scalar {
         unsafe {
             self.polygons
                 .iter()
@@ -49,7 +49,7 @@ where
         }
     }
 
-    fn to_min_y(self) -> Scalar {
+    fn to_min_y(self) -> &'a Scalar {
         unsafe {
             self.polygons
                 .iter()

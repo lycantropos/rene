@@ -9,7 +9,7 @@ use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 use crate::locatable::Location;
 use crate::oriented::Orientation;
 use crate::relatable::Relatable;
-use crate::traits::{Elemental, Multisegmental, Segmental};
+use crate::traits::{Elemental, Multisegmental, Segmental, SegmentalCoordinate};
 
 pub(crate) fn ceil_log2<
     Number: Copy + BitLength<Output = Value> + IsPowerOfTwo,
@@ -473,4 +473,23 @@ pub(crate) fn to_sorted_pair<Value: PartialOrd>((left, right): (Value, Value)) -
     } else {
         (right, left)
     }
+}
+
+pub(crate) fn segmental_to_bounds<Segment: Segmental>(
+    segment: Segment,
+) -> (
+    SegmentalCoordinate<Segment>,
+    SegmentalCoordinate<Segment>,
+    SegmentalCoordinate<Segment>,
+    SegmentalCoordinate<Segment>,
+)
+where
+    SegmentalCoordinate<Segment>: PartialOrd,
+{
+    let (start, end) = segment.endpoints();
+    let (start_x, start_y) = start.coordinates();
+    let (end_x, end_y) = end.coordinates();
+    let (min_x, max_x) = to_sorted_pair((start_x, end_x));
+    let (min_y, max_y) = to_sorted_pair((start_y, end_y));
+    (min_x, max_x, min_y, max_y)
 }

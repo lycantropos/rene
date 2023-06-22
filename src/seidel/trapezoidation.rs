@@ -55,7 +55,7 @@ impl<Point> Trapezoidation<Point> {
     where
         Point: Clone + From<(Scalar, Scalar)> + PartialOrd,
         Scalar: Clone + One,
-        for<'b> &'b Multisegment: Bounded<Scalar> + Multisegmental<Segment = &'b Segment>,
+        for<'b> &'b Multisegment: Bounded<&'b Scalar> + Multisegmental<Segment = &'b Segment>,
         for<'b> &'b Point: Orient,
         for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
@@ -95,10 +95,11 @@ impl<Point> Trapezoidation<Point> {
     ) -> Self
     where
         &'a Contour: Contoural<Vertex = &'a Point> + Oriented,
-        &'a Polygon: Bounded<Scalar> + Polygonal<Contour = &'a Contour> + Multisegmental,
         Point: 'a + Clone + From<(Scalar, Scalar)> + PartialOrd,
         Scalar: Clone + One,
         for<'b> &'b Point: Orient,
+        for<'b> &'b Polygon:
+            Bounded<&'b Scalar> + Polygonal<Contour = &'b Contour> + Multisegmental,
         for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
             + Sub<Output = Scalar>
@@ -130,7 +131,7 @@ impl<Point> Trapezoidation<Point> {
     }
 
     fn from_box<Scalar: Clone + One>(
-        box_: bounded::Box<Scalar>,
+        box_: bounded::Box<&Scalar>,
         mut edges: Vec<Edge>,
         mut endpoints: Vec<Point>,
     ) -> Self
@@ -159,7 +160,7 @@ impl<Point> Trapezoidation<Point> {
     }
 
     fn leaf_from_box_with_edges<Scalar: Clone + One>(
-        box_: bounded::Box<Scalar>,
+        box_: bounded::Box<&Scalar>,
         edges: &mut Vec<Edge>,
         endpoints: &mut Vec<Point>,
         nodes: &mut Vec<Node>,
@@ -173,10 +174,10 @@ impl<Point> Trapezoidation<Point> {
             + Zeroable,
     {
         let (min_x, min_y, max_x, max_y) = (
-            box_.get_min_x(),
-            box_.get_min_y(),
-            box_.get_max_x(),
-            box_.get_max_y(),
+            *box_.get_min_x(),
+            *box_.get_min_y(),
+            *box_.get_max_x(),
+            *box_.get_max_y(),
         );
         let (delta_x, delta_y) = (max_x - min_x, max_y - min_y);
         let (min_x, max_x) = if delta_x.is_zero() {
