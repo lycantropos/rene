@@ -512,12 +512,12 @@ impl PyExactContour {
 
     #[getter]
     fn segments(&self) -> Vec<ExactSegment> {
-        self.0.segments().cloned().collect()
+        (&self.0).segments().cloned().collect()
     }
 
     #[getter]
     fn segments_count(&self) -> usize {
-        self.0.segments_count()
+        (&self.0).segments_count()
     }
 
     #[getter]

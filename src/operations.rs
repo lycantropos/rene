@@ -247,20 +247,19 @@ where
 }
 
 pub(crate) fn locate_point_in_region<
-    'a,
     Border,
     Point: Elemental<Coordinate = Scalar> + PartialEq,
     Segment,
     Scalar,
 >(
-    border: &'a Border,
+    border: &Border,
     point: &Point,
 ) -> Location
 where
     Scalar: PartialOrd,
-    for<'b> &'b Border: Multisegmental<Segment = &'b Segment>,
-    for<'b> &'b Point: Elemental<Coordinate = &'b Scalar> + Orient,
-    for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
+    for<'a> &'a Border: Multisegmental<Segment = &'a Segment>,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
+    for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
 {
     let mut result = false;
     let point_y = point.y();
