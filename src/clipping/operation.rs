@@ -195,11 +195,11 @@ impl<Point> DetectIfLeftEventFromResult for Operation<Point, UNION> {
     }
 }
 
-impl<'a, Point: Clone + PartialOrd, const KIND: u8> Iterator for Operation<Point, KIND>
+impl<Point: Clone + PartialOrd, const KIND: u8> Iterator for Operation<Point, KIND>
 where
     Self: EventsQueue + DetectIfLeftEventFromResult + SweepLine,
-    for<'b> &'b Point: Elemental + IntersectCrossingSegments<Output = Point> + Orient,
-    for<'b> <&'b Point as Elemental>::Coordinate: PartialEq,
+    for<'a> &'a Point: Elemental + IntersectCrossingSegments<Output = Point> + Orient,
+    for<'a> <&'a Point as Elemental>::Coordinate: PartialEq,
 {
     type Item = Event;
 

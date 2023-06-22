@@ -36,7 +36,7 @@ where
     }
 }
 
-impl<'a, Scalar: Ord> Bounded<Scalar> for Segment<Scalar>
+impl<Scalar: Ord> Bounded<Scalar> for Segment<Scalar>
 where
     Point<Scalar>: Elemental<Coordinate = Scalar>,
 {

@@ -119,10 +119,10 @@ where
         match other_start_orientation {
             Orientation::Collinear => {
                 if first_segment_is_from_first_operand == second_segment_is_from_first_operand {
-                    match first_start.y().cmp(&second_start.y()) {
-                        Ordering::Equal => match first_start.x().cmp(&second_start.x()) {
-                            Ordering::Equal => match first_end.y().cmp(&second_end.y()) {
-                                Ordering::Equal => first_end.x().cmp(&second_end.x()),
+                    match first_start.y().cmp(second_start.y()) {
+                        Ordering::Equal => match first_start.x().cmp(second_start.x()) {
+                            Ordering::Equal => match first_end.y().cmp(second_end.y()) {
+                                Ordering::Equal => first_end.x().cmp(second_end.x()),
                                 value => value,
                             },
                             value => value,

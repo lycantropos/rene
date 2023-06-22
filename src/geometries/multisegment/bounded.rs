@@ -74,7 +74,7 @@ where
     }
 }
 
-impl<'a, Point, Scalar: Ord> Bounded<Scalar> for Multisegment<Scalar>
+impl<Point, Scalar: Ord> Bounded<Scalar> for Multisegment<Scalar>
 where
     Point: Elemental<Coordinate = Scalar>,
     Segment<Scalar>: Segmental<Endpoint = Point>,

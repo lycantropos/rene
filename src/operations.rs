@@ -266,14 +266,13 @@ where
     let point_y = point.y();
     for edge in border.segments() {
         let (start, end) = edge.endpoints();
-        if is_point_in_segment(point, &start, &end) {
+        if is_point_in_segment(point, start, end) {
             return Location::Boundary;
         }
-        let start_y = (&start).y();
-        let end_y = (&end).y();
+        let start_y = start.y();
+        let end_y = end.y();
         if (start_y.gt(point_y)) != (end_y.gt(point_y))
-            && ((end_y.gt(&start_y))
-                == (start.orient(&end, point) == Orientation::Counterclockwise))
+            && ((end_y.gt(start_y)) == (start.orient(end, point) == Orientation::Counterclockwise))
         {
             result = !result;
         }

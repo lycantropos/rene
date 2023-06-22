@@ -19,7 +19,7 @@ where
     let mut last_touched_edge_start: Option<Point> = None;
     for (index, contour_segment) in contour.segments().enumerate() {
         let (contour_segment_start, contour_segment_end) = contour_segment.endpoints();
-        let relation = relate_to_segment(start, end, &contour_segment_start, &contour_segment_end);
+        let relation = relate_to_segment(start, end, contour_segment_start, contour_segment_end);
         match relation {
             Relation::Component | Relation::Equal => return Relation::Component,
             Relation::Composite | Relation::Overlap => return Relation::Overlap,
@@ -39,11 +39,11 @@ where
                         && contour_segment_start.ne(end)
                         && contour_segment_end.ne(start)
                         && contour_segment_end.ne(end)
-                        && start.orient(end, &contour_segment_start) == Orientation::Collinear
+                        && start.orient(end, contour_segment_start) == Orientation::Collinear
                         && point_vertex_line_divides_angle(
                             start,
-                            &contour_segment_start,
-                            &contour_segment_end,
+                            contour_segment_start,
+                            contour_segment_end,
                             unsafe { &last_touched_edge_start.unwrap_unchecked() },
                         )
                     {
