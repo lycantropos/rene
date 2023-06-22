@@ -6,10 +6,7 @@ use crate::traits::Multisegmental;
 
 use super::types::Contour;
 
-impl<'a, Digit, const SHIFT: usize> Multisegmental for &'a Contour<Fraction<BigInt<Digit, SHIFT>>>
-where
-    BigInt<Digit, SHIFT>: Clone,
-{
+impl<'a, Digit, const SHIFT: usize> Multisegmental for &'a Contour<Fraction<BigInt<Digit, SHIFT>>> {
     type Segment = &'a Segment<Fraction<BigInt<Digit, SHIFT>>>;
     type Segments = std::slice::Iter<'a, Segment<Fraction<BigInt<Digit, SHIFT>>>>;
 
@@ -22,10 +19,7 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize> Multisegmental for Contour<Fraction<BigInt<Digit, SHIFT>>>
-where
-    BigInt<Digit, SHIFT>: Clone,
-{
+impl<Digit, const SHIFT: usize> Multisegmental for Contour<Fraction<BigInt<Digit, SHIFT>>> {
     type Segment = Segment<Fraction<BigInt<Digit, SHIFT>>>;
     type Segments = std::vec::IntoIter<Segment<Fraction<BigInt<Digit, SHIFT>>>>;
 

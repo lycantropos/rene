@@ -21,14 +21,41 @@ where
     >;
 
     fn segments(self) -> Self::Segments {
-        MultisegmentalsSegments::new(self.border.segments(), self.holes.iter())
+        MultisegmentalsSegments::new((&self.border).segments(), self.holes.iter())
+    }
+
+    fn segments_count(self) -> usize {
+        (&self.border).segments_count()
+            + self
+                .holes
+                .iter()
+                .map(Multisegmental::segments_count)
+                .sum::<usize>()
+    }
+}
+
+impl<Digit, const SHIFT: usize> Multisegmental for Polygon<Fraction<BigInt<Digit, SHIFT>>>
+where
+    Contour<Fraction<BigInt<Digit, SHIFT>>>:
+        Multisegmental<Segment = Segment<Fraction<BigInt<Digit, SHIFT>>>>,
+    Segment<Fraction<BigInt<Digit, SHIFT>>>:
+        Segmental<Endpoint = Point<Fraction<BigInt<Digit, SHIFT>>>>,
+{
+    type Segment = <Contour<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segment;
+    type Segments = MultisegmentalsSegments<
+        std::vec::IntoIter<Contour<Fraction<BigInt<Digit, SHIFT>>>>,
+        <Contour<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segments,
+    >;
+
+    fn segments(self) -> Self::Segments {
+        MultisegmentalsSegments::new(self.border.segments(), self.holes.into_iter())
     }
 
     fn segments_count(self) -> usize {
         self.border.segments_count()
             + self
                 .holes
-                .iter()
+                .into_iter()
                 .map(Multisegmental::segments_count)
                 .sum::<usize>()
     }

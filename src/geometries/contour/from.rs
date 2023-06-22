@@ -11,7 +11,7 @@ where
     }
 }
 
-impl<Scalar: Clone> From<&[Point<Scalar>]> for Contour<Scalar>
+impl<Scalar> From<&[Point<Scalar>]> for Contour<Scalar>
 where
     Point<Scalar>: Clone,
 {

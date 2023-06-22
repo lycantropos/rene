@@ -522,17 +522,17 @@ impl PyExactContour {
 
     #[getter]
     fn vertices(&self) -> Vec<ExactPoint> {
-        self.0.vertices().cloned().collect()
+        (&self.0).vertices().cloned().collect()
     }
 
     #[getter]
     fn vertices_count(&self) -> usize {
-        self.0.vertices_count()
+        (&self.0).vertices_count()
     }
 
     #[getter]
     fn orientation(&self, py: Python) -> PyResult<&PyAny> {
-        let orientation = self.0.to_orientation();
+        let orientation = (&self.0).to_orientation();
         let orientation_cls = unsafe { MAYBE_ORIENTATION_CLS.unwrap_unchecked() };
         match orientation {
             Orientation::Clockwise => orientation_cls.getattr(intern!(py, "CLOCKWISE")),
@@ -557,10 +557,10 @@ impl PyExactContour {
     }
 
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
-        let mut vertices = self.0.vertices().collect::<Vec<_>>();
+        let mut vertices = (&self.0).vertices().collect::<Vec<_>>();
         let min_vertex_index = unsafe { to_arg_min(&vertices).unwrap_unchecked() };
         vertices.rotate_left(min_vertex_index);
-        if self.0.to_orientation() == Orientation::Clockwise {
+        if (&self.0).to_orientation() == Orientation::Clockwise {
             vertices[1..].reverse();
         }
         PyTuple::new(py, &vertices).hash()
@@ -813,22 +813,22 @@ impl PyExactMultipolygon {
 
     #[getter]
     fn polygons(&self) -> Vec<ExactPolygon> {
-        self.0.polygons().cloned().collect()
+        (&self.0).polygons().cloned().collect()
     }
 
     #[getter]
     fn polygons_count(&self) -> usize {
-        self.0.polygons_count()
+        (&self.0).polygons_count()
     }
 
     #[getter]
     fn segments(&self) -> Vec<ExactSegment> {
-        self.0.segments().cloned().collect()
+        (&self.0).segments().cloned().collect()
     }
 
     #[getter]
     fn segments_count(&self) -> usize {
-        self.0.segments_count()
+        (&self.0).segments_count()
     }
 
     #[pyo3(signature = (point, /))]
@@ -1004,12 +1004,12 @@ impl PyExactMultisegment {
 
     #[getter]
     fn segments(&self) -> Vec<ExactSegment> {
-        self.0.segments().cloned().collect()
+        (&self.0).segments().cloned().collect()
     }
 
     #[getter]
     fn segments_count(&self) -> usize {
-        self.0.segments_count()
+        (&self.0).segments_count()
     }
 
     fn is_valid(&self) -> bool {
@@ -1142,7 +1142,7 @@ impl PyExactPolygon {
 
     #[getter]
     fn border(&self) -> ExactContour {
-        self.0.border().clone()
+        (&self.0).border().clone()
     }
 
     #[getter]
@@ -1152,22 +1152,22 @@ impl PyExactPolygon {
 
     #[getter]
     fn holes(&self) -> Vec<ExactContour> {
-        self.0.holes().cloned().collect()
+        (&self.0).holes().cloned().collect()
     }
 
     #[getter]
     fn holes_count(&self) -> usize {
-        self.0.holes_count()
+        (&self.0).holes_count()
     }
 
     #[getter]
     fn segments(&self) -> Vec<ExactSegment> {
-        self.0.segments().cloned().collect()
+        (&self.0).segments().cloned().collect()
     }
 
     #[getter]
     fn segments_count(&self) -> usize {
-        self.0.segments_count()
+        (&self.0).segments_count()
     }
 
     #[pyo3(signature = (point, /))]
