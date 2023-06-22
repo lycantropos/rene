@@ -6,29 +6,23 @@ use crate::traits::Segmental;
 
 use super::types::Segment;
 
-impl<Digit, const SHIFT: usize> Segmental for &Segment<Fraction<BigInt<Digit, SHIFT>>>
-where
-    BigInt<Digit, SHIFT>: Clone,
-{
-    type Endpoint = Point<Fraction<BigInt<Digit, SHIFT>>>;
+impl<'a, Digit, const SHIFT: usize> Segmental for &'a Segment<Fraction<BigInt<Digit, SHIFT>>> {
+    type Endpoint = &'a Point<Fraction<BigInt<Digit, SHIFT>>>;
 
     fn start(self) -> Self::Endpoint {
-        self.start.clone()
+        &self.start
     }
 
     fn end(self) -> Self::Endpoint {
-        self.end.clone()
+        &self.end
     }
 
     fn endpoints(self) -> (Self::Endpoint, Self::Endpoint) {
-        (self.start.clone(), self.end.clone())
+        (&self.start, &self.end)
     }
 }
 
-impl<Digit, const SHIFT: usize> Segmental for Segment<Fraction<BigInt<Digit, SHIFT>>>
-where
-    BigInt<Digit, SHIFT>: Clone,
-{
+impl<Digit, const SHIFT: usize> Segmental for Segment<Fraction<BigInt<Digit, SHIFT>>> {
     type Endpoint = Point<Fraction<BigInt<Digit, SHIFT>>>;
 
     fn start(self) -> Self::Endpoint {

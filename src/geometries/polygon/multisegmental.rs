@@ -1,27 +1,27 @@
 use rithm::big_int::BigInt;
 use rithm::fraction::Fraction;
 
-use crate::geometries::{Contour, Segment};
+use crate::geometries::utils::MultisegmentalsSegments;
+use crate::geometries::{Contour, Point, Segment};
 use crate::traits::{Multisegmental, Segmental};
 
 use super::types::Polygon;
 
 impl<'a, Digit, const SHIFT: usize> Multisegmental for &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    &'a Contour<Fraction<BigInt<Digit, SHIFT>>>:
-        Multisegmental<Segment = Segment<Fraction<BigInt<Digit, SHIFT>>>>,
-    Segment<Fraction<BigInt<Digit, SHIFT>>>: Segmental,
+    for<'b> &'b Contour<Fraction<BigInt<Digit, SHIFT>>>:
+        Multisegmental<Segment = &'b Segment<Fraction<BigInt<Digit, SHIFT>>>>,
+    for<'b> &'b Segment<Fraction<BigInt<Digit, SHIFT>>>:
+        Segmental<Endpoint = &'b Point<Fraction<BigInt<Digit, SHIFT>>>>,
 {
-    type Segment = Segment<Fraction<BigInt<Digit, SHIFT>>>;
-    type Segments = std::vec::IntoIter<Self::Segment>;
+    type Segment = <&'a Contour<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segment;
+    type Segments = MultisegmentalsSegments<
+        std::slice::Iter<'a, Contour<Fraction<BigInt<Digit, SHIFT>>>>,
+        <&'a Contour<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segments,
+    >;
 
     fn segments(self) -> Self::Segments {
-        let mut result = Vec::<Self::Segment>::with_capacity(self.segments_count());
-        result.extend(self.border.segments());
-        for hole in &self.holes {
-            result.extend(hole.segments());
-        }
-        result.into_iter()
+        MultisegmentalsSegments::new(self.border.segments(), self.holes.iter())
     }
 
     fn segments_count(self) -> usize {

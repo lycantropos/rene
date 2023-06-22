@@ -6,15 +6,15 @@ use crate::traits::{Elemental, Segmental, SegmentalCoordinate};
 
 use super::types::Multisegment;
 
-impl<Point, Scalar: Ord> Bounded<Scalar> for &Multisegment<Scalar>
+impl<Point, Scalar: Clone + Ord> Bounded<Scalar> for &Multisegment<Scalar>
 where
-    Point: Elemental<Coordinate = Scalar>,
-    for<'a> &'a Segment<Scalar>: Segmental<Endpoint = Point>,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar>,
+    for<'a> &'a Segment<Scalar>: Segmental<Endpoint = &'a Point>,
 {
     fn to_bounding_box(self) -> bounded::Box<Scalar> {
         let (min_x, max_x, min_y, max_y) =
             merge_bounds(self.segments.iter().map(segmental_to_bounds));
-        bounded::Box::new(min_x, max_x, min_y, max_y)
+        bounded::Box::new(min_x.clone(), max_x.clone(), min_y.clone(), max_y.clone())
     }
 
     fn to_max_x(self) -> Scalar {
@@ -27,6 +27,7 @@ where
                 })
                 .max()
                 .unwrap_unchecked()
+                .clone()
         }
     }
 
@@ -40,6 +41,7 @@ where
                 })
                 .max()
                 .unwrap_unchecked()
+                .clone()
         }
     }
 
@@ -53,6 +55,7 @@ where
                 })
                 .min()
                 .unwrap_unchecked()
+                .clone()
         }
     }
 
@@ -66,6 +69,7 @@ where
                 })
                 .min()
                 .unwrap_unchecked()
+                .clone()
         }
     }
 }

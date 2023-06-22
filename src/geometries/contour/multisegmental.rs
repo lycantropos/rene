@@ -1,31 +1,22 @@
 use rithm::big_int::BigInt;
 use rithm::fraction::Fraction;
 
-use crate::geometries::Segment;
-use crate::traits::Multisegmental;
+use crate::geometries::{Point, Segment};
+use crate::traits::{Multisegmental, Segmental};
 
 use super::types::Contour;
 
-impl<Digit, const SHIFT: usize> Multisegmental for &Contour<Fraction<BigInt<Digit, SHIFT>>>
+impl<'a, Digit, const SHIFT: usize> Multisegmental for &'a Contour<Fraction<BigInt<Digit, SHIFT>>>
 where
     BigInt<Digit, SHIFT>: Clone,
+    Segment<Fraction<BigInt<Digit, SHIFT>>>:
+        Segmental<Endpoint = Point<Fraction<BigInt<Digit, SHIFT>>>>,
 {
-    type Segment = Segment<Fraction<BigInt<Digit, SHIFT>>>;
-    type Segments = std::vec::IntoIter<Self::Segment>;
+    type Segment = &'a Segment<Fraction<BigInt<Digit, SHIFT>>>;
+    type Segments = std::slice::Iter<'a, Segment<Fraction<BigInt<Digit, SHIFT>>>>;
 
     fn segments(self) -> Self::Segments {
-        let mut result = Vec::<Self::Segment>::with_capacity(self.vertices.len());
-        for index in 0..self.vertices.len() - 1 {
-            result.push(Segment::new(
-                self.vertices[index].clone(),
-                self.vertices[index + 1].clone(),
-            ));
-        }
-        result.push(Segment::new(
-            self.vertices[self.vertices.len() - 1].clone(),
-            self.vertices[0].clone(),
-        ));
-        result.into_iter()
+        self.segments.iter()
     }
 
     fn segments_count(self) -> usize {

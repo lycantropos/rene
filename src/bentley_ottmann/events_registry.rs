@@ -134,15 +134,20 @@ impl<Point, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
     }
 }
 
-impl<'a, Multisegment, Point: Ord, Segment, const UNIQUE: bool> From<&'a Multisegment>
-    for EventsRegistry<Point, UNIQUE>
+impl<
+        'a,
+        Multisegment,
+        Point: Ord,
+        Segment: Clone + Segmental<Endpoint = Point>,
+        const UNIQUE: bool,
+    > From<&'a Multisegment> for EventsRegistry<Point, UNIQUE>
 where
-    &'a Multisegment: Multisegmental<Segment = Segment>,
-    Segment: Segmental<Endpoint = Point>,
+    for<'b> &'b Multisegment: Multisegmental<Segment = &'b Segment>,
+    for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
 {
     fn from(multisegment: &'a Multisegment) -> Self {
         let mut result = Self::with_capacity(multisegment.segments_count());
-        result.extend(multisegment.segments());
+        result.extend(multisegment.segments().cloned());
         result
     }
 }

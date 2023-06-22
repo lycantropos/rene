@@ -12,8 +12,8 @@ use crate::geometries::{Contour, Multipolygon, Point, Polygon};
 use crate::operations::{shrink_collinear_vertices, IntersectCrossingSegments, Orient};
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{
-    Contoural, Elemental, Multipolygonal, MultipolygonalPolygon, Multisegmental,
-    MultisegmentalSegment, Polygonal, PolygonalContour, PolygonalVertex, Segmental,
+    Contoural, Elemental, Multipolygonal, MultipolygonalPolygon, Multisegmental, Polygonal,
+    PolygonalContour, PolygonalVertex, Segmental,
 };
 
 use super::event::{
@@ -42,16 +42,16 @@ pub(crate) struct Operation<Point, const KIND: u8> {
     sweep_line_data: BTreeSet<SweepLineKey<Point>>,
 }
 
-impl<'a, First, Point: Ord, Second, const KIND: u8> From<(&'a First, &'a Second)>
-    for Operation<Point, KIND>
+impl<First, Point: Ord, Second, SecondSegment: Clone, FirstSegment: Clone, const KIND: u8>
+    From<(&First, &Second)> for Operation<Point, KIND>
 where
-    &'a First: IsValid + Multisegmental,
-    &'a Second: IsValid + Multisegmental,
-    MultisegmentalSegment<&'a First>: Segmental<Endpoint = Point>,
-    MultisegmentalSegment<&'a Second>: Segmental<Endpoint = Point>,
-    for<'b> &'b Point: Orient,
+    FirstSegment: Segmental<Endpoint = Point>,
+    SecondSegment: Segmental<Endpoint = Point>,
+    for<'a> &'a First: IsValid + Multisegmental<Segment = &'a FirstSegment>,
+    for<'a> &'a Second: IsValid + Multisegmental<Segment = &'a SecondSegment>,
+    for<'a> &'a Point: Orient,
 {
-    fn from((first, second): (&'a First, &'a Second)) -> Self {
+    fn from((first, second): (&First, &Second)) -> Self {
         debug_assert!(IsValid::is_valid(first));
         debug_assert!(IsValid::is_valid(second));
         let first_segments_count = first.segments_count();
@@ -63,22 +63,22 @@ where
         result
             .are_from_first_operand
             .append(&mut vec![false; second_segments_count]);
-        result.extend(first.segments());
-        result.extend(second.segments());
+        result.extend(first.segments().cloned());
+        result.extend(second.segments().cloned());
         let first_event = unsafe { result.peek().unwrap_unchecked() };
         result.current_endpoint_first_event = first_event;
         result
     }
 }
 
-impl<'a, Element, Point: Ord, const KIND: u8> From<(&[&'a Element], &[&'a Element])>
+impl<Element, Point: Ord, Segment: Clone, const KIND: u8> From<(&[&Element], &[&Element])>
     for Operation<Point, KIND>
 where
-    &'a Element: IsValid + Multisegmental,
-    MultisegmentalSegment<&'a Element>: Segmental<Endpoint = Point>,
-    for<'b> &'b Point: Orient,
+    Segment: Segmental<Endpoint = Point>,
+    for<'a> &'a Element: IsValid + Multisegmental<Segment = &'a Segment>,
+    for<'a> &'a Point: Orient,
 {
-    fn from((first, second): (&[&'a Element], &[&'a Element])) -> Self {
+    fn from((first, second): (&[&Element], &[&Element])) -> Self {
         debug_assert!(first.iter().all(|element| element.is_valid()));
         debug_assert!(second.iter().all(|element| element.is_valid()));
         let first_segments_count = multisegments_to_segments_count(first);
@@ -91,10 +91,10 @@ where
             .are_from_first_operand
             .append(&mut vec![false; second_segments_count]);
         for element in first {
-            result.extend(element.segments());
+            result.extend(element.segments().cloned());
         }
         for element in second {
-            result.extend(element.segments());
+            result.extend(element.segments().cloned());
         }
         let first_event = unsafe { result.peek().unwrap_unchecked() };
         result.current_endpoint_first_event = first_event;
@@ -102,14 +102,14 @@ where
     }
 }
 
-impl<'a, Element, Point: Ord, const KIND: u8> From<(&[&'a Element], &'a Element)>
+impl<Element, Segment: Clone, Point: Ord, const KIND: u8> From<(&[&Element], &Element)>
     for Operation<Point, KIND>
 where
-    &'a Element: IsValid + Multisegmental,
-    MultisegmentalSegment<&'a Element>: Segmental<Endpoint = Point>,
-    for<'b> &'b Point: Orient,
+    for<'a> &'a Element: IsValid + Multisegmental<Segment = &'a Segment>,
+    for<'a> &'a Point: Orient,
+    Segment: Segmental<Endpoint = Point>,
 {
-    fn from((first, second): (&[&'a Element], &'a Element)) -> Self {
+    fn from((first, second): (&[&Element], &Element)) -> Self {
         debug_assert!(first.iter().all(|element| element.is_valid()));
         debug_assert!(second.is_valid());
         let first_segments_count = multisegments_to_segments_count(first);
@@ -122,23 +122,22 @@ where
             .are_from_first_operand
             .append(&mut vec![false; second_segments_count]);
         for element in first {
-            result.extend(element.segments());
+            result.extend(element.segments().cloned());
         }
-        result.extend(second.segments());
+        result.extend(second.segments().cloned());
         let first_event = unsafe { result.peek().unwrap_unchecked() };
         result.current_endpoint_first_event = first_event;
         result
     }
 }
 
-impl<'a, Element, Point: Ord, const KIND: u8> From<(&'a Element, &[&'a Element])>
-    for Operation<Point, KIND>
+impl<Element, Point: Ord, Segment: Clone + Segmental<Endpoint = Point>, const KIND: u8>
+    From<(&Element, &[&Element])> for Operation<Point, KIND>
 where
-    &'a Element: IsValid + Multisegmental,
-    MultisegmentalSegment<&'a Element>: Segmental<Endpoint = Point>,
-    for<'b> &'b Point: Orient,
+    for<'a> &'a Element: IsValid + Multisegmental<Segment = &'a Segment>,
+    for<'a> &'a Point: Orient,
 {
-    fn from((first, second): (&'a Element, &[&'a Element])) -> Self {
+    fn from((first, second): (&Element, &[&Element])) -> Self {
         debug_assert!(first.is_valid());
         debug_assert!(second.iter().all(|element| element.is_valid()));
         let first_segments_count = first.segments_count();
@@ -150,9 +149,9 @@ where
         result
             .are_from_first_operand
             .append(&mut vec![false; second_segments_count]);
-        result.extend(first.segments());
+        result.extend(first.segments().cloned());
         for element in second {
-            result.extend(element.segments());
+            result.extend(element.segments().cloned());
         }
         let first_event = unsafe { result.peek().unwrap_unchecked() };
         result.current_endpoint_first_event = first_event;
@@ -1061,6 +1060,7 @@ where
 {
     multisegments
         .iter()
-        .map(|&multisegment| multisegment.segments_count())
+        .copied()
+        .map(Multisegmental::segments_count)
         .sum()
 }

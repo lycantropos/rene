@@ -10,14 +10,12 @@ use super::event::{is_left_event, Event};
 use super::events_registry::EventsRegistry;
 use super::sweep::{Intersection, Sweep};
 
-pub(crate) fn is_contour_valid<'a, Contour, Point: Ord, Scalar, Segment: 'a>(
-    contour: &'a Contour,
-) -> bool
+pub(crate) fn is_contour_valid<Contour, Point: Ord, Scalar, Segment>(contour: &Contour) -> bool
 where
-    Segment: Segmental<Endpoint = Point>,
-    Sweep<Point>: From<&'a Contour> + Iterator<Item = Intersection<Point>>,
-    for<'b> &'b Contour: Contoural<Vertex = &'b Point, Segment = Segment>,
-    for<'b> &'b Point: Elemental<Coordinate = &'b Scalar> + Orient,
+    Sweep<Point>: Iterator<Item = Intersection<Point>> + for<'a> From<&'a Contour>,
+    for<'a> &'a Contour: Contoural<Vertex = &'a Point, Segment = &'a Segment>,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
+    for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
 {
     are_contour_vertices_non_degenerate(&contour.vertices().collect::<Vec<_>>()) && {
         contour.segments().all(|segment| {
@@ -66,9 +64,9 @@ pub(crate) fn is_multisegment_valid<'a, Multisegment, Point: PartialEq, Segment>
     multisegment: &'a Multisegment,
 ) -> bool
 where
-    &'a Multisegment: Multisegmental<Segment = Segment>,
-    Segment: Segmental<Endpoint = Point>,
     Sweep<Point>: From<&'a Multisegment> + Iterator<Item = Intersection<Point>>,
+    for<'b> &'b Multisegment: Multisegmental<Segment = &'b Segment>,
+    for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
 {
     multisegment.segments_count() >= MIN_MULTISEGMENT_SEGMENTS_COUNT
         && multisegment.segments().all(|segment| {

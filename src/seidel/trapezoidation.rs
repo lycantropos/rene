@@ -53,15 +53,15 @@ impl<Point> Trapezoidation<Point> {
         shuffler: Shuffler,
     ) -> Self
     where
-        &'a Multisegment: bounded::Bounded<Scalar> + Multisegmental<Segment = Segment>,
-        Point: From<(Scalar, Scalar)> + PartialOrd,
+        Point: Clone + From<(Scalar, Scalar)> + PartialOrd,
         Scalar: Clone + One,
-        Segment: Segmental<Endpoint = Point>,
+        for<'b> &'b Multisegment: Bounded<Scalar> + Multisegmental<Segment = &'b Segment>,
         for<'b> &'b Point: Orient,
         for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
             + Sub<Output = Scalar>
             + Zeroable,
+        for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
     {
         let mut edges = Vec::<Edge>::with_capacity(multisegment.segments_count());
         let mut endpoints = Vec::<Point>::with_capacity(2 * multisegment.segments_count());
@@ -82,8 +82,8 @@ impl<Point> Trapezoidation<Point> {
                     interior_to_left: false,
                 }
             });
-            endpoints.push(start);
-            endpoints.push(end);
+            endpoints.push(start.clone());
+            endpoints.push(end.clone());
         }
         shuffler(&mut edges);
         Self::from_box(multisegment.to_bounding_box(), edges, endpoints)
@@ -95,7 +95,7 @@ impl<Point> Trapezoidation<Point> {
     ) -> Self
     where
         &'a Contour: Contoural<Vertex = &'a Point> + Oriented,
-        &'a Polygon: bounded::Bounded<Scalar> + Polygonal<Contour = &'a Contour> + Multisegmental,
+        &'a Polygon: Bounded<Scalar> + Polygonal<Contour = &'a Contour> + Multisegmental,
         Point: 'a + Clone + From<(Scalar, Scalar)> + PartialOrd,
         Scalar: Clone + One,
         for<'b> &'b Point: Orient,

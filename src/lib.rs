@@ -512,7 +512,7 @@ impl PyExactContour {
 
     #[getter]
     fn segments(&self) -> Vec<ExactSegment> {
-        self.0.segments().collect()
+        self.0.segments().cloned().collect()
     }
 
     #[getter]
@@ -823,7 +823,7 @@ impl PyExactMultipolygon {
 
     #[getter]
     fn segments(&self) -> Vec<ExactSegment> {
-        self.0.segments().collect()
+        self.0.segments().cloned().collect()
     }
 
     #[getter]
@@ -1162,7 +1162,7 @@ impl PyExactPolygon {
 
     #[getter]
     fn segments(&self) -> Vec<ExactSegment> {
-        self.0.segments().collect()
+        self.0.segments().cloned().collect()
     }
 
     #[getter]
@@ -1350,12 +1350,12 @@ impl PyExactSegment {
 
     #[getter]
     fn end(&self) -> PyExactPoint {
-        PyExactPoint((&self.0).end())
+        PyExactPoint((&self.0).end().clone())
     }
 
     #[getter]
     fn start(&self) -> PyExactPoint {
-        PyExactPoint((&self.0).start())
+        PyExactPoint((&self.0).start().clone())
     }
 
     #[pyo3(signature = (other, /))]

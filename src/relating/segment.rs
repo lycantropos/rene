@@ -3,19 +3,15 @@ use crate::oriented::Orientation;
 use crate::relatable::Relation;
 use crate::traits::{Contoural, Multisegmental, Segmental};
 
-pub(crate) fn relate_to_contour<
-    'a,
-    Contour,
-    Point: PartialOrd,
-    Segment: Segmental<Endpoint = Point>,
->(
+pub(crate) fn relate_to_contour<'a, Contour, Point: Clone + PartialOrd, Segment>(
     start: &Point,
     end: &Point,
     contour: &'a Contour,
 ) -> Relation
 where
-    &'a Contour: Contoural<Segment = Segment>,
+    for<'b> &'b Contour: Contoural<Segment = &'b Segment>,
     for<'b> &'b Point: Orient,
+    for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
 {
     let mut has_no_cross = true;
     let mut has_no_touch = true;
@@ -55,7 +51,7 @@ where
                     }
                 }
                 last_touched_edge_index = Some(index);
-                last_touched_edge_start = Some(contour_segment_start);
+                last_touched_edge_start = Some(contour_segment_start.clone());
             }
             Relation::Disjoint => {}
             _ => unreachable!(),
@@ -74,11 +70,11 @@ where
             && first_contour_segment_start.ne(end)
             && first_contour_segment_end.ne(start)
             && first_contour_segment_end.ne(end)
-            && start.orient(end, &first_contour_segment_start) == Orientation::Collinear
+            && start.orient(end, first_contour_segment_start) == Orientation::Collinear
             && point_vertex_line_divides_angle(
                 start,
-                &first_contour_segment_start,
-                &first_contour_segment_end,
+                first_contour_segment_start,
+                first_contour_segment_end,
                 unsafe {
                     debug_assert!(last_touched_edge_start.is_some());
                     &last_touched_edge_start.unwrap_unchecked()
