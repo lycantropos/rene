@@ -294,13 +294,13 @@ pub(crate) fn merge_bounds<
         if min_x.gt(&segment_min_x) {
             min_x = segment_min_x;
         }
-        if max_x.gt(&segment_max_x) {
+        if max_x.lt(&segment_max_x) {
             max_x = segment_max_x;
         }
         if min_y.gt(&segment_min_y) {
             min_y = segment_min_y;
         }
-        if max_y.gt(&segment_max_y) {
+        if max_y.lt(&segment_max_y) {
             max_y = segment_max_y;
         }
     }
