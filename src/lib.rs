@@ -1364,6 +1364,10 @@ impl PyExactSegment {
             try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactContour>()?.0))
         } else if other.is_instance_of::<PyExactEmpty>() {
             try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactEmpty>()?.0))
+        } else if other.is_instance_of::<PyExactMultisegment>() {
+            try_relation_to_py_relation(
+                self.0.relate_to(&other.extract::<PyExactMultisegment>()?.0),
+            )
         } else if other.is_instance_of::<PyExactSegment>() {
             try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactSegment>()?.0))
         } else {

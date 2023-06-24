@@ -1,10 +1,15 @@
 from __future__ import annotations
 
-from rene import (Orientation,
+import typing as t
+
+from rene import (Location,
+                  Orientation,
                   Relation,
                   hints)
-from rene._utils import (orient,
+from rene._utils import (locate_point_in_segment,
+                         orient,
                          point_vertex_line_divides_angle,
+                         to_segments_intersection_scale,
                          to_sorted_pair)
 
 
@@ -70,6 +75,136 @@ def relate_to_contour(
     return ((Relation.DISJOINT if has_no_touch else Relation.TOUCH)
             if has_no_cross
             else Relation.CROSS)
+
+
+def relate_to_multisegment(
+        start: hints.Point[hints.Scalar],
+        end: hints.Point[hints.Scalar],
+        multisegment: hints.Multisegment[hints.Scalar]
+) -> Relation:
+    is_segment_superset = has_no_touch = has_no_cross = has_no_overlap = True
+    clockwise_middle_touch_scales: t.List[hints.Scalar] = []
+    counterclockwise_middle_touch_scales: t.List[hints.Scalar] = []
+    components: t.List[
+        t.Tuple[hints.Point[hints.Scalar], hints.Point[hints.Scalar]]
+    ] = []
+    if start > end:
+        start, end = end, start
+    original_start, original_end = start, end
+    for multisegment_segment in multisegment.segments:
+        multisegment_segment_start, multisegment_segment_end = (
+            multisegment_segment.start, multisegment_segment.end
+        )
+        relation = relate_to_segment(original_start, original_end,
+                                     multisegment_segment_start,
+                                     multisegment_segment_end)
+        if relation is Relation.COMPONENT or relation is Relation.EQUAL:
+            return Relation.COMPONENT
+        elif relation is Relation.COMPOSITE:
+            if has_no_overlap:
+                has_no_overlap = False
+            if (start == multisegment_segment_start
+                    or start == multisegment_segment_end):
+                start = max(multisegment_segment_start,
+                            multisegment_segment_end)
+            elif (end == multisegment_segment_start
+                  or end == multisegment_segment_end):
+                end = min(multisegment_segment_start, multisegment_segment_end)
+            else:
+                components.append(to_sorted_pair(multisegment_segment_start,
+                                                 multisegment_segment_end))
+        elif relation is Relation.OVERLAP:
+            if is_segment_superset:
+                is_segment_superset = False
+            if has_no_overlap:
+                has_no_overlap = False
+            start, end = _subtract_segments_overlap(start, end,
+                                                    multisegment_segment_start,
+                                                    multisegment_segment_end)
+        else:
+            if is_segment_superset:
+                is_segment_superset = False
+            if has_no_overlap:
+                if relation is Relation.TOUCH:
+                    if has_no_touch:
+                        has_no_touch = False
+                    if (has_no_cross
+                            and
+                            ((multisegment_segment_start != original_start
+                              != multisegment_segment_end)
+                             and (multisegment_segment_start != original_end
+                                  != multisegment_segment_end))):
+                        intersection_scale = to_segments_intersection_scale(
+                                original_start, original_end,
+                                multisegment_segment_start,
+                                multisegment_segment_end
+                        )
+                        non_touched_endpoint = (
+                            multisegment_segment_start
+                            if locate_point_in_segment(
+                                    original_start, original_end,
+                                    multisegment_segment_end
+                            ) is Location.BOUNDARY
+                            else multisegment_segment_end
+                        )
+                        (
+                            counterclockwise_middle_touch_scales
+                            if (orient(original_start, original_end,
+                                       non_touched_endpoint)
+                                is Orientation.COUNTERCLOCKWISE)
+                            else clockwise_middle_touch_scales
+                        ).append(intersection_scale)
+                elif has_no_cross and relation is Relation.CROSS:
+                    has_no_cross = False
+    if has_no_overlap:
+        if (has_no_cross
+                and clockwise_middle_touch_scales
+                and counterclockwise_middle_touch_scales):
+            less_scales, more_scales = (
+                (clockwise_middle_touch_scales,
+                 counterclockwise_middle_touch_scales)
+                if (len(clockwise_middle_touch_scales)
+                    < len(counterclockwise_middle_touch_scales))
+                else (counterclockwise_middle_touch_scales,
+                      clockwise_middle_touch_scales)
+            )
+            more_scales_set = set(more_scales)
+            if any(scale in more_scales_set for scale in less_scales):
+                has_no_cross = False
+        return (Relation.DISJOINT
+                if has_no_touch and has_no_cross
+                else (Relation.TOUCH
+                      if has_no_cross
+                      else Relation.CROSS))
+    elif components:
+        components_iterator = iter(components)
+        min_component_start, max_component_end = next(components_iterator)
+        components_starts = {min_component_start}
+        for component_start, component_end in components_iterator:
+            components_starts.add(component_start)
+            if min_component_start > component_start:
+                min_component_start = component_start
+            if max_component_end < component_end:
+                max_component_end = component_end
+        return ((Relation.EQUAL
+                 if is_segment_superset
+                 else Relation.COMPONENT)
+                if (min_component_start == start
+                    and max_component_end == end
+                    and all(component_end in components_starts
+                            or component_end == max_component_end
+                            for _, component_end in components))
+                else (Relation.COMPOSITE
+                      if is_segment_superset
+                      else Relation.OVERLAP))
+    else:
+        return ((Relation.EQUAL
+                 if is_segment_superset
+                 else Relation.COMPONENT)
+                if start == end
+                else (Relation.COMPOSITE
+                      if is_segment_superset
+                      else Relation.OVERLAP))
 
 
 def relate_to_segment(
@@ -145,3 +280,18 @@ def relate_to_segment(
             return Relation.OVERLAP
     else:
         return Relation.DISJOINT
+
+
+def _subtract_segments_overlap(
+        minuend_start: hints.Point[hints.Scalar],
+        minuend_end: hints.Point[hints.Scalar],
+        subtrahend_start: hints.Point[hints.Scalar],
+        subtrahend_end: hints.Point[hints.Scalar],
+        /
+) -> t.Tuple[hints.Point[hints.Scalar], hints.Point[hints.Scalar]]:
+    minuend_start, minuend_end = to_sorted_pair(minuend_start, minuend_end)
+    subtrahend_start, subtrahend_end = to_sorted_pair(subtrahend_start,
+                                                      subtrahend_end)
+    return ((subtrahend_end, minuend_end)
+            if subtrahend_start < minuend_start < subtrahend_end
+            else (minuend_start, subtrahend_start))

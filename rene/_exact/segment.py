@@ -34,12 +34,15 @@ class Segment:
         return locate_point_in_segment(self.start, self.end, point)
 
     def relate_to(self, other: hints.Compound[Fraction], /) -> Relation:
-        if isinstance(other, self._context.segment_cls):
+        if isinstance(other, self._context.contour_cls):
+            return segment.relate_to_contour(self.start, self.end, other)
+        elif isinstance(other, self._context.multisegment_cls):
+            return segment.relate_to_multisegment(self.start, self.end, other)
+        elif isinstance(other, self._context.segment_cls):
             return segment.relate_to_segment(self.start, self.end,
                                              other.start, other.end)
-        elif isinstance(other, self._context.contour_cls):
-            return segment.relate_to_contour(self.start, self.end, other)
-        raise TypeError(f'Unsupported type: {type(other)!r}.')
+        else:
+            raise TypeError(f'Unsupported type: {type(other)!r}.')
 
     _context: t.ClassVar[Context[Fraction]]
     _end: hints.Point[Fraction]
