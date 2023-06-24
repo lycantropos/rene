@@ -99,9 +99,19 @@ def _(compound: exact.Multipolygon) -> exact.Multipolygon:
     return reverse_multipolygon_coordinates(compound)
 
 
+@reverse_compound_coordinates.register(exact.Multisegment)
+def _(compound: exact.Multisegment) -> exact.Multisegment:
+    return reverse_multisegment_coordinates(compound)
+
+
 @reverse_compound_coordinates.register(exact.Polygon)
 def _(compound: exact.Polygon) -> exact.Polygon:
     return reverse_polygon_coordinates(compound)
+
+
+@reverse_compound_coordinates.register(exact.Segment)
+def _(compound: exact.Segment) -> exact.Segment:
+    return reverse_segment_coordinates(compound)
 
 
 def reverse_contour(contour: Contour) -> Contour:
