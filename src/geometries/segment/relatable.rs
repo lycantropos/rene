@@ -1,8 +1,10 @@
-use crate::geometries::{Contour, Empty, Point};
-use crate::operations::Orient;
+use crate::geometries::{Contour, Empty, Multisegment, Point};
+use crate::operations::{CrossMultiply, Orient};
 use crate::relatable::{Relatable, Relation};
 use crate::relating::segment;
-use crate::traits::{Contoural, Segmental};
+use crate::traits::{Contoural, Elemental, Multisegmental, Segmental};
+use std::hash::Hash;
+use std::ops::Div;
 
 use super::types::Segment;
 
@@ -37,5 +39,19 @@ where
 {
     fn relate_to(self, other: &'a Contour<Scalar>) -> Relation {
         segment::relate_to_contour(&self.start, &self.end, other)
+    }
+}
+
+impl<'a, Scalar: Div<Output = Scalar> + Eq + Hash + PartialOrd> Relatable<&'a Multisegment<Scalar>>
+    for &'a Segment<Scalar>
+where
+    Self: Segmental<Endpoint = &'a Point<Scalar>>,
+    &'a Multisegment<Scalar>: Multisegmental<Segment = &'a Segment<Scalar>>,
+    Point<Scalar>: Eq + Hash + Ord,
+    for<'b> &'b Point<Scalar>:
+        CrossMultiply<Output = Scalar> + Elemental<Coordinate = &'b Scalar> + Orient,
+{
+    fn relate_to(self, other: &'a Multisegment<Scalar>) -> Relation {
+        segment::relate_to_multisegment(&self.start, &self.end, other)
     }
 }

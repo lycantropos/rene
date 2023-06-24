@@ -162,13 +162,26 @@ where
         second_end: Self,
     ) -> Self::Output {
         let scale =
-            CrossMultiply::cross_multiply(first_start, second_start, second_start, second_end)
-                / CrossMultiply::cross_multiply(first_start, first_end, second_start, second_end);
-        Self::Output::from((
+            to_segments_intersection_scale(first_start, first_end, second_start, second_end);
+        Point::from((
             first_start.x() + (first_end.x() - first_start.x()) * &scale,
             first_start.y() + (first_end.y() - first_start.y()) * scale,
         ))
     }
+}
+
+pub(crate) fn to_segments_intersection_scale<Point, Scalar>(
+    first_start: &Point,
+    first_end: &Point,
+    second_start: &Point,
+    second_end: &Point,
+) -> Scalar
+where
+    for<'a> &'a Point: CrossMultiply<Output = Scalar> + Elemental<Coordinate = &'a Scalar>,
+    Scalar: Div<Output = Scalar>,
+{
+    CrossMultiply::cross_multiply(first_start, second_start, second_start, second_end)
+        / CrossMultiply::cross_multiply(first_start, first_end, second_start, second_end)
 }
 
 pub(crate) fn is_point_in_segment<'a, Point: PartialEq>(
