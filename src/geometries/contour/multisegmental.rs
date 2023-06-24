@@ -15,7 +15,7 @@ impl<'a, Digit, const SHIFT: usize> Multisegmental for &'a Contour<Fraction<BigI
     }
 
     fn segments_count(self) -> usize {
-        self.vertices.len()
+        self.segments.len()
     }
 }
 
@@ -28,6 +28,6 @@ impl<Digit, const SHIFT: usize> Multisegmental for Contour<Fraction<BigInt<Digit
     }
 
     fn segments_count(self) -> usize {
-        self.vertices.len()
+        self.segments.len()
     }
 }
