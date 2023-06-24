@@ -8,4 +8,3 @@ mod events_queue_key;
 mod events_registry;
 mod sweep;
 mod sweep_line_key;
-pub(crate) mod traits;

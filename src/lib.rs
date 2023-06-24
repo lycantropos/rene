@@ -43,6 +43,7 @@ pub mod oriented;
 pub mod relatable;
 mod relating;
 mod seidel;
+mod sweeping;
 pub mod traits;
 mod triangulation;
 

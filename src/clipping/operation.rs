@@ -5,12 +5,12 @@ use std::ops::Bound::{Excluded, Unbounded};
 
 use traiter::numbers::Parity;
 
-use crate::bentley_ottmann::traits::{EventsQueue, SweepLine};
 use crate::clipping::constants::UNDEFINED_INDEX;
 use crate::clipping::event::is_right_event;
 use crate::geometries::{Contour, Multipolygon, Point, Polygon};
 use crate::operations::{shrink_collinear_vertices, IntersectCrossingSegments, Orient};
 use crate::oriented::{Orientation, Oriented};
+use crate::sweeping::traits::{EventsQueue, SweepLine};
 use crate::traits::{
     Contoural, Elemental, Multipolygonal, MultipolygonalPolygon, Multisegmental, Polygonal,
     PolygonalContour, PolygonalVertex, Segmental,
@@ -197,7 +197,7 @@ impl<Point> DetectIfLeftEventFromResult for Operation<Point, UNION> {
 
 impl<Point: Clone + PartialOrd, const KIND: u8> Iterator for Operation<Point, KIND>
 where
-    Self: EventsQueue + DetectIfLeftEventFromResult + SweepLine,
+    Self: EventsQueue<Event = Event> + DetectIfLeftEventFromResult + SweepLine<Event = Event>,
     for<'a> &'a Point: Elemental + IntersectCrossingSegments<Output = Point> + Orient,
     for<'a> <&'a Point as Elemental>::Coordinate: PartialEq,
 {
@@ -726,7 +726,7 @@ fn to_next_event_id(
 
 impl<Point: Clone + PartialOrd, const KIND: u8> Operation<Point, KIND>
 where
-    Self: EventsQueue + SweepLine,
+    Self: EventsQueue<Event = Event> + SweepLine<Event = Event>,
     for<'a> &'a Point: IntersectCrossingSegments<Output = Point> + Orient,
 {
     pub(super) fn detect_intersection(&mut self, below_event: Event, event: Event) -> bool {
@@ -925,15 +925,17 @@ impl<Point: Ord, const KIND: u8> EventsQueue for Operation<Point, KIND>
 where
     for<'a> &'a Point: Orient,
 {
-    fn peek(&mut self) -> Option<Event> {
+    type Event = Event;
+
+    fn peek(&mut self) -> Option<Self::Event> {
         self.events_queue_data.peek().map(|key| key.0.event)
     }
 
-    fn pop(&mut self) -> Option<Event> {
+    fn pop(&mut self) -> Option<Self::Event> {
         self.events_queue_data.pop().map(|key| key.0.event)
     }
 
-    fn push(&mut self, event: Event) {
+    fn push(&mut self, event: Self::Event) {
         self.events_queue_data
             .push(Reverse(self.to_events_queue_key(event)));
     }
@@ -943,31 +945,33 @@ impl<Point, const KIND: u8> SweepLine for Operation<Point, KIND>
 where
     SweepLineKey<Point>: Ord,
 {
-    fn above(&self, event: Event) -> Option<Event> {
+    type Event = Event;
+
+    fn above(&self, event: Self::Event) -> Option<Self::Event> {
         self.sweep_line_data
             .range((Excluded(&self.to_sweep_line_key(event)), Unbounded))
             .next()
             .map(|key| key.event)
     }
 
-    fn below(&self, event: Event) -> Option<Event> {
+    fn below(&self, event: Self::Event) -> Option<Self::Event> {
         self.sweep_line_data
             .range((Unbounded, Excluded(&self.to_sweep_line_key(event))))
             .last()
             .map(|key| key.event)
     }
 
-    fn find(&self, event: Event) -> Option<Event> {
+    fn find(&self, event: Self::Event) -> Option<Self::Event> {
         self.sweep_line_data
             .get(&self.to_sweep_line_key(event))
             .map(|key| key.event)
     }
 
-    fn insert(&mut self, event: Event) -> bool {
+    fn insert(&mut self, event: Self::Event) -> bool {
         self.sweep_line_data.insert(self.to_sweep_line_key(event))
     }
 
-    fn remove(&mut self, event: Event) -> bool {
+    fn remove(&mut self, event: Self::Event) -> bool {
         self.sweep_line_data.remove(&self.to_sweep_line_key(event))
     }
 }

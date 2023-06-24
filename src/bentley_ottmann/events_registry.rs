@@ -5,12 +5,12 @@ use std::ops::Bound::{Excluded, Unbounded};
 
 use crate::operations::{to_sorted_pair, IntersectCrossingSegments, Orient};
 use crate::oriented::Orientation;
+use crate::sweeping::traits::{EventsQueue, SweepLine};
 use crate::traits::{Multisegmental, Segmental};
 
 use super::event::{is_left_event, segment_id_to_left_event, segment_id_to_right_event, Event};
 use super::events_queue_key::EventsQueueKey;
 use super::sweep_line_key::SweepLineKey;
-use super::traits::{EventsQueue, SweepLine};
 
 pub(crate) struct EventsRegistry<Point, const UNIQUE: bool> {
     endpoints: Box<Vec<Point>>,
@@ -23,7 +23,7 @@ pub(crate) struct EventsRegistry<Point, const UNIQUE: bool> {
 
 impl<Point: Clone + PartialOrd, const UNIQUE: bool> Iterator for EventsRegistry<Point, UNIQUE>
 where
-    Self: EventsQueue + SweepLine,
+    Self: EventsQueue<Event = Event> + SweepLine<Event = Event>,
     for<'a> &'a Point: IntersectCrossingSegments<Output = Point> + Orient,
 {
     type Item = Event;
@@ -154,7 +154,7 @@ where
 
 impl<Point: Clone + PartialOrd, const UNIQUE: bool> EventsRegistry<Point, UNIQUE>
 where
-    Self: EventsQueue + SweepLine,
+    Self: EventsQueue<Event = Event> + SweepLine<Event = Event>,
     for<'a> &'a Point: IntersectCrossingSegments<Output = Point> + Orient,
 {
     pub(super) fn detect_intersection(&mut self, below_event: Event, event: Event) {
@@ -365,15 +365,17 @@ impl<Point: Clone, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
 }
 
 impl<Point: Ord, const UNIQUE: bool> EventsQueue for EventsRegistry<Point, UNIQUE> {
-    fn peek(&mut self) -> Option<Event> {
+    type Event = Event;
+
+    fn peek(&mut self) -> Option<Self::Event> {
         self.events_queue_data.peek().map(|key| key.0.event)
     }
 
-    fn pop(&mut self) -> Option<Event> {
+    fn pop(&mut self) -> Option<Self::Event> {
         self.events_queue_data.pop().map(|key| key.0.event)
     }
 
-    fn push(&mut self, event: Event) {
+    fn push(&mut self, event: Self::Event) {
         self.events_queue_data.push(Reverse(EventsQueueKey::new(
             event,
             &self.endpoints,
@@ -386,31 +388,33 @@ impl<Point, const UNIQUE: bool> SweepLine for EventsRegistry<Point, UNIQUE>
 where
     SweepLineKey<Point>: Ord,
 {
-    fn above(&self, event: Event) -> Option<Event> {
+    type Event = Event;
+
+    fn above(&self, event: Self::Event) -> Option<Self::Event> {
         self.sweep_line_data
             .range((Excluded(&self.to_sweep_line_key(event)), Unbounded))
             .next()
             .map(|key| key.event)
     }
 
-    fn below(&self, event: Event) -> Option<Event> {
+    fn below(&self, event: Self::Event) -> Option<Self::Event> {
         self.sweep_line_data
             .range((Unbounded, Excluded(&self.to_sweep_line_key(event))))
             .last()
             .map(|key| key.event)
     }
 
-    fn find(&self, event: Event) -> Option<Event> {
+    fn find(&self, event: Self::Event) -> Option<Self::Event> {
         self.sweep_line_data
             .get(&self.to_sweep_line_key(event))
             .map(|key| key.event)
     }
 
-    fn insert(&mut self, event: Event) -> bool {
+    fn insert(&mut self, event: Self::Event) -> bool {
         self.sweep_line_data.insert(self.to_sweep_line_key(event))
     }
 
-    fn remove(&mut self, event: Event) -> bool {
+    fn remove(&mut self, event: Self::Event) -> bool {
         self.sweep_line_data.remove(&self.to_sweep_line_key(event))
     }
 }
