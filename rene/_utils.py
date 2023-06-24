@@ -115,21 +115,26 @@ def flags_to_true_indices(flags: t.Sequence[bool], /) -> t.List[int]:
     return [index for index, flag in enumerate(flags) if flag]
 
 
-def intersect_crossing_segments(
-        first_start: hints.Point[hints.Scalar],
-        first_end: hints.Point[hints.Scalar],
-        second_start: hints.Point[hints.Scalar],
-        second_end: hints.Point[hints.Scalar],
-        /
-) -> hints.Point[hints.Scalar]:
-    scale = (cross_multiply(first_start, second_start, second_start,
-                            second_end)
-             / cross_multiply(first_start, first_end, second_start,
-                              second_end))
+def to_segments_intersection_point(first_start: hints.Point[hints.Scalar],
+                                   first_end: hints.Point[hints.Scalar],
+                                   second_start: hints.Point[hints.Scalar],
+                                   second_end: hints.Point[hints.Scalar],
+                                   /) -> hints.Point[hints.Scalar]:
+    scale = to_segments_intersection_scale(first_start, first_end,
+                                           second_start, second_end)
     return type(first_start)(
             first_start.x + (first_end.x - first_start.x) * scale,
             first_start.y + (first_end.y - first_start.y) * scale
     )
+
+
+def to_segments_intersection_scale(first_start: hints.Point[hints.Scalar],
+                                   first_end: hints.Point[hints.Scalar],
+                                   second_start: hints.Point[hints.Scalar],
+                                   second_end: hints.Point[hints.Scalar],
+                                   /) -> hints.Scalar:
+    return (cross_multiply(first_start, second_start, second_start, second_end)
+            / cross_multiply(first_start, first_end, second_start, second_end))
 
 
 def is_even(value: int, /) -> bool:

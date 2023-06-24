@@ -11,11 +11,11 @@ from reprit.base import generate_repr
 
 from rene import (Orientation,
                   hints)
-from rene._utils import (intersect_crossing_segments,
-                         is_even,
+from rene._utils import (is_even,
                          is_odd,
                          orient,
-                         shrink_collinear_vertices)
+                         shrink_collinear_vertices,
+                         to_segments_intersection_point)
 from .constants import UNDEFINED_INDEX
 from .event import (UNDEFINED_EVENT,
                     Event,
@@ -342,7 +342,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                              is not Orientation.COLLINEAR)):
                     if (below_event_start_orientation
                             is not below_event_end_orientation):
-                        point = intersect_crossing_segments(
+                        point = to_segments_intersection_point(
                                 event_start, event_end, below_event_start,
                                 below_event_end
                         )

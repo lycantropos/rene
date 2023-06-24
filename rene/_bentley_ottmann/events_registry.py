@@ -9,8 +9,8 @@ from reprit.base import generate_repr
 
 from rene import hints
 from rene._rene import Orientation
-from rene._utils import (intersect_crossing_segments,
-                         orient,
+from rene._utils import (orient,
+                         to_segments_intersection_point,
                          to_sorted_pair)
 from .event import (Event,
                     is_left_event,
@@ -182,7 +182,7 @@ class EventsRegistry(t.Generic[hints.Scalar]):
                              is not Orientation.COLLINEAR)):
                     if (below_event_start_orientation
                             is not below_event_end_orientation):
-                        point = intersect_crossing_segments(
+                        point = to_segments_intersection_point(
                                 event_start, event_end, below_event_start,
                                 below_event_end
                         )
