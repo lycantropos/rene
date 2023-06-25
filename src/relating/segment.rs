@@ -197,7 +197,7 @@ where
                         } else {
                             multisegment_segment_end
                         };
-                        if original_start.orient(original_end, &non_touched_endpoint)
+                        if original_start.orient(original_end, non_touched_endpoint)
                             == Orientation::Counterclockwise
                         {
                             &mut counterclockwise_middle_touch_scales
