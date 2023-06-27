@@ -417,8 +417,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 else:
                     max_start, min_end = event_start, below_event_end
                     self._divide_overlapping_events(below_event, event,
-                                                    max_start,
-                                                    min_end)
+                                                    max_start, min_end)
             elif event_start < below_event_start < event_end:
                 if below_event_end < event_end:
                     self._divide_event_by_mid_segment_event_endpoints(
@@ -427,8 +426,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 else:
                     max_start, min_end = below_event_start, event_end
                     self._divide_overlapping_events(event, below_event,
-                                                    max_start,
-                                                    min_end)
+                                                    max_start, min_end)
         return False
 
     def _divide(
