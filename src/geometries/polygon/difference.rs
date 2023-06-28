@@ -2,10 +2,13 @@ use rithm::big_int::BigInt;
 use rithm::fraction::Fraction;
 
 use crate::bounded::{Bounded, Box};
-use crate::clipping::{Event, Operation, ReduceEvents, DIFFERENCE};
+use crate::clipping::shaped::Operation;
+use crate::clipping::traits::ReduceEvents;
+use crate::clipping::{Event, DIFFERENCE};
 use crate::geometries::{Empty, Point};
 use crate::operations::do_boxes_have_no_common_area;
 use crate::relatable::Relatable;
+use crate::sweeping::traits::EventsContainer;
 use crate::traits::{Difference, Elemental};
 
 use super::types::Polygon;
@@ -50,13 +53,9 @@ where
 
 impl<Digit, const SHIFT: usize> Difference for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    Self: ReduceEvents<
-        Point<Fraction<BigInt<Digit, SHIFT>>>,
-        DIFFERENCE,
-        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-    >,
     Fraction<BigInt<Digit, SHIFT>>: PartialOrd,
     Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, DIFFERENCE>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
         + for<'a> From<(
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
@@ -89,6 +88,6 @@ where
             }
             events.push(event);
         }
-        Self::reduce_events(events, &mut operation)
+        operation.reduce_events(events)
     }
 }

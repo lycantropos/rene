@@ -1,3 +1,11 @@
+pub(crate) trait EventsContainer {
+    type Endpoint;
+    type Event;
+
+    fn get_event_end(&self, event: Self::Event) -> &Self::Endpoint;
+    fn get_event_start(&self, event: Self::Event) -> &Self::Endpoint;
+}
+
 pub(crate) trait EventsQueue {
     type Event;
 

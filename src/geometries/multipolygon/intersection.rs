@@ -2,10 +2,13 @@ use rithm::big_int::BigInt;
 use rithm::fraction::Fraction;
 
 use crate::bounded::{Bounded, Box};
-use crate::clipping::{Event, Operation, ReduceEvents, INTERSECTION};
+use crate::clipping::shaped::Operation;
+use crate::clipping::traits::ReduceEvents;
+use crate::clipping::{Event, INTERSECTION};
 use crate::geometries::{Empty, Point, Polygon};
 use crate::operations::{do_boxes_have_no_common_area, merge_boxes, to_boxes_ids_with_common_area};
 use crate::relatable::Relatable;
+use crate::sweeping::traits::EventsContainer;
 use crate::traits::{Elemental, Intersection};
 
 use super::types::Multipolygon;
@@ -44,13 +47,9 @@ impl<Scalar> Intersection<&Empty> for &Multipolygon<Scalar> {
 
 impl<Digit, const SHIFT: usize> Intersection for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    Self: ReduceEvents<
-        Point<Fraction<BigInt<Digit, SHIFT>>>,
-        INTERSECTION,
-        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-    >,
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
     Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
         + for<'a> From<(
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
@@ -127,20 +126,16 @@ where
             }
             events.push(event);
         }
-        Self::reduce_events(events, &mut operation)
+        operation.reduce_events(events)
     }
 }
 
 impl<Digit, const SHIFT: usize> Intersection<&Polygon<Fraction<BigInt<Digit, SHIFT>>>>
     for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    Self: ReduceEvents<
-        Point<Fraction<BigInt<Digit, SHIFT>>>,
-        INTERSECTION,
-        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-    >,
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
     Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
         + for<'a> From<(
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
@@ -195,20 +190,16 @@ where
             }
             events.push(event);
         }
-        Self::reduce_events(events, &mut operation)
+        operation.reduce_events(events)
     }
 }
 
 impl<Digit, const SHIFT: usize> Intersection<&Multipolygon<Fraction<BigInt<Digit, SHIFT>>>>
     for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    Self: ReduceEvents<
-        Point<Fraction<BigInt<Digit, SHIFT>>>,
-        INTERSECTION,
-        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-    >,
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
     Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
         + for<'a> From<(
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
@@ -262,6 +253,6 @@ where
             }
             events.push(event);
         }
-        Self::reduce_events(events, &mut operation)
+        operation.reduce_events(events)
     }
 }

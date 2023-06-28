@@ -2,7 +2,9 @@ use rithm::big_int::BigInt;
 use rithm::fraction::Fraction;
 
 use crate::bounded::{Bounded, Box};
-use crate::clipping::{Event, Operation, ReduceEvents, UNION};
+use crate::clipping::shaped::Operation;
+use crate::clipping::traits::ReduceEvents;
+use crate::clipping::{Event, UNION};
 use crate::geometries::{Empty, Point, Polygon};
 use crate::operations::{
     do_boxes_have_no_common_continuum, flags_to_false_indices, flags_to_true_indices, merge_boxes,
@@ -53,14 +55,10 @@ where
 
 impl<Digit, const SHIFT: usize> Union for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    Self: ReduceEvents<
-        Point<Fraction<BigInt<Digit, SHIFT>>>,
-        UNION,
-        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-    >,
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
     Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
     Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, UNION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
         + for<'a> From<(
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
@@ -130,7 +128,7 @@ where
         for event in operation.by_ref() {
             events.push(event);
         }
-        let mut result = Self::reduce_events(events, &mut operation);
+        let mut result = operation.reduce_events(events);
         result.reserve(
             (self.polygons.len() - common_continuum_polygons.len())
                 + (other.polygons.len() - other_common_continuum_polygons.len()),
@@ -152,13 +150,9 @@ where
 impl<Digit, const SHIFT: usize> Union<&Polygon<Fraction<BigInt<Digit, SHIFT>>>>
     for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    Self: ReduceEvents<
-        Point<Fraction<BigInt<Digit, SHIFT>>>,
-        UNION,
-        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-    >,
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
     Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, UNION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
         + for<'a> From<(
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
@@ -207,7 +201,7 @@ where
         for event in operation.by_ref() {
             events.push(event);
         }
-        let mut result = Self::reduce_events(events, &mut operation);
+        let mut result = operation.reduce_events(events);
         result.reserve(self.polygons.len() - common_continuum_polygons.len());
         result.extend(
             flags_to_false_indices(&boxes_have_common_continuum)
@@ -221,13 +215,9 @@ where
 impl<Digit, const SHIFT: usize> Union<&Multipolygon<Fraction<BigInt<Digit, SHIFT>>>>
     for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
-    Self: ReduceEvents<
-        Point<Fraction<BigInt<Digit, SHIFT>>>,
-        UNION,
-        Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-    >,
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
     Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, UNION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
         + for<'a> From<(
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
@@ -278,7 +268,7 @@ where
         for event in operation.by_ref() {
             events.push(event);
         }
-        let mut result = Self::reduce_events(events, &mut operation);
+        let mut result = operation.reduce_events(events);
         result.reserve(other.polygons.len() - other_common_continuum_polygons.len());
         result.extend(
             flags_to_false_indices(&other_boxes_have_common_continuum)

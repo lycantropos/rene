@@ -5,17 +5,17 @@ use std::ops::Bound::{Excluded, Unbounded};
 
 use traiter::numbers::Parity;
 
-use crate::clipping::constants::UNDEFINED_INDEX;
-use crate::clipping::event::is_right_event;
 use crate::geometries::{Contour, Multipolygon, Point, Polygon};
 use crate::operations::{shrink_collinear_vertices, IntersectCrossingSegments, Orient};
 use crate::oriented::{Orientation, Oriented};
-use crate::sweeping::traits::{EventsQueue, SweepLine};
+use crate::sweeping::traits::{EventsContainer, EventsQueue, SweepLine};
 use crate::traits::{
     Contoural, Elemental, Multipolygonal, MultipolygonalPolygon, Multisegmental, Polygonal,
-    PolygonalContour, PolygonalVertex, Segmental,
+    PolygonalContour, Segmental,
 };
 
+use super::constants::UNDEFINED_INDEX;
+use super::event::is_right_event;
 use super::event::{
     is_left_event, left_event_to_position, segment_id_to_left_event, segment_id_to_right_event,
     Event, UNDEFINED_EVENT,
@@ -23,6 +23,7 @@ use super::event::{
 use super::events_queue_key::EventsQueueKey;
 use super::operation_kind::{DIFFERENCE, INTERSECTION, SYMMETRIC_DIFFERENCE, UNION};
 use super::sweep_line_key::SweepLineKey;
+use super::traits::ReduceEvents;
 use super::types::OverlapKind;
 
 pub(crate) struct Operation<Point, const KIND: u8> {
@@ -257,28 +258,7 @@ where
     }
 }
 
-pub(crate) trait ReduceEvents<Point, const KIND: u8>: Sized {
-    type Output;
-
-    fn reduce_events(events: Vec<Event>, operation: &mut Operation<Point, KIND>) -> Self::Output;
-}
-
-impl<'a, Scalar, const KIND: u8> ReduceEvents<Point<Scalar>, KIND> for &'a Multipolygon<Scalar>
-where
-    Self: Multipolygonal,
-    MultipolygonalPolygon<Self>: ReduceEvents<Point<Scalar>, KIND, Output = Vec<Polygon<Scalar>>>,
-{
-    type Output = Vec<Polygon<Scalar>>;
-
-    fn reduce_events(
-        events: Vec<usize>,
-        operation: &mut Operation<Point<Scalar>, KIND>,
-    ) -> Self::Output {
-        MultipolygonalPolygon::<Self>::reduce_events(events, operation)
-    }
-}
-
-impl<Scalar, const KIND: u8> ReduceEvents<Point<Scalar>, KIND> for &Polygon<Scalar>
+impl<Scalar, const KIND: u8> ReduceEvents for Operation<Point<Scalar>, KIND>
 where
     for<'a> &'a Polygon<Scalar>: Polygonal<Contour = &'a Contour<Scalar>>,
     for<'a> &'a Contour<Scalar>: Contoural<Vertex = &'a Point<Scalar>>,
@@ -290,30 +270,26 @@ where
 {
     type Output = Vec<Polygon<Scalar>>;
 
-    fn reduce_events(
-        events: Vec<Event>,
-        operation: &mut Operation<Point<Scalar>, KIND>,
-    ) -> Self::Output {
+    fn reduce_events(&self, events: Vec<Event>) -> Self::Output {
         let mut events = events
             .into_iter()
-            .filter(|&event| operation.is_from_result_event(event))
+            .filter(|&event| self.is_from_result_event(event))
             .collect::<Vec<Event>>();
         if events.is_empty() {
             return vec![];
         }
-        events.sort_by_cached_key(|&event| operation.to_events_queue_key(event));
-        let mut events_ids = vec![UNDEFINED_INDEX; operation.events_count()];
+        events.sort_by_cached_key(|&event| self.to_events_queue_key(event));
+        let mut events_ids = vec![UNDEFINED_INDEX; self.events_count()];
         for (event_id, &event) in events.iter().enumerate() {
             events_ids[event] = event_id;
         }
         debug_assert!(events
             .iter()
-            .all(|&event| events_ids[operation.to_opposite_event(event)] != UNDEFINED_INDEX));
+            .all(|&event| events_ids[self.to_opposite_event(event)] != UNDEFINED_INDEX));
         debug_assert!(events
             .iter()
-            .all(|&event| operation.to_start_id(event)
-                < operation.to_unique_visited_endpoints_count()));
-        let connectivity = operation.events_to_connectivity(&events);
+            .all(|&event| self.to_start_id(event) < self.to_unique_visited_endpoints_count()));
+        let connectivity = self.events_to_connectivity(&events);
         let mut are_internal = Vec::<bool>::new();
         let mut depths = Vec::<usize>::new();
         let mut holes = Vec::<Vec<usize>>::new();
@@ -321,15 +297,15 @@ where
         let mut are_events_processed = vec![false; events.len()];
         let mut are_from_in_to_out = vec![false; events.len()];
         let mut contours_ids = vec![UNDEFINED_INDEX; events.len()];
-        let mut contours_vertices = Vec::<Vec<PolygonalVertex<Self>>>::new();
+        let mut contours_vertices = Vec::<Vec<&Point<Scalar>>>::new();
         let mut visited_endpoints_positions =
-            vec![UNDEFINED_INDEX; operation.to_unique_visited_endpoints_count()];
+            vec![UNDEFINED_INDEX; self.to_unique_visited_endpoints_count()];
         for (event_id, &event) in events.iter().enumerate() {
             if are_events_processed[event_id] {
                 continue;
             }
             let contour_id = contours_vertices.len();
-            operation.compute_relations(
+            self.compute_relations(
                 event,
                 contour_id,
                 &mut are_internal,
@@ -340,7 +316,7 @@ where
                 &contours_ids,
                 &events_ids,
             );
-            let contour_events = operation.to_contour_events(
+            let contour_events = self.to_contour_events(
                 event,
                 &events,
                 &events_ids,
@@ -348,7 +324,7 @@ where
                 &are_events_processed,
                 &mut visited_endpoints_positions,
             );
-            operation.process_contour_events(
+            self.process_contour_events(
                 &contour_events,
                 contour_id,
                 &mut are_events_processed,
@@ -356,7 +332,7 @@ where
                 &mut contours_ids,
                 &events_ids,
             );
-            let mut vertices = operation.contour_events_to_vertices(&contour_events);
+            let mut vertices = self.contour_events_to_vertices(&contour_events);
             if depths[contour_id].is_odd() {
                 vertices[1..].reverse();
             }
@@ -393,15 +369,20 @@ where
     }
 }
 
-impl<Point, const KIND: u8> Operation<Point, KIND> {
-    pub(crate) fn get_event_end(&self, event: Event) -> &Point {
+impl<Point, const KIND: u8> EventsContainer for Operation<Point, KIND> {
+    type Endpoint = Point;
+    type Event = Event;
+
+    fn get_event_end(&self, event: Self::Event) -> &Self::Endpoint {
         &self.endpoints[self.to_opposite_event(event)]
     }
 
-    pub(crate) fn get_event_start(&self, event: Event) -> &Point {
+    fn get_event_start(&self, event: Self::Event) -> &Self::Endpoint {
         &self.endpoints[event]
     }
+}
 
+impl<Point, const KIND: u8> Operation<Point, KIND> {
     fn compute_left_event_fields(&mut self, event: Event, maybe_below_event: Option<Event>)
     where
         Self: DetectIfLeftEventFromResult,
@@ -729,7 +710,7 @@ where
     Self: EventsQueue<Event = Event> + SweepLine<Event = Event>,
     for<'a> &'a Point: IntersectCrossingSegments<Output = Point> + Orient,
 {
-    pub(super) fn detect_intersection(&mut self, below_event: Event, event: Event) -> bool {
+    fn detect_intersection(&mut self, below_event: Event, event: Event) -> bool {
         debug_assert_ne!(below_event, event);
 
         let event_start = self.get_event_start(event);
@@ -891,7 +872,7 @@ where
 }
 
 impl<Point: Clone, const KIND: u8> Operation<Point, KIND> {
-    pub(super) fn divide(&mut self, event: Event, mid_point: Point) -> (Event, Event) {
+    fn divide(&mut self, event: Event, mid_point: Point) -> (Event, Event) {
         debug_assert!(is_left_event(event));
         let opposite_event = self.to_opposite_event(event);
         let mid_point_to_event_end_event: Event = self.endpoints.len();
