@@ -6,7 +6,7 @@ use crate::clipping::{Event, Operation, ReduceEvents, DIFFERENCE};
 use crate::geometries::{Empty, Point, Polygon};
 use crate::operations::{
     do_boxes_have_no_common_area, flags_to_false_indices, flags_to_true_indices, merge_boxes,
-    to_boxes_have_common_area_with_box, to_boxes_ids_with_common_area_with_box,
+    to_boxes_have_common_area, to_boxes_ids_with_common_area,
 };
 use crate::relatable::Relatable;
 use crate::traits::{Difference, Elemental};
@@ -91,13 +91,13 @@ where
             return self.polygons.clone();
         }
         let boxes_have_common_area =
-            to_boxes_have_common_area_with_box(&bounding_boxes, &other_bounding_box);
+            to_boxes_have_common_area(&bounding_boxes, &other_bounding_box);
         let common_area_polygons_ids = flags_to_true_indices(&boxes_have_common_area);
         if common_area_polygons_ids.is_empty() {
             return self.polygons.clone();
         }
         let other_common_area_polygons_ids =
-            to_boxes_ids_with_common_area_with_box(&other_bounding_boxes, &bounding_box);
+            to_boxes_ids_with_common_area(&other_bounding_boxes, &bounding_box);
         if other_common_area_polygons_ids.is_empty() {
             return self.polygons.clone();
         }
@@ -178,7 +178,7 @@ where
             return self.polygons.clone();
         }
         let boxes_have_common_area =
-            to_boxes_have_common_area_with_box(&bounding_boxes, &other_bounding_box);
+            to_boxes_have_common_area(&bounding_boxes, &other_bounding_box);
         let common_area_polygons_ids = flags_to_true_indices(&boxes_have_common_area);
         if common_area_polygons_ids.is_empty() {
             return self.polygons.clone();
@@ -253,7 +253,7 @@ where
             return vec![self.clone()];
         }
         let other_common_area_polygons_ids =
-            to_boxes_ids_with_common_area_with_box(&other_bounding_boxes, &other_bounding_box);
+            to_boxes_ids_with_common_area(&other_bounding_boxes, &other_bounding_box);
         if other_common_area_polygons_ids.is_empty() {
             return vec![self.clone()];
         }

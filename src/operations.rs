@@ -437,7 +437,7 @@ where
     result
 }
 
-pub(crate) fn to_boxes_have_common_area_with_box<Scalar>(
+pub(crate) fn to_boxes_have_common_area<Scalar>(
     boxes: &[bounded::Box<Scalar>],
     target_box: &bounded::Box<Scalar>,
 ) -> Vec<bool>
@@ -450,7 +450,7 @@ where
         .collect::<Vec<_>>()
 }
 
-pub(crate) fn to_boxes_have_common_continuum_with_box<Scalar: PartialEq>(
+pub(crate) fn to_boxes_have_common_continuum<Scalar: PartialEq>(
     boxes: &[bounded::Box<Scalar>],
     target_box: &bounded::Box<Scalar>,
 ) -> Vec<bool>
@@ -467,7 +467,7 @@ pub(crate) fn to_arg_min<Value: Ord>(values: &[Value]) -> Option<usize> {
     (0..values.len()).min_by_key(|index| &values[*index])
 }
 
-pub(crate) fn to_boxes_ids_with_common_area_with_box<Scalar>(
+pub(crate) fn to_boxes_ids_with_common_area<Scalar>(
     boxes: &[bounded::Box<Scalar>],
     target_box: &bounded::Box<Scalar>,
 ) -> Vec<usize>

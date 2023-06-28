@@ -6,7 +6,7 @@ use crate::clipping::{Event, Operation, ReduceEvents, UNION};
 use crate::geometries::{Empty, Point, Polygon};
 use crate::operations::{
     do_boxes_have_no_common_continuum, flags_to_false_indices, flags_to_true_indices, merge_boxes,
-    to_boxes_have_common_continuum_with_box,
+    to_boxes_have_common_continuum,
 };
 use crate::relatable::Relatable;
 use crate::traits::{Elemental, Union};
@@ -94,7 +94,7 @@ where
             return result;
         }
         let boxes_have_common_continuum =
-            to_boxes_have_common_continuum_with_box(&bounding_boxes, &other_bounding_box);
+            to_boxes_have_common_continuum(&bounding_boxes, &other_bounding_box);
         let common_continuum_polygons_ids = flags_to_true_indices(&boxes_have_common_continuum);
         if common_continuum_polygons_ids.is_empty() {
             let mut result = self.polygons.clone();
@@ -102,7 +102,7 @@ where
             return result;
         }
         let other_boxes_have_common_continuum =
-            to_boxes_have_common_continuum_with_box(&other_bounding_boxes, &bounding_box);
+            to_boxes_have_common_continuum(&other_bounding_boxes, &bounding_box);
         let other_common_continuum_polygons_ids =
             flags_to_true_indices(&other_boxes_have_common_continuum);
         if other_common_continuum_polygons_ids.is_empty() {
@@ -187,7 +187,7 @@ where
             return result;
         }
         let boxes_have_common_continuum =
-            to_boxes_have_common_continuum_with_box(&bounding_boxes, &other_bounding_box);
+            to_boxes_have_common_continuum(&bounding_boxes, &other_bounding_box);
         let common_continuum_polygons_ids = flags_to_true_indices(&boxes_have_common_continuum);
         if common_continuum_polygons_ids.is_empty() {
             let mut result = self.polygons.clone();
@@ -256,7 +256,7 @@ where
             return result;
         }
         let other_boxes_have_common_continuum =
-            to_boxes_have_common_continuum_with_box(&other_bounding_boxes, &other_bounding_box);
+            to_boxes_have_common_continuum(&other_bounding_boxes, &other_bounding_box);
         let other_common_continuum_polygons_ids =
             flags_to_true_indices(&other_boxes_have_common_continuum);
         if other_common_continuum_polygons_ids.is_empty() {

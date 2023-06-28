@@ -4,9 +4,7 @@ use rithm::fraction::Fraction;
 use crate::bounded::{Bounded, Box};
 use crate::clipping::{Event, Operation, ReduceEvents, INTERSECTION};
 use crate::geometries::{Empty, Point, Polygon};
-use crate::operations::{
-    do_boxes_have_no_common_area, merge_boxes, to_boxes_ids_with_common_area_with_box,
-};
+use crate::operations::{do_boxes_have_no_common_area, merge_boxes, to_boxes_ids_with_common_area};
 use crate::relatable::Relatable;
 use crate::traits::{Elemental, Intersection};
 
@@ -83,12 +81,12 @@ where
             return vec![];
         }
         let common_area_polygons_ids =
-            to_boxes_ids_with_common_area_with_box(&bounding_boxes, &other_bounding_box);
+            to_boxes_ids_with_common_area(&bounding_boxes, &other_bounding_box);
         if common_area_polygons_ids.is_empty() {
             return vec![];
         }
         let other_common_area_polygons_ids =
-            to_boxes_ids_with_common_area_with_box(&other_bounding_boxes, &bounding_box);
+            to_boxes_ids_with_common_area(&other_bounding_boxes, &bounding_box);
         if other_common_area_polygons_ids.is_empty() {
             return vec![];
         }
@@ -168,7 +166,7 @@ where
             return vec![];
         }
         let common_area_polygons_ids =
-            to_boxes_ids_with_common_area_with_box(&bounding_boxes, &other_bounding_box);
+            to_boxes_ids_with_common_area(&bounding_boxes, &other_bounding_box);
         if common_area_polygons_ids.is_empty() {
             return vec![];
         }
@@ -236,7 +234,7 @@ where
             return vec![];
         }
         let other_common_area_polygons_ids =
-            to_boxes_ids_with_common_area_with_box(&other_bounding_boxes, &bounding_box);
+            to_boxes_ids_with_common_area(&other_bounding_boxes, &bounding_box);
         if other_common_area_polygons_ids.is_empty() {
             return vec![];
         }
