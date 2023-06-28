@@ -90,10 +90,10 @@ where
         result
             .are_from_first_operand
             .append(&mut vec![false; second_segments_count]);
-        for element in first {
+        for &element in first {
             result.extend(element.segments().cloned());
         }
-        for element in second {
+        for &element in second {
             result.extend(element.segments().cloned());
         }
         let first_event = unsafe { result.peek().unwrap_unchecked() };
