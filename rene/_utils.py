@@ -283,7 +283,7 @@ def to_boxes_ids_with_common_area(
             if do_boxes_have_common_area(box, target_box)]
 
 
-def to_boxes_ids_with_continuous_common_points(
+def to_boxes_ids_with_common_continuum(
         boxes: t.Iterable[hints.Box[hints.Scalar]],
         target_box: hints.Box[hints.Scalar],
         /
