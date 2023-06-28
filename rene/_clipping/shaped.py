@@ -4,6 +4,7 @@ import typing as t
 from abc import (ABC,
                  abstractmethod)
 
+import typing_extensions as te
 from dendroid import red_black
 from dendroid.hints import KeyedSet
 from prioq.base import PriorityQueue
@@ -34,7 +35,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
             first: t.Iterable[hints.Segment[hints.Scalar]],
             second: t.Iterable[hints.Segment[hints.Scalar]],
             /
-    ) -> Operation[hints.Scalar]:
+    ) -> te.Self:
         endpoints: t.List[hints.Point[hints.Scalar]] = []
         have_interior_to_left: t.List[bool] = []
         _populate_with_segments(first, endpoints, have_interior_to_left)
