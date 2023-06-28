@@ -102,7 +102,7 @@ where
     first.disjoint_with(second)
         || (first.touches(second)
             && (first.get_min_y() == second.get_max_y() || second.get_min_y() == first.get_max_y())
-            && (first.get_min_x() != second.get_max_x() || second.get_min_x() == first.get_max_x()))
+            && (first.get_min_x() == second.get_max_x() || second.get_min_x() == first.get_max_x()))
 }
 
 pub(crate) fn flags_to_false_indices(flags: &[bool]) -> Vec<usize> {
