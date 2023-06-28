@@ -479,6 +479,18 @@ where
         .collect::<Vec<_>>()
 }
 
+pub(crate) fn to_boxes_ids_with_common_continuum<Scalar: PartialEq>(
+    boxes: &[bounded::Box<Scalar>],
+    target_box: &bounded::Box<Scalar>,
+) -> Vec<usize>
+where
+    for<'a> &'a bounded::Box<Scalar>: Relatable,
+{
+    (0..boxes.len())
+        .filter(|&index| do_boxes_have_common_continuum(&boxes[index], target_box))
+        .collect::<Vec<_>>()
+}
+
 #[inline]
 pub(crate) fn to_sorted_pair<Value: PartialOrd>((left, right): (Value, Value)) -> (Value, Value) {
     if left < right {

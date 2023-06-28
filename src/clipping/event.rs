@@ -7,7 +7,7 @@ pub(super) fn is_left_event(event: Event) -> bool {
     event.is_even()
 }
 
-pub(super) fn is_right_event(event: Event) -> bool {
+pub(crate) fn is_right_event(event: Event) -> bool {
     event.is_odd()
 }
 
