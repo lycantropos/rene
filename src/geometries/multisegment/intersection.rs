@@ -51,7 +51,7 @@ impl<Scalar> Intersection<&Empty> for &Multisegment<Scalar> {
 impl<Digit, const SHIFT: usize> Intersection
     for &Multisegment<Fraction<BigInt<Digit, SHIFT>>>
 where
-    Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
+    Fraction<BigInt<Digit, SHIFT>>: Ord,
     Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>:
         Iterator<Item = Event>
             + ReduceEvents<Output = Vec<Segment<Fraction<BigInt<Digit, SHIFT>>>>>
@@ -59,11 +59,8 @@ where
                 &'a [&'a Segment<Fraction<BigInt<Digit, SHIFT>>>],
                 &'a [&'a Segment<Fraction<BigInt<Digit, SHIFT>>>],
             )>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>:
-        Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Point<Fraction<BigInt<Digit, SHIFT>>>: Clone,
     for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> &'a Multisegment<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
     for<'a> &'a Segment<Fraction<BigInt<Digit, SHIFT>>>:
         Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
 {
