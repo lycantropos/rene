@@ -170,18 +170,25 @@ where
     }
 }
 
-pub(crate) fn to_segments_intersection_scale<Point, Scalar>(
-    first_start: &Point,
-    first_end: &Point,
-    second_start: &Point,
-    second_end: &Point,
-) -> Scalar
+pub(crate) fn intersect_segments_with_common_continuum_bounding_boxes<'a, Point>(
+    start: &'a Point,
+    end: &'a Point,
+    other_start: &'a Point,
+    other_end: &'a Point,
+) -> Option<(&'a Point, &'a Point)>
 where
-    for<'a> &'a Point: CrossMultiply<Output = Scalar> + Elemental<Coordinate = &'a Scalar>,
-    Scalar: Div<Output = Scalar>,
+    &'a Point: Orient,
+    Point: Ord,
 {
-    CrossMultiply::cross_multiply(first_start, second_start, second_start, second_end)
-        / CrossMultiply::cross_multiply(first_start, first_end, second_start, second_end)
+    if { start == other_start || end.orient(start, other_start) == Orientation::Collinear } && {
+        end == other_end || end.orient(start, other_end) == Orientation::Collinear
+    } {
+        let (start, end) = to_sorted_pair((start, end));
+        let (other_start, other_end) = to_sorted_pair((other_start, other_end));
+        Some((start.max(other_start), end.min(other_end)))
+    } else {
+        None
+    }
 }
 
 pub(crate) fn is_point_in_segment<'a, Point: PartialEq>(
@@ -415,6 +422,25 @@ where
     vertex.orient(first_ray_point, point) == vertex.orient(point, second_ray_point)
 }
 
+pub(crate) fn segmental_to_bounds<Segment: Segmental>(
+    segment: Segment,
+) -> (
+    SegmentalCoordinate<Segment>,
+    SegmentalCoordinate<Segment>,
+    SegmentalCoordinate<Segment>,
+    SegmentalCoordinate<Segment>,
+)
+where
+    SegmentalCoordinate<Segment>: PartialOrd,
+{
+    let (start, end) = segment.endpoints();
+    let (start_x, start_y) = start.coordinates();
+    let (end_x, end_y) = end.coordinates();
+    let (min_x, max_x) = to_sorted_pair((start_x, end_x));
+    let (min_y, max_y) = to_sorted_pair((start_y, end_y));
+    (min_x, max_x, min_y, max_y)
+}
+
 pub(crate) fn shrink_collinear_vertices<'a, Point>(vertices: &[&'a Point]) -> Vec<&'a Point>
 where
     for<'b> &'b Point: Orient,
@@ -491,6 +517,20 @@ where
         .collect::<Vec<_>>()
 }
 
+pub(crate) fn to_segments_intersection_scale<Point, Scalar>(
+    first_start: &Point,
+    first_end: &Point,
+    second_start: &Point,
+    second_end: &Point,
+) -> Scalar
+where
+    for<'a> &'a Point: CrossMultiply<Output = Scalar> + Elemental<Coordinate = &'a Scalar>,
+    Scalar: Div<Output = Scalar>,
+{
+    CrossMultiply::cross_multiply(first_start, second_start, second_start, second_end)
+        / CrossMultiply::cross_multiply(first_start, first_end, second_start, second_end)
+}
+
 #[inline]
 pub(crate) fn to_sorted_pair<Value: PartialOrd>((left, right): (Value, Value)) -> (Value, Value) {
     if left < right {
@@ -498,23 +538,4 @@ pub(crate) fn to_sorted_pair<Value: PartialOrd>((left, right): (Value, Value)) -
     } else {
         (right, left)
     }
-}
-
-pub(crate) fn segmental_to_bounds<Segment: Segmental>(
-    segment: Segment,
-) -> (
-    SegmentalCoordinate<Segment>,
-    SegmentalCoordinate<Segment>,
-    SegmentalCoordinate<Segment>,
-    SegmentalCoordinate<Segment>,
-)
-where
-    SegmentalCoordinate<Segment>: PartialOrd,
-{
-    let (start, end) = segment.endpoints();
-    let (start_x, start_y) = start.coordinates();
-    let (end_x, end_y) = end.coordinates();
-    let (min_x, max_x) = to_sorted_pair((start_x, end_x));
-    let (min_y, max_y) = to_sorted_pair((start_y, end_y));
-    (min_x, max_x, min_y, max_y)
 }
