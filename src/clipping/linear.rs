@@ -54,7 +54,7 @@ where
     type Item = Event;
 
     fn next(&mut self) -> Option<Self::Item> {
-        while let Some(event) = self.pop() {
+        if let Some(event) = self.pop() {
             if is_right_event(event) {
                 let opposite_event = self.to_opposite_event(event);
                 debug_assert!(is_left_event(opposite_event));
