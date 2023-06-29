@@ -4,8 +4,9 @@ use rithm::fraction::Fraction;
 use crate::bounded::{Bounded, Box};
 use crate::geometries::{Empty, Point};
 use crate::operations::{
-    do_boxes_have_no_common_continuum, intersect_segments_with_common_continuum_bounding_boxes,
-    to_sorted_pair, Orient,
+    do_boxes_have_no_common_continuum,
+    intersect_segments_with_common_continuum_bounding_boxes, to_sorted_pair,
+    Orient,
 };
 use crate::oriented::Orientation;
 use crate::relatable::Relatable;
@@ -45,7 +46,8 @@ impl<Scalar> Intersection<&Empty> for &Segment<Scalar> {
     }
 }
 
-impl<Digit, const SHIFT: usize> Intersection for &Segment<Fraction<BigInt<Digit, SHIFT>>>
+impl<Digit, const SHIFT: usize> Intersection
+    for &Segment<Fraction<BigInt<Digit, SHIFT>>>
 where
     Fraction<BigInt<Digit, SHIFT>>: PartialEq,
     Point<Fraction<BigInt<Digit, SHIFT>>>: Clone + Ord,
@@ -57,7 +59,10 @@ where
     type Output = Option<Segment<Fraction<BigInt<Digit, SHIFT>>>>;
 
     fn intersection(self, other: Self) -> Self::Output {
-        if do_boxes_have_no_common_continuum(&self.to_bounding_box(), &other.to_bounding_box()) {
+        if do_boxes_have_no_common_continuum(
+            &self.to_bounding_box(),
+            &other.to_bounding_box(),
+        ) {
             None
         } else {
             let (start, end) = self.endpoints();

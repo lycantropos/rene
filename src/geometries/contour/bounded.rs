@@ -11,8 +11,9 @@ where
     &'a Point<Scalar>: Elemental<Coordinate = &'a Scalar>,
 {
     fn to_bounding_box(self) -> bounded::Box<&'a Scalar> {
-        let (min_x, max_x, min_y, max_y) =
-            coordinates_iterator_to_bounds(self.vertices.iter().map(Elemental::coordinates));
+        let (min_x, max_x, min_y, max_y) = coordinates_iterator_to_bounds(
+            self.vertices.iter().map(Elemental::coordinates),
+        );
         bounded::Box::new(min_x, max_x, min_y, max_y)
     }
 
@@ -62,8 +63,9 @@ where
     Point<Scalar>: Elemental<Coordinate = Scalar>,
 {
     fn to_bounding_box(self) -> bounded::Box<Scalar> {
-        let (min_x, max_x, min_y, max_y) =
-            coordinates_iterator_to_bounds(self.vertices.into_iter().map(Elemental::coordinates));
+        let (min_x, max_x, min_y, max_y) = coordinates_iterator_to_bounds(
+            self.vertices.into_iter().map(Elemental::coordinates),
+        );
         bounded::Box::new(min_x, max_x, min_y, max_y)
     }
 

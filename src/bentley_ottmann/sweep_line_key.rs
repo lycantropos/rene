@@ -13,7 +13,11 @@ pub(super) struct SweepLineKey<Point> {
 }
 
 impl<Point> SweepLineKey<Point> {
-    pub(super) fn new(event: Event, endpoints: &Vec<Point>, opposites: &Vec<Event>) -> Self {
+    pub(super) fn new(
+        event: Event,
+        endpoints: &Vec<Point>,
+        opposites: &Vec<Event>,
+    ) -> Self {
         Self {
             event,
             endpoints,
@@ -100,9 +104,14 @@ where
     let other_end_orientation = first_start.orient(first_end, second_end);
     if other_start_orientation == other_end_orientation {
         match other_start_orientation {
-            Orientation::Collinear => match first_start.y().cmp(second_start.y()) {
-                Ordering::Equal => match first_start.x().cmp(second_start.x()) {
-                    Ordering::Equal => match first_end.y().cmp(second_end.y()) {
+            Orientation::Collinear => match first_start
+                .y()
+                .cmp(second_start.y())
+            {
+                Ordering::Equal => match first_start.x().cmp(second_start.x())
+                {
+                    Ordering::Equal => match first_end.y().cmp(second_end.y())
+                    {
                         Ordering::Equal => first_end.x().cmp(second_end.x()),
                         value => value,
                     },

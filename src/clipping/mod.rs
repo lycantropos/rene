@@ -1,5 +1,7 @@
 pub(crate) use self::event::{is_right_event, Event};
-pub(crate) use self::operation_kind::{DIFFERENCE, INTERSECTION, SYMMETRIC_DIFFERENCE, UNION};
+pub(crate) use self::operation_kind::{
+    DIFFERENCE, INTERSECTION, SYMMETRIC_DIFFERENCE, UNION,
+};
 
 mod constants;
 mod event;

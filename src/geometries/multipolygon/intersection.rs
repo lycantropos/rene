@@ -6,7 +6,9 @@ use crate::clipping::shaped::Operation;
 use crate::clipping::traits::ReduceEvents;
 use crate::clipping::{Event, INTERSECTION};
 use crate::geometries::{Empty, Point, Polygon};
-use crate::operations::{do_boxes_have_no_common_area, merge_boxes, to_boxes_ids_with_common_area};
+use crate::operations::{
+    do_boxes_have_no_common_area, merge_boxes, to_boxes_ids_with_common_area,
+};
 use crate::relatable::Relatable;
 use crate::sweeping::traits::EventsContainer;
 use crate::traits::{Elemental, Intersection};
@@ -45,16 +47,19 @@ impl<Scalar> Intersection<&Empty> for &Multipolygon<Scalar> {
     }
 }
 
-impl<Digit, const SHIFT: usize> Intersection for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<Digit, const SHIFT: usize> Intersection
+    for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>: Iterator<Item = Event>
-        + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
-        + for<'a> From<(
-            &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
-            &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
-        )>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>:
+        Iterator<Item = Event>
+            + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
+            + for<'a> From<(
+                &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
+                &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
+            )>,
+    Point<Fraction<BigInt<Digit, SHIFT>>>:
+        Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
     for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>:
         Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
@@ -79,13 +84,17 @@ where
         if do_boxes_have_no_common_area(&bounding_box, &other_bounding_box) {
             return vec![];
         }
-        let common_area_polygons_ids =
-            to_boxes_ids_with_common_area(&bounding_boxes, &other_bounding_box);
+        let common_area_polygons_ids = to_boxes_ids_with_common_area(
+            &bounding_boxes,
+            &other_bounding_box,
+        );
         if common_area_polygons_ids.is_empty() {
             return vec![];
         }
-        let other_common_area_polygons_ids =
-            to_boxes_ids_with_common_area(&other_bounding_boxes, &bounding_box);
+        let other_common_area_polygons_ids = to_boxes_ids_with_common_area(
+            &other_bounding_boxes,
+            &bounding_box,
+        );
         if other_common_area_polygons_ids.is_empty() {
             return vec![];
         }
@@ -118,7 +127,9 @@ where
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
             debug_assert!(maybe_events_count.is_some());
-            Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
+            Vec::with_capacity(unsafe {
+                maybe_events_count.unwrap_unchecked()
+            })
         };
         while let Some(event) = operation.next() {
             if operation.get_event_start(event).x().gt(min_max_x) {
@@ -130,17 +141,20 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize> Intersection<&Polygon<Fraction<BigInt<Digit, SHIFT>>>>
+impl<Digit, const SHIFT: usize>
+    Intersection<&Polygon<Fraction<BigInt<Digit, SHIFT>>>>
     for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>: Iterator<Item = Event>
-        + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
-        + for<'a> From<(
-            &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
-            &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-        )>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>:
+        Iterator<Item = Event>
+            + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
+            + for<'a> From<(
+                &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
+                &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
+            )>,
+    Point<Fraction<BigInt<Digit, SHIFT>>>:
+        Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
     for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>:
         Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
@@ -149,7 +163,10 @@ where
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
-    fn intersection(self, other: &Polygon<Fraction<BigInt<Digit, SHIFT>>>) -> Self::Output {
+    fn intersection(
+        self,
+        other: &Polygon<Fraction<BigInt<Digit, SHIFT>>>,
+    ) -> Self::Output {
         let bounding_boxes = self
             .polygons
             .iter()
@@ -160,8 +177,10 @@ where
         if do_boxes_have_no_common_area(&bounding_box, &other_bounding_box) {
             return vec![];
         }
-        let common_area_polygons_ids =
-            to_boxes_ids_with_common_area(&bounding_boxes, &other_bounding_box);
+        let common_area_polygons_ids = to_boxes_ids_with_common_area(
+            &bounding_boxes,
+            &other_bounding_box,
+        );
         if common_area_polygons_ids.is_empty() {
             return vec![];
         }
@@ -177,12 +196,16 @@ where
             .into_iter()
             .map(|index| &self.polygons[index])
             .collect::<Vec<_>>();
-        let mut operation =
-            Operation::<Point<_>, INTERSECTION>::from((&common_area_polygons, other));
+        let mut operation = Operation::<Point<_>, INTERSECTION>::from((
+            &common_area_polygons,
+            other,
+        ));
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
             debug_assert!(maybe_events_count.is_some());
-            Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
+            Vec::with_capacity(unsafe {
+                maybe_events_count.unwrap_unchecked()
+            })
         };
         while let Some(event) = operation.next() {
             if operation.get_event_start(event).x().gt(min_max_x) {
@@ -194,17 +217,20 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize> Intersection<&Multipolygon<Fraction<BigInt<Digit, SHIFT>>>>
+impl<Digit, const SHIFT: usize>
+    Intersection<&Multipolygon<Fraction<BigInt<Digit, SHIFT>>>>
     for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>: Iterator<Item = Event>
-        + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
-        + for<'a> From<(
-            &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-            &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
-        )>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>:
+        Iterator<Item = Event>
+            + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
+            + for<'a> From<(
+                &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
+                &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
+            )>,
+    Point<Fraction<BigInt<Digit, SHIFT>>>:
+        Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
     for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>:
         Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
@@ -213,7 +239,10 @@ where
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
-    fn intersection(self, other: &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>) -> Self::Output {
+    fn intersection(
+        self,
+        other: &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>,
+    ) -> Self::Output {
         let bounding_box = self.to_bounding_box();
         let other_bounding_boxes = other
             .polygons
@@ -224,8 +253,10 @@ where
         if do_boxes_have_no_common_area(&bounding_box, &other_bounding_box) {
             return vec![];
         }
-        let other_common_area_polygons_ids =
-            to_boxes_ids_with_common_area(&other_bounding_boxes, &bounding_box);
+        let other_common_area_polygons_ids = to_boxes_ids_with_common_area(
+            &other_bounding_boxes,
+            &bounding_box,
+        );
         if other_common_area_polygons_ids.is_empty() {
             return vec![];
         }
@@ -240,12 +271,16 @@ where
             .into_iter()
             .map(|index| &other.polygons[index])
             .collect::<Vec<_>>();
-        let mut operation =
-            Operation::<Point<_>, INTERSECTION>::from((self, &other_common_area_polygons));
+        let mut operation = Operation::<Point<_>, INTERSECTION>::from((
+            self,
+            &other_common_area_polygons,
+        ));
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
             debug_assert!(maybe_events_count.is_some());
-            Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
+            Vec::with_capacity(unsafe {
+                maybe_events_count.unwrap_unchecked()
+            })
         };
         while let Some(event) = operation.next() {
             if operation.get_event_start(event).x().gt(min_max_x) {

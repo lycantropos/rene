@@ -1,11 +1,15 @@
 use traiter::numbers::{DivRem, Parity};
 
 use crate::locatable::Location;
-use crate::operations::{ceil_log2, LocatePointInPointPointPointCircle, Orient};
+use crate::operations::{
+    ceil_log2, LocatePointInPointPointPointCircle, Orient,
+};
 use crate::oriented::Orientation;
 
 use super::operations::DelaunayTriangulatable;
-use super::quad_edge::{to_opposite_edge, to_rotated_edge, QuadEdge, UNDEFINED_QUAD_EDGE};
+use super::quad_edge::{
+    to_opposite_edge, to_rotated_edge, QuadEdge, UNDEFINED_QUAD_EDGE,
+};
 
 #[derive(Clone)]
 pub(super) struct Mesh<Endpoint> {
@@ -48,7 +52,9 @@ impl<Endpoint> Mesh<Endpoint> {
             .filter(move |edge| !self.is_deleted_edge(*edge))
     }
 
-    pub(super) fn iter_unique_edges(&self) -> impl Iterator<Item = usize> + '_ {
+    pub(super) fn iter_unique_edges(
+        &self,
+    ) -> impl Iterator<Item = usize> + '_ {
         (0..self.left_from_start.len())
             .step_by(4)
             .filter(move |edge| !self.is_deleted_edge(*edge))
@@ -70,7 +76,9 @@ impl<Endpoint> Mesh<Endpoint> {
     }
 
     pub(super) fn to_left_from_end(&self, edge: QuadEdge) -> QuadEdge {
-        to_rotated_edge(self.to_left_from_start(to_opposite_edge(to_rotated_edge(edge))))
+        to_rotated_edge(
+            self.to_left_from_start(to_opposite_edge(to_rotated_edge(edge))),
+        )
     }
 
     pub(super) fn to_right_from_end(&self, edge: QuadEdge) -> QuadEdge {
@@ -107,14 +115,25 @@ impl<Endpoint> Mesh<Endpoint> {
 }
 
 impl<Endpoint> Mesh<Endpoint> {
-    pub(super) fn connect_edges(&mut self, first: QuadEdge, second: QuadEdge) -> QuadEdge {
-        let result = self.create_edge(self.to_end_index(first), self.to_start_index(second));
+    pub(super) fn connect_edges(
+        &mut self,
+        first: QuadEdge,
+        second: QuadEdge,
+    ) -> QuadEdge {
+        let result = self.create_edge(
+            self.to_end_index(first),
+            self.to_start_index(second),
+        );
         self.splice_edges(result, self.to_left_from_end(first));
         self.splice_edges(to_opposite_edge(result), second);
         result
     }
 
-    pub(super) fn create_edge(&mut self, start_index: usize, end_index: usize) -> QuadEdge {
+    pub(super) fn create_edge(
+        &mut self,
+        start_index: usize,
+        end_index: usize,
+    ) -> QuadEdge {
         self.starts_indices.push(start_index);
         self.starts_indices.push(end_index);
         let edge = self.left_from_start.len();
@@ -131,7 +150,10 @@ impl<Endpoint> Mesh<Endpoint> {
     pub(super) fn delete_edge(&mut self, edge: QuadEdge) {
         self.splice_edges(edge, self.to_right_from_start(edge));
         let opposite_edge = to_opposite_edge(edge);
-        self.splice_edges(opposite_edge, self.to_right_from_start(opposite_edge));
+        self.splice_edges(
+            opposite_edge,
+            self.to_right_from_start(opposite_edge),
+        );
     }
 
     pub(super) fn splice_edges(&mut self, first: QuadEdge, second: QuadEdge) {
@@ -161,7 +183,9 @@ impl<Endpoint> Mesh<Endpoint> {
 }
 
 impl<Endpoint> Mesh<Endpoint> {
-    pub(super) fn to_triangles_base_edges(&self) -> impl Iterator<Item = QuadEdge> + '_
+    pub(super) fn to_triangles_base_edges(
+        &self,
+    ) -> impl Iterator<Item = QuadEdge> + '_
     where
         Endpoint: PartialOrd,
         for<'a> &'a Endpoint: Orient,
@@ -172,8 +196,12 @@ impl<Endpoint> Mesh<Endpoint> {
             let third_vertex = self.get_end(self.to_left_from_start(edge));
             first_vertex < second_vertex
                 && first_vertex < third_vertex
-                && third_vertex == self.get_end(self.to_right_from_start(to_opposite_edge(edge)))
-                && self.orient_point_to_edge(edge, third_vertex) == Orientation::Counterclockwise
+                && third_vertex
+                    == self.get_end(
+                        self.to_right_from_start(to_opposite_edge(edge)),
+                    )
+                && self.orient_point_to_edge(edge, third_vertex)
+                    == Orientation::Counterclockwise
         })
     }
 
@@ -199,12 +227,16 @@ where
         mut second_left_side: QuadEdge,
     ) -> (QuadEdge, QuadEdge, QuadEdge) {
         loop {
-            if self.orient_point_to_edge(first_right_side, self.get_start(second_left_side))
-                == Orientation::Counterclockwise
+            if self.orient_point_to_edge(
+                first_right_side,
+                self.get_start(second_left_side),
+            ) == Orientation::Counterclockwise
             {
                 first_right_side = self.to_left_from_end(first_right_side);
-            } else if self.orient_point_to_edge(second_left_side, self.get_start(first_right_side))
-                == Orientation::Clockwise
+            } else if self.orient_point_to_edge(
+                second_left_side,
+                self.get_start(first_right_side),
+            ) == Orientation::Clockwise
             {
                 second_left_side = self.to_right_from_end(second_left_side);
             } else {
@@ -213,17 +245,26 @@ where
         }
         (
             first_right_side,
-            self.connect_edges(to_opposite_edge(second_left_side), first_right_side),
+            self.connect_edges(
+                to_opposite_edge(second_left_side),
+                first_right_side,
+            ),
             second_left_side,
         )
     }
 
-    fn find_left_candidate(&mut self, base_edge: QuadEdge) -> Option<QuadEdge> {
+    fn find_left_candidate(
+        &mut self,
+        base_edge: QuadEdge,
+    ) -> Option<QuadEdge> {
         let mut result = self.to_left_from_start(to_opposite_edge(base_edge));
-        if self.orient_point_to_edge(base_edge, self.get_end(result)) == Orientation::Clockwise {
-            while self
-                .orient_point_to_edge(base_edge, self.get_end(self.to_left_from_start(result)))
-                == Orientation::Clockwise
+        if self.orient_point_to_edge(base_edge, self.get_end(result))
+            == Orientation::Clockwise
+        {
+            while self.orient_point_to_edge(
+                base_edge,
+                self.get_end(self.to_left_from_start(result)),
+            ) == Orientation::Clockwise
                 && self
                     .get_end(self.to_left_from_start(result))
                     .locate_point_in_point_point_point_circle(
@@ -243,12 +284,18 @@ where
         }
     }
 
-    fn find_right_candidate(&mut self, base_edge: QuadEdge) -> Option<QuadEdge> {
+    fn find_right_candidate(
+        &mut self,
+        base_edge: QuadEdge,
+    ) -> Option<QuadEdge> {
         let mut result = self.to_right_from_start(base_edge);
-        if self.orient_point_to_edge(base_edge, self.get_end(result)) == Orientation::Clockwise {
-            while self
-                .orient_point_to_edge(base_edge, self.get_end(self.to_right_from_start(result)))
-                == Orientation::Clockwise
+        if self.orient_point_to_edge(base_edge, self.get_end(result))
+            == Orientation::Clockwise
+        {
+            while self.orient_point_to_edge(
+                base_edge,
+                self.get_end(self.to_right_from_start(result)),
+            ) == Orientation::Clockwise
                 && self
                     .get_end(self.to_right_from_start(result))
                     .locate_point_in_point_point_point_circle(
@@ -276,12 +323,16 @@ where
         let (first_right_side, base_edge, second_left_side) =
             self.build_base_edge(first_right_side, second_left_side);
         self.rise_bubble(base_edge);
-        let left_side = if self.get_start(first_left_side) == self.get_start(first_right_side) {
+        let left_side = if self.get_start(first_left_side)
+            == self.get_start(first_right_side)
+        {
             to_opposite_edge(base_edge)
         } else {
             first_left_side
         };
-        let right_side = if self.get_start(second_left_side) == self.get_start(second_right_side) {
+        let right_side = if self.get_start(second_left_side)
+            == self.get_start(second_right_side)
+        {
             base_edge
         } else {
             second_right_side
@@ -307,7 +358,10 @@ where
                             )
                             == Location::Interior
                         {
-                            self.connect_edges(right_candidate, to_opposite_edge(base_edge))
+                            self.connect_edges(
+                                right_candidate,
+                                to_opposite_edge(base_edge),
+                            )
                         } else {
                             self.connect_edges(
                                 to_opposite_edge(base_edge),
@@ -321,9 +375,10 @@ where
                     ),
                 },
                 None => match maybe_right_candidate {
-                    Some(right_candidate) => {
-                        self.connect_edges(right_candidate, to_opposite_edge(base_edge))
-                    }
+                    Some(right_candidate) => self.connect_edges(
+                        right_candidate,
+                        to_opposite_edge(base_edge),
+                    ),
                     None => break,
                 },
             };
@@ -344,12 +399,15 @@ where
         let first_edge = self.create_edge(left_point_index, mid_point_index);
         let second_edge = self.create_edge(mid_point_index, right_point_index);
         self.splice_edges(to_opposite_edge(first_edge), second_edge);
-        match self.orient_point_to_edge(first_edge, self.get_end(second_edge)) {
+        match self.orient_point_to_edge(first_edge, self.get_end(second_edge))
+        {
             Orientation::Clockwise => {
                 let third_edge = self.connect_edges(second_edge, first_edge);
                 (to_opposite_edge(third_edge), third_edge)
             }
-            Orientation::Collinear => (first_edge, to_opposite_edge(second_edge)),
+            Orientation::Collinear => {
+                (first_edge, to_opposite_edge(second_edge))
+            }
             Orientation::Counterclockwise => {
                 self.connect_edges(second_edge, first_edge);
                 (first_edge, to_opposite_edge(second_edge))
@@ -362,7 +420,11 @@ impl<Endpoint> Mesh<Endpoint>
 where
     for<'a> &'a Endpoint: Orient,
 {
-    pub(super) fn orient_point_to_edge(&self, edge: usize, point: &Endpoint) -> Orientation {
+    pub(super) fn orient_point_to_edge(
+        &self,
+        edge: usize,
+        point: &Endpoint,
+    ) -> Orientation {
         self.get_start(edge).orient(self.get_end(edge), point)
     }
 }
@@ -376,9 +438,12 @@ where
         if endpoints_count < 2 {
             (UNDEFINED_QUAD_EDGE, UNDEFINED_QUAD_EDGE)
         } else {
-            let (segments_count, triangles_count) = to_base_cases(endpoints_count);
+            let (segments_count, triangles_count) =
+                to_base_cases(endpoints_count);
             let mut sub_triangulations_sides =
-                Vec::<(QuadEdge, QuadEdge)>::with_capacity(segments_count + triangles_count);
+                Vec::<(QuadEdge, QuadEdge)>::with_capacity(
+                    segments_count + triangles_count,
+                );
             for index in 0..segments_count {
                 let edge = self.create_edge(2 * index, 2 * index + 1);
                 let opposite_edge = to_opposite_edge(edge);
@@ -394,17 +459,20 @@ where
             }
             for _ in 0..ceil_log2(sub_triangulations_sides.len()) {
                 let merge_steps_count = sub_triangulations_sides.len() / 2;
-                let mut next_sub_triangulations_sides = Vec::with_capacity(merge_steps_count);
+                let mut next_sub_triangulations_sides =
+                    Vec::with_capacity(merge_steps_count);
                 for step in 0..merge_steps_count {
                     next_sub_triangulations_sides.push(self.merge(
                         sub_triangulations_sides[2 * step],
                         sub_triangulations_sides[2 * step + 1],
                     ));
                 }
-                next_sub_triangulations_sides
-                    .extend(&sub_triangulations_sides[2 * merge_steps_count..]);
+                next_sub_triangulations_sides.extend(
+                    &sub_triangulations_sides[2 * merge_steps_count..],
+                );
                 sub_triangulations_sides.clear();
-                sub_triangulations_sides.append(&mut next_sub_triangulations_sides);
+                sub_triangulations_sides
+                    .append(&mut next_sub_triangulations_sides);
             }
             debug_assert_eq!(sub_triangulations_sides.len(), 1);
             let (left_side, right_side) = sub_triangulations_sides[0];

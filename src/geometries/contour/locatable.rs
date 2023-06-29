@@ -12,7 +12,11 @@ where
 {
     fn locate(self, point: &Point<Scalar>) -> Location {
         for index in 0..self.vertices.len() - 1 {
-            if is_point_in_segment(point, &self.vertices[index], &self.vertices[index + 1]) {
+            if is_point_in_segment(
+                point,
+                &self.vertices[index],
+                &self.vertices[index + 1],
+            ) {
                 return Location::Boundary;
             }
         }

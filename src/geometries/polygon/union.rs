@@ -50,7 +50,8 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize> Union for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<Digit, const SHIFT: usize> Union
+    for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
     Fraction<BigInt<Digit, SHIFT>>: PartialEq,
     Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, UNION>: Iterator<Item = Event>
@@ -71,14 +72,19 @@ where
     fn union(self, other: Self) -> Self::Output {
         let bounding_box = self.to_bounding_box();
         let other_bounding_box = other.to_bounding_box();
-        if do_boxes_have_no_common_continuum(&bounding_box, &other_bounding_box) {
+        if do_boxes_have_no_common_continuum(
+            &bounding_box,
+            &other_bounding_box,
+        ) {
             return vec![self.clone(), other.clone()];
         }
         let mut operation = Operation::<Point<_>, UNION>::from((self, other));
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
             debug_assert!(maybe_events_count.is_some());
-            Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
+            Vec::with_capacity(unsafe {
+                maybe_events_count.unwrap_unchecked()
+            })
         };
         for event in operation.by_ref() {
             events.push(event);

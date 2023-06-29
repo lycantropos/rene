@@ -10,7 +10,8 @@ impl<'a, Digit, const SHIFT: usize> Multipolygonal
     for &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 {
     type Polygon = &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>;
-    type Polygons = std::slice::Iter<'a, Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
+    type Polygons =
+        std::slice::Iter<'a, Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
     fn polygons(self) -> Self::Polygons {
         self.polygons.iter()
@@ -21,9 +22,12 @@ impl<'a, Digit, const SHIFT: usize> Multipolygonal
     }
 }
 
-impl<Digit, const SHIFT: usize> Multipolygonal for Multipolygon<Fraction<BigInt<Digit, SHIFT>>> {
+impl<Digit, const SHIFT: usize> Multipolygonal
+    for Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
+{
     type Polygon = Polygon<Fraction<BigInt<Digit, SHIFT>>>;
-    type Polygons = std::vec::IntoIter<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
+    type Polygons =
+        std::vec::IntoIter<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
     fn polygons(self) -> Self::Polygons {
         self.polygons.into_iter()

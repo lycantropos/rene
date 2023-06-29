@@ -47,7 +47,12 @@ impl<Scalar> Box<Scalar> {
 }
 
 impl<Scalar> Box<Scalar> {
-    pub fn new(min_x: Scalar, max_x: Scalar, min_y: Scalar, max_y: Scalar) -> Self {
+    pub fn new(
+        min_x: Scalar,
+        max_x: Scalar,
+        min_y: Scalar,
+        max_y: Scalar,
+    ) -> Self {
         Self {
             max_x,
             max_y,

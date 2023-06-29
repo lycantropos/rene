@@ -45,15 +45,17 @@ impl<Scalar> Intersection<&Empty> for &Polygon<Scalar> {
     }
 }
 
-impl<Digit, const SHIFT: usize> Intersection for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<Digit, const SHIFT: usize> Intersection
+    for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
     Fraction<BigInt<Digit, SHIFT>>: Ord,
-    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>: Iterator<Item = Event>
-        + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
-        + for<'a> From<(
-            &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-            &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-        )>,
+    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>:
+        Iterator<Item = Event>
+            + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
+            + for<'a> From<(
+                &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
+                &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
+            )>,
     for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> &'a Point<Fraction<BigInt<Digit, SHIFT>>>:
         Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
@@ -68,12 +70,16 @@ where
         if do_boxes_have_no_common_area(&bounding_box, &other_bounding_box) {
             return vec![];
         }
-        let min_max_x = bounding_box.get_max_x().min(other_bounding_box.get_max_x());
-        let mut operation = Operation::<Point<_>, INTERSECTION>::from((self, other));
+        let min_max_x =
+            bounding_box.get_max_x().min(other_bounding_box.get_max_x());
+        let mut operation =
+            Operation::<Point<_>, INTERSECTION>::from((self, other));
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
             debug_assert!(maybe_events_count.is_some());
-            Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
+            Vec::with_capacity(unsafe {
+                maybe_events_count.unwrap_unchecked()
+            })
         };
         while let Some(event) = operation.next() {
             if operation.get_event_start(event).x().gt(min_max_x) {

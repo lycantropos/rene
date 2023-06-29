@@ -70,8 +70,8 @@ where
     pub(crate) fn iter_triangles_vertices(
         &self,
     ) -> impl Iterator<Item = (&Endpoint, &Endpoint, &Endpoint)> {
-        self.mesh
-            .to_triangles_base_edges()
-            .map(move |base_edge| self.mesh.triangle_base_to_vertices(base_edge))
+        self.mesh.to_triangles_base_edges().map(move |base_edge| {
+            self.mesh.triangle_base_to_vertices(base_edge)
+        })
     }
 }

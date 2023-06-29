@@ -13,7 +13,8 @@ where
 {
     #[must_use]
     pub fn new(vertices: Vec<Point<Scalar>>) -> Self {
-        let mut segments = Vec::<Segment<Scalar>>::with_capacity(vertices.len());
+        let mut segments =
+            Vec::<Segment<Scalar>>::with_capacity(vertices.len());
         for index in 0..vertices.len() - 1 {
             segments.push(Segment::new(
                 vertices[index].clone(),

@@ -13,7 +13,8 @@ where
     for<'b> &'b Segment<Scalar>: Segmental<Endpoint = &'b Point<Scalar>>,
 {
     fn locate(self, point: &Point<Scalar>) -> Location {
-        let location_without_holes = locate_point_in_region(&self.border, point);
+        let location_without_holes =
+            locate_point_in_region(&self.border, point);
         if location_without_holes == Location::Interior {
             for hole in &self.holes {
                 let location_in_hole = locate_point_in_region(hole, point);

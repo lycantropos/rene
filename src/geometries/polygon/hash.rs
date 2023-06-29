@@ -11,9 +11,10 @@ where
 {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.border.hash(state);
-        utils::hash_slice_unordered::<Contour<Scalar>, H, BuildHasherDefault<DefaultHasher>>(
-            &self.holes,
-            state,
-        );
+        utils::hash_slice_unordered::<
+            Contour<Scalar>,
+            H,
+            BuildHasherDefault<DefaultHasher>,
+        >(&self.holes, state);
     }
 }

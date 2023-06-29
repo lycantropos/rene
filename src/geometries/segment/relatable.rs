@@ -25,7 +25,12 @@ where
     }
 
     fn relate_to(self, other: Self) -> Relation {
-        segment::relate_to_segment(&self.start, &self.end, &other.start, &other.end)
+        segment::relate_to_segment(
+            &self.start,
+            &self.end,
+            &other.start,
+            &other.end,
+        )
     }
 }
 
@@ -42,14 +47,15 @@ where
     }
 }
 
-impl<'a, Scalar: Div<Output = Scalar> + Eq + Hash + PartialOrd> Relatable<&'a Multisegment<Scalar>>
-    for &'a Segment<Scalar>
+impl<'a, Scalar: Div<Output = Scalar> + Eq + Hash + PartialOrd>
+    Relatable<&'a Multisegment<Scalar>> for &'a Segment<Scalar>
 where
     Self: Segmental<Endpoint = &'a Point<Scalar>>,
     &'a Multisegment<Scalar>: Multisegmental<Segment = &'a Segment<Scalar>>,
     Point<Scalar>: Eq + Hash + Ord,
-    for<'b> &'b Point<Scalar>:
-        CrossMultiply<Output = Scalar> + Elemental<Coordinate = &'b Scalar> + Orient,
+    for<'b> &'b Point<Scalar>: CrossMultiply<Output = Scalar>
+        + Elemental<Coordinate = &'b Scalar>
+        + Orient,
 {
     fn relate_to(self, other: &'a Multisegment<Scalar>) -> Relation {
         segment::relate_to_multisegment(&self.start, &self.end, other)

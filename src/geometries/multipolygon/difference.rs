@@ -7,8 +7,9 @@ use crate::clipping::traits::ReduceEvents;
 use crate::clipping::{Event, DIFFERENCE};
 use crate::geometries::{Empty, Point, Polygon};
 use crate::operations::{
-    do_boxes_have_no_common_area, flags_to_false_indices, flags_to_true_indices, merge_boxes,
-    to_boxes_have_common_area, to_boxes_ids_with_common_area,
+    do_boxes_have_no_common_area, flags_to_false_indices,
+    flags_to_true_indices, merge_boxes, to_boxes_have_common_area,
+    to_boxes_ids_with_common_area,
 };
 use crate::relatable::Relatable;
 use crate::sweeping::traits::EventsContainer;
@@ -54,7 +55,8 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize> Difference for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<Digit, const SHIFT: usize> Difference
+    for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
     Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, DIFFERENCE>: Iterator<Item = Event>
@@ -63,7 +65,8 @@ where
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
         )>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Point<Fraction<BigInt<Digit, SHIFT>>>:
+        Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
     Polygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
     for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>:
@@ -91,12 +94,15 @@ where
         }
         let boxes_have_common_area =
             to_boxes_have_common_area(&bounding_boxes, &other_bounding_box);
-        let common_area_polygons_ids = flags_to_true_indices(&boxes_have_common_area);
+        let common_area_polygons_ids =
+            flags_to_true_indices(&boxes_have_common_area);
         if common_area_polygons_ids.is_empty() {
             return self.polygons.clone();
         }
-        let other_common_area_polygons_ids =
-            to_boxes_ids_with_common_area(&other_bounding_boxes, &bounding_box);
+        let other_common_area_polygons_ids = to_boxes_ids_with_common_area(
+            &other_bounding_boxes,
+            &bounding_box,
+        );
         if other_common_area_polygons_ids.is_empty() {
             return self.polygons.clone();
         }
@@ -122,7 +128,9 @@ where
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
             debug_assert!(maybe_events_count.is_some());
-            Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
+            Vec::with_capacity(unsafe {
+                maybe_events_count.unwrap_unchecked()
+            })
         };
         while let Some(event) = operation.next() {
             if operation.get_event_start(event).x().gt(max_x) {
@@ -141,7 +149,8 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize> Difference<&Polygon<Fraction<BigInt<Digit, SHIFT>>>>
+impl<Digit, const SHIFT: usize>
+    Difference<&Polygon<Fraction<BigInt<Digit, SHIFT>>>>
     for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
@@ -151,7 +160,8 @@ where
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
         )>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Point<Fraction<BigInt<Digit, SHIFT>>>:
+        Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
     Polygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
     for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>:
@@ -161,7 +171,10 @@ where
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
-    fn difference(self, other: &Polygon<Fraction<BigInt<Digit, SHIFT>>>) -> Self::Output {
+    fn difference(
+        self,
+        other: &Polygon<Fraction<BigInt<Digit, SHIFT>>>,
+    ) -> Self::Output {
         let bounding_boxes = self
             .polygons
             .iter()
@@ -174,7 +187,8 @@ where
         }
         let boxes_have_common_area =
             to_boxes_have_common_area(&bounding_boxes, &other_bounding_box);
-        let common_area_polygons_ids = flags_to_true_indices(&boxes_have_common_area);
+        let common_area_polygons_ids =
+            flags_to_true_indices(&boxes_have_common_area);
         if common_area_polygons_ids.is_empty() {
             return self.polygons.clone();
         }
@@ -189,11 +203,16 @@ where
             .into_iter()
             .map(|index| &self.polygons[index])
             .collect::<Vec<_>>();
-        let mut operation = Operation::<Point<_>, DIFFERENCE>::from((&common_area_polygons, other));
+        let mut operation = Operation::<Point<_>, DIFFERENCE>::from((
+            &common_area_polygons,
+            other,
+        ));
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
             debug_assert!(maybe_events_count.is_some());
-            Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
+            Vec::with_capacity(unsafe {
+                maybe_events_count.unwrap_unchecked()
+            })
         };
         while let Some(event) = operation.next() {
             if operation.get_event_start(event).x().gt(max_x) {
@@ -212,7 +231,8 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize> Difference<&Multipolygon<Fraction<BigInt<Digit, SHIFT>>>>
+impl<Digit, const SHIFT: usize>
+    Difference<&Multipolygon<Fraction<BigInt<Digit, SHIFT>>>>
     for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
@@ -222,7 +242,8 @@ where
             &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
             &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
         )>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Point<Fraction<BigInt<Digit, SHIFT>>>:
+        Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
     Polygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
     for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>:
@@ -232,7 +253,10 @@ where
 {
     type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
 
-    fn difference(self, other: &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>) -> Self::Output {
+    fn difference(
+        self,
+        other: &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>,
+    ) -> Self::Output {
         let other_bounding_boxes = other
             .polygons
             .iter()
@@ -243,8 +267,10 @@ where
         if do_boxes_have_no_common_area(&bounding_box, &other_bounding_box) {
             return vec![self.clone()];
         }
-        let other_common_area_polygons_ids =
-            to_boxes_ids_with_common_area(&other_bounding_boxes, &other_bounding_box);
+        let other_common_area_polygons_ids = to_boxes_ids_with_common_area(
+            &other_bounding_boxes,
+            &other_bounding_box,
+        );
         if other_common_area_polygons_ids.is_empty() {
             return vec![self.clone()];
         }
@@ -253,12 +279,16 @@ where
             .into_iter()
             .map(|index| &other.polygons[index])
             .collect::<Vec<_>>();
-        let mut operation =
-            Operation::<Point<_>, DIFFERENCE>::from((self, &other_common_area_polygons));
+        let mut operation = Operation::<Point<_>, DIFFERENCE>::from((
+            self,
+            &other_common_area_polygons,
+        ));
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
             debug_assert!(maybe_events_count.is_some());
-            Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
+            Vec::with_capacity(unsafe {
+                maybe_events_count.unwrap_unchecked()
+            })
         };
         while let Some(event) = operation.next() {
             if operation.get_event_start(event).x().gt(max_x) {

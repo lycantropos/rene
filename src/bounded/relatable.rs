@@ -91,11 +91,19 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                 match self.max_x.cmp(&other.max_x) {
                     Ordering::Equal => match self.min_x.cmp(&other.min_x) {
                         Ordering::Equal => {
-                            (other.min_y < self.min_y && other.max_y < self.max_y)
-                                || (self.min_y < other.min_y && self.max_y < other.max_y)
+                            (other.min_y < self.min_y
+                                && other.max_y < self.max_y)
+                                || (self.min_y < other.min_y
+                                    && self.max_y < other.max_y)
                         }
-                        Ordering::Greater => self.min_y < other.min_y || other.max_y < self.max_y,
-                        Ordering::Less => other.min_y < self.min_y || self.max_y < other.max_y,
+                        Ordering::Greater => {
+                            self.min_y < other.min_y
+                                || other.max_y < self.max_y
+                        }
+                        Ordering::Less => {
+                            other.min_y < self.min_y
+                                || self.max_y < other.max_y
+                        }
                     },
                     Ordering::Greater => {
                         other.min_x < self.min_x
@@ -267,39 +275,41 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             */
                             Relation::Touch
                         }
-                        Ordering::Greater => match self.min_y.cmp(&other.min_y) {
-                            Ordering::Less => {
-                                /*
+                        Ordering::Greater => {
+                            match self.min_y.cmp(&other.min_y) {
+                                Ordering::Less => {
+                                    /*
 
-                                  ···········
-                                  :         :
-                                  ‡---------‡
-                                  ‡.........‡
-                                  ¦         ¦
-                                  ¦_________¦
+                                      ···········
+                                      :         :
+                                      ‡---------‡
+                                      ‡.........‡
+                                      ¦         ¦
+                                      ¦_________¦
 
-                                */
-                                Relation::Overlap
+                                    */
+                                    Relation::Overlap
+                                }
+                                _ => {
+                                    /*
+
+                                      ···········
+                                      ‡---------‡
+                                      ‡         ‡
+                                      ‡‡‡‡‡‡‡‡‡‡‡
+
+                                      or
+
+                                      ···········
+                                      ‡---------‡
+                                      ‡_________‡
+                                      :.........:
+
+                                    */
+                                    Relation::Enclosed
+                                }
                             }
-                            _ => {
-                                /*
-
-                                  ···········
-                                  ‡---------‡
-                                  ‡         ‡
-                                  ‡‡‡‡‡‡‡‡‡‡‡
-
-                                  or
-
-                                  ···········
-                                  ‡---------‡
-                                  ‡_________‡
-                                  :.........:
-
-                                */
-                                Relation::Enclosed
-                            }
-                        },
+                        }
                         Ordering::Less => {
                             /*
 
@@ -422,38 +432,40 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             */
                             Relation::Touch
                         }
-                        Ordering::Greater => match self.min_y.cmp(&other.min_y) {
-                            Ordering::Less => {
-                                /*
+                        Ordering::Greater => {
+                            match self.min_y.cmp(&other.min_y) {
+                                Ordering::Less => {
+                                    /*
 
-                                  ···········
-                                  :         :
-                                  :   +-----‡
-                                  :...‡.....‡
-                                      ¦_____¦
+                                      ···········
+                                      :         :
+                                      :   +-----‡
+                                      :...‡.....‡
+                                          ¦_____¦
 
-                                */
-                                Relation::Overlap
+                                    */
+                                    Relation::Overlap
+                                }
+                                _ => {
+                                    /*
+
+                                      ···········
+                                      :   +-----‡
+                                      :   ¦     ‡
+                                      :...‡‡‡‡‡‡‡
+
+                                      or
+
+                                      ···········
+                                      :   +-----‡
+                                      :   ¦_____‡
+                                      :.........:
+
+                                    */
+                                    Relation::Enclosed
+                                }
                             }
-                            _ => {
-                                /*
-
-                                  ···········
-                                  :   +-----‡
-                                  :   ¦     ‡
-                                  :...‡‡‡‡‡‡‡
-
-                                  or
-
-                                  ···········
-                                  :   +-----‡
-                                  :   ¦_____‡
-                                  :.........:
-
-                                */
-                                Relation::Enclosed
-                            }
-                        },
+                        }
                         Ordering::Less => {
                             /*
 
@@ -779,75 +791,16 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                 }
                 Ordering::Less => match self.min_x.cmp(&other.min_x) {
                     Ordering::Equal => match self.max_y.cmp(&other.max_y) {
-                        Ordering::Equal => match self.min_y.cmp(&other.min_y) {
-                            Ordering::Greater => {
-                                /*
-
-                                 ‡‡‡‡‡‡‡---+
-                                 ‡     :   ¦
-                                 ‡     :   ¦
-                                 ‡_____‡___¦
-                                 :     :
-                                 :.....:
-
-                                */
-                                Relation::Overlap
-                            }
-                            _ => {
-                                /*
-
-                                 ‡‡‡‡‡‡‡---+
-                                 ‡     :   ¦
-                                 ‡     :   ¦
-                                 ‡‡‡‡‡‡‡___¦
-
-                                 or
-
-                                 ‡‡‡‡‡‡‡---+
-                                 ‡     :   ¦
-                                 ‡.....:   ¦
-                                 ¦_________¦
-
-                                */
-                                Relation::Encloses
-                            }
-                        },
-                        Ordering::Greater => match self.min_y.cmp(&other.max_y) {
-                            Ordering::Equal => {
-                                /*
-
-                                 +---------+
-                                 ¦         ¦
-                                 ¦         ¦
-                                 ‡‡‡‡‡‡‡___¦
-                                 :     :
-                                 :.....:
-
-                                */
-                                Relation::Touch
-                            }
-                            Ordering::Greater => {
-                                /*
-
-                                 +---------+
-                                 ¦         ¦
-                                 ¦         ¦
-                                 ¦_________¦
-                                 ·······
-                                 :     :
-                                 :.....:
-
-                                */
-                                Relation::Disjoint
-                            }
-                            Ordering::Less => match self.min_y.cmp(&other.min_y) {
+                        Ordering::Equal => {
+                            match self.min_y.cmp(&other.min_y) {
                                 Ordering::Greater => {
                                     /*
 
-                                     +---------+
-                                     ¦         ¦
-                                     ‡······   ¦
+                                     ‡‡‡‡‡‡‡---+
+                                     ‡     :   ¦
+                                     ‡     :   ¦
                                      ‡_____‡___¦
+                                     :     :
                                      :.....:
 
                                     */
@@ -856,23 +809,88 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 _ => {
                                     /*
 
-                                     +---------+
-                                     ‡······   ¦
+                                     ‡‡‡‡‡‡‡---+
+                                     ‡     :   ¦
                                      ‡     :   ¦
                                      ‡‡‡‡‡‡‡___¦
 
                                      or
 
-                                     +---------+
-                                     ‡······   ¦
+                                     ‡‡‡‡‡‡‡---+
+                                     ‡     :   ¦
                                      ‡.....:   ¦
                                      ¦_________¦
 
                                     */
                                     Relation::Encloses
                                 }
-                            },
-                        },
+                            }
+                        }
+                        Ordering::Greater => {
+                            match self.min_y.cmp(&other.max_y) {
+                                Ordering::Equal => {
+                                    /*
+
+                                     +---------+
+                                     ¦         ¦
+                                     ¦         ¦
+                                     ‡‡‡‡‡‡‡___¦
+                                     :     :
+                                     :.....:
+
+                                    */
+                                    Relation::Touch
+                                }
+                                Ordering::Greater => {
+                                    /*
+
+                                     +---------+
+                                     ¦         ¦
+                                     ¦         ¦
+                                     ¦_________¦
+                                     ·······
+                                     :     :
+                                     :.....:
+
+                                    */
+                                    Relation::Disjoint
+                                }
+                                Ordering::Less => {
+                                    match self.min_y.cmp(&other.min_y) {
+                                        Ordering::Greater => {
+                                            /*
+
+                                             +---------+
+                                             ¦         ¦
+                                             ‡······   ¦
+                                             ‡_____‡___¦
+                                             :.....:
+
+                                            */
+                                            Relation::Overlap
+                                        }
+                                        _ => {
+                                            /*
+
+                                             +---------+
+                                             ‡······   ¦
+                                             ‡     :   ¦
+                                             ‡‡‡‡‡‡‡___¦
+
+                                             or
+
+                                             +---------+
+                                             ‡······   ¦
+                                             ‡.....:   ¦
+                                             ¦_________¦
+
+                                            */
+                                            Relation::Encloses
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         Ordering::Less => match self.max_y.cmp(&other.min_y) {
                             Ordering::Equal => {
                                 /*
@@ -959,64 +977,66 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             */
                             Relation::Overlap
                         }
-                        Ordering::Greater => match self.min_y.cmp(&other.max_y) {
-                            Ordering::Equal => {
-                                /*
+                        Ordering::Greater => {
+                            match self.min_y.cmp(&other.max_y) {
+                                Ordering::Equal => {
+                                    /*
 
-                                         +-----+
-                                         ¦     ¦
-                                  ·······‡‡‡‡__¦
-                                  :         :
-                                  :         :
-                                  :.........:
+                                             +-----+
+                                             ¦     ¦
+                                      ·······‡‡‡‡__¦
+                                      :         :
+                                      :         :
+                                      :.........:
 
-                                */
-                                Relation::Touch
+                                    */
+                                    Relation::Touch
+                                }
+                                Ordering::Greater => {
+                                    /*
+
+                                             +-----+
+                                             ¦     ¦
+                                             ¦_____¦
+                                      ···········
+                                      :         :
+                                      :         :
+                                      :.........:
+
+                                    */
+                                    Relation::Disjoint
+                                }
+                                Ordering::Less => {
+                                    /*
+
+                                             +-----+
+                                      ·······‡···  ¦
+                                      :      ¦__‡__¦
+                                      :         :
+                                      :.........:
+
+                                      or
+
+                                             +-----+
+                                      ·······‡···  ¦
+                                      :      ¦  :  ¦
+                                      :      ¦  :  ¦
+                                      :......‡‡‡‡__¦
+
+                                      or
+
+                                             +-----+
+                                      ·······‡···  ¦
+                                      :      ¦  :  ¦
+                                      :      ¦  :  ¦
+                                      :......‡..:  ¦
+                                             ¦_____¦
+
+                                    */
+                                    Relation::Overlap
+                                }
                             }
-                            Ordering::Greater => {
-                                /*
-
-                                         +-----+
-                                         ¦     ¦
-                                         ¦_____¦
-                                  ···········
-                                  :         :
-                                  :         :
-                                  :.........:
-
-                                */
-                                Relation::Disjoint
-                            }
-                            Ordering::Less => {
-                                /*
-
-                                         +-----+
-                                  ·······‡···  ¦
-                                  :      ¦__‡__¦
-                                  :         :
-                                  :.........:
-
-                                  or
-
-                                         +-----+
-                                  ·······‡···  ¦
-                                  :      ¦  :  ¦
-                                  :      ¦  :  ¦
-                                  :......‡‡‡‡__¦
-
-                                  or
-
-                                         +-----+
-                                  ·······‡···  ¦
-                                  :      ¦  :  ¦
-                                  :      ¦  :  ¦
-                                  :......‡..:  ¦
-                                         ¦_____¦
-
-                                */
-                                Relation::Overlap
-                            }
-                        },
+                        }
                         Ordering::Less => match self.max_y.cmp(&other.min_y) {
                             Ordering::Equal => {
                                 /*
@@ -1060,103 +1080,109 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                         },
                     },
                     Ordering::Less => match self.max_y.cmp(&other.max_y) {
-                        Ordering::Equal => match self.min_y.cmp(&other.min_y) {
-                            Ordering::Greater => {
-                                /*
-
-                                  +-‡‡‡‡‡‡‡-+
-                                  ¦ :     : ¦
-                                  ¦ :     : ¦
-                                  ¦_‡_____‡_¦
-                                    :.....:
-
-                                */
-                                Relation::Overlap
-                            }
-                            _ => {
-                                /*
-
-                                  +-‡‡‡‡‡‡‡-+
-                                  ¦ :     : ¦
-                                  ¦ :     : ¦
-                                  ¦_‡‡‡‡‡‡‡_¦
-
-                                  or
-
-                                  +-‡‡‡‡‡‡‡-+
-                                  ¦ :     : ¦
-                                  ¦ :.....: ¦
-                                  ¦_________¦
-
-                                */
-                                Relation::Encloses
-                            }
-                        },
-                        Ordering::Greater => match self.min_y.cmp(&other.max_y) {
-                            Ordering::Equal => {
-                                /*
-
-                                  +---------+
-                                  ¦         ¦
-                                  ¦         ¦
-                                  ¦_‡‡‡‡‡‡‡_¦
-                                    :     :
-                                    :.....:
-
-                                */
-                                Relation::Touch
-                            }
-                            Ordering::Greater => {
-                                /*
-
-                                  +---------+
-                                  ¦         ¦
-                                  ¦         ¦
-                                  ¦_________¦
-                                    ·······
-                                    :     :
-                                    :.....:
-
-                                */
-                                Relation::Disjoint
-                            }
-                            Ordering::Less => match self.min_y.cmp(&other.min_y) {
-                                Ordering::Equal => {
-                                    /*
-
-                                      +---------+
-                                      ¦ ······· ¦
-                                      ¦ :     : ¦
-                                      ¦_‡‡‡‡‡‡‡_¦
-
-                                    */
-                                    Relation::Encloses
-                                }
+                        Ordering::Equal => {
+                            match self.min_y.cmp(&other.min_y) {
                                 Ordering::Greater => {
                                     /*
 
-                                      +---------+
-                                      ¦         ¦
-                                      ¦ ······· ¦
+                                      +-‡‡‡‡‡‡‡-+
+                                      ¦ :     : ¦
+                                      ¦ :     : ¦
                                       ¦_‡_____‡_¦
                                         :.....:
 
                                     */
                                     Relation::Overlap
                                 }
-                                Ordering::Less => {
+                                _ => {
                                     /*
 
-                                      +---------+
-                                      ¦ ······· ¦
+                                      +-‡‡‡‡‡‡‡-+
+                                      ¦ :     : ¦
+                                      ¦ :     : ¦
+                                      ¦_‡‡‡‡‡‡‡_¦
+
+                                      or
+
+                                      +-‡‡‡‡‡‡‡-+
+                                      ¦ :     : ¦
                                       ¦ :.....: ¦
                                       ¦_________¦
 
                                     */
-                                    Relation::Cover
+                                    Relation::Encloses
                                 }
-                            },
-                        },
+                            }
+                        }
+                        Ordering::Greater => {
+                            match self.min_y.cmp(&other.max_y) {
+                                Ordering::Equal => {
+                                    /*
+
+                                      +---------+
+                                      ¦         ¦
+                                      ¦         ¦
+                                      ¦_‡‡‡‡‡‡‡_¦
+                                        :     :
+                                        :.....:
+
+                                    */
+                                    Relation::Touch
+                                }
+                                Ordering::Greater => {
+                                    /*
+
+                                      +---------+
+                                      ¦         ¦
+                                      ¦         ¦
+                                      ¦_________¦
+                                        ·······
+                                        :     :
+                                        :.....:
+
+                                    */
+                                    Relation::Disjoint
+                                }
+                                Ordering::Less => {
+                                    match self.min_y.cmp(&other.min_y) {
+                                        Ordering::Equal => {
+                                            /*
+
+                                              +---------+
+                                              ¦ ······· ¦
+                                              ¦ :     : ¦
+                                              ¦_‡‡‡‡‡‡‡_¦
+
+                                            */
+                                            Relation::Encloses
+                                        }
+                                        Ordering::Greater => {
+                                            /*
+
+                                              +---------+
+                                              ¦         ¦
+                                              ¦ ······· ¦
+                                              ¦_‡_____‡_¦
+                                                :.....:
+
+                                            */
+                                            Relation::Overlap
+                                        }
+                                        Ordering::Less => {
+                                            /*
+
+                                              +---------+
+                                              ¦ ······· ¦
+                                              ¦ :.....: ¦
+                                              ¦_________¦
+
+                                            */
+                                            Relation::Cover
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         Ordering::Less => match self.max_y.cmp(&other.min_y) {
                             Ordering::Equal => {
                                 /*
@@ -1349,96 +1375,100 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                 },
                 Ordering::Greater => match self.min_x.cmp(&other.min_x) {
                     Ordering::Equal => match self.max_y.cmp(&other.max_y) {
-                        Ordering::Equal => match self.min_y.cmp(&other.min_y) {
-                            Ordering::Less => {
-                                /*
+                        Ordering::Equal => {
+                            match self.min_y.cmp(&other.min_y) {
+                                Ordering::Less => {
+                                    /*
 
-                                  ‡‡‡‡‡‡‡····
-                                  ‡     ¦   :
-                                  ‡     ¦   :
-                                  ‡.....‡...:
-                                  ¦_____¦
+                                      ‡‡‡‡‡‡‡····
+                                      ‡     ¦   :
+                                      ‡     ¦   :
+                                      ‡.....‡...:
+                                      ¦_____¦
 
-                                */
-                                Relation::Overlap
+                                    */
+                                    Relation::Overlap
+                                }
+                                _ => {
+                                    /*
+
+                                      ‡‡‡‡‡‡‡····
+                                      ‡     ¦   :
+                                      ‡     ¦   :
+                                      ‡‡‡‡‡‡‡...:
+
+                                      or
+
+                                      ‡‡‡‡‡‡‡····
+                                      ‡     ¦   :
+                                      ‡_____¦   :
+                                      :.........:
+
+                                    */
+                                    Relation::Enclosed
+                                }
                             }
-                            _ => {
-                                /*
+                        }
+                        Ordering::Greater => {
+                            match self.min_y.cmp(&other.max_y) {
+                                Ordering::Equal => {
+                                    /*
 
-                                  ‡‡‡‡‡‡‡····
-                                  ‡     ¦   :
-                                  ‡     ¦   :
-                                  ‡‡‡‡‡‡‡...:
+                                      +-----+
+                                      ¦     ¦
+                                      ‡‡‡‡‡‡‡····
+                                      :         :
+                                      :         :
+                                      :.........:
 
-                                  or
+                                    */
+                                    Relation::Touch
+                                }
+                                Ordering::Greater => {
+                                    /*
 
-                                  ‡‡‡‡‡‡‡····
-                                  ‡     ¦   :
-                                  ‡_____¦   :
-                                  :.........:
+                                      +-----+
+                                      ¦     ¦
+                                      ¦_____¦
+                                      ···········
+                                      :         :
+                                      :         :
+                                      :.........:
 
-                                */
-                                Relation::Enclosed
+                                    */
+                                    Relation::Disjoint
+                                }
+                                Ordering::Less => {
+                                    /*
+
+                                      +-----+
+                                      ‡·····‡····
+                                      ‡_____¦   :
+                                      :         :
+                                      :.........:
+
+                                      or
+
+                                      +-----+
+                                      ‡·····‡····
+                                      ‡     ¦   :
+                                      ‡     ¦   :
+                                      ‡‡‡‡‡‡‡...:
+
+                                      or
+
+                                      +-----+
+                                      ‡·····‡····
+                                      ‡     ¦   :
+                                      ‡     ¦   :
+                                      ‡.....‡...:
+                                      ¦_____¦
+
+                                    */
+                                    Relation::Overlap
+                                }
                             }
-                        },
-                        Ordering::Greater => match self.min_y.cmp(&other.max_y) {
-                            Ordering::Equal => {
-                                /*
-
-                                  +-----+
-                                  ¦     ¦
-                                  ‡‡‡‡‡‡‡····
-                                  :         :
-                                  :         :
-                                  :.........:
-
-                                */
-                                Relation::Touch
-                            }
-                            Ordering::Greater => {
-                                /*
-
-                                  +-----+
-                                  ¦     ¦
-                                  ¦_____¦
-                                  ···········
-                                  :         :
-                                  :         :
-                                  :.........:
-
-                                */
-                                Relation::Disjoint
-                            }
-                            Ordering::Less => {
-                                /*
-
-                                  +-----+
-                                  ‡·····‡····
-                                  ‡_____¦   :
-                                  :         :
-                                  :.........:
-
-                                  or
-
-                                  +-----+
-                                  ‡·····‡····
-                                  ‡     ¦   :
-                                  ‡     ¦   :
-                                  ‡‡‡‡‡‡‡...:
-
-                                  or
-
-                                  +-----+
-                                  ‡·····‡····
-                                  ‡     ¦   :
-                                  ‡     ¦   :
-                                  ‡.....‡...:
-                                  ¦_____¦
-
-                                */
-                                Relation::Overlap
-                            }
-                        },
+                        }
                         Ordering::Less => match self.max_y.cmp(&other.min_y) {
                             Ordering::Equal => {
                                 /*
@@ -1453,38 +1483,40 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 */
                                 Relation::Touch
                             }
-                            Ordering::Greater => match self.min_y.cmp(&other.min_y) {
-                                Ordering::Less => {
-                                    /*
+                            Ordering::Greater => {
+                                match self.min_y.cmp(&other.min_y) {
+                                    Ordering::Less => {
+                                        /*
 
-                                      ···········
-                                      :         :
-                                      ‡-----+   :
-                                      ‡.....‡...:
-                                      ¦_____¦
+                                          ···········
+                                          :         :
+                                          ‡-----+   :
+                                          ‡.....‡...:
+                                          ¦_____¦
 
-                                    */
-                                    Relation::Overlap
+                                        */
+                                        Relation::Overlap
+                                    }
+                                    _ => {
+                                        /*
+
+                                          ···········
+                                          ‡-----+   :
+                                          ‡     ¦   :
+                                          ‡‡‡‡‡‡‡...:
+
+                                          or
+
+                                          ···········
+                                          ‡-----+   :
+                                          ‡_____¦   :
+                                          :.........:
+
+                                        */
+                                        Relation::Enclosed
+                                    }
                                 }
-                                _ => {
-                                    /*
-
-                                      ···········
-                                      ‡-----+   :
-                                      ‡     ¦   :
-                                      ‡‡‡‡‡‡‡...:
-
-                                      or
-
-                                      ···········
-                                      ‡-----+   :
-                                      ‡_____¦   :
-                                      :.........:
-
-                                    */
-                                    Relation::Enclosed
-                                }
-                            },
+                            }
                             Ordering::Less => {
                                 /*
 
@@ -1502,96 +1534,100 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                         },
                     },
                     Ordering::Greater => match self.max_y.cmp(&other.max_y) {
-                        Ordering::Equal => match self.min_y.cmp(&other.min_y) {
-                            Ordering::Less => {
-                                /*
+                        Ordering::Equal => {
+                            match self.min_y.cmp(&other.min_y) {
+                                Ordering::Less => {
+                                    /*
 
-                                  ··‡‡‡‡‡‡‡··
-                                  : ¦     ¦ :
-                                  : ¦     ¦ :
-                                  :.‡.....‡.:
-                                    ¦_____¦
+                                      ··‡‡‡‡‡‡‡··
+                                      : ¦     ¦ :
+                                      : ¦     ¦ :
+                                      :.‡.....‡.:
+                                        ¦_____¦
 
-                                */
-                                Relation::Overlap
+                                    */
+                                    Relation::Overlap
+                                }
+                                _ => {
+                                    /*
+
+                                      ··‡‡‡‡‡‡‡··
+                                      : ¦     ¦ :
+                                      : ¦     ¦ :
+                                      :.‡‡‡‡‡‡‡.:
+
+                                      or
+
+                                      ··‡‡‡‡‡‡‡··
+                                      : ¦     ¦ :
+                                      : ¦_____¦ :
+                                      :.........:
+
+                                    */
+                                    Relation::Enclosed
+                                }
                             }
-                            _ => {
-                                /*
+                        }
+                        Ordering::Greater => {
+                            match self.min_y.cmp(&other.max_y) {
+                                Ordering::Equal => {
+                                    /*
 
-                                  ··‡‡‡‡‡‡‡··
-                                  : ¦     ¦ :
-                                  : ¦     ¦ :
-                                  :.‡‡‡‡‡‡‡.:
+                                        +-----+
+                                        ¦     ¦
+                                      ··‡‡‡‡‡‡‡··
+                                      :         :
+                                      :         :
+                                      :.........:
 
-                                  or
+                                    */
+                                    Relation::Touch
+                                }
+                                Ordering::Greater => {
+                                    /*
 
-                                  ··‡‡‡‡‡‡‡··
-                                  : ¦     ¦ :
-                                  : ¦_____¦ :
-                                  :.........:
+                                        +-----+
+                                        ¦     ¦
+                                        ¦_____¦
+                                      ···········
+                                      :         :
+                                      :         :
+                                      :.........:
 
-                                */
-                                Relation::Enclosed
+                                    */
+                                    Relation::Disjoint
+                                }
+                                Ordering::Less => {
+                                    /*
+
+                                        +-----+
+                                      ··‡·····‡··
+                                      : ¦_____¦ :
+                                      :         :
+                                      :.........:
+
+                                      or
+
+                                        +-----+
+                                      ··‡·····‡··
+                                      : ¦     ¦ :
+                                      : ¦     ¦ :
+                                      :.‡‡‡‡‡‡‡.:
+
+                                      or
+
+                                        +-----+
+                                      ··‡·····‡··
+                                      : ¦     ¦ :
+                                      : ¦     ¦ :
+                                      :.‡.....‡.:
+                                        ¦_____¦
+
+                                    */
+                                    Relation::Overlap
+                                }
                             }
-                        },
-                        Ordering::Greater => match self.min_y.cmp(&other.max_y) {
-                            Ordering::Equal => {
-                                /*
-
-                                    +-----+
-                                    ¦     ¦
-                                  ··‡‡‡‡‡‡‡··
-                                  :         :
-                                  :         :
-                                  :.........:
-
-                                */
-                                Relation::Touch
-                            }
-                            Ordering::Greater => {
-                                /*
-
-                                    +-----+
-                                    ¦     ¦
-                                    ¦_____¦
-                                  ···········
-                                  :         :
-                                  :         :
-                                  :.........:
-
-                                */
-                                Relation::Disjoint
-                            }
-                            Ordering::Less => {
-                                /*
-
-                                    +-----+
-                                  ··‡·····‡··
-                                  : ¦_____¦ :
-                                  :         :
-                                  :.........:
-
-                                  or
-
-                                    +-----+
-                                  ··‡·····‡··
-                                  : ¦     ¦ :
-                                  : ¦     ¦ :
-                                  :.‡‡‡‡‡‡‡.:
-
-                                  or
-
-                                    +-----+
-                                  ··‡·····‡··
-                                  : ¦     ¦ :
-                                  : ¦     ¦ :
-                                  :.‡.....‡.:
-                                    ¦_____¦
-
-                                */
-                                Relation::Overlap
-                            }
-                        },
+                        }
                         Ordering::Less => match self.max_y.cmp(&other.min_y) {
                             Ordering::Equal => {
                                 /*
@@ -1606,42 +1642,44 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                                 */
                                 Relation::Touch
                             }
-                            Ordering::Greater => match self.min_y.cmp(&other.min_y) {
-                                Ordering::Equal => {
-                                    /*
+                            Ordering::Greater => {
+                                match self.min_y.cmp(&other.min_y) {
+                                    Ordering::Equal => {
+                                        /*
 
-                                      ···········
-                                      : +-----+ :
-                                      : ¦     ¦ :
-                                      :.‡‡‡‡‡‡‡.:
+                                          ···········
+                                          : +-----+ :
+                                          : ¦     ¦ :
+                                          :.‡‡‡‡‡‡‡.:
 
-                                    */
-                                    Relation::Enclosed
+                                        */
+                                        Relation::Enclosed
+                                    }
+                                    Ordering::Greater => {
+                                        /*
+
+                                          ···········
+                                          : +-----+ :
+                                          : ¦_____¦ :
+                                          :.........:
+
+                                        */
+                                        Relation::Within
+                                    }
+                                    Ordering::Less => {
+                                        /*
+
+                                          ···········
+                                          :         :
+                                          : +-----+ :
+                                          :.‡.....‡.:
+                                            ¦_____¦
+
+                                        */
+                                        Relation::Overlap
+                                    }
                                 }
-                                Ordering::Greater => {
-                                    /*
-
-                                      ···········
-                                      : +-----+ :
-                                      : ¦_____¦ :
-                                      :.........:
-
-                                    */
-                                    Relation::Within
-                                }
-                                Ordering::Less => {
-                                    /*
-
-                                      ···········
-                                      :         :
-                                      : +-----+ :
-                                      :.‡.....‡.:
-                                        ¦_____¦
-
-                                    */
-                                    Relation::Overlap
-                                }
-                            },
+                            }
                             Ordering::Less => {
                                 /*
 
@@ -1685,70 +1723,72 @@ impl<Scalar: Ord> Relatable for &Box<Scalar> {
                             */
                             Relation::Overlap
                         }
-                        Ordering::Greater => match self.min_y.cmp(&other.max_y) {
-                            Ordering::Equal => {
-                                /*
+                        Ordering::Greater => {
+                            match self.min_y.cmp(&other.max_y) {
+                                Ordering::Equal => {
+                                    /*
 
-                                  +---------+
-                                  ¦         ¦
-                                  ¦         ¦
-                                  ¦____‡‡‡‡‡‡·····
-                                       :         :
-                                       :         :
-                                       :.........:
+                                      +---------+
+                                      ¦         ¦
+                                      ¦         ¦
+                                      ¦____‡‡‡‡‡‡·····
+                                           :         :
+                                           :         :
+                                           :.........:
 
-                                */
-                                Relation::Touch
+                                    */
+                                    Relation::Touch
+                                }
+                                Ordering::Greater => {
+                                    /*
+
+                                      +---------+
+                                      ¦         ¦
+                                      ¦         ¦
+                                      ¦_________¦
+                                           ···········
+                                           :         :
+                                           :         :
+                                           :.........:
+
+                                    */
+                                    Relation::Disjoint
+                                }
+                                Ordering::Less => {
+                                    /*
+
+                                      +---------+
+                                      ¦         ¦
+                                      ¦    ·····‡·····
+                                      ¦____‡____¦    :
+                                           :         :
+                                           :.........:
+
+                                      or
+
+                                      +---------+
+                                      ¦         ¦
+                                      ¦    ·····‡·····
+                                      ¦    :    ¦    :
+                                      ¦    :    ¦    :
+                                      ¦____‡‡‡‡‡‡....:
+
+                                      or
+
+                                      +---------+
+                                      ¦         ¦
+                                      ¦    ·····‡·····
+                                      ¦    :    ‡    :
+                                      ¦    :    ‡    :
+                                      ¦    :....‡....:
+                                      ¦         ¦
+                                      ¦_________¦
+
+                                    */
+                                    Relation::Overlap
+                                }
                             }
-                            Ordering::Greater => {
-                                /*
-
-                                  +---------+
-                                  ¦         ¦
-                                  ¦         ¦
-                                  ¦_________¦
-                                       ···········
-                                       :         :
-                                       :         :
-                                       :.........:
-
-                                */
-                                Relation::Disjoint
-                            }
-                            Ordering::Less => {
-                                /*
-
-                                  +---------+
-                                  ¦         ¦
-                                  ¦    ·····‡·····
-                                  ¦____‡____¦    :
-                                       :         :
-                                       :.........:
-
-                                  or
-
-                                  +---------+
-                                  ¦         ¦
-                                  ¦    ·····‡·····
-                                  ¦    :    ¦    :
-                                  ¦    :    ¦    :
-                                  ¦____‡‡‡‡‡‡....:
-
-                                  or
-
-                                  +---------+
-                                  ¦         ¦
-                                  ¦    ·····‡·····
-                                  ¦    :    ‡    :
-                                  ¦    :    ‡    :
-                                  ¦    :....‡....:
-                                  ¦         ¦
-                                  ¦_________¦
-
-                                */
-                                Relation::Overlap
-                            }
-                        },
+                        }
                         Ordering::Less => match self.max_y.cmp(&other.min_y) {
                             Ordering::Equal => {
                                 /*

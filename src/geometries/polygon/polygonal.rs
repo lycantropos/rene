@@ -6,7 +6,9 @@ use crate::traits::Polygonal;
 
 use super::types::Polygon;
 
-impl<'a, Digit, const SHIFT: usize> Polygonal for &'a Polygon<Fraction<BigInt<Digit, SHIFT>>> {
+impl<'a, Digit, const SHIFT: usize> Polygonal
+    for &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>
+{
     type Contour = &'a Contour<Fraction<BigInt<Digit, SHIFT>>>;
     type Holes = std::slice::Iter<'a, Contour<Fraction<BigInt<Digit, SHIFT>>>>;
 
@@ -23,7 +25,9 @@ impl<'a, Digit, const SHIFT: usize> Polygonal for &'a Polygon<Fraction<BigInt<Di
     }
 }
 
-impl<Digit, const SHIFT: usize> Polygonal for Polygon<Fraction<BigInt<Digit, SHIFT>>> {
+impl<Digit, const SHIFT: usize> Polygonal
+    for Polygon<Fraction<BigInt<Digit, SHIFT>>>
+{
     type Contour = Contour<Fraction<BigInt<Digit, SHIFT>>>;
     type Holes = std::vec::IntoIter<Contour<Fraction<BigInt<Digit, SHIFT>>>>;
 

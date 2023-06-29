@@ -5,7 +5,9 @@ use crate::traits::Elemental;
 
 use super::types::Point;
 
-impl<'a, Digit, const SHIFT: usize> Elemental for &'a Point<Fraction<BigInt<Digit, SHIFT>>> {
+impl<'a, Digit, const SHIFT: usize> Elemental
+    for &'a Point<Fraction<BigInt<Digit, SHIFT>>>
+{
     type Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>;
 
     fn coordinates(self) -> (Self::Coordinate, Self::Coordinate) {
@@ -21,7 +23,9 @@ impl<'a, Digit, const SHIFT: usize> Elemental for &'a Point<Fraction<BigInt<Digi
     }
 }
 
-impl<Digit, const SHIFT: usize> Elemental for Point<Fraction<BigInt<Digit, SHIFT>>> {
+impl<Digit, const SHIFT: usize> Elemental
+    for Point<Fraction<BigInt<Digit, SHIFT>>>
+{
     type Coordinate = Fraction<BigInt<Digit, SHIFT>>;
 
     fn coordinates(self) -> (Self::Coordinate, Self::Coordinate) {

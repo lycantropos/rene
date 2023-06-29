@@ -3,14 +3,19 @@ use std::hash::Hash;
 use std::ops::Div;
 
 use crate::operations::{
-    is_point_in_segment, point_vertex_line_divides_angle, to_segments_intersection_scale,
-    to_sorted_pair, CrossMultiply, Orient,
+    is_point_in_segment, point_vertex_line_divides_angle,
+    to_segments_intersection_scale, to_sorted_pair, CrossMultiply, Orient,
 };
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
 use crate::traits::{Contoural, Elemental, Multisegmental, Segmental};
 
-pub(crate) fn relate_to_contour<'a, Contour, Point: Clone + PartialOrd, Segment>(
+pub(crate) fn relate_to_contour<
+    'a,
+    Contour,
+    Point: Clone + PartialOrd,
+    Segment,
+>(
     start: &Point,
     end: &Point,
     contour: &'a Contour,
@@ -25,11 +30,21 @@ where
     let mut last_touched_edge_index: Option<usize> = None;
     let mut last_touched_edge_start: Option<Point> = None;
     for (index, contour_segment) in contour.segments().enumerate() {
-        let (contour_segment_start, contour_segment_end) = contour_segment.endpoints();
-        let relation = relate_to_segment(start, end, contour_segment_start, contour_segment_end);
+        let (contour_segment_start, contour_segment_end) =
+            contour_segment.endpoints();
+        let relation = relate_to_segment(
+            start,
+            end,
+            contour_segment_start,
+            contour_segment_end,
+        );
         match relation {
-            Relation::Component | Relation::Equal => return Relation::Component,
-            Relation::Composite | Relation::Overlap => return Relation::Overlap,
+            Relation::Component | Relation::Equal => {
+                return Relation::Component
+            }
+            Relation::Composite | Relation::Overlap => {
+                return Relation::Overlap
+            }
             Relation::Cross => {
                 if has_no_cross {
                     has_no_cross = false;
@@ -41,17 +56,22 @@ where
                 } else if has_no_cross {
                     debug_assert!(last_touched_edge_index.is_some());
                     debug_assert!(last_touched_edge_start.is_some());
-                    if index - unsafe { last_touched_edge_index.unwrap_unchecked() } == 1
+                    if index
+                        - unsafe { last_touched_edge_index.unwrap_unchecked() }
+                        == 1
                         && contour_segment_start.ne(start)
                         && contour_segment_start.ne(end)
                         && contour_segment_end.ne(start)
                         && contour_segment_end.ne(end)
-                        && start.orient(end, contour_segment_start) == Orientation::Collinear
+                        && start.orient(end, contour_segment_start)
+                            == Orientation::Collinear
                         && point_vertex_line_divides_angle(
                             start,
                             contour_segment_start,
                             contour_segment_end,
-                            unsafe { &last_touched_edge_start.unwrap_unchecked() },
+                            unsafe {
+                                &last_touched_edge_start.unwrap_unchecked()
+                            },
                         )
                     {
                         has_no_cross = false;
@@ -72,12 +92,14 @@ where
         } == contour.segments_count() - 1
     {
         let (first_contour_segment_start, first_contour_segment_end) =
-            unsafe { contour.segments().next().unwrap_unchecked() }.endpoints();
+            unsafe { contour.segments().next().unwrap_unchecked() }
+                .endpoints();
         if first_contour_segment_start.ne(start)
             && first_contour_segment_start.ne(end)
             && first_contour_segment_end.ne(start)
             && first_contour_segment_end.ne(end)
-            && start.orient(end, first_contour_segment_start) == Orientation::Collinear
+            && start.orient(end, first_contour_segment_start)
+                == Orientation::Collinear
             && point_vertex_line_divides_angle(
                 start,
                 first_contour_segment_start,
@@ -116,7 +138,9 @@ pub(crate) fn relate_to_multisegment<
 where
     &'a Multisegment: Multisegmental<Segment = &'a Segment>,
     &'a Segment: Segmental<Endpoint = &'a Point>,
-    for<'b> &'b Point: CrossMultiply<Output = Scalar> + Elemental<Coordinate = &'b Scalar> + Orient,
+    for<'b> &'b Point: CrossMultiply<Output = Scalar>
+        + Elemental<Coordinate = &'b Scalar>
+        + Orient,
 {
     let mut has_no_cross = true;
     let mut has_no_touch = true;
@@ -144,9 +168,14 @@ where
             if has_no_overlap {
                 has_no_overlap = false;
             }
-            if multisegment_segment_start.eq(start) || multisegment_segment_end.eq(start) {
-                start = multisegment_segment_start.max(multisegment_segment_end);
-            } else if multisegment_segment_start.eq(end) || multisegment_segment_end.eq(end) {
+            if multisegment_segment_start.eq(start)
+                || multisegment_segment_end.eq(start)
+            {
+                start =
+                    multisegment_segment_start.max(multisegment_segment_end);
+            } else if multisegment_segment_start.eq(end)
+                || multisegment_segment_end.eq(end)
+            {
                 end = multisegment_segment_start.min(multisegment_segment_end);
             } else {
                 components.push(to_sorted_pair((
@@ -182,12 +211,13 @@ where
                         && multisegment_segment_start.ne(original_end)
                         && multisegment_segment_end.ne(original_end)
                     {
-                        let intersection_scale = to_segments_intersection_scale(
-                            original_start,
-                            original_end,
-                            multisegment_segment_start,
-                            multisegment_segment_end,
-                        );
+                        let intersection_scale =
+                            to_segments_intersection_scale(
+                                original_start,
+                                original_end,
+                                multisegment_segment_start,
+                                multisegment_segment_end,
+                            );
                         let non_touched_endpoint = if is_point_in_segment(
                             multisegment_segment_end,
                             original_start,
@@ -197,7 +227,8 @@ where
                         } else {
                             multisegment_segment_end
                         };
-                        if original_start.orient(original_end, non_touched_endpoint)
+                        if original_start
+                            .orient(original_end, non_touched_endpoint)
                             == Orientation::Counterclockwise
                         {
                             &mut counterclockwise_middle_touch_scales
@@ -217,7 +248,8 @@ where
             && !clockwise_middle_touch_scales.is_empty()
             && !counterclockwise_middle_touch_scales.is_empty()
         {
-            let (less_scales, more_scales) = if clockwise_middle_touch_scales.len()
+            let (less_scales, more_scales) = if clockwise_middle_touch_scales
+                .len()
                 < counterclockwise_middle_touch_scales.len()
             {
                 (
@@ -230,7 +262,8 @@ where
                     clockwise_middle_touch_scales,
                 )
             };
-            let more_scales_set = more_scales.into_iter().collect::<HashSet<Scalar>>();
+            let more_scales_set =
+                more_scales.into_iter().collect::<HashSet<Scalar>>();
             if less_scales
                 .into_iter()
                 .any(|scale| more_scales_set.contains(&scale))
@@ -249,7 +282,8 @@ where
         }
     } else if !components.is_empty() {
         let (mut min_component_start, mut max_component_end) = components[0];
-        for (component_start, component_end) in components[1..].iter().copied() {
+        for (component_start, component_end) in components[1..].iter().copied()
+        {
             if min_component_start > component_start {
                 min_component_start = component_start;
             }
@@ -265,7 +299,8 @@ where
         if min_component_start.eq(start)
             && max_component_end.eq(end)
             && components.into_iter().all(|(_, component_end)| {
-                components_starts.contains(component_end) || component_end.eq(max_component_end)
+                components_starts.contains(component_end)
+                    || component_end.eq(max_component_end)
             })
         {
             if is_segment_superset {
@@ -307,7 +342,8 @@ where
     for<'a> &'a Point: Orient,
 {
     let (first_start, first_end) = to_sorted_pair((first_start, first_end));
-    let (second_start, second_end) = to_sorted_pair((second_start, second_end));
+    let (second_start, second_end) =
+        to_sorted_pair((second_start, second_end));
     let starts_equal = second_start == first_start;
     let ends_equal = second_end == first_end;
     if starts_equal && ends_equal {
@@ -321,8 +357,10 @@ where
         if second_start_orientation == second_end_orientation {
             Relation::Disjoint
         } else {
-            let first_start_orientation = second_start.orient(second_end, first_start);
-            let first_end_orientation = second_start.orient(second_end, first_end);
+            let first_start_orientation =
+                second_start.orient(second_end, first_start);
+            let first_end_orientation =
+                second_start.orient(second_end, first_end);
             if first_start_orientation != Orientation::Collinear
                 && first_end_orientation != Orientation::Collinear
             {
@@ -392,8 +430,10 @@ fn subtract_segments_overlap<'a, Point: PartialOrd>(
     subtrahend_start: &'a Point,
     subtrahend_end: &'a Point,
 ) -> (&'a Point, &'a Point) {
-    let (minuend_start, minuend_end) = to_sorted_pair((minuend_start, minuend_end));
-    let (subtrahend_start, subtrahend_end) = to_sorted_pair((subtrahend_start, subtrahend_end));
+    let (minuend_start, minuend_end) =
+        to_sorted_pair((minuend_start, minuend_end));
+    let (subtrahend_start, subtrahend_end) =
+        to_sorted_pair((subtrahend_start, subtrahend_end));
     if subtrahend_start < minuend_start && minuend_start < subtrahend_end {
         (subtrahend_end, minuend_end)
     } else {

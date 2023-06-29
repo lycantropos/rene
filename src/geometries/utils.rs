@@ -27,9 +27,14 @@ pub struct MultisegmentalsSegments<Multisegments, Segments> {
     segments: Segments,
 }
 
-impl<Multisegments, Segments> MultisegmentalsSegments<Multisegments, Segments> {
+impl<Multisegments, Segments>
+    MultisegmentalsSegments<Multisegments, Segments>
+{
     #[must_use]
-    pub(crate) fn new(segments: Segments, multisegments: Multisegments) -> Self {
+    pub(crate) fn new(
+        segments: Segments,
+        multisegments: Multisegments,
+    ) -> Self {
         Self {
             segments,
             multisegments,
@@ -37,8 +42,14 @@ impl<Multisegments, Segments> MultisegmentalsSegments<Multisegments, Segments> {
     }
 }
 
-impl<Multisegments: Iterator<Item = Multisegment>, Multisegment: Multisegmental> Iterator
-    for MultisegmentalsSegments<Multisegments, <Multisegment as Multisegmental>::Segments>
+impl<
+        Multisegments: Iterator<Item = Multisegment>,
+        Multisegment: Multisegmental,
+    > Iterator
+    for MultisegmentalsSegments<
+        Multisegments,
+        <Multisegment as Multisegmental>::Segments,
+    >
 {
     type Item = <Multisegment as Multisegmental>::Segment;
 

@@ -6,22 +6,26 @@ use std::ops::Bound::{Excluded, Unbounded};
 use traiter::numbers::Parity;
 
 use crate::geometries::{Contour, Multipolygon, Point, Polygon};
-use crate::operations::{shrink_collinear_vertices, IntersectCrossingSegments, Orient};
+use crate::operations::{
+    shrink_collinear_vertices, IntersectCrossingSegments, Orient,
+};
 use crate::oriented::{Orientation, Oriented};
 use crate::sweeping::traits::{EventsContainer, EventsQueue, SweepLine};
 use crate::traits::{
-    Contoural, Elemental, Multipolygonal, MultipolygonalPolygon, Multisegmental, Polygonal,
-    PolygonalContour, Segmental,
+    Contoural, Elemental, Multipolygonal, MultipolygonalPolygon,
+    Multisegmental, Polygonal, PolygonalContour, Segmental,
 };
 
 use super::constants::UNDEFINED_INDEX;
 use super::event::is_right_event;
 use super::event::{
-    is_left_event, left_event_to_position, segment_id_to_left_event, segment_id_to_right_event,
-    Event, UNDEFINED_EVENT,
+    is_left_event, left_event_to_position, segment_id_to_left_event,
+    segment_id_to_right_event, Event, UNDEFINED_EVENT,
 };
 use super::events_queue_key::EventsQueueKey;
-use super::operation_kind::{DIFFERENCE, INTERSECTION, SYMMETRIC_DIFFERENCE, UNION};
+use super::operation_kind::{
+    DIFFERENCE, INTERSECTION, SYMMETRIC_DIFFERENCE, UNION,
+};
 use super::sweep_line_key::SweepLineKey;
 use super::traits::ReduceEvents;
 use super::types::OverlapKind;
@@ -43,8 +47,14 @@ pub(crate) struct Operation<Point, const KIND: u8> {
     sweep_line_data: BTreeSet<SweepLineKey<Point>>,
 }
 
-impl<First, Point: Ord, Second, SecondSegment: Clone, FirstSegment: Clone, const KIND: u8>
-    From<(&First, &Second)> for Operation<Point, KIND>
+impl<
+        First,
+        Point: Ord,
+        Second,
+        SecondSegment: Clone,
+        FirstSegment: Clone,
+        const KIND: u8,
+    > From<(&First, &Second)> for Operation<Point, KIND>
 where
     FirstSegment: Segmental<Endpoint = Point>,
     SecondSegment: Segmental<Endpoint = Point>,
@@ -57,7 +67,8 @@ where
         debug_assert!(IsValid::is_valid(second));
         let first_segments_count = first.segments_count();
         let second_segments_count = second.segments_count();
-        let mut result = Self::with_capacity(first_segments_count, second_segments_count);
+        let mut result =
+            Self::with_capacity(first_segments_count, second_segments_count);
         result.extend(first.segments().cloned());
         result.extend(second.segments().cloned());
         let first_event = unsafe { result.peek().unwrap_unchecked() };
@@ -66,8 +77,8 @@ where
     }
 }
 
-impl<Element, Point: Ord, Segment: Clone, const KIND: u8> From<(&[&Element], &[&Element])>
-    for Operation<Point, KIND>
+impl<Element, Point: Ord, Segment: Clone, const KIND: u8>
+    From<(&[&Element], &[&Element])> for Operation<Point, KIND>
 where
     Segment: Segmental<Endpoint = Point>,
     for<'a> &'a Element: IsValid + Multisegmental<Segment = &'a Segment>,
@@ -78,7 +89,8 @@ where
         debug_assert!(second.iter().all(|element| element.is_valid()));
         let first_segments_count = multisegments_to_segments_count(first);
         let second_segments_count = multisegments_to_segments_count(second);
-        let mut result = Self::with_capacity(first_segments_count, second_segments_count);
+        let mut result =
+            Self::with_capacity(first_segments_count, second_segments_count);
         for &element in first {
             result.extend(element.segments().cloned());
         }
@@ -91,8 +103,8 @@ where
     }
 }
 
-impl<Element, Segment: Clone, Point: Ord, const KIND: u8> From<(&[&Element], &Element)>
-    for Operation<Point, KIND>
+impl<Element, Segment: Clone, Point: Ord, const KIND: u8>
+    From<(&[&Element], &Element)> for Operation<Point, KIND>
 where
     for<'a> &'a Element: IsValid + Multisegmental<Segment = &'a Segment>,
     for<'a> &'a Point: Orient,
@@ -103,7 +115,8 @@ where
         debug_assert!(second.is_valid());
         let first_segments_count = multisegments_to_segments_count(first);
         let second_segments_count = second.segments_count();
-        let mut result = Self::with_capacity(first_segments_count, second_segments_count);
+        let mut result =
+            Self::with_capacity(first_segments_count, second_segments_count);
         for element in first {
             result.extend(element.segments().cloned());
         }
@@ -114,8 +127,12 @@ where
     }
 }
 
-impl<Element, Point: Ord, Segment: Clone + Segmental<Endpoint = Point>, const KIND: u8>
-    From<(&Element, &[&Element])> for Operation<Point, KIND>
+impl<
+        Element,
+        Point: Ord,
+        Segment: Clone + Segmental<Endpoint = Point>,
+        const KIND: u8,
+    > From<(&Element, &[&Element])> for Operation<Point, KIND>
 where
     for<'a> &'a Element: IsValid + Multisegmental<Segment = &'a Segment>,
     for<'a> &'a Point: Orient,
@@ -125,7 +142,8 @@ where
         debug_assert!(second.iter().all(|element| element.is_valid()));
         let first_segments_count = first.segments_count();
         let second_segments_count = multisegments_to_segments_count(second);
-        let mut result = Self::with_capacity(first_segments_count, second_segments_count);
+        let mut result =
+            Self::with_capacity(first_segments_count, second_segments_count);
         result.extend(first.segments().cloned());
         for element in second {
             result.extend(element.segments().cloned());
@@ -145,7 +163,8 @@ impl<Point> DetectIfLeftEventFromResult for Operation<Point, DIFFERENCE> {
         if self.is_left_event_from_first_operand(event) {
             self.is_outside_left_event(event)
         } else {
-            self.is_inside_left_event(event) || self.is_common_polyline_component_left_event(event)
+            self.is_inside_left_event(event)
+                || self.is_common_polyline_component_left_event(event)
         }
     }
 }
@@ -158,7 +177,9 @@ impl<Point> DetectIfLeftEventFromResult for Operation<Point, INTERSECTION> {
     }
 }
 
-impl<Point> DetectIfLeftEventFromResult for Operation<Point, SYMMETRIC_DIFFERENCE> {
+impl<Point> DetectIfLeftEventFromResult
+    for Operation<Point, SYMMETRIC_DIFFERENCE>
+{
     fn detect_if_left_event_from_result(&self, event: Event) -> bool {
         !self.is_overlap_left_event(event)
     }
@@ -172,10 +193,14 @@ impl<Point> DetectIfLeftEventFromResult for Operation<Point, UNION> {
     }
 }
 
-impl<Point: Clone + PartialOrd, const KIND: u8> Iterator for Operation<Point, KIND>
+impl<Point: Clone + PartialOrd, const KIND: u8> Iterator
+    for Operation<Point, KIND>
 where
-    Self: EventsQueue<Event = Event> + DetectIfLeftEventFromResult + SweepLine<Event = Event>,
-    for<'a> &'a Point: Elemental + IntersectCrossingSegments<Output = Point> + Orient,
+    Self: EventsQueue<Event = Event>
+        + DetectIfLeftEventFromResult
+        + SweepLine<Event = Event>,
+    for<'a> &'a Point:
+        Elemental + IntersectCrossingSegments<Output = Point> + Orient,
     for<'a> <&'a Point as Elemental>::Coordinate: PartialEq,
 {
     type Item = Event;
@@ -192,7 +217,9 @@ where
             if is_right_event(event) {
                 let opposite_event = self.to_opposite_event(event);
                 debug_assert!(is_left_event(opposite_event));
-                if let Some(equal_segment_event) = <Self as SweepLine>::find(self, opposite_event) {
+                if let Some(equal_segment_event) =
+                    <Self as SweepLine>::find(self, opposite_event)
+                {
                     let (maybe_above_event, maybe_below_event) = (
                         self.above(equal_segment_event),
                         self.below(equal_segment_event),
@@ -211,15 +238,27 @@ where
                 self.compute_left_event_fields(event, maybe_below_event);
                 if let Some(above_event) = self.above(event) {
                     if self.detect_intersection(event, above_event) {
-                        self.compute_left_event_fields(event, maybe_below_event);
-                        self.compute_left_event_fields(above_event, Some(event));
+                        self.compute_left_event_fields(
+                            event,
+                            maybe_below_event,
+                        );
+                        self.compute_left_event_fields(
+                            above_event,
+                            Some(event),
+                        );
                     }
                 }
                 if let Some(below_event) = maybe_below_event {
                     if self.detect_intersection(below_event, event) {
                         let below_below_event = self.below(below_event);
-                        self.compute_left_event_fields(below_event, below_below_event);
-                        self.compute_left_event_fields(event, maybe_below_event);
+                        self.compute_left_event_fields(
+                            below_event,
+                            below_below_event,
+                        );
+                        self.compute_left_event_fields(
+                            event,
+                            maybe_below_event,
+                        );
                     }
                 }
                 return Some(event);
@@ -261,10 +300,10 @@ where
         }
         debug_assert!(events
             .iter()
-            .all(|&event| events_ids[self.to_opposite_event(event)] != UNDEFINED_INDEX));
-        debug_assert!(events
-            .iter()
-            .all(|&event| self.to_start_id(event) < self.to_unique_visited_endpoints_count()));
+            .all(|&event| events_ids[self.to_opposite_event(event)]
+                != UNDEFINED_INDEX));
+        debug_assert!(events.iter().all(|&event| self.to_start_id(event)
+            < self.to_unique_visited_endpoints_count()));
         let connectivity = self.events_to_connectivity(&events);
         let mut are_internal = Vec::<bool>::new();
         let mut depths = Vec::<usize>::new();
@@ -308,23 +347,30 @@ where
                 &mut contours_ids,
                 &events_ids,
             );
-            let mut vertices = self.contour_events_to_vertices(&contour_events);
+            let mut vertices =
+                self.contour_events_to_vertices(&contour_events);
             if depths[contour_id].is_odd() {
                 vertices[1..].reverse();
             }
             contours_vertices.push(vertices);
         }
         let mut result = Vec::with_capacity(contours_vertices.len());
-        for (contour_id, contour_vertices) in contours_vertices.iter().enumerate() {
+        for (contour_id, contour_vertices) in
+            contours_vertices.iter().enumerate()
+        {
             if are_internal[contour_id] {
                 // hole of a hole is an external polygon
                 result.extend(holes[contour_id].iter().map(|&hole_id| {
                     Polygon::from((
-                        Contour::from(collect_references(&contours_vertices[hole_id])),
+                        Contour::from(collect_references(
+                            &contours_vertices[hole_id],
+                        )),
                         holes[hole_id]
                             .iter()
                             .map(|&hole_hole_id| {
-                                Contour::from(collect_references(&contours_vertices[hole_hole_id]))
+                                Contour::from(collect_references(
+                                    &contours_vertices[hole_hole_id],
+                                ))
                             })
                             .collect(),
                     ))
@@ -335,7 +381,9 @@ where
                     holes[contour_id]
                         .iter()
                         .map(|&hole_id| {
-                            Contour::from(collect_references(&contours_vertices[hole_id]))
+                            Contour::from(collect_references(
+                                &contours_vertices[hole_id],
+                            ))
                         })
                         .collect(),
                 )));
@@ -359,8 +407,11 @@ impl<Point, const KIND: u8> EventsContainer for Operation<Point, KIND> {
 }
 
 impl<Point, const KIND: u8> Operation<Point, KIND> {
-    fn compute_left_event_fields(&mut self, event: Event, maybe_below_event: Option<Event>)
-    where
+    fn compute_left_event_fields(
+        &mut self,
+        event: Event,
+        maybe_below_event: Option<Event>,
+    ) where
         Self: DetectIfLeftEventFromResult,
         for<'a> &'a Point: Elemental,
         for<'a> <&'a Point as Elemental>::Coordinate: PartialEq,
@@ -374,7 +425,8 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
                 {
                     self.are_other_interior_to_left[below_event_position]
                 } else {
-                    self.have_interior_to_left[self.left_event_to_segment_id(below_event)]
+                    self.have_interior_to_left
+                        [self.left_event_to_segment_id(below_event)]
                 }
             };
             self.below_event_from_result[event_position] = if !self
@@ -386,7 +438,8 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
                 below_event
             };
         }
-        self.are_from_result[event_position] = self.detect_if_left_event_from_result(event);
+        self.are_from_result[event_position] =
+            self.detect_if_left_event_from_result(event);
     }
 
     fn compute_relations(
@@ -405,9 +458,11 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
         let mut depth = 0;
         let mut parent = UNDEFINED_INDEX;
         let mut is_internal = false;
-        let below_event_from_result = self.below_event_from_result[left_event_to_position(event)];
+        let below_event_from_result =
+            self.below_event_from_result[left_event_to_position(event)];
         if below_event_from_result != UNDEFINED_EVENT {
-            let below_event_from_result_id = events_ids[below_event_from_result];
+            let below_event_from_result_id =
+                events_ids[below_event_from_result];
             let below_contour_id = contours_ids[below_event_from_result_id];
             if !are_from_in_to_out[below_event_from_result_id] {
                 if !are_internal[below_contour_id] {
@@ -463,7 +518,8 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
                 event_id += 1;
             }
             let left_start_event_id = event_id;
-            while event_id < events_count && self.get_event_start(events[event_id]) == current_start
+            while event_id < events_count
+                && self.get_event_start(events[event_id]) == current_start
             {
                 event_id += 1;
             }
@@ -505,11 +561,13 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
     }
 
     fn is_common_polyline_component_left_event(&self, event: Event) -> bool {
-        self.overlap_kinds[left_event_to_position(event)] == OverlapKind::DifferentOrientation
+        self.overlap_kinds[left_event_to_position(event)]
+            == OverlapKind::DifferentOrientation
     }
 
     fn is_common_region_boundary_left_event(&self, event: Event) -> bool {
-        self.overlap_kinds[left_event_to_position(event)] == OverlapKind::SameOrientation
+        self.overlap_kinds[left_event_to_position(event)]
+            == OverlapKind::SameOrientation
     }
 
     fn is_from_first_operand_event(&self, event: Event) -> bool {
@@ -564,13 +622,16 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
     ) {
         for &event in contour_events {
             are_events_processed[events_ids[event]] = true;
-            are_events_processed[events_ids[self.to_opposite_event(event)]] = true;
+            are_events_processed[events_ids[self.to_opposite_event(event)]] =
+                true;
             if is_left_event(event) {
                 are_from_in_to_out[events_ids[event]] = false;
                 contours_ids[events_ids[event]] = contour_id;
             } else {
-                are_from_in_to_out[events_ids[self.to_opposite_event(event)]] = true;
-                contours_ids[events_ids[self.to_opposite_event(event)]] = contour_id;
+                are_from_in_to_out
+                    [events_ids[self.to_opposite_event(event)]] = true;
+                contours_ids[events_ids[self.to_opposite_event(event)]] =
+                    contour_id;
             }
         }
     }
@@ -596,16 +657,22 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
         let contour_start = self.get_event_start(event);
         let mut visited_endpoints_ids = vec![self.to_start_id(event)];
         while self.get_event_end(cursor) != contour_start {
-            let previous_endpoint_position = visited_endpoints_positions[self.to_end_id(cursor)];
+            let previous_endpoint_position =
+                visited_endpoints_positions[self.to_end_id(cursor)];
             if previous_endpoint_position == UNDEFINED_INDEX {
-                visited_endpoints_positions[self.to_end_id(cursor)] = result.len();
+                visited_endpoints_positions[self.to_end_id(cursor)] =
+                    result.len();
             } else {
                 // vertices loop found, i.e. contour has self-intersection
                 debug_assert_ne!(previous_endpoint_position, 0);
                 result.drain(previous_endpoint_position..);
             }
             visited_endpoints_ids.push(self.to_end_id(cursor));
-            let event_id = to_next_event_id(opposite_event_id, are_events_processed, connectivity);
+            let event_id = to_next_event_id(
+                opposite_event_id,
+                are_events_processed,
+                connectivity,
+            );
             if event_id == UNDEFINED_INDEX {
                 break;
             }
@@ -686,7 +753,11 @@ where
     Self: EventsQueue<Event = Event> + SweepLine<Event = Event>,
     for<'a> &'a Point: IntersectCrossingSegments<Output = Point> + Orient,
 {
-    fn detect_intersection(&mut self, below_event: Event, event: Event) -> bool {
+    fn detect_intersection(
+        &mut self,
+        below_event: Event,
+        event: Event,
+    ) -> bool {
         debug_assert_ne!(below_event, event);
 
         let event_start = self.get_event_start(event);
@@ -694,40 +765,56 @@ where
         let below_event_start = self.get_event_start(below_event);
         let below_event_end = self.get_event_end(below_event);
 
-        let event_start_orientation = below_event_end.orient(below_event_start, event_start);
-        let event_end_orientation = below_event_end.orient(below_event_start, event_end);
+        let event_start_orientation =
+            below_event_end.orient(below_event_start, event_start);
+        let event_end_orientation =
+            below_event_end.orient(below_event_start, event_end);
         if event_start_orientation != Orientation::Collinear
             && event_end_orientation != Orientation::Collinear
         {
             if event_start_orientation != event_end_orientation {
                 let below_event_start_orientation =
                     event_start.orient(event_end, below_event_start);
-                let below_event_end_orientation = event_start.orient(event_end, below_event_end);
+                let below_event_end_orientation =
+                    event_start.orient(event_end, below_event_end);
                 if below_event_start_orientation != Orientation::Collinear
                     && below_event_end_orientation != Orientation::Collinear
                 {
-                    if below_event_start_orientation != below_event_end_orientation {
-                        let point = IntersectCrossingSegments::intersect_crossing_segments(
-                            event_start,
-                            event_end,
-                            below_event_start,
-                            below_event_end,
+                    if below_event_start_orientation
+                        != below_event_end_orientation
+                    {
+                        let point =
+                            IntersectCrossingSegments::intersect_crossing_segments(
+                                event_start,
+                                event_end,
+                                below_event_start,
+                                below_event_end,
+                            );
+                        self.divide_event_by_midpoint(
+                            below_event,
+                            point.clone(),
                         );
-                        self.divide_event_by_midpoint(below_event, point.clone());
                         self.divide_event_by_midpoint(event, point);
                     }
-                } else if below_event_start_orientation != Orientation::Collinear {
-                    if event_start < below_event_end && below_event_end < event_end {
+                } else if below_event_start_orientation
+                    != Orientation::Collinear
+                {
+                    if event_start < below_event_end
+                        && below_event_end < event_end
+                    {
                         let point = below_event_end.clone();
                         self.divide_event_by_midpoint(event, point);
                     }
-                } else if event_start < below_event_start && below_event_start < event_end {
+                } else if event_start < below_event_start
+                    && below_event_start < event_end
+                {
                     let point = below_event_start.clone();
                     self.divide_event_by_midpoint(event, point);
                 }
             }
         } else if event_end_orientation != Orientation::Collinear {
-            if below_event_start < event_start && event_start < below_event_end {
+            if below_event_start < event_start && event_start < below_event_end
+            {
                 let point = event_start.clone();
                 self.divide_event_by_midpoint(below_event, point);
             }
@@ -745,11 +832,12 @@ where
 
             if event_start == below_event_start {
                 if event_end != below_event_end {
-                    let (max_end_event, min_end_event) = if event_end < below_event_end {
-                        (below_event, event)
-                    } else {
-                        (event, below_event)
-                    };
+                    let (max_end_event, min_end_event) =
+                        if event_end < below_event_end {
+                            (below_event, event)
+                        } else {
+                            (event, below_event)
+                        };
                     let min_end = self.get_event_end(min_end_event).clone();
                     let (min_end_to_start_event, min_end_to_max_end_event) =
                         self.divide(max_end_event, min_end);
@@ -758,27 +846,33 @@ where
                 }
                 let overlap_kind = if self.have_interior_to_left
                     [self.left_event_to_segment_id(event)]
-                    == self.have_interior_to_left[self.left_event_to_segment_id(below_event)]
+                    == self.have_interior_to_left
+                        [self.left_event_to_segment_id(below_event)]
                 {
                     OverlapKind::SameOrientation
                 } else {
                     OverlapKind::DifferentOrientation
                 };
-                self.overlap_kinds[left_event_to_position(below_event)] = overlap_kind;
-                self.overlap_kinds[left_event_to_position(event)] = overlap_kind;
+                self.overlap_kinds[left_event_to_position(below_event)] =
+                    overlap_kind;
+                self.overlap_kinds[left_event_to_position(event)] =
+                    overlap_kind;
                 return true;
             } else if event_end == below_event_end {
-                let (max_start_event, min_start_event) = if event_start < below_event_start {
-                    (below_event, event)
-                } else {
-                    (event, below_event)
-                };
+                let (max_start_event, min_start_event) =
+                    if event_start < below_event_start {
+                        (below_event, event)
+                    } else {
+                        (event, below_event)
+                    };
                 let max_start = self.get_event_start(max_start_event).clone();
                 let (max_start_to_min_start_event, max_start_to_end_event) =
                     self.divide(min_start_event, max_start);
                 self.push(max_start_to_min_start_event);
                 self.push(max_start_to_end_event);
-            } else if below_event_start < event_start && event_start < below_event_end {
+            } else if below_event_start < event_start
+                && event_start < below_event_end
+            {
                 if event_end < below_event_end {
                     let event_start = event_start.clone();
                     let event_end = event_end.clone();
@@ -789,10 +883,18 @@ where
                         event_end,
                     );
                 } else {
-                    let (max_start, min_end) = (event_start.clone(), below_event_end.clone());
-                    self.divide_overlapping_events(below_event, event, max_start, min_end);
+                    let (max_start, min_end) =
+                        (event_start.clone(), below_event_end.clone());
+                    self.divide_overlapping_events(
+                        below_event,
+                        event,
+                        max_start,
+                        min_end,
+                    );
                 }
-            } else if event_start < below_event_start && below_event_start < event_end {
+            } else if event_start < below_event_start
+                && below_event_start < event_end
+            {
                 if below_event_end < event_end {
                     let below_event_start = below_event_start.clone();
                     let below_event_end = below_event_end.clone();
@@ -803,8 +905,14 @@ where
                         below_event_end,
                     );
                 } else {
-                    let (max_start, min_end) = (below_event_start.clone(), event_end.clone());
-                    self.divide_overlapping_events(event, below_event, max_start, min_end);
+                    let (max_start, min_end) =
+                        (below_event_start.clone(), event_end.clone());
+                    self.divide_overlapping_events(
+                        event,
+                        below_event,
+                        max_start,
+                        min_end,
+                    );
                 }
             }
         }
@@ -831,8 +939,11 @@ where
     ) where
         Point: PartialEq,
     {
-        debug_assert!(mid_segment_event_start.eq(self.get_event_start(mid_segment_event)));
-        debug_assert!(mid_segment_event_end.eq(self.get_event_end(mid_segment_event)));
+        debug_assert!(mid_segment_event_start
+            .eq(self.get_event_start(mid_segment_event)));
+        debug_assert!(
+            mid_segment_event_end.eq(self.get_event_end(mid_segment_event))
+        );
         debug_assert!(mid_segment_event_start.ne(self.get_event_start(event)));
         debug_assert!(mid_segment_event_end.ne(self.get_event_end(event)));
 
@@ -841,7 +952,8 @@ where
     }
 
     fn divide_event_by_midpoint(&mut self, event: Event, point: Point) {
-        let (point_to_event_start_event, point_to_event_end_event) = self.divide(event, point);
+        let (point_to_event_start_event, point_to_event_end_event) =
+            self.divide(event, point);
         self.push(point_to_event_start_event);
         self.push(point_to_event_end_event);
     }
@@ -872,7 +984,9 @@ impl<Point: Clone, const KIND: u8> Operation<Point, KIND> {
         );
         debug_assert_eq!(
             self.is_left_event_from_first_operand(event),
-            self.is_left_event_from_first_operand(mid_point_to_event_end_event)
+            self.is_left_event_from_first_operand(
+                mid_point_to_event_end_event
+            )
         );
         (mid_point_to_event_start_event, mid_point_to_event_end_event)
     }
@@ -962,7 +1076,10 @@ where
         }
     }
 
-    fn with_capacity(first_segments_count: usize, second_segments_count: usize) -> Self {
+    fn with_capacity(
+        first_segments_count: usize,
+        second_segments_count: usize,
+    ) -> Self {
         let segments_count = first_segments_count + second_segments_count;
         let initial_events_count = 2 * segments_count;
         Self {
@@ -1016,7 +1133,9 @@ fn collect_references<T: Clone>(vertices: &[&T]) -> Vec<T> {
     vertices.iter().copied().cloned().collect()
 }
 
-fn multisegments_to_segments_count<'a, Multisegment>(multisegments: &[&'a Multisegment]) -> usize
+fn multisegments_to_segments_count<'a, Multisegment>(
+    multisegments: &[&'a Multisegment],
+) -> usize
 where
     &'a Multisegment: Multisegmental,
 {

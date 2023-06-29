@@ -55,7 +55,8 @@ impl<Point> Trapezoidation<Point> {
     where
         Point: Clone + From<(Scalar, Scalar)> + PartialOrd,
         Scalar: Clone + One,
-        for<'b> &'b Multisegment: Bounded<&'b Scalar> + Multisegmental<Segment = &'b Segment>,
+        for<'b> &'b Multisegment:
+            Bounded<&'b Scalar> + Multisegmental<Segment = &'b Segment>,
         for<'b> &'b Point: Orient,
         for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
@@ -63,8 +64,10 @@ impl<Point> Trapezoidation<Point> {
             + Zeroable,
         for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
     {
-        let mut edges = Vec::<Edge>::with_capacity(multisegment.segments_count());
-        let mut endpoints = Vec::<Point>::with_capacity(2 * multisegment.segments_count());
+        let mut edges =
+            Vec::<Edge>::with_capacity(multisegment.segments_count());
+        let mut endpoints =
+            Vec::<Point>::with_capacity(2 * multisegment.segments_count());
         for segment in multisegment.segments() {
             let (start, end) = segment.endpoints();
             let start_index = endpoints.len();
@@ -89,7 +92,13 @@ impl<Point> Trapezoidation<Point> {
         Self::from_box(multisegment.to_bounding_box(), edges, endpoints)
     }
 
-    pub(crate) fn from_polygon<'a, Scalar, Contour: 'a, Polygon, Shuffler: FnOnce(&mut Vec<Edge>)>(
+    pub(crate) fn from_polygon<
+        'a,
+        Scalar,
+        Contour: 'a,
+        Polygon,
+        Shuffler: FnOnce(&mut Vec<Edge>),
+    >(
         polygon: &'a Polygon,
         shuffler: Shuffler,
     ) -> Self
@@ -98,15 +107,17 @@ impl<Point> Trapezoidation<Point> {
         Point: 'a + Clone + From<(Scalar, Scalar)> + PartialOrd,
         Scalar: Clone + One,
         for<'b> &'b Point: Orient,
-        for<'b> &'b Polygon:
-            Bounded<&'b Scalar> + Polygonal<Contour = &'b Contour> + Multisegmental,
+        for<'b> &'b Polygon: Bounded<&'b Scalar>
+            + Polygonal<Contour = &'b Contour>
+            + Multisegmental,
         for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
             + Sub<Output = Scalar>
             + Zeroable,
     {
         let mut edges = Vec::<Edge>::with_capacity(polygon.segments_count());
-        let mut endpoints = Vec::<Point>::with_capacity(polygon.segments_count());
+        let mut endpoints =
+            Vec::<Point>::with_capacity(polygon.segments_count());
         {
             let border = polygon.border();
             let is_border_correctly_oriented =
@@ -145,8 +156,12 @@ impl<Point> Trapezoidation<Point> {
     {
         debug_assert!(!edges.is_empty());
         let mut nodes = Vec::<Node>::new();
-        let first_leaf_index =
-            Self::leaf_from_box_with_edges(box_, &mut edges, &mut endpoints, &mut nodes);
+        let first_leaf_index = Self::leaf_from_box_with_edges(
+            box_,
+            &mut edges,
+            &mut endpoints,
+            &mut nodes,
+        );
         debug_assert_eq!(first_leaf_index, 0usize);
         Self::add_edge_to_single_trapezoid(0usize, 0usize, &edges, &mut nodes);
         for edge_index in 1..edges.len() - 2 {
@@ -234,7 +249,9 @@ impl<Point> Trapezoidation<Point> {
         let mut start_index = endpoints.len();
         endpoints.extend(contour.vertices().cloned());
         let mut start = &endpoints[start_index];
-        for (end_offset, end) in endpoints[first_start_index + 1..].iter().enumerate() {
+        for (end_offset, end) in
+            endpoints[first_start_index + 1..].iter().enumerate()
+        {
             let end_index = first_start_index + 1 + end_offset;
             edges.push(if start < end {
                 Edge {
@@ -274,12 +291,24 @@ impl<Point: PartialOrd> Trapezoidation<Point>
 where
     for<'a> &'a Point: Orient,
 {
-    fn add_edge(edge_index: usize, edges: &[Edge], endpoints: &[Point], nodes: &mut Vec<Node>) {
+    fn add_edge(
+        edge_index: usize,
+        edges: &[Edge],
+        endpoints: &[Point],
+        nodes: &mut Vec<Node>,
+    ) {
         let trapezoids_leaves_indices =
-            Self::find_intersecting_trapezoids_leaves_indices(edge_index, edges, endpoints, nodes);
+            Self::find_intersecting_trapezoids_leaves_indices(
+                edge_index, edges, endpoints, nodes,
+            );
         debug_assert!(!trapezoids_leaves_indices.is_empty());
         if let [trapezoid_leaf_index] = trapezoids_leaves_indices.as_slice() {
-            Self::add_edge_to_single_trapezoid(edge_index, *trapezoid_leaf_index, edges, nodes);
+            Self::add_edge_to_single_trapezoid(
+                edge_index,
+                *trapezoid_leaf_index,
+                edges,
+                nodes,
+            );
         } else {
             let (
                 first_trapezoid_leaf_index,
@@ -294,7 +323,9 @@ where
                     *last_trapezoid_leaf_index,
                 )
             } else {
-                unreachable!("Edge intersects either single or multiple trapezoids.")
+                unreachable!(
+                    "Edge intersects either single or multiple trapezoids."
+                )
             };
             let (mut prev_above_leaf_index, mut prev_below_leaf_index) =
                 Self::add_edge_to_first_trapezoid(
@@ -303,15 +334,18 @@ where
                     edges,
                     nodes,
                 );
-            for &middle_trapezoid_leaf_index in middle_trapezoids_leaves_indices {
-                (prev_above_leaf_index, prev_below_leaf_index) = Self::add_edge_to_middle_trapezoid(
-                    edge_index,
-                    middle_trapezoid_leaf_index,
-                    prev_above_leaf_index,
-                    prev_below_leaf_index,
-                    edges,
-                    nodes,
-                );
+            for &middle_trapezoid_leaf_index in
+                middle_trapezoids_leaves_indices
+            {
+                (prev_above_leaf_index, prev_below_leaf_index) =
+                    Self::add_edge_to_middle_trapezoid(
+                        edge_index,
+                        middle_trapezoid_leaf_index,
+                        prev_above_leaf_index,
+                        prev_below_leaf_index,
+                        edges,
+                        nodes,
+                    );
             }
             Self::add_edge_to_last_trapezoid(
                 edge_index,
@@ -334,53 +368,69 @@ where
         let (above_leaf_index, below_leaf_index) = (
             Node::new_leaf(
                 edge.left_point_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .right_point_index,
                 edge_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .above_edge_index,
                 edges,
                 nodes,
             ),
             Node::new_leaf(
                 edge.left_point_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .right_point_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .below_edge_index,
                 edge_index,
                 edges,
                 nodes,
             ),
         );
-        let mut replacement_node_index =
-            Node::new_y_node(edge_index, below_leaf_index, above_leaf_index, nodes);
+        let mut replacement_node_index = Node::new_y_node(
+            edge_index,
+            below_leaf_index,
+            above_leaf_index,
+            nodes,
+        );
         if edge.left_point_index
-            == Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point_index
+            == Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                .left_point_index
         {
             Self::maybe_set_as_upper_left(
                 above_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_upper_left_leaf_index(),
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .get_upper_left_leaf_index(),
                 nodes,
             );
             Self::maybe_set_as_lower_left(
                 below_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_lower_left_leaf_index(),
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .get_lower_left_leaf_index(),
                 nodes,
             );
         } else {
             let left_leaf_index = Node::new_leaf(
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .left_point_index,
                 edge.left_point_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .below_edge_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .above_edge_index,
                 edges,
                 nodes,
             );
             Self::maybe_set_as_lower_left(
                 left_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_lower_left_leaf_index(),
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .get_lower_left_leaf_index(),
                 nodes,
             );
             Self::maybe_set_as_upper_left(
                 left_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_upper_left_leaf_index(),
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .get_upper_left_leaf_index(),
                 nodes,
             );
             Self::set_as_lower_right(left_leaf_index, below_leaf_index, nodes);
@@ -394,15 +444,21 @@ where
         }
         Self::maybe_set_as_upper_right(
             above_leaf_index,
-            Self::get_trapezoid(trapezoid_leaf_index, nodes).get_upper_right_leaf_index(),
+            Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                .get_upper_right_leaf_index(),
             nodes,
         );
         Self::maybe_set_as_lower_right(
             below_leaf_index,
-            Self::get_trapezoid(trapezoid_leaf_index, nodes).get_lower_right_leaf_index(),
+            Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                .get_lower_right_leaf_index(),
             nodes,
         );
-        Self::replace_node(trapezoid_leaf_index, replacement_node_index, nodes);
+        Self::replace_node(
+            trapezoid_leaf_index,
+            replacement_node_index,
+            nodes,
+        );
         (above_leaf_index, below_leaf_index)
     }
 
@@ -414,66 +470,102 @@ where
         edges: &[Edge],
         nodes: &mut Vec<Node>,
     ) -> (usize, usize) {
-        let above_leaf_index = if Self::get_trapezoid(prev_above_leaf_index, nodes).above_edge_index
-            == Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index
-        {
-            Self::get_trapezoid_mut(prev_above_leaf_index, nodes).right_point_index =
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index;
-            prev_above_leaf_index
-        } else {
-            let above_leaf_index = Node::new_leaf(
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index,
-                edge_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index,
-                edges,
-                nodes,
-            );
-            Self::maybe_set_as_upper_left(
-                above_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_upper_left_leaf_index(),
-                nodes,
-            );
-            Self::set_as_lower_left(above_leaf_index, prev_above_leaf_index, nodes);
-            above_leaf_index
-        };
-        let below_leaf_index = if Self::get_trapezoid(prev_below_leaf_index, nodes).below_edge_index
-            == Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index
-        {
-            Self::get_trapezoid_mut(prev_below_leaf_index, nodes).right_point_index =
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index;
-            prev_below_leaf_index
-        } else {
-            let below_leaf_index = Node::new_leaf(
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index,
-                edge_index,
-                edges,
-                nodes,
-            );
-            Self::set_as_upper_left(below_leaf_index, prev_below_leaf_index, nodes);
-            Self::maybe_set_as_lower_left(
-                below_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_lower_left_leaf_index(),
-                nodes,
-            );
-            below_leaf_index
-        };
+        let above_leaf_index =
+            if Self::get_trapezoid(prev_above_leaf_index, nodes)
+                .above_edge_index
+                == Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .above_edge_index
+            {
+                Self::get_trapezoid_mut(prev_above_leaf_index, nodes)
+                    .right_point_index =
+                    Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                        .right_point_index;
+                prev_above_leaf_index
+            } else {
+                let above_leaf_index = Node::new_leaf(
+                    Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                        .left_point_index,
+                    Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                        .right_point_index,
+                    edge_index,
+                    Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                        .above_edge_index,
+                    edges,
+                    nodes,
+                );
+                Self::maybe_set_as_upper_left(
+                    above_leaf_index,
+                    Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                        .get_upper_left_leaf_index(),
+                    nodes,
+                );
+                Self::set_as_lower_left(
+                    above_leaf_index,
+                    prev_above_leaf_index,
+                    nodes,
+                );
+                above_leaf_index
+            };
+        let below_leaf_index =
+            if Self::get_trapezoid(prev_below_leaf_index, nodes)
+                .below_edge_index
+                == Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .below_edge_index
+            {
+                Self::get_trapezoid_mut(prev_below_leaf_index, nodes)
+                    .right_point_index =
+                    Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                        .right_point_index;
+                prev_below_leaf_index
+            } else {
+                let below_leaf_index = Node::new_leaf(
+                    Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                        .left_point_index,
+                    Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                        .right_point_index,
+                    Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                        .below_edge_index,
+                    edge_index,
+                    edges,
+                    nodes,
+                );
+                Self::set_as_upper_left(
+                    below_leaf_index,
+                    prev_below_leaf_index,
+                    nodes,
+                );
+                Self::maybe_set_as_lower_left(
+                    below_leaf_index,
+                    Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                        .get_lower_left_leaf_index(),
+                    nodes,
+                );
+                below_leaf_index
+            };
         Self::maybe_set_as_upper_right(
             above_leaf_index,
-            Self::get_trapezoid(trapezoid_leaf_index, nodes).get_upper_right_leaf_index(),
+            Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                .get_upper_right_leaf_index(),
             nodes,
         );
         Self::maybe_set_as_lower_right(
             below_leaf_index,
-            Self::get_trapezoid(trapezoid_leaf_index, nodes).get_lower_right_leaf_index(),
+            Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                .get_lower_right_leaf_index(),
             nodes,
         );
         {
-            let replacement_node_index =
-                Node::new_y_node(edge_index, below_leaf_index, above_leaf_index, nodes);
-            Self::replace_node(trapezoid_leaf_index, replacement_node_index, nodes)
+            let replacement_node_index = Node::new_y_node(
+                edge_index,
+                below_leaf_index,
+                above_leaf_index,
+                nodes,
+            );
+            Self::replace_node(
+                trapezoid_leaf_index,
+                replacement_node_index,
+                nodes,
+            )
         };
         (above_leaf_index, below_leaf_index)
     }
@@ -487,84 +579,116 @@ where
         nodes: &mut Vec<Node>,
     ) {
         let edge = &edges[edge_index];
-        let above_leaf_index = if Self::get_trapezoid(prev_above_leaf_index, nodes).above_edge_index
-            == Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index
-        {
-            Self::get_trapezoid_mut(prev_above_leaf_index, nodes).right_point_index =
-                edge.right_point_index;
-            prev_above_leaf_index
-        } else {
-            let above_leaf_index = Node::new_leaf(
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point_index,
-                edge.right_point_index,
-                edge_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index,
-                edges,
-                nodes,
-            );
-            Self::maybe_set_as_upper_left(
-                above_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_upper_left_leaf_index(),
-                nodes,
-            );
-            Self::set_as_lower_left(above_leaf_index, prev_above_leaf_index, nodes);
-            above_leaf_index
-        };
-        let below_leaf_index = if Self::get_trapezoid(prev_below_leaf_index, nodes).below_edge_index
-            == Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index
-        {
-            Self::get_trapezoid_mut(prev_below_leaf_index, nodes).right_point_index =
-                edge.right_point_index;
-            prev_below_leaf_index
-        } else {
-            let below_leaf_index = Node::new_leaf(
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point_index,
-                edge.right_point_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index,
-                edge_index,
-                edges,
-                nodes,
-            );
-            Self::maybe_set_as_lower_left(
-                below_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_lower_left_leaf_index(),
-                nodes,
-            );
-            Self::set_as_upper_left(below_leaf_index, prev_below_leaf_index, nodes);
-            below_leaf_index
-        };
-        let mut replacement_node_index =
-            Node::new_y_node(edge_index, below_leaf_index, above_leaf_index, nodes);
+        let above_leaf_index =
+            if Self::get_trapezoid(prev_above_leaf_index, nodes)
+                .above_edge_index
+                == Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .above_edge_index
+            {
+                Self::get_trapezoid_mut(prev_above_leaf_index, nodes)
+                    .right_point_index = edge.right_point_index;
+                prev_above_leaf_index
+            } else {
+                let above_leaf_index = Node::new_leaf(
+                    Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                        .left_point_index,
+                    edge.right_point_index,
+                    edge_index,
+                    Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                        .above_edge_index,
+                    edges,
+                    nodes,
+                );
+                Self::maybe_set_as_upper_left(
+                    above_leaf_index,
+                    Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                        .get_upper_left_leaf_index(),
+                    nodes,
+                );
+                Self::set_as_lower_left(
+                    above_leaf_index,
+                    prev_above_leaf_index,
+                    nodes,
+                );
+                above_leaf_index
+            };
+        let below_leaf_index =
+            if Self::get_trapezoid(prev_below_leaf_index, nodes)
+                .below_edge_index
+                == Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .below_edge_index
+            {
+                Self::get_trapezoid_mut(prev_below_leaf_index, nodes)
+                    .right_point_index = edge.right_point_index;
+                prev_below_leaf_index
+            } else {
+                let below_leaf_index = Node::new_leaf(
+                    Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                        .left_point_index,
+                    edge.right_point_index,
+                    Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                        .below_edge_index,
+                    edge_index,
+                    edges,
+                    nodes,
+                );
+                Self::maybe_set_as_lower_left(
+                    below_leaf_index,
+                    Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                        .get_lower_left_leaf_index(),
+                    nodes,
+                );
+                Self::set_as_upper_left(
+                    below_leaf_index,
+                    prev_below_leaf_index,
+                    nodes,
+                );
+                below_leaf_index
+            };
+        let mut replacement_node_index = Node::new_y_node(
+            edge_index,
+            below_leaf_index,
+            above_leaf_index,
+            nodes,
+        );
         if edge.right_point_index
-            == Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index
+            == Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                .right_point_index
         {
             Self::maybe_set_as_upper_right(
                 above_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_upper_right_leaf_index(),
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .get_upper_right_leaf_index(),
                 nodes,
             );
             Self::maybe_set_as_lower_right(
                 below_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_lower_right_leaf_index(),
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .get_lower_right_leaf_index(),
                 nodes,
             );
         } else {
             let right_leaf_index = Node::new_leaf(
                 edge.right_point_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .right_point_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .below_edge_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .above_edge_index,
                 edges,
                 nodes,
             );
             Self::maybe_set_as_lower_right(
                 right_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_lower_right_leaf_index(),
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .get_lower_right_leaf_index(),
                 nodes,
             );
             Self::maybe_set_as_upper_right(
                 right_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_upper_right_leaf_index(),
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .get_upper_right_leaf_index(),
                 nodes,
             );
             Self::set_as_lower_left(right_leaf_index, below_leaf_index, nodes);
@@ -576,7 +700,11 @@ where
                 nodes,
             );
         }
-        Self::replace_node(trapezoid_leaf_index, replacement_node_index, nodes);
+        Self::replace_node(
+            trapezoid_leaf_index,
+            replacement_node_index,
+            nodes,
+        );
     }
 
     fn add_edge_to_single_trapezoid(
@@ -593,51 +721,65 @@ where
                 edge.left_point_index,
                 edge.right_point_index,
                 edge_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .above_edge_index,
                 edges,
                 nodes,
             ),
             Node::new_leaf(
                 edge.left_point_index,
                 edge.right_point_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .below_edge_index,
                 edge_index,
                 edges,
                 nodes,
             ),
         );
-        let mut replacement_node_index =
-            Node::new_y_node(edge_index, below_leaf_index, above_leaf_index, nodes);
+        let mut replacement_node_index = Node::new_y_node(
+            edge_index,
+            below_leaf_index,
+            above_leaf_index,
+            nodes,
+        );
         if edge.right_point_index
-            == Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index
+            == Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                .right_point_index
         {
             Self::maybe_set_as_upper_right(
                 above_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_upper_right_leaf_index(),
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .get_upper_right_leaf_index(),
                 nodes,
             );
             Self::maybe_set_as_lower_right(
                 below_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_lower_right_leaf_index(),
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .get_lower_right_leaf_index(),
                 nodes,
             );
         } else {
             let right_leaf_index = Node::new_leaf(
                 edge.right_point_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).right_point_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .right_point_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .below_edge_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .above_edge_index,
                 edges,
                 nodes,
             );
             Self::maybe_set_as_lower_right(
                 right_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_lower_right_leaf_index(),
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .get_lower_right_leaf_index(),
                 nodes,
             );
             Self::maybe_set_as_upper_right(
                 right_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_upper_right_leaf_index(),
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .get_upper_right_leaf_index(),
                 nodes,
             );
             Self::set_as_lower_left(right_leaf_index, below_leaf_index, nodes);
@@ -650,35 +792,43 @@ where
             );
         }
         if edge.left_point_index
-            == Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point_index
+            == Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                .left_point_index
         {
             Self::maybe_set_as_upper_left(
                 above_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_upper_left_leaf_index(),
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .get_upper_left_leaf_index(),
                 nodes,
             );
             Self::maybe_set_as_lower_left(
                 below_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_lower_left_leaf_index(),
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .get_lower_left_leaf_index(),
                 nodes,
             );
         } else {
             let left_leaf_index = Node::new_leaf(
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).left_point_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .left_point_index,
                 edge.left_point_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).below_edge_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).above_edge_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .below_edge_index,
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .above_edge_index,
                 edges,
                 nodes,
             );
             Self::maybe_set_as_lower_left(
                 left_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_lower_left_leaf_index(),
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .get_lower_left_leaf_index(),
                 nodes,
             );
             Self::maybe_set_as_upper_left(
                 left_leaf_index,
-                Self::get_trapezoid(trapezoid_leaf_index, nodes).get_upper_left_leaf_index(),
+                Self::get_trapezoid(trapezoid_leaf_index, nodes)
+                    .get_upper_left_leaf_index(),
                 nodes,
             );
             Self::set_as_lower_right(left_leaf_index, below_leaf_index, nodes);
@@ -690,7 +840,11 @@ where
                 nodes,
             );
         }
-        Self::replace_node(trapezoid_leaf_index, replacement_node_index, nodes);
+        Self::replace_node(
+            trapezoid_leaf_index,
+            replacement_node_index,
+            nodes,
+        );
     }
 
     #[inline]
@@ -700,10 +854,14 @@ where
         nodes: &mut [Node],
     ) {
         match lower_left_leaf_index {
-            Some(lower_left_leaf_index) => {
-                Self::set_as_lower_left(leaf_index, lower_left_leaf_index, nodes)
+            Some(lower_left_leaf_index) => Self::set_as_lower_left(
+                leaf_index,
+                lower_left_leaf_index,
+                nodes,
+            ),
+            None => {
+                Self::get_trapezoid_mut(leaf_index, nodes).reset_lower_left()
             }
-            None => Self::get_trapezoid_mut(leaf_index, nodes).reset_lower_left(),
         }
     }
 
@@ -714,10 +872,14 @@ where
         nodes: &mut [Node],
     ) {
         match lower_right_leaf_index {
-            Some(lower_right_leaf_index) => {
-                Self::set_as_lower_right(leaf_index, lower_right_leaf_index, nodes)
+            Some(lower_right_leaf_index) => Self::set_as_lower_right(
+                leaf_index,
+                lower_right_leaf_index,
+                nodes,
+            ),
+            None => {
+                Self::get_trapezoid_mut(leaf_index, nodes).reset_lower_right()
             }
-            None => Self::get_trapezoid_mut(leaf_index, nodes).reset_lower_right(),
         }
     }
 
@@ -728,10 +890,14 @@ where
         nodes: &mut [Node],
     ) {
         match upper_left_leaf_index {
-            Some(upper_left_leaf_index) => {
-                Self::set_as_upper_left(leaf_index, upper_left_leaf_index, nodes)
+            Some(upper_left_leaf_index) => Self::set_as_upper_left(
+                leaf_index,
+                upper_left_leaf_index,
+                nodes,
+            ),
+            None => {
+                Self::get_trapezoid_mut(leaf_index, nodes).reset_upper_left()
             }
-            None => Self::get_trapezoid_mut(leaf_index, nodes).reset_upper_left(),
         }
     }
 
@@ -742,35 +908,73 @@ where
         nodes: &mut [Node],
     ) {
         match upper_right_leaf_index {
-            Some(upper_right_leaf_index) => {
-                Self::set_as_upper_right(leaf_index, upper_right_leaf_index, nodes)
+            Some(upper_right_leaf_index) => Self::set_as_upper_right(
+                leaf_index,
+                upper_right_leaf_index,
+                nodes,
+            ),
+            None => {
+                Self::get_trapezoid_mut(leaf_index, nodes).reset_upper_right()
             }
-            None => Self::get_trapezoid_mut(leaf_index, nodes).reset_upper_right(),
         }
     }
 
     #[inline]
-    fn set_as_lower_left(leaf_index: usize, lower_left_leaf_index: usize, nodes: &mut [Node]) {
-        unsafe { &mut (*(Self::get_trapezoid_mut(leaf_index, nodes) as *mut Trapezoid)) }
-            .set_as_lower_left(Self::get_trapezoid_mut(lower_left_leaf_index, nodes));
+    fn set_as_lower_left(
+        leaf_index: usize,
+        lower_left_leaf_index: usize,
+        nodes: &mut [Node],
+    ) {
+        unsafe {
+            &mut (*(Self::get_trapezoid_mut(leaf_index, nodes)
+                as *mut Trapezoid))
+        }
+        .set_as_lower_left(Self::get_trapezoid_mut(
+            lower_left_leaf_index,
+            nodes,
+        ));
     }
 
     #[inline]
-    fn set_as_lower_right(leaf_index: usize, lower_right_index: usize, nodes: &mut [Node]) {
-        unsafe { &mut (*(Self::get_trapezoid_mut(leaf_index, nodes) as *mut Trapezoid)) }
-            .set_as_lower_right(Self::get_trapezoid_mut(lower_right_index, nodes));
+    fn set_as_lower_right(
+        leaf_index: usize,
+        lower_right_index: usize,
+        nodes: &mut [Node],
+    ) {
+        unsafe {
+            &mut (*(Self::get_trapezoid_mut(leaf_index, nodes)
+                as *mut Trapezoid))
+        }
+        .set_as_lower_right(Self::get_trapezoid_mut(lower_right_index, nodes));
     }
 
     #[inline]
-    fn set_as_upper_left(leaf_index: usize, upper_left_leaf_index: usize, nodes: &mut [Node]) {
-        unsafe { &mut (*(Self::get_trapezoid_mut(leaf_index, nodes) as *mut Trapezoid)) }
-            .set_as_upper_left(Self::get_trapezoid_mut(upper_left_leaf_index, nodes));
+    fn set_as_upper_left(
+        leaf_index: usize,
+        upper_left_leaf_index: usize,
+        nodes: &mut [Node],
+    ) {
+        unsafe {
+            &mut (*(Self::get_trapezoid_mut(leaf_index, nodes)
+                as *mut Trapezoid))
+        }
+        .set_as_upper_left(Self::get_trapezoid_mut(
+            upper_left_leaf_index,
+            nodes,
+        ));
     }
 
     #[inline]
-    fn set_as_upper_right(leaf_index: usize, upper_right_index: usize, nodes: &mut [Node]) {
-        unsafe { &mut (*(Self::get_trapezoid_mut(leaf_index, nodes) as *mut Trapezoid)) }
-            .set_as_upper_right(Self::get_trapezoid_mut(upper_right_index, nodes));
+    fn set_as_upper_right(
+        leaf_index: usize,
+        upper_right_index: usize,
+        nodes: &mut [Node],
+    ) {
+        unsafe {
+            &mut (*(Self::get_trapezoid_mut(leaf_index, nodes)
+                as *mut Trapezoid))
+        }
+        .set_as_upper_right(Self::get_trapezoid_mut(upper_right_index, nodes));
     }
 
     #[inline]
@@ -779,7 +983,10 @@ where
     }
 
     #[inline]
-    fn get_trapezoid_mut(leaf_index: usize, nodes: &mut [Node]) -> &mut Trapezoid {
+    fn get_trapezoid_mut(
+        leaf_index: usize,
+        nodes: &mut [Node],
+    ) -> &mut Trapezoid {
         nodes[leaf_index].get_trapezoid_mut()
     }
 
@@ -790,21 +997,33 @@ where
         nodes: &[Node],
     ) -> Vec<usize> {
         let edge = &edges[edge_index];
-        let mut trapezoid = nodes[0].search_intersecting_trapezoid(edge, edges, endpoints, nodes);
+        let mut trapezoid = nodes[0]
+            .search_intersecting_trapezoid(edge, edges, endpoints, nodes);
         let mut result = vec![trapezoid.get_leaf_index()];
-        while endpoints[trapezoid.right_point_index].lt(&endpoints[edge.right_point_index]) {
-            let leaf_index = if edge
-                .orientation_of(&endpoints[trapezoid.right_point_index], endpoints)
-                == Orientation::Clockwise
+        while endpoints[trapezoid.right_point_index]
+            .lt(&endpoints[edge.right_point_index])
+        {
+            let leaf_index = if edge.orientation_of(
+                &endpoints[trapezoid.right_point_index],
+                endpoints,
+            ) == Orientation::Clockwise
             {
                 match trapezoid.get_upper_right_leaf_index() {
                     Some(value) => value,
-                    None => unsafe { trapezoid.get_lower_right_leaf_index().unwrap_unchecked() },
+                    None => unsafe {
+                        trapezoid
+                            .get_lower_right_leaf_index()
+                            .unwrap_unchecked()
+                    },
                 }
             } else {
                 match trapezoid.get_lower_right_leaf_index() {
                     Some(value) => value,
-                    None => unsafe { trapezoid.get_upper_right_leaf_index().unwrap_unchecked() },
+                    None => unsafe {
+                        trapezoid
+                            .get_upper_right_leaf_index()
+                            .unwrap_unchecked()
+                    },
                 }
             };
             result.push(leaf_index);
@@ -814,7 +1033,11 @@ where
     }
 
     #[inline]
-    fn replace_node(original_index: usize, replacement_index: usize, nodes: &mut Vec<Node>) {
+    fn replace_node(
+        original_index: usize,
+        replacement_index: usize,
+        nodes: &mut Vec<Node>,
+    ) {
         debug_assert!(nodes.len() > 1);
         debug_assert_eq!(replacement_index, nodes.len() - 1);
         nodes[original_index] = unsafe { nodes.pop().unwrap_unchecked() };

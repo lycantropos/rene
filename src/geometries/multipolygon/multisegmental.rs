@@ -12,14 +12,18 @@ impl<'a, Digit, const SHIFT: usize> Multisegmental
 where
     for<'b> &'b Polygon<Fraction<BigInt<Digit, SHIFT>>>: Multisegmental,
 {
-    type Segment = <&'a Polygon<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segment;
+    type Segment =
+        <&'a Polygon<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segment;
     type Segments = MultisegmentalsSegments<
         std::slice::Iter<'a, Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
         <&'a Polygon<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segments,
     >;
 
     fn segments(self) -> Self::Segments {
-        MultisegmentalsSegments::new((&self.polygons[0]).segments(), self.polygons[1..].iter())
+        MultisegmentalsSegments::new(
+            (&self.polygons[0]).segments(),
+            self.polygons[1..].iter(),
+        )
     }
 
     fn segments_count(self) -> usize {
@@ -30,11 +34,13 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize> Multisegmental for Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<Digit, const SHIFT: usize> Multisegmental
+    for Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
 where
     Polygon<Fraction<BigInt<Digit, SHIFT>>>: Multisegmental,
 {
-    type Segment = <Polygon<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segment;
+    type Segment =
+        <Polygon<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segment;
     type Segments = MultisegmentalsSegments<
         std::vec::IntoIter<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
         <Polygon<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segments,

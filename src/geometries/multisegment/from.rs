@@ -2,7 +2,8 @@ use crate::geometries::Segment;
 
 use super::types::Multisegment;
 
-impl<Scalar, const N: usize> From<[Segment<Scalar>; N]> for Multisegment<Scalar>
+impl<Scalar, const N: usize> From<[Segment<Scalar>; N]>
+    for Multisegment<Scalar>
 where
     Segment<Scalar>: Clone,
 {

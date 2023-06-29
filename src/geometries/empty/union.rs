@@ -1,4 +1,6 @@
-use crate::geometries::{Contour, Multipolygon, Multisegment, Polygon, Segment};
+use crate::geometries::{
+    Contour, Multipolygon, Multisegment, Polygon, Segment,
+};
 use crate::traits::Union;
 
 use super::types::Empty;

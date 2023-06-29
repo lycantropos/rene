@@ -132,7 +132,9 @@ impl Node {
                 left_node_index,
                 right_node_index,
                 point_index,
-            } => nodes[if endpoints[edge.left_point_index].lt(&endpoints[*point_index]) {
+            } => nodes[if endpoints[edge.left_point_index]
+                .lt(&endpoints[*point_index])
+            {
                 *left_node_index
             } else {
                 *right_node_index

@@ -2,7 +2,8 @@ use crate::geometries::Polygon;
 
 use super::types::Multipolygon;
 
-impl<Scalar, const N: usize> From<[Polygon<Scalar>; N]> for Multipolygon<Scalar>
+impl<Scalar, const N: usize> From<[Polygon<Scalar>; N]>
+    for Multipolygon<Scalar>
 where
     Polygon<Scalar>: Clone,
 {

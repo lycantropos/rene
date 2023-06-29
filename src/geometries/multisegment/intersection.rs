@@ -7,7 +7,8 @@ use crate::clipping::traits::ReduceEvents;
 use crate::clipping::{is_right_event, Event, INTERSECTION};
 use crate::geometries::{Empty, Point, Segment};
 use crate::operations::{
-    do_boxes_have_no_common_continuum, merge_boxes, to_boxes_ids_with_common_continuum,
+    do_boxes_have_no_common_continuum, merge_boxes,
+    to_boxes_ids_with_common_continuum,
 };
 use crate::relatable::Relatable;
 use crate::sweeping::traits::EventsContainer;
@@ -47,16 +48,19 @@ impl<Scalar> Intersection<&Empty> for &Multisegment<Scalar> {
     }
 }
 
-impl<Digit, const SHIFT: usize> Intersection for &Multisegment<Fraction<BigInt<Digit, SHIFT>>>
+impl<Digit, const SHIFT: usize> Intersection
+    for &Multisegment<Fraction<BigInt<Digit, SHIFT>>>
 where
     Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>: Iterator<Item = Event>
-        + ReduceEvents<Output = Vec<Segment<Fraction<BigInt<Digit, SHIFT>>>>>
-        + for<'a> From<(
-            &'a [&'a Segment<Fraction<BigInt<Digit, SHIFT>>>],
-            &'a [&'a Segment<Fraction<BigInt<Digit, SHIFT>>>],
-        )>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
+    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>:
+        Iterator<Item = Event>
+            + ReduceEvents<Output = Vec<Segment<Fraction<BigInt<Digit, SHIFT>>>>>
+            + for<'a> From<(
+                &'a [&'a Segment<Fraction<BigInt<Digit, SHIFT>>>],
+                &'a [&'a Segment<Fraction<BigInt<Digit, SHIFT>>>],
+            )>,
+    Point<Fraction<BigInt<Digit, SHIFT>>>:
+        Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
     for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
     for<'a> &'a Multisegment<Fraction<BigInt<Digit, SHIFT>>>:
         Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
@@ -78,16 +82,24 @@ where
             .collect::<Vec<_>>();
         let bounding_box = merge_boxes(&bounding_boxes);
         let other_bounding_box = merge_boxes(&other_bounding_boxes);
-        if do_boxes_have_no_common_continuum(&bounding_box, &other_bounding_box) {
+        if do_boxes_have_no_common_continuum(
+            &bounding_box,
+            &other_bounding_box,
+        ) {
             return vec![];
         }
-        let common_continuum_segments_ids =
-            to_boxes_ids_with_common_continuum(&bounding_boxes, &other_bounding_box);
+        let common_continuum_segments_ids = to_boxes_ids_with_common_continuum(
+            &bounding_boxes,
+            &other_bounding_box,
+        );
         if common_continuum_segments_ids.is_empty() {
             return vec![];
         }
         let other_common_continuum_segments_ids =
-            to_boxes_ids_with_common_continuum(&other_bounding_boxes, &bounding_box);
+            to_boxes_ids_with_common_continuum(
+                &other_bounding_boxes,
+                &bounding_box,
+            );
         if other_common_continuum_segments_ids.is_empty() {
             return vec![];
         }
@@ -109,10 +121,11 @@ where
             .into_iter()
             .map(|index| &self.segments[index])
             .collect::<Vec<_>>();
-        let other_common_continuum_segments = other_common_continuum_segments_ids
-            .into_iter()
-            .map(|index| &other.segments[index])
-            .collect::<Vec<_>>();
+        let other_common_continuum_segments =
+            other_common_continuum_segments_ids
+                .into_iter()
+                .map(|index| &other.segments[index])
+                .collect::<Vec<_>>();
         let mut operation = Operation::<Point<_>, INTERSECTION>::from((
             &common_continuum_segments,
             &other_common_continuum_segments,
@@ -120,7 +133,9 @@ where
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
             debug_assert!(maybe_events_count.is_some());
-            Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
+            Vec::with_capacity(unsafe {
+                maybe_events_count.unwrap_unchecked()
+            })
         };
         while let Some(event) = operation.next() {
             if operation.get_event_start(event).x().gt(min_max_x) {

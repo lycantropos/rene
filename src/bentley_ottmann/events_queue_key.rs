@@ -9,7 +9,11 @@ pub(super) struct EventsQueueKey<Point> {
 }
 
 impl<Point> EventsQueueKey<Point> {
-    pub(super) fn new(event: Event, endpoints: &Vec<Point>, opposites: &Vec<Event>) -> Self {
+    pub(super) fn new(
+        event: Event,
+        endpoints: &Vec<Point>,
+        opposites: &Vec<Event>,
+    ) -> Self {
         Self {
             event,
             endpoints,
@@ -67,7 +71,8 @@ fn compare_events<Point: Ord>(
     match endpoints[first_event].cmp(&endpoints[second_event]) {
         Ordering::Equal => {
             if is_left_event(first_event) == is_left_event(second_event) {
-                endpoints[opposites[first_event]].cmp(&endpoints[opposites[second_event]])
+                endpoints[opposites[first_event]]
+                    .cmp(&endpoints[opposites[second_event]])
             } else if is_left_event(first_event) {
                 Ordering::Greater
             } else {

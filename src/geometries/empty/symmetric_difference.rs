@@ -1,4 +1,6 @@
-use crate::geometries::{Contour, Multipolygon, Multisegment, Polygon, Segment};
+use crate::geometries::{
+    Contour, Multipolygon, Multisegment, Polygon, Segment,
+};
 use crate::traits::SymmetricDifference;
 
 use super::types::Empty;
@@ -76,7 +78,10 @@ impl SymmetricDifference for &Empty {
 impl<Scalar> SymmetricDifference<Multipolygon<Scalar>> for Empty {
     type Output = Multipolygon<Scalar>;
 
-    fn symmetric_difference(self, other: Multipolygon<Scalar>) -> Self::Output {
+    fn symmetric_difference(
+        self,
+        other: Multipolygon<Scalar>,
+    ) -> Self::Output {
         other
     }
 }
@@ -87,7 +92,10 @@ where
 {
     type Output = Multipolygon<Scalar>;
 
-    fn symmetric_difference(self, other: &Multipolygon<Scalar>) -> Self::Output {
+    fn symmetric_difference(
+        self,
+        other: &Multipolygon<Scalar>,
+    ) -> Self::Output {
         other.clone()
     }
 }
@@ -95,7 +103,10 @@ where
 impl<Scalar> SymmetricDifference<Multipolygon<Scalar>> for &Empty {
     type Output = Multipolygon<Scalar>;
 
-    fn symmetric_difference(self, other: Multipolygon<Scalar>) -> Self::Output {
+    fn symmetric_difference(
+        self,
+        other: Multipolygon<Scalar>,
+    ) -> Self::Output {
         other
     }
 }
@@ -106,7 +117,10 @@ where
 {
     type Output = Multipolygon<Scalar>;
 
-    fn symmetric_difference(self, other: &Multipolygon<Scalar>) -> Self::Output {
+    fn symmetric_difference(
+        self,
+        other: &Multipolygon<Scalar>,
+    ) -> Self::Output {
         other.clone()
     }
 }
@@ -114,7 +128,10 @@ where
 impl<Scalar> SymmetricDifference<Multisegment<Scalar>> for Empty {
     type Output = Multisegment<Scalar>;
 
-    fn symmetric_difference(self, other: Multisegment<Scalar>) -> Self::Output {
+    fn symmetric_difference(
+        self,
+        other: Multisegment<Scalar>,
+    ) -> Self::Output {
         other
     }
 }
@@ -125,7 +142,10 @@ where
 {
     type Output = Multisegment<Scalar>;
 
-    fn symmetric_difference(self, other: &Multisegment<Scalar>) -> Self::Output {
+    fn symmetric_difference(
+        self,
+        other: &Multisegment<Scalar>,
+    ) -> Self::Output {
         other.clone()
     }
 }
@@ -133,7 +153,10 @@ where
 impl<Scalar> SymmetricDifference<Multisegment<Scalar>> for &Empty {
     type Output = Multisegment<Scalar>;
 
-    fn symmetric_difference(self, other: Multisegment<Scalar>) -> Self::Output {
+    fn symmetric_difference(
+        self,
+        other: Multisegment<Scalar>,
+    ) -> Self::Output {
         other
     }
 }
@@ -144,7 +167,10 @@ where
 {
     type Output = Multisegment<Scalar>;
 
-    fn symmetric_difference(self, other: &Multisegment<Scalar>) -> Self::Output {
+    fn symmetric_difference(
+        self,
+        other: &Multisegment<Scalar>,
+    ) -> Self::Output {
         other.clone()
     }
 }

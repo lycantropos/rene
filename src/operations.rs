@@ -9,7 +9,9 @@ use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 use crate::locatable::Location;
 use crate::oriented::Orientation;
 use crate::relatable::Relatable;
-use crate::traits::{Elemental, Multisegmental, Segmental, SegmentalCoordinate};
+use crate::traits::{
+    Elemental, Multisegmental, Segmental, SegmentalCoordinate,
+};
 
 pub(crate) fn ceil_log2<
     Number: Copy + BitLength<Output = Value> + IsPowerOfTwo,
@@ -37,10 +39,12 @@ pub(crate) trait CrossMultiply {
 
 impl<Digit, const SHIFT: usize, Point> CrossMultiply for &Point
 where
-    Fraction<BigInt<Digit, SHIFT>>:
-        Mul<Output = Fraction<BigInt<Digit, SHIFT>>> + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Fraction<BigInt<Digit, SHIFT>>: Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Point: Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
+    Fraction<BigInt<Digit, SHIFT>>: Mul<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Fraction<BigInt<Digit, SHIFT>>:
+        Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Point:
+        Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
 {
     type Output = Fraction<BigInt<Digit, SHIFT>>;
 
@@ -78,8 +82,10 @@ where
 {
     !first.disjoint_with(second)
         && (!first.touches(second)
-            || (first.get_min_y() != second.get_max_y() && second.get_min_y() != first.get_max_y())
-            || (first.get_min_x() != second.get_max_x() && second.get_min_x() != first.get_max_x()))
+            || (first.get_min_y() != second.get_max_y()
+                && second.get_min_y() != first.get_max_y())
+            || (first.get_min_x() != second.get_max_x()
+                && second.get_min_x() != first.get_max_x()))
 }
 
 pub(crate) fn do_boxes_have_no_common_area<'a, Scalar>(
@@ -101,8 +107,10 @@ where
 {
     first.disjoint_with(second)
         || (first.touches(second)
-            && (first.get_min_y() == second.get_max_y() || second.get_min_y() == first.get_max_y())
-            && (first.get_min_x() == second.get_max_x() || second.get_min_x() == first.get_max_x()))
+            && (first.get_min_y() == second.get_max_y()
+                || second.get_min_y() == first.get_max_y())
+            && (first.get_min_x() == second.get_max_x()
+                || second.get_min_x() == first.get_max_x()))
 }
 
 pub(crate) fn flags_to_false_indices(flags: &[bool]) -> Vec<usize> {
@@ -145,11 +153,15 @@ impl<
 where
     Fraction<BigInt<Digit, SHIFT>>: Add<Output = Fraction<BigInt<Digit, SHIFT>>>
         + Div<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + for<'a> Mul<&'a Fraction<BigInt<Digit, SHIFT>>, Output = Fraction<BigInt<Digit, SHIFT>>>
-        + Mul<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + for<'a> Mul<
+            &'a Fraction<BigInt<Digit, SHIFT>>,
+            Output = Fraction<BigInt<Digit, SHIFT>>,
+        > + Mul<Output = Fraction<BigInt<Digit, SHIFT>>>
         + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Fraction<BigInt<Digit, SHIFT>>: Add<Fraction<BigInt<Digit, SHIFT>>, Output = Fraction<BigInt<Digit, SHIFT>>>
-        + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Fraction<BigInt<Digit, SHIFT>>: Add<
+            Fraction<BigInt<Digit, SHIFT>>,
+            Output = Fraction<BigInt<Digit, SHIFT>>,
+        > + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
     for<'a> &'a Point: CrossMultiply<Output = Fraction<BigInt<Digit, SHIFT>>>
         + Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
 {
@@ -161,8 +173,12 @@ where
         second_start: Self,
         second_end: Self,
     ) -> Self::Output {
-        let scale =
-            to_segments_intersection_scale(first_start, first_end, second_start, second_end);
+        let scale = to_segments_intersection_scale(
+            first_start,
+            first_end,
+            second_start,
+            second_end,
+        );
         Point::from((
             first_start.x() + (first_end.x() - first_start.x()) * &scale,
             first_start.y() + (first_end.y() - first_start.y()) * scale,
@@ -170,7 +186,10 @@ where
     }
 }
 
-pub(crate) fn intersect_segments_with_common_continuum_bounding_boxes<'a, Point>(
+pub(crate) fn intersect_segments_with_common_continuum_bounding_boxes<
+    'a,
+    Point,
+>(
     start: &'a Point,
     end: &'a Point,
     other_start: &'a Point,
@@ -180,11 +199,16 @@ where
     &'a Point: Orient,
     Point: Ord,
 {
-    if { start == other_start || end.orient(start, other_start) == Orientation::Collinear } && {
-        end == other_end || end.orient(start, other_end) == Orientation::Collinear
+    if {
+        start == other_start
+            || end.orient(start, other_start) == Orientation::Collinear
+    } && {
+        end == other_end
+            || end.orient(start, other_end) == Orientation::Collinear
     } {
         let (start, end) = to_sorted_pair((start, end));
-        let (other_start, other_end) = to_sorted_pair((other_start, other_end));
+        let (other_start, other_end) =
+            to_sorted_pair((other_start, other_end));
         Some((start.max(other_start), end.min(other_end)))
     } else {
         None
@@ -232,7 +256,8 @@ pub(crate) trait LocatePointInPointPointPointCircle {
     ) -> Location;
 }
 
-impl<'a, Digit: 'a, const SHIFT: usize, Point> LocatePointInPointPointPointCircle for &'a Point
+impl<'a, Digit: 'a, const SHIFT: usize, Point>
+    LocatePointInPointPointPointCircle for &'a Point
 where
     &'a Point: Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
     Fraction<BigInt<Digit, SHIFT>>: Add<Output = Fraction<BigInt<Digit, SHIFT>>>
@@ -248,9 +273,12 @@ where
         second: Self,
         third: Self,
     ) -> Location {
-        let (first_dx, first_dy) = (first.x() - self.x(), first.y() - self.y());
-        let (second_dx, second_dy) = (second.x() - self.x(), second.y() - self.y());
-        let (third_dx, third_dy) = (third.x() - self.x(), third.y() - self.y());
+        let (first_dx, first_dy) =
+            (first.x() - self.x(), first.y() - self.y());
+        let (second_dx, second_dy) =
+            (second.x() - self.x(), second.y() - self.y());
+        let (third_dx, third_dy) =
+            (third.x() - self.x(), third.y() - self.y());
         match ((&first_dx * &first_dx + &first_dy * &first_dy)
             * (&second_dx * &third_dy - &second_dy * &third_dx)
             - (&second_dx * &second_dx + &second_dy * &second_dy)
@@ -291,7 +319,8 @@ where
         let start_y = start.y();
         let end_y = end.y();
         if (start_y.gt(point_y)) != (end_y.gt(point_y))
-            && ((end_y.gt(start_y)) == (start.orient(end, point) == Orientation::Counterclockwise))
+            && ((end_y.gt(start_y))
+                == (start.orient(end, point) == Orientation::Counterclockwise))
         {
             result = !result;
         }
@@ -309,8 +338,10 @@ pub(crate) fn merge_bounds<
 >(
     mut bounds: Iterator,
 ) -> (Scalar, Scalar, Scalar, Scalar) {
-    let (mut min_x, mut max_x, mut min_y, mut max_y) = unsafe { bounds.next().unwrap_unchecked() };
-    for (segment_min_x, segment_max_x, segment_min_y, segment_max_y) in bounds {
+    let (mut min_x, mut max_x, mut min_y, mut max_y) =
+        unsafe { bounds.next().unwrap_unchecked() };
+    for (segment_min_x, segment_max_x, segment_min_y, segment_max_y) in bounds
+    {
         if min_x.gt(&segment_min_x) {
             min_x = segment_min_x;
         }
@@ -350,7 +381,12 @@ pub(crate) fn merge_boxes<Scalar: Clone + PartialOrd>(
             min_y = box_.get_min_y();
         }
     }
-    bounded::Box::new(min_x.clone(), max_x.clone(), min_y.clone(), max_y.clone())
+    bounded::Box::new(
+        min_x.clone(),
+        max_x.clone(),
+        min_y.clone(),
+        max_y.clone(),
+    )
 }
 
 pub(crate) fn coordinates_iterator_to_bounds<
@@ -360,7 +396,8 @@ pub(crate) fn coordinates_iterator_to_bounds<
     mut coordinates: Iterator,
 ) -> (Scalar, Scalar, Scalar, Scalar) {
     let (first_x, first_y) = unsafe { coordinates.next().unwrap_unchecked() };
-    let (second_x, second_y) = unsafe { coordinates.next().unwrap_unchecked() };
+    let (second_x, second_y) =
+        unsafe { coordinates.next().unwrap_unchecked() };
     let (mut min_x, mut max_x) = to_sorted_pair((first_x, second_x));
     let (mut min_y, mut max_y) = to_sorted_pair((first_y, second_y));
     for (x, y) in coordinates {
@@ -379,7 +416,11 @@ pub(crate) fn coordinates_iterator_to_bounds<
 }
 
 pub(crate) trait Orient {
-    fn orient(self, first_ray_point: Self, second_ray_point: Self) -> Orientation;
+    fn orient(
+        self,
+        first_ray_point: Self,
+        second_ray_point: Self,
+    ) -> Orientation;
 }
 
 impl<'a, Point> Orient for &'a Point
@@ -387,8 +428,19 @@ where
     &'a Point: CrossMultiply,
     <&'a Point as CrossMultiply>::Output: Signed,
 {
-    fn orient(self, first_ray_point: Self, second_ray_point: Self) -> Orientation {
-        match CrossMultiply::cross_multiply(self, first_ray_point, self, second_ray_point).sign() {
+    fn orient(
+        self,
+        first_ray_point: Self,
+        second_ray_point: Self,
+    ) -> Orientation {
+        match CrossMultiply::cross_multiply(
+            self,
+            first_ray_point,
+            self,
+            second_ray_point,
+        )
+        .sign()
+        {
             Sign::Negative => Orientation::Clockwise,
             Sign::Positive => Orientation::Counterclockwise,
             Sign::Zero => Orientation::Collinear,
@@ -419,7 +471,8 @@ pub(crate) fn point_vertex_line_divides_angle<'a, Point>(
 where
     &'a Point: Orient,
 {
-    vertex.orient(first_ray_point, point) == vertex.orient(point, second_ray_point)
+    vertex.orient(first_ray_point, point)
+        == vertex.orient(point, second_ray_point)
 }
 
 pub(crate) fn segmental_to_bounds<Segment: Segmental>(
@@ -441,7 +494,9 @@ where
     (min_x, max_x, min_y, max_y)
 }
 
-pub(crate) fn shrink_collinear_vertices<'a, Point>(vertices: &[&'a Point]) -> Vec<&'a Point>
+pub(crate) fn shrink_collinear_vertices<'a, Point>(
+    vertices: &[&'a Point],
+) -> Vec<&'a Point>
 where
     for<'b> &'b Point: Orient,
 {
@@ -449,7 +504,8 @@ where
     let mut result = Vec::with_capacity(vertices.len());
     result.push(vertices[0]);
     for index in 1..vertices.len() - 1 {
-        if result[result.len() - 1].orient(vertices[index], vertices[index + 1])
+        if result[result.len() - 1]
+            .orient(vertices[index], vertices[index + 1])
             != Orientation::Collinear
         {
             result.push(vertices[index]);
@@ -513,7 +569,9 @@ where
     for<'a> &'a bounded::Box<Scalar>: Relatable,
 {
     (0..boxes.len())
-        .filter(|&index| do_boxes_have_common_continuum(&boxes[index], target_box))
+        .filter(|&index| {
+            do_boxes_have_common_continuum(&boxes[index], target_box)
+        })
         .collect::<Vec<_>>()
 }
 
@@ -524,15 +582,27 @@ pub(crate) fn to_segments_intersection_scale<Point, Scalar>(
     second_end: &Point,
 ) -> Scalar
 where
-    for<'a> &'a Point: CrossMultiply<Output = Scalar> + Elemental<Coordinate = &'a Scalar>,
+    for<'a> &'a Point:
+        CrossMultiply<Output = Scalar> + Elemental<Coordinate = &'a Scalar>,
     Scalar: Div<Output = Scalar>,
 {
-    CrossMultiply::cross_multiply(first_start, second_start, second_start, second_end)
-        / CrossMultiply::cross_multiply(first_start, first_end, second_start, second_end)
+    CrossMultiply::cross_multiply(
+        first_start,
+        second_start,
+        second_start,
+        second_end,
+    ) / CrossMultiply::cross_multiply(
+        first_start,
+        first_end,
+        second_start,
+        second_end,
+    )
 }
 
 #[inline]
-pub(crate) fn to_sorted_pair<Value: PartialOrd>((left, right): (Value, Value)) -> (Value, Value) {
+pub(crate) fn to_sorted_pair<Value: PartialOrd>(
+    (left, right): (Value, Value),
+) -> (Value, Value) {
     if left < right {
         (left, right)
     } else {

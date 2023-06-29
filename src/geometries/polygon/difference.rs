@@ -51,7 +51,8 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize> Difference for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<Digit, const SHIFT: usize> Difference
+    for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
 where
     Fraction<BigInt<Digit, SHIFT>>: PartialOrd,
     Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, DIFFERENCE>: Iterator<Item = Event>
@@ -76,11 +77,14 @@ where
             return vec![self.clone()];
         }
         let max_x = bounding_box.get_max_x();
-        let mut operation = Operation::<Point<_>, DIFFERENCE>::from((self, other));
+        let mut operation =
+            Operation::<Point<_>, DIFFERENCE>::from((self, other));
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
             debug_assert!(maybe_events_count.is_some());
-            Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
+            Vec::with_capacity(unsafe {
+                maybe_events_count.unwrap_unchecked()
+            })
         };
         while let Some(event) = operation.next() {
             if operation.get_event_start(event).x().gt(max_x) {

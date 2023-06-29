@@ -33,7 +33,8 @@ impl<T: Copy> Iterator for PairwiseCombinations<T> {
         if self.index + 1 >= self.values.len() {
             None
         } else {
-            let result = Some((self.values[self.index], self.values[self.next_index]));
+            let result =
+                Some((self.values[self.index], self.values[self.next_index]));
             if self.next_index == self.values.len() - 1 {
                 self.index += 1;
                 self.next_index = self.index + 1;

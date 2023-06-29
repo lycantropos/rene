@@ -67,9 +67,12 @@ where
     Point: Elemental<Coordinate = Scalar>,
 {
     fn to_bounding_box(self) -> bounded::Box<Scalar> {
-        let (min_x, max_x, min_y, max_y) = merge_bounds(self.polygons.into_iter().map(|polygon| {
-            coordinates_iterator_to_bounds(polygon.border().vertices().map(Elemental::coordinates))
-        }));
+        let (min_x, max_x, min_y, max_y) =
+            merge_bounds(self.polygons.into_iter().map(|polygon| {
+                coordinates_iterator_to_bounds(
+                    polygon.border().vertices().map(Elemental::coordinates),
+                )
+            }));
         bounded::Box::new(min_x, max_x, min_y, max_y)
     }
 

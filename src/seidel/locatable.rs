@@ -26,28 +26,24 @@ impl Node {
                 left_node_index,
                 right_node_index,
                 point_index,
-            } => point
-                .partial_cmp(&endpoints[*point_index])
-                .and_then(|ordering| match ordering {
-                    Ordering::Less => {
-                        nodes[*left_node_index].locate_trapezoid(point, edges, endpoints, nodes)
-                    }
-                    Ordering::Greater => {
-                        nodes[*right_node_index].locate_trapezoid(point, edges, endpoints, nodes)
-                    }
+            } => point.partial_cmp(&endpoints[*point_index]).and_then(
+                |ordering| match ordering {
+                    Ordering::Less => nodes[*left_node_index]
+                        .locate_trapezoid(point, edges, endpoints, nodes),
+                    Ordering::Greater => nodes[*right_node_index]
+                        .locate_trapezoid(point, edges, endpoints, nodes),
                     Ordering::Equal => None,
-                }),
+                },
+            ),
             Self::YNode {
                 above_node_index,
                 below_node_index,
                 edge_index,
             } => match edges[*edge_index].orientation_of(point, endpoints) {
-                Orientation::Counterclockwise => {
-                    nodes[*above_node_index].locate_trapezoid(point, edges, endpoints, nodes)
-                }
-                Orientation::Clockwise => {
-                    nodes[*below_node_index].locate_trapezoid(point, edges, endpoints, nodes)
-                }
+                Orientation::Counterclockwise => nodes[*above_node_index]
+                    .locate_trapezoid(point, edges, endpoints, nodes),
+                Orientation::Clockwise => nodes[*below_node_index]
+                    .locate_trapezoid(point, edges, endpoints, nodes),
                 Orientation::Collinear => None,
             },
         }

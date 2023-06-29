@@ -2,12 +2,17 @@ use std::cmp::Ordering;
 use std::convert::TryFrom;
 
 use pyo3::basic::CompareOp;
-use pyo3::exceptions::{PyOverflowError, PyTypeError, PyValueError, PyZeroDivisionError};
-use pyo3::prelude::{pyclass, pymethods, pymodule, PyModule, PyResult, Python};
+use pyo3::exceptions::{
+    PyOverflowError, PyTypeError, PyValueError, PyZeroDivisionError,
+};
+use pyo3::prelude::{
+    pyclass, pymethods, pymodule, PyModule, PyResult, Python,
+};
 use pyo3::type_object::PyTypeInfo;
 use pyo3::types::{PyFloat, PyFrozenSet, PyLong, PySequence, PyTuple, PyType};
 use pyo3::{
-    ffi, intern, AsPyPointer, FromPyObject, IntoPy, Py, PyAny, PyErr, PyObject, ToPyObject,
+    ffi, intern, AsPyPointer, FromPyObject, IntoPy, Py, PyAny, PyErr,
+    PyObject, ToPyObject,
 };
 use rithm::{big_int, fraction};
 use traiter::numbers::{Endianness, FromBytes, ToBytes, Zero};
@@ -15,7 +20,8 @@ use traiter::numbers::{Endianness, FromBytes, ToBytes, Zero};
 use crate::bentley_ottmann::{is_contour_valid, is_multisegment_valid};
 use crate::bounded::Bounded;
 use crate::constants::{
-    MIN_CONTOUR_VERTICES_COUNT, MIN_MULTIPOLYGON_POLYGONS_COUNT, MIN_MULTISEGMENT_SEGMENTS_COUNT,
+    MIN_CONTOUR_VERTICES_COUNT, MIN_MULTIPOLYGON_POLYGONS_COUNT,
+    MIN_MULTISEGMENT_SEGMENTS_COUNT,
 };
 use crate::locatable::{Locatable, Location};
 use crate::operations::{permute, to_arg_min};
@@ -23,8 +29,8 @@ use crate::oriented::{Orientation, Oriented};
 use crate::relatable::{Relatable, Relation};
 use crate::seidel::Trapezoidation;
 use crate::traits::{
-    Difference, Elemental, Intersection, Multipolygonal, Multisegmental, Multivertexal, Polygonal,
-    Segmental, SymmetricDifference, Union,
+    Difference, Elemental, Intersection, Multipolygonal, Multisegmental,
+    Multivertexal, Polygonal, Segmental, SymmetricDifference, Union,
 };
 use crate::triangulation::{
     BoundaryEndpoints, ConstrainedDelaunayTriangulation, DelaunayTriangulation,
@@ -53,13 +59,15 @@ type Digit = u16;
 type Digit = u32;
 
 const DIGIT_BITNESS: usize = (Digit::BITS - 1) as usize;
-const _: () = assert!(big_int::is_valid_digit_bitness::<Digit, DIGIT_BITNESS>());
+const _: () =
+    assert!(big_int::is_valid_digit_bitness::<Digit, DIGIT_BITNESS>());
 
 type BigInt = big_int::BigInt<Digit, DIGIT_BITNESS>;
 type Fraction = fraction::Fraction<BigInt>;
 type Empty = geometries::Empty;
 type ExactBox = bounded::Box<Fraction>;
-type ExactConstrainedDelaunayTriangulation = ConstrainedDelaunayTriangulation<ExactPoint>;
+type ExactConstrainedDelaunayTriangulation =
+    ConstrainedDelaunayTriangulation<ExactPoint>;
 type ExactContour = geometries::Contour<Fraction>;
 type ExactDelaunayTriangulation = DelaunayTriangulation<ExactPoint>;
 type ExactMultipolygon = geometries::Multipolygon<Fraction>;
@@ -204,7 +212,8 @@ impl PyOrientation {
     const COLLINEAR: PyOrientation = PyOrientation(Orientation::Collinear);
 
     #[classattr]
-    const COUNTERCLOCKWISE: PyOrientation = PyOrientation(Orientation::Counterclockwise);
+    const COUNTERCLOCKWISE: PyOrientation =
+        PyOrientation(Orientation::Counterclockwise);
 
     fn __repr__(&self) -> String {
         format!(
@@ -301,7 +310,9 @@ struct PyExactBox(ExactBox);
 
 #[pyclass(name = "ConstrainedDelaunayTriangulation", module = "rene.exact")]
 #[derive(Clone)]
-struct PyExactConstrainedDelaunayTriangulation(ExactConstrainedDelaunayTriangulation);
+struct PyExactConstrainedDelaunayTriangulation(
+    ExactConstrainedDelaunayTriangulation,
+);
 
 #[pyclass(name = "Contour", module = "rene.exact", subclass)]
 #[derive(Clone)]
@@ -343,7 +354,12 @@ struct PyExactTrapezoidation(ExactTrapezoidation);
 impl PyExactBox {
     #[new]
     #[pyo3(signature = (min_x, max_x, min_y, max_y, /))]
-    fn new(min_x: &PyAny, max_x: &PyAny, min_y: &PyAny, max_y: &PyAny) -> PyResult<Self> {
+    fn new(
+        min_x: &PyAny,
+        max_x: &PyAny,
+        min_y: &PyAny,
+        max_y: &PyAny,
+    ) -> PyResult<Self> {
         Ok(PyExactBox(ExactBox::new(
             try_scalar_to_fraction(min_x)?,
             try_scalar_to_fraction(max_x)?,
@@ -398,7 +414,8 @@ impl PyExactBox {
     }
 
     fn is_valid(&self) -> bool {
-        self.0.get_min_x() <= self.0.get_max_x() && self.0.get_min_y() <= self.0.get_max_y()
+        self.0.get_min_x() <= self.0.get_max_x()
+            && self.0.get_min_y() <= self.0.get_max_y()
     }
 
     #[pyo3(signature = (other, /))]
@@ -471,7 +488,9 @@ impl PyExactConstrainedDelaunayTriangulation {
     #[classmethod]
     #[pyo3(signature = (polygon, /))]
     fn from_polygon(_: &PyType, polygon: &PyExactPolygon) -> Self {
-        PyExactConstrainedDelaunayTriangulation(ConstrainedDelaunayTriangulation::from(&polygon.0))
+        PyExactConstrainedDelaunayTriangulation(
+            ConstrainedDelaunayTriangulation::from(&polygon.0),
+        )
     }
 
     #[getter]
@@ -486,7 +505,11 @@ impl PyExactConstrainedDelaunayTriangulation {
         self.0
             .to_triangles_vertices()
             .map(|(first, second, third)| {
-                ExactContour::from([first.clone(), second.clone(), third.clone()])
+                ExactContour::from([
+                    first.clone(),
+                    second.clone(),
+                    third.clone(),
+                ])
             })
             .collect()
     }
@@ -501,9 +524,10 @@ impl PyExactContour {
     #[new]
     #[pyo3(signature = (vertices, /))]
     fn new(vertices: &PySequence) -> PyResult<Self> {
-        try_vertices_to_py_exact_contour(extract_from_sequence::<PyExactPoint, ExactPoint>(
-            vertices,
-        )?)
+        try_vertices_to_py_exact_contour(extract_from_sequence::<
+            PyExactPoint,
+            ExactPoint,
+        >(vertices)?)
     }
 
     #[getter]
@@ -534,10 +558,15 @@ impl PyExactContour {
     #[getter]
     fn orientation(&self, py: Python) -> PyResult<&PyAny> {
         let orientation = (&self.0).to_orientation();
-        let orientation_cls = unsafe { MAYBE_ORIENTATION_CLS.unwrap_unchecked() };
+        let orientation_cls =
+            unsafe { MAYBE_ORIENTATION_CLS.unwrap_unchecked() };
         match orientation {
-            Orientation::Clockwise => orientation_cls.getattr(intern!(py, "CLOCKWISE")),
-            Orientation::Collinear => orientation_cls.getattr(intern!(py, "COLLINEAR")),
+            Orientation::Clockwise => {
+                orientation_cls.getattr(intern!(py, "CLOCKWISE"))
+            }
+            Orientation::Collinear => {
+                orientation_cls.getattr(intern!(py, "COLLINEAR"))
+            }
             Orientation::Counterclockwise => {
                 orientation_cls.getattr(intern!(py, "COUNTERCLOCKWISE"))
             }
@@ -559,7 +588,8 @@ impl PyExactContour {
 
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
         let mut vertices = (&self.0).vertices().collect::<Vec<_>>();
-        let min_vertex_index = unsafe { to_arg_min(&vertices).unwrap_unchecked() };
+        let min_vertex_index =
+            unsafe { to_arg_min(&vertices).unwrap_unchecked() };
         vertices.rotate_left(min_vertex_index);
         if (&self.0).to_orientation() == Orientation::Clockwise {
             vertices[1..].reverse();
@@ -627,7 +657,11 @@ impl PyExactDelaunayTriangulation {
         self.0
             .iter_triangles_vertices()
             .map(|(first, second, third)| {
-                ExactContour::from([first.clone(), second.clone(), third.clone()])
+                ExactContour::from([
+                    first.clone(),
+                    second.clone(),
+                    third.clone(),
+                ])
             })
             .collect()
     }
@@ -646,15 +680,20 @@ impl PyExactEmpty {
 
     #[pyo3(signature = (point, /))]
     fn locate(&self, point: &PyExactPoint, py: Python) -> PyResult<&PyAny> {
-        unsafe { MAYBE_LOCATION_CLS.unwrap_unchecked() }.getattr(intern!(py, "EXTERIOR"))
+        unsafe { MAYBE_LOCATION_CLS.unwrap_unchecked() }
+            .getattr(intern!(py, "EXTERIOR"))
     }
 
     #[pyo3(signature = (other, /))]
     fn relate_to(&self, other: &PyAny) -> PyResult<&PyAny> {
         if other.is_instance_of::<PyExactContour>() {
-            try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactContour>()?.0))
+            try_relation_to_py_relation(
+                self.0.relate_to(&other.extract::<PyExactContour>()?.0),
+            )
         } else if other.is_instance_of::<PyExactEmpty>() {
-            try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactEmpty>()?.0))
+            try_relation_to_py_relation(
+                self.0.relate_to(&other.extract::<PyExactEmpty>()?.0),
+            )
         } else if other.is_instance_of::<PyExactMultipolygon>() {
             try_relation_to_py_relation(
                 self.0.relate_to(&other.extract::<PyExactMultipolygon>()?.0),
@@ -664,9 +703,13 @@ impl PyExactEmpty {
                 self.0.relate_to(&other.extract::<PyExactMultisegment>()?.0),
             )
         } else if other.is_instance_of::<PyExactPolygon>() {
-            try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactPolygon>()?.0))
+            try_relation_to_py_relation(
+                self.0.relate_to(&other.extract::<PyExactPolygon>()?.0),
+            )
         } else if other.is_instance_of::<PyExactSegment>() {
-            try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactSegment>()?.0))
+            try_relation_to_py_relation(
+                self.0.relate_to(&other.extract::<PyExactSegment>()?.0),
+            )
         } else {
             Err(PyTypeError::new_err(format!(
                 "Expected compound geometry, but got {}.",
@@ -780,22 +823,28 @@ impl PyExactEmpty {
         let py = other.py();
         if other.is_instance(PyExactContour::type_object(py))? {
             let other = other.extract::<PyExactContour>()?;
-            Ok(PyExactContour((&self.0).symmetric_difference(&other.0)).into_py(py))
+            Ok(PyExactContour((&self.0).symmetric_difference(&other.0))
+                .into_py(py))
         } else if other.is_instance(PyExactEmpty::type_object(py))? {
             let other = other.extract::<PyExactEmpty>()?;
-            Ok(PyExactEmpty((&self.0).symmetric_difference(&other.0)).into_py(py))
+            Ok(PyExactEmpty((&self.0).symmetric_difference(&other.0))
+                .into_py(py))
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
             let other = other.extract::<PyExactMultipolygon>()?;
             Ok((&self.0).symmetric_difference(&other.0).into_py(py))
         } else if other.is_instance(PyExactMultisegment::type_object(py))? {
             let other = other.extract::<PyExactMultisegment>()?;
-            Ok(PyExactMultisegment((&self.0).symmetric_difference(&other.0)).into_py(py))
+            Ok(
+                PyExactMultisegment((&self.0).symmetric_difference(&other.0))
+                    .into_py(py),
+            )
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyExactPolygon>()?;
             Ok((&self.0).symmetric_difference(&other.0).into_py(py))
         } else if other.is_instance(PyExactSegment::type_object(py))? {
             let other = other.extract::<PyExactSegment>()?;
-            Ok(PyExactSegment((&self.0).symmetric_difference(&other.0)).into_py(py))
+            Ok(PyExactSegment((&self.0).symmetric_difference(&other.0))
+                .into_py(py))
         } else {
             Ok(py.NotImplemented())
         }
@@ -807,9 +856,10 @@ impl PyExactMultipolygon {
     #[new]
     #[pyo3(signature = (polygons, /))]
     fn new(polygons: &PySequence) -> PyResult<Self> {
-        try_polygons_to_py_exact_multipolygon(
-            extract_from_sequence::<PyExactPolygon, ExactPolygon>(polygons)?,
-        )
+        try_polygons_to_py_exact_multipolygon(extract_from_sequence::<
+            PyExactPolygon,
+            ExactPolygon,
+        >(polygons)?)
     }
 
     #[getter]
@@ -847,16 +897,24 @@ impl PyExactMultipolygon {
             let polygons = (&self.0).intersection(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+                1 => Ok(unsafe {
+                    polygons.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
+                    .into_py(py)),
             }
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyExactPolygon>()?;
             let polygons = (&self.0).intersection(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+                1 => Ok(unsafe {
+                    polygons.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
+                    .into_py(py)),
             }
         } else {
             Ok(py.NotImplemented())
@@ -881,16 +939,24 @@ impl PyExactMultipolygon {
             let polygons = (&self.0).union(&other.0);
             debug_assert!(!polygons.is_empty());
             match polygons.len() {
-                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+                1 => Ok(unsafe {
+                    polygons.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
+                    .into_py(py)),
             }
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyExactPolygon>()?;
             let polygons = (&self.0).union(&other.0);
             debug_assert!(!polygons.is_empty());
             match polygons.len() {
-                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+                1 => Ok(unsafe {
+                    polygons.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
+                    .into_py(py)),
             }
         } else {
             Ok(py.NotImplemented())
@@ -945,16 +1011,24 @@ impl PyExactMultipolygon {
             let polygons = (&self.0).difference(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+                1 => Ok(unsafe {
+                    polygons.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
+                    .into_py(py)),
             }
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyExactPolygon>()?;
             let polygons = (&self.0).difference(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+                1 => Ok(unsafe {
+                    polygons.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
+                    .into_py(py)),
             }
         } else {
             Ok(py.NotImplemented())
@@ -971,16 +1045,24 @@ impl PyExactMultipolygon {
             let polygons = (&self.0).symmetric_difference(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+                1 => Ok(unsafe {
+                    polygons.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
+                    .into_py(py)),
             }
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyExactPolygon>()?;
             let polygons = (&self.0).symmetric_difference(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+                1 => Ok(unsafe {
+                    polygons.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
+                    .into_py(py)),
             }
         } else {
             Ok(py.NotImplemented())
@@ -993,9 +1075,10 @@ impl PyExactMultisegment {
     #[new]
     #[pyo3(signature = (segments, /))]
     fn new(segments: &PySequence) -> PyResult<Self> {
-        try_segments_to_py_exact_multisegment(
-            extract_from_sequence::<PyExactSegment, ExactSegment>(segments)?,
-        )
+        try_segments_to_py_exact_multisegment(extract_from_sequence::<
+            PyExactSegment,
+            ExactSegment,
+        >(segments)?)
     }
 
     #[getter]
@@ -1031,8 +1114,12 @@ impl PyExactMultisegment {
             let segments = (&self.0).intersection(&other.0);
             match segments.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe { segments.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultisegment(ExactMultisegment::new(segments)).into_py(py)),
+                1 => Ok(unsafe {
+                    segments.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultisegment(ExactMultisegment::new(segments))
+                    .into_py(py)),
             }
         } else {
             Ok(py.NotImplemented())
@@ -1203,16 +1290,24 @@ impl PyExactPolygon {
             let polygons = (&self.0).intersection(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+                1 => Ok(unsafe {
+                    polygons.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
+                    .into_py(py)),
             }
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyExactPolygon>()?;
             let polygons = (&self.0).intersection(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+                1 => Ok(unsafe {
+                    polygons.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
+                    .into_py(py)),
             }
         } else {
             Ok(py.NotImplemented())
@@ -1244,16 +1339,24 @@ impl PyExactPolygon {
             let polygons = (&self.0).union(&other.0);
             debug_assert!(!polygons.is_empty());
             match polygons.len() {
-                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+                1 => Ok(unsafe {
+                    polygons.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
+                    .into_py(py)),
             }
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyExactPolygon>()?;
             let polygons = (&self.0).union(&other.0);
             debug_assert!(!polygons.is_empty());
             match polygons.len() {
-                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+                1 => Ok(unsafe {
+                    polygons.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
+                    .into_py(py)),
             }
         } else {
             Ok(py.NotImplemented())
@@ -1310,16 +1413,24 @@ impl PyExactPolygon {
             let polygons = (&self.0).difference(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+                1 => Ok(unsafe {
+                    polygons.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
+                    .into_py(py)),
             }
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyExactPolygon>()?;
             let polygons = (&self.0).difference(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+                1 => Ok(unsafe {
+                    polygons.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
+                    .into_py(py)),
             }
         } else {
             Ok(py.NotImplemented())
@@ -1336,16 +1447,24 @@ impl PyExactPolygon {
             let polygons = (&self.0).symmetric_difference(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+                1 => Ok(unsafe {
+                    polygons.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
+                    .into_py(py)),
             }
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyExactPolygon>()?;
             let polygons = (&self.0).symmetric_difference(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe { polygons.into_iter().next().unwrap_unchecked() }.into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py)),
+                1 => Ok(unsafe {
+                    polygons.into_iter().next().unwrap_unchecked()
+                }
+                .into_py(py)),
+                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
+                    .into_py(py)),
             }
         } else {
             Ok(py.NotImplemented())
@@ -1379,15 +1498,21 @@ impl PyExactSegment {
     #[pyo3(signature = (other, /))]
     fn relate_to(&self, other: &PyAny) -> PyResult<&PyAny> {
         if other.is_instance_of::<PyExactContour>() {
-            try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactContour>()?.0))
+            try_relation_to_py_relation(
+                self.0.relate_to(&other.extract::<PyExactContour>()?.0),
+            )
         } else if other.is_instance_of::<PyExactEmpty>() {
-            try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactEmpty>()?.0))
+            try_relation_to_py_relation(
+                self.0.relate_to(&other.extract::<PyExactEmpty>()?.0),
+            )
         } else if other.is_instance_of::<PyExactMultisegment>() {
             try_relation_to_py_relation(
                 self.0.relate_to(&other.extract::<PyExactMultisegment>()?.0),
             )
         } else if other.is_instance_of::<PyExactSegment>() {
-            try_relation_to_py_relation(self.0.relate_to(&other.extract::<PyExactSegment>()?.0))
+            try_relation_to_py_relation(
+                self.0.relate_to(&other.extract::<PyExactSegment>()?.0),
+            )
         } else {
             Err(PyTypeError::new_err(format!(
                 "Expected compound geometry, but got {}.",
@@ -1406,7 +1531,11 @@ impl PyExactSegment {
     }
 
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
-        PyFrozenSet::new(py, &[self.start().into_py(py), self.end().into_py(py)])?.hash()
+        PyFrozenSet::new(
+            py,
+            &[self.start().into_py(py), self.end().into_py(py)],
+        )?
+        .hash()
     }
 
     fn __repr__(&self) -> PyResult<String> {
@@ -1446,7 +1575,11 @@ impl PyExactSegment {
 impl PyExactTrapezoidation {
     #[classmethod]
     #[pyo3(signature = (multisegment, seed, /))]
-    fn from_multisegment(_: &PyType, multisegment: &PyExactMultisegment, seed: usize) -> Self {
+    fn from_multisegment(
+        _: &PyType,
+        multisegment: &PyExactMultisegment,
+        seed: usize,
+    ) -> Self {
         PyExactTrapezoidation(Trapezoidation::from_multisegment(
             &multisegment.0,
             |values| permute(values, seed),
@@ -1455,10 +1588,17 @@ impl PyExactTrapezoidation {
 
     #[classmethod]
     #[pyo3(signature = (polygon, seed, /))]
-    fn from_polygon(_: &PyType, polygon: &PyExactPolygon, seed: usize) -> Self {
-        PyExactTrapezoidation(Trapezoidation::from_polygon(&polygon.0, |values| {
-            permute(values, seed);
-        }))
+    fn from_polygon(
+        _: &PyType,
+        polygon: &PyExactPolygon,
+        seed: usize,
+    ) -> Self {
+        PyExactTrapezoidation(Trapezoidation::from_polygon(
+            &polygon.0,
+            |values| {
+                permute(values, seed);
+            },
+        ))
     }
 
     #[getter]
@@ -1564,28 +1704,32 @@ fn try_py_integral_to_big_int(value: &PyAny) -> PyResult<BigInt> {
     }
 }
 
-const INVALID_SCALAR_TYPE_ERROR_MESSAGE: &str = "Scalar should be a rational number.";
-const UNDEFINED_DIVISION_ERROR_MESSAGE: &str = "Division by zero is undefined.";
+const INVALID_SCALAR_TYPE_ERROR_MESSAGE: &str =
+    "Scalar should be a rational number.";
+const UNDEFINED_DIVISION_ERROR_MESSAGE: &str =
+    "Division by zero is undefined.";
 
 fn try_scalar_to_fraction(value: &PyAny) -> PyResult<Fraction> {
     let py = value.py();
     if value.is_instance(PyFloat::type_object(py))? {
-        Fraction::try_from(value.extract::<f64>()?).map_err(|reason| match reason {
-            fraction::FromFloatConstructionError::Infinity => {
-                PyOverflowError::new_err(reason.to_string())
+        Fraction::try_from(value.extract::<f64>()?).map_err(|reason| {
+            match reason {
+                fraction::FromFloatConstructionError::Infinity => {
+                    PyOverflowError::new_err(reason.to_string())
+                }
+                _ => PyValueError::new_err(reason.to_string()),
             }
-            _ => PyValueError::new_err(reason.to_string()),
         })
     } else {
         let numerator = try_py_integral_to_big_int(
-            value
-                .getattr(intern!(py, "numerator"))
-                .map_err(|_| PyTypeError::new_err(INVALID_SCALAR_TYPE_ERROR_MESSAGE))?,
+            value.getattr(intern!(py, "numerator")).map_err(|_| {
+                PyTypeError::new_err(INVALID_SCALAR_TYPE_ERROR_MESSAGE)
+            })?,
         )?;
         let denominator = try_py_integral_to_big_int(
-            value
-                .getattr(intern!(py, "denominator"))
-                .map_err(|_| PyTypeError::new_err(INVALID_SCALAR_TYPE_ERROR_MESSAGE))?,
+            value.getattr(intern!(py, "denominator")).map_err(|_| {
+                PyTypeError::new_err(INVALID_SCALAR_TYPE_ERROR_MESSAGE)
+            })?,
         )?;
         match Fraction::new(numerator, denominator) {
             Some(value) => Ok(value),
@@ -1596,7 +1740,9 @@ fn try_scalar_to_fraction(value: &PyAny) -> PyResult<Fraction> {
     }
 }
 
-fn try_vertices_to_py_exact_contour(vertices: Vec<ExactPoint>) -> PyResult<PyExactContour> {
+fn try_vertices_to_py_exact_contour(
+    vertices: Vec<ExactPoint>,
+) -> PyResult<PyExactContour> {
     if vertices.len() < MIN_CONTOUR_VERTICES_COUNT {
         Err(PyValueError::new_err(format!(
             "Contour should have at least {} vertices, but found {}.",
@@ -1641,7 +1787,11 @@ static mut MAYBE_ORIENTATION_CLS: Option<&PyAny> = None;
 static mut MAYBE_LOCATION_CLS: Option<&PyAny> = None;
 static mut MAYBE_RELATION_CLS: Option<&PyAny> = None;
 
-fn extract_from_sequence<'a, Wrapper: FromPyObject<'a>, Wrapped: From<Wrapper>>(
+fn extract_from_sequence<
+    'a,
+    Wrapper: FromPyObject<'a>,
+    Wrapped: From<Wrapper>,
+>(
     sequence: &'a PySequence,
 ) -> PyResult<Vec<Wrapped>> {
     let mut result = Vec::<Wrapped>::with_capacity(sequence.len()?);
@@ -1670,9 +1820,12 @@ fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
             py.import("rithm.fraction")?
                 .getattr(intern!(py, "Fraction"))?,
         );
-        MAYBE_LOCATION_CLS = Some(py.import("rene")?.getattr(intern!(py, "Location"))?);
-        MAYBE_ORIENTATION_CLS = Some(py.import("rene")?.getattr(intern!(py, "Orientation"))?);
-        MAYBE_RELATION_CLS = Some(py.import("rene")?.getattr(intern!(py, "Relation"))?);
+        MAYBE_LOCATION_CLS =
+            Some(py.import("rene")?.getattr(intern!(py, "Location"))?);
+        MAYBE_ORIENTATION_CLS =
+            Some(py.import("rene")?.getattr(intern!(py, "Orientation"))?);
+        MAYBE_RELATION_CLS =
+            Some(py.import("rene")?.getattr(intern!(py, "Relation"))?);
     }
     Ok(())
 }
