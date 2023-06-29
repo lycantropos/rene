@@ -173,7 +173,7 @@ class Empty(_SelfComparable, _te.Protocol[Scalar]):
 
     def __sub__(
             self,
-            other: _t.Union[_te.Self, Multipolygon[Scalar], Polygon[Scalar]], 
+            other: _t.Union[_te.Self, Multipolygon[Scalar], Polygon[Scalar]],
             /
     ) -> _te.Self:
         ...
@@ -400,6 +400,17 @@ class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]],
                 holes: _t.Sequence[Contour[Scalar]], /) -> Polygon[Scalar]:
         ...
 
+    @_t.overload
+    def __and__(self, other: Empty[Scalar], /) -> Empty[Scalar]:
+        ...
+
+    @_t.overload
+    def __and__(
+            self, other: Multipolygon[Scalar], /
+    ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
+        ...
+
+    @_t.overload
     def __and__(
             self, other: Polygon[Scalar], /
     ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
