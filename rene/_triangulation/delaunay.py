@@ -5,10 +5,9 @@ import typing as t
 import typing_extensions as te
 from reprit.base import generate_repr
 
-from rene._rene import Orientation
+from rene import (Orientation,
+                  hints)
 from rene._utils import deduplicate
-from rene.hints import (Point,
-                        Scalar)
 from .mesh import (Mesh,
                    build_delaunay_triangulation,
                    orient_point_to_edge)
@@ -16,9 +15,11 @@ from .quad_edge import (QuadEdge,
                         to_opposite_edge)
 
 
-class DelaunayTriangulation(t.Generic[Scalar]):
+class DelaunayTriangulation(t.Generic[hints.Scalar]):
     @classmethod
-    def from_points(cls, points: t.Sequence[Point[Scalar]], /) -> te.Self:
+    def from_points(
+            cls, points: t.Sequence[hints.Point[hints.Scalar]], /
+    ) -> te.Self:
         endpoints = list(points)
         endpoints.sort()
         mesh = Mesh.from_points(deduplicate(endpoints))
@@ -30,14 +31,14 @@ class DelaunayTriangulation(t.Generic[Scalar]):
         return self._left_side
 
     @property
-    def mesh(self) -> Mesh[Scalar]:
+    def mesh(self) -> Mesh[hints.Scalar]:
         return self._mesh
 
     @property
     def right_side(self) -> QuadEdge:
         return self._right_side
 
-    def to_boundary_points(self) -> t.List[Point[Scalar]]:
+    def to_boundary_points(self) -> t.List[hints.Point[hints.Scalar]]:
         if self:
             result = []
             start = self.left_side
@@ -54,7 +55,12 @@ class DelaunayTriangulation(t.Generic[Scalar]):
 
     def triangles_vertices(
             self
-    ) -> t.List[t.Tuple[Point[Scalar], Point[Scalar], Point[Scalar]]]:
+    ) -> t.List[
+        t.Tuple[
+            hints.Point[hints.Scalar], hints.Point[hints.Scalar],
+            hints.Point[hints.Scalar]
+        ]
+    ]:
         mesh = self.mesh
         result = []
         for edge in mesh.to_edges():
@@ -74,14 +80,14 @@ class DelaunayTriangulation(t.Generic[Scalar]):
 
     _left_side: QuadEdge
     _right_side: QuadEdge
-    _mesh: Mesh[Scalar]
+    _mesh: Mesh[hints.Scalar]
 
     __slots__ = '_left_side', '_mesh', '_right_side'
 
     def __new__(cls,
                 left_side: QuadEdge,
                 right_side: QuadEdge,
-                mesh: Mesh[Scalar],
+                mesh: Mesh[hints.Scalar],
                 /) -> te.Self:
         self = super().__new__(cls)
         self._left_side, self._mesh, self._right_side = (

@@ -3,9 +3,9 @@ import typing as t
 import typing_extensions as te
 from reprit.base import generate_repr
 
-from rene import hints
+from rene import (Orientation,
+                  hints)
 from rene._hints import Map
-from rene._rene import Orientation
 from rene._utils import orient
 from .event import (Event,
                     is_left_event)
@@ -58,8 +58,7 @@ class BinaryEventsQueueKey(t.Generic[hints.Scalar]):
             return not is_left_event(event)
         else:
             other_end_orientation = orient(
-                    self.endpoints[event],
-                    self.endpoints[self.opposites[event]],
+                    event_start, self.endpoints[self.opposites[event]],
                     self.endpoints[self.opposites[other_event]],
             )
             if other_end_orientation is Orientation.COLLINEAR:

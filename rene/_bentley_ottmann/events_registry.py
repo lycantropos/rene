@@ -7,8 +7,8 @@ from dendroid.hints import KeyedSet
 from prioq.base import PriorityQueue
 from reprit.base import generate_repr
 
-from rene import hints
-from rene._rene import Orientation
+from rene import (Orientation,
+                  hints)
 from rene._utils import (orient,
                          to_segments_intersection_point,
                          to_sorted_pair)

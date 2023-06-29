@@ -3,9 +3,9 @@ import typing as t
 import typing_extensions as te
 from reprit.base import generate_repr
 
-from rene import hints
+from rene import (Orientation,
+                  hints)
 from rene._hints import Map
-from rene._rene import Orientation
 from rene._utils import orient
 from .event import Event
 
