@@ -5,12 +5,10 @@ use crate::bounded::{Bounded, Box};
 use crate::geometries::{Empty, Point};
 use crate::operations::{
     do_boxes_have_no_common_continuum,
-    intersect_segments_with_common_continuum_bounding_boxes, to_sorted_pair,
-    Orient,
+    intersect_segments_with_common_continuum_bounding_boxes, Orient,
 };
-use crate::oriented::Orientation;
 use crate::relatable::Relatable;
-use crate::traits::{Elemental, Intersection, Segmental};
+use crate::traits::{Intersection, Segmental};
 
 use super::types::Segment;
 
