@@ -27,7 +27,7 @@ use super::traits::ReduceEvents;
 use super::types::OverlapKind;
 
 pub(crate) struct Operation<Point, const KIND: u8> {
-    are_from_first_operand: Vec<bool>,
+    first_segments_count: usize,
     are_from_result: Vec<bool>,
     are_other_interior_to_left: Vec<bool>,
     below_event_from_result: Vec<Event>,
@@ -57,13 +57,7 @@ where
         debug_assert!(IsValid::is_valid(second));
         let first_segments_count = first.segments_count();
         let second_segments_count = second.segments_count();
-        let mut result = Self::with_capacity(first_segments_count + second_segments_count);
-        result
-            .are_from_first_operand
-            .append(&mut vec![true; first_segments_count]);
-        result
-            .are_from_first_operand
-            .append(&mut vec![false; second_segments_count]);
+        let mut result = Self::with_capacity(first_segments_count, second_segments_count);
         result.extend(first.segments().cloned());
         result.extend(second.segments().cloned());
         let first_event = unsafe { result.peek().unwrap_unchecked() };
@@ -84,13 +78,7 @@ where
         debug_assert!(second.iter().all(|element| element.is_valid()));
         let first_segments_count = multisegments_to_segments_count(first);
         let second_segments_count = multisegments_to_segments_count(second);
-        let mut result = Self::with_capacity(first_segments_count + second_segments_count);
-        result
-            .are_from_first_operand
-            .append(&mut vec![true; first_segments_count]);
-        result
-            .are_from_first_operand
-            .append(&mut vec![false; second_segments_count]);
+        let mut result = Self::with_capacity(first_segments_count, second_segments_count);
         for &element in first {
             result.extend(element.segments().cloned());
         }
@@ -115,13 +103,7 @@ where
         debug_assert!(second.is_valid());
         let first_segments_count = multisegments_to_segments_count(first);
         let second_segments_count = second.segments_count();
-        let mut result = Self::with_capacity(first_segments_count + second_segments_count);
-        result
-            .are_from_first_operand
-            .append(&mut vec![true; first_segments_count]);
-        result
-            .are_from_first_operand
-            .append(&mut vec![false; second_segments_count]);
+        let mut result = Self::with_capacity(first_segments_count, second_segments_count);
         for element in first {
             result.extend(element.segments().cloned());
         }
@@ -143,13 +125,7 @@ where
         debug_assert!(second.iter().all(|element| element.is_valid()));
         let first_segments_count = first.segments_count();
         let second_segments_count = multisegments_to_segments_count(second);
-        let mut result = Self::with_capacity(first_segments_count + second_segments_count);
-        result
-            .are_from_first_operand
-            .append(&mut vec![true; first_segments_count]);
-        result
-            .are_from_first_operand
-            .append(&mut vec![false; second_segments_count]);
+        let mut result = Self::with_capacity(first_segments_count, second_segments_count);
         result.extend(first.segments().cloned());
         for element in second {
             result.extend(element.segments().cloned());
@@ -551,7 +527,7 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
     }
 
     fn is_left_event_from_first_operand(&self, event: Event) -> bool {
-        self.are_from_first_operand[self.left_event_to_segment_id(event)]
+        self.left_event_to_segment_id(event) < self.first_segments_count
     }
 
     fn is_outside_left_event(&self, event: Event) -> bool {
@@ -986,10 +962,11 @@ where
         }
     }
 
-    fn with_capacity(segments_count: usize) -> Self {
+    fn with_capacity(first_segments_count: usize, second_segments_count: usize) -> Self {
+        let segments_count = first_segments_count + second_segments_count;
         let initial_events_count = 2 * segments_count;
         Self {
-            are_from_first_operand: Vec::with_capacity(segments_count),
+            first_segments_count,
             are_from_result: vec![false; segments_count],
             are_other_interior_to_left: vec![false; segments_count],
             below_event_from_result: vec![UNDEFINED_EVENT; segments_count],
