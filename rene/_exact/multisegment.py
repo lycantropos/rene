@@ -76,9 +76,26 @@ class Multisegment:
         self._segments = list(segments)
         return self
 
+    @t.overload
+    def __and__(
+            self, other: hints.Empty[Fraction], /
+    ) -> hints.Empty[Fraction]:
+        ...
+
+    @t.overload
     def __and__(
             self, other: hints.Multisegment[Fraction], /
-    ) -> hints.Compound[Fraction]:
+    ) -> t.Union[
+        hints.Empty[Fraction], hints.Multisegment[Fraction],
+        hints.Segment[Fraction]
+    ]:
+        ...
+
+    @t.overload
+    def __and__(self, other: t.Any, /) -> t.Any:
+        ...
+
+    def __and__(self, other: t.Any, /) -> t.Any:
         return collect_maybe_empty_segments(
                 intersect_multisegments(self, other), self._context.empty_cls,
                 self._context.multisegment_cls
