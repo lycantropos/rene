@@ -1022,6 +1022,23 @@ impl PyExactMultisegment {
         try_location_to_py_location(self.0.locate(&point.0))
     }
 
+    fn __and__(&self, other: &PyAny, py: Python) -> PyResult<PyObject> {
+        if other.is_instance(PyExactEmpty::type_object(py))? {
+            let other = other.extract::<PyExactEmpty>()?;
+            Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactMultisegment::type_object(py))? {
+            let other = other.extract::<PyExactMultisegment>()?;
+            let segments = (&self.0).intersection(&other.0);
+            match segments.len() {
+                0 => Ok(PyExactEmpty::new().into_py(py)),
+                1 => Ok(unsafe { segments.into_iter().next().unwrap_unchecked() }.into_py(py)),
+                _ => Ok(PyExactMultisegment(ExactMultisegment::new(segments)).into_py(py)),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
+
     fn __contains__(&self, point: &PyExactPoint) -> bool {
         self.0.locate(&point.0) != Location::Exterior
     }

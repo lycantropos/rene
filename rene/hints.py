@@ -361,6 +361,16 @@ class Multisegment(_SelfComparable, Multisegmental[Segment[Scalar]],
     def __new__(cls, segments: _t.Sequence[Segment[Scalar]], /) -> _te.Self:
         ...
 
+    @_t.overload
+    def __and__(self, other: Empty[Scalar], /) -> Empty[Scalar]:
+        ...
+
+    @_t.overload
+    def __and__(
+            self, other: Multisegment[Scalar], /
+    ) -> _t.Union[Empty[Scalar], Multisegment[Scalar], Segment[Scalar]]:
+        ...
+
     def __contains__(self, point: Point[Scalar], /) -> bool:
         ...
 

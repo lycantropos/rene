@@ -333,6 +333,16 @@ class Multisegment:
     def __new__(cls, segments: _t.Sequence[Segment], /) -> _te.Self:
         ...
 
+    @_t.overload
+    def __and__(self, other: Empty, /) -> Empty:
+        ...
+
+    @_t.overload
+    def __and__(
+            self, other: Multisegment, /
+    ) -> _t.Union[Empty, Multisegment, Segment]:
+        ...
+
     def __contains__(self, point: Point, /) -> bool:
         ...
 

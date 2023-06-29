@@ -85,6 +85,20 @@ def collect_maybe_empty_polygons(
             else empty_cls())
 
 
+def collect_maybe_empty_segments(
+        segments: t.Sequence[hints.Segment[hints.Scalar]],
+        empty_cls: t.Type[hints.Empty[hints.Scalar]],
+        multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        /
+) -> t.Union[
+    hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
+    hints.Segment[hints.Scalar]
+]:
+    return (collect_non_empty_segments(segments, multisegment_cls)
+            if segments
+            else empty_cls())
+
+
 def collect_non_empty_polygons(
         polygons: t.Sequence[hints.Polygon[hints.Scalar]],
         multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
@@ -92,6 +106,15 @@ def collect_non_empty_polygons(
 ) -> t.Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
     assert len(polygons) >= 1
     return polygons[0] if len(polygons) == 1 else multipolygon_cls(polygons)
+
+
+def collect_non_empty_segments(
+        segments: t.Sequence[hints.Segment[hints.Scalar]],
+        multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        /
+) -> t.Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
+    assert len(segments) >= 1
+    return segments[0] if len(segments) == 1 else multisegment_cls(segments)
 
 
 def cross_multiply(first_start: hints.Point[hints.Scalar],

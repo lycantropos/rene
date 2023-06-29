@@ -1,11 +1,31 @@
 import typing as t
+from itertools import groupby
 
 from rene import hints
 from rene._utils import (do_boxes_have_no_common_area,
+                         do_boxes_have_no_common_continuum,
                          merge_boxes,
-                         to_boxes_ids_with_common_area)
-from . import shaped
-from .event import Event
+                         to_boxes_ids_with_common_area,
+                         to_boxes_ids_with_common_continuum)
+from . import (linear,
+               shaped)
+from .event import (Event,
+                    is_right_event)
+
+
+class LinearIntersection(linear.Operation[hints.Scalar]):
+    def reduce_events(self,
+                      events: t.List[Event],
+                      segment_cls: t.Type[hints.Segment[hints.Scalar]],
+                      /) -> t.List[hints.Segment[hints.Scalar]]:
+        return [
+            segment_cls(start, end)
+            for (start, end), equal_segment_events in groupby(
+                    events,
+                    key=self._to_event_endpoints
+            )
+            if _has_two_or_more_elements(equal_segment_events)
+        ]
 
 
 class ShapedIntersection(shaped.Operation[hints.Scalar]):
@@ -118,6 +138,66 @@ def intersect_multipolygon_with_polygon(
                                    type(first_polygons[0]))
 
 
+def intersect_multisegments(first: hints.Multisegment[hints.Scalar],
+                            second: hints.Multisegment[hints.Scalar],
+                            /) -> t.List[hints.Segment[hints.Scalar]]:
+    first_segments, second_segments = first.segments, second.segments
+    first_boxes = [segment.bounding_box for segment in first_segments]
+    second_boxes = [segment.bounding_box for segment in second_segments]
+    first_bounding_box, second_bounding_box = (merge_boxes(first_boxes),
+                                               merge_boxes(second_boxes))
+    if do_boxes_have_no_common_continuum(first_bounding_box,
+                                         second_bounding_box):
+        return []
+    first_common_continuum_segments_ids = to_boxes_ids_with_common_continuum(
+            first_boxes, second_bounding_box
+    )
+    if not first_common_continuum_segments_ids:
+        return []
+    second_common_continuum_segments_ids = to_boxes_ids_with_common_continuum(
+            second_boxes, first_bounding_box
+    )
+    if not second_common_continuum_segments_ids:
+        return []
+    first_common_continuum_segments = [
+        first_segments[segment_id]
+        for segment_id in first_common_continuum_segments_ids
+    ]
+    second_common_continuum_segments = [
+        second_segments[segment_id]
+        for segment_id in second_common_continuum_segments_ids
+    ]
+    max_min_x = max(
+            min(first_boxes[segment_id].min_x
+                for segment_id in first_common_continuum_segments_ids),
+            min(second_boxes[segment_id].min_x
+                for segment_id in second_common_continuum_segments_ids)
+    )
+    min_max_x = min(
+            max(first_boxes[segment_id].max_x
+                for segment_id in first_common_continuum_segments_ids),
+            max(second_boxes[segment_id].max_x
+                for segment_id in second_common_continuum_segments_ids)
+    )
+    operation = LinearIntersection.from_segments_iterables(
+            (segment
+             for segment in first_common_continuum_segments
+             if (max_min_x <= max(segment.start.x, segment.end.x)
+                 and min(segment.start.x, segment.end.x) <= min_max_x)),
+            (segment
+             for segment in second_common_continuum_segments
+             if (max_min_x <= max(segment.start.x, segment.end.x)
+                 and min(segment.start.x, segment.end.x) <= min_max_x)),
+    )
+    events: t.List[Event] = []
+    for event in operation:
+        if operation.to_event_start(event).x > min_max_x:
+            break
+        if is_right_event(event):
+            events.append(operation.to_opposite_event(event))
+    return operation.reduce_events(events, type(first_segments[0]))
+
+
 def intersect_polygon_with_multipolygon(
         first: hints.Polygon[hints.Scalar],
         second: hints.Multipolygon[hints.Scalar],
@@ -188,3 +268,10 @@ def intersect_polygons(first: hints.Polygon[hints.Scalar],
             break
         events.append(event)
     return operation.reduce_events(events, type(first.border), type(first))
+
+
+def _has_two_or_more_elements(iterator: t.Iterator[t.Any],
+                              /,
+                              _sentinel: object = object()) -> bool:
+    return (next(iterator, _sentinel) is not _sentinel
+            and next(iterator, _sentinel) is not _sentinel)

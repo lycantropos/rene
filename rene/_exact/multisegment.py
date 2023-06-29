@@ -11,7 +11,9 @@ from rene import (MIN_MULTISEGMENT_SEGMENTS_COUNT,
                   Relation,
                   hints)
 from rene._bentley_ottmann.base import sweep
+from rene._clipping.intersection import intersect_multisegments
 from rene._context import Context
+from rene._utils import collect_maybe_empty_segments
 
 
 class Multisegment:
@@ -73,6 +75,14 @@ class Multisegment:
         self = super().__new__(cls)
         self._segments = list(segments)
         return self
+
+    def __and__(
+            self, other: hints.Multisegment[Fraction], /
+    ) -> hints.Compound[Fraction]:
+        return collect_maybe_empty_segments(
+                intersect_multisegments(self, other), self._context.empty_cls,
+                self._context.multisegment_cls
+        )
 
     def __contains__(self, point: hints.Point[Fraction], /) -> bool:
         return self.locate(point) is not Location.EXTERIOR
