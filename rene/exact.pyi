@@ -553,6 +553,22 @@ class Segment:
     def __new__(cls, start: Point, end: Point, /) -> _te.Self:
         ...
 
+    @_t.overload
+    def __and__(self, other: Empty, /) -> Empty:
+        ...
+
+    @_t.overload
+    def __and__(
+            self, other: Multisegment, /
+    ) -> _t.Union[Empty, Multisegment, Segment]:
+        ...
+
+    @_t.overload
+    def __and__(
+            self, other: Segment, /
+    ) -> _t.Union[Empty, Multisegment, Segment]:
+        ...
+
     def __contains__(self, point: Point, /) -> bool:
         ...
 

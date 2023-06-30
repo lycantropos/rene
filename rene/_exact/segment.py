@@ -9,9 +9,13 @@ from rithm.fraction import Fraction
 from rene import (Location,
                   Relation,
                   hints)
+from rene._clipping.intersection import (intersect_segment_with_segments,
+                                         intersect_segments)
 from rene._context import Context
 from rene._relating import segment
-from rene._utils import locate_point_in_segment
+from rene._utils import (collect_maybe_empty_segments,
+                         locate_point_in_segment,
+                         unwrap_or_else)
 
 
 class Segment:
@@ -58,6 +62,47 @@ class Segment:
         self = super().__new__(cls)
         self._end, self._start = end, start
         return self
+
+    @t.overload
+    def __and__(
+            self, other: hints.Empty[Fraction], /
+    ) -> hints.Empty[Fraction]:
+        ...
+
+    @t.overload
+    def __and__(
+            self, other: hints.Multisegment[Fraction], /
+    ) -> t.Union[
+        hints.Empty[Fraction], hints.Multisegment[Fraction],
+        hints.Segment[Fraction]
+    ]:
+        ...
+
+    @t.overload
+    def __and__(
+            self, other: hints.Segment[Fraction], /
+    ) -> t.Union[
+        hints.Empty[Fraction], hints.Multisegment[Fraction],
+        hints.Segment[Fraction]
+    ]:
+        ...
+
+    @t.overload
+    def __and__(self, other: t.Any, /) -> t.Any:
+        ...
+
+    def __and__(self, other: t.Any, /) -> t.Any:
+        return (
+            collect_maybe_empty_segments(
+                    intersect_segment_with_segments(self, other.segments),
+                    self._context.empty_cls, self._context.multisegment_cls
+            )
+            if isinstance(other, self._context.multisegment_cls)
+            else (unwrap_or_else(intersect_segments(self, other),
+                                 self._context.empty_cls)
+                  if isinstance(other, self._context.segment_cls)
+                  else NotImplemented)
+        )
 
     def __contains__(self, point: hints.Point[Fraction], /) -> bool:
         return self.locate(point) is not Location.EXTERIOR

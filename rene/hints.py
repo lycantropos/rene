@@ -278,6 +278,22 @@ class Segment(_SelfComparable, _te.Protocol[Scalar]):
     def __new__(cls, start: Point[Scalar], end: Point[Scalar], /) -> _te.Self:
         ...
 
+    @_t.overload
+    def __and__(self, other: Empty[Scalar], /) -> Empty[Scalar]:
+        ...
+
+    @_t.overload
+    def __and__(
+            self, other: Multisegment[Scalar], /
+    ) -> _t.Union[Empty[Scalar], Multisegment[Scalar], Segment[Scalar]]:
+        ...
+
+    @_t.overload
+    def __and__(
+            self, other: Segment[Scalar], /
+    ) -> _t.Union[Empty[Scalar], Multisegment[Scalar], Segment[Scalar]]:
+        ...
+
     def __contains__(self, point: Point[Scalar], /) -> bool:
         ...
 

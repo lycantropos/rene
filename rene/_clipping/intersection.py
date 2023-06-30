@@ -142,6 +142,21 @@ def intersect_multipolygon_with_polygon(
                                    type(first_polygons[0]))
 
 
+def intersect_segments(
+        first: hints.Segment[hints.Scalar],
+        second: hints.Segment[hints.Scalar],
+        /
+) -> t.Optional[hints.Segment[hints.Scalar]]:
+    return (
+        None
+        if do_boxes_have_no_common_continuum(first.bounding_box,
+                                             second.bounding_box)
+        else intersect_segments_with_common_continuum_bounding_boxes(
+                first.start, first.end, second.start, second.end, type(first)
+        )
+    )
+
+
 def intersect_segments_with_common_continuum_bounding_boxes(
         start: hints.Point[hints.Scalar],
         end: hints.Point[hints.Scalar],

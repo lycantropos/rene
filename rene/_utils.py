@@ -354,6 +354,30 @@ def permute(values: t.MutableSequence[_T], seed: int, /) -> None:
         seed //= step
 
 
+_T1 = t.TypeVar('_T1')
+_T2 = t.TypeVar('_T2')
+
+
+@t.overload
+def unwrap_or_else(
+        value: None, function: t.Callable[[], _T2], /
+) -> _T2:
+    ...
+
+
+@t.overload
+def unwrap_or_else(
+        value: _T1, function: t.Callable[[], _T2], /
+) -> _T1:
+    ...
+
+
+def unwrap_or_else(
+        value: t.Optional[_T1], function: t.Callable[[], _T2], /
+) -> t.Union[_T1, _T2]:
+    return function() if value is None else value
+
+
 def validate_seed(
         seed: t.Any, _max_usize_value: int = (sys.maxsize << 1) + 1, /
 ) -> None:
