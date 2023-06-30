@@ -200,16 +200,13 @@ where
     &'a Point: Orient,
     Point: Ord,
 {
-    if {
-        start == other_start
-            || end.orient(start, other_start) == Orientation::Collinear
-    } && {
-        end == other_end
-            || end.orient(start, other_end) == Orientation::Collinear
-    } {
-        let (start, end) = to_sorted_pair((start, end));
-        let (other_start, other_end) =
-            to_sorted_pair((other_start, other_end));
+    let (start, end) = to_sorted_pair((start, end));
+    let (other_start, other_end) = to_sorted_pair((other_start, other_end));
+    if (start == other_start
+        || end.orient(start, other_start) == Orientation::Collinear)
+        && (end == other_end
+            || end.orient(start, other_end) == Orientation::Collinear)
+    {
         Some((start.max(other_start), end.min(other_end)))
     } else {
         None
