@@ -11,8 +11,8 @@ from rene import (MIN_MULTISEGMENT_SEGMENTS_COUNT,
                   Relation,
                   hints)
 from rene._bentley_ottmann.base import sweep
-from rene._clipping.intersection import (intersect_multisegments,
-                                         intersect_segment_with_segments)
+from rene._clipping.intersection import (intersect_segment_with_segments,
+                                         intersect_segments_sequences)
 from rene._context import Context
 from rene._utils import collect_maybe_empty_segments
 
@@ -108,7 +108,8 @@ class Multisegment:
     def __and__(self, other: t.Any, /) -> t.Any:
         return (
             collect_maybe_empty_segments(
-                    intersect_multisegments(self, other),
+                    intersect_segments_sequences(self.segments,
+                                                 other.segments),
                     self._context.empty_cls, self._context.multisegment_cls
             )
             if isinstance(other, self._context.multisegment_cls)
