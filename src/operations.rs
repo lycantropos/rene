@@ -5,6 +5,7 @@ use rithm::fraction::Fraction;
 use traiter::numbers::{BitLength, IsPowerOfTwo, One, Sign, Signed};
 
 use crate::bounded;
+use crate::bounded::Bounded;
 use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
 use crate::locatable::Location;
 use crate::oriented::Orientation;
@@ -608,4 +609,41 @@ pub(crate) fn to_sorted_pair<Value: PartialOrd>(
     } else {
         (right, left)
     }
+}
+
+pub(crate) fn intersect_segment_with_segments<
+    'a,
+    Point,
+    Scalar,
+    Segment: From<(Point, Point)>,
+>(
+    segment: &'a Segment,
+    segments: impl Iterator<Item = &'a Segment>,
+) -> Vec<Segment>
+where
+    Scalar: PartialEq,
+    Point: Clone + Ord,
+    for<'b> &'b bounded::Box<&'b Scalar>: Relatable,
+    for<'b> &'b Point: Orient,
+    for<'b> &'b Segment: Bounded<&'b Scalar> + Segmental<Endpoint = &'b Point>,
+{
+    let (start, end) = segment.endpoints();
+    let segment_bounding_box = segment.to_bounding_box();
+    segments
+        .filter(|&segment| {
+            do_boxes_have_common_continuum(
+                &segment.to_bounding_box(),
+                &segment_bounding_box,
+            )
+        })
+        .filter_map(|segment| {
+            intersect_segments_with_common_continuum_bounding_boxes(
+                segment.start(),
+                segment.end(),
+                start,
+                end,
+            )
+            .map(|(start, end)| Segment::from((start.clone(), end.clone())))
+        })
+        .collect()
 }

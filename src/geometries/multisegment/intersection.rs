@@ -7,8 +7,8 @@ use crate::clipping::traits::ReduceEvents;
 use crate::clipping::{is_right_event, Event, INTERSECTION};
 use crate::geometries::{Empty, Point, Segment};
 use crate::operations::{
-    do_boxes_have_no_common_continuum, merge_boxes,
-    to_boxes_ids_with_common_continuum,
+    do_boxes_have_no_common_continuum, intersect_segment_with_segments,
+    merge_boxes, to_boxes_ids_with_common_continuum, Orient,
 };
 use crate::relatable::Relatable;
 use crate::sweeping::traits::EventsContainer;
@@ -61,6 +61,7 @@ where
             )>,
     Point<Fraction<BigInt<Digit, SHIFT>>>: Clone,
     for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
+    for<'a> &'a Point<Fraction<BigInt<Digit, SHIFT>>>: Orient,
     for<'a> &'a Segment<Fraction<BigInt<Digit, SHIFT>>>:
         Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
 {
@@ -91,6 +92,11 @@ where
         );
         if common_continuum_segments_ids.is_empty() {
             return vec![];
+        } else if common_continuum_segments_ids.len() == 1 {
+            return intersect_segment_with_segments(
+                &self.segments[common_continuum_segments_ids[0]],
+                other.segments.iter(),
+            );
         }
         let other_common_continuum_segments_ids =
             to_boxes_ids_with_common_continuum(
@@ -100,29 +106,36 @@ where
         if other_common_continuum_segments_ids.is_empty() {
             return vec![];
         }
+        let common_continuum_segments = common_continuum_segments_ids
+            .iter()
+            .map(|&index| &self.segments[index]);
+        if other_common_continuum_segments_ids.len() == 1 {
+            return intersect_segment_with_segments(
+                &other.segments[other_common_continuum_segments_ids[0]],
+                common_continuum_segments,
+            );
+        }
+        let common_continuum_segments =
+            common_continuum_segments.collect::<Vec<_>>();
+        let other_common_continuum_segments =
+            other_common_continuum_segments_ids
+                .iter()
+                .map(|&index| &other.segments[index])
+                .collect::<Vec<_>>();
         let min_max_x = unsafe {
             common_continuum_segments_ids
-                .iter()
-                .map(|&index| bounding_boxes[index].get_max_x())
+                .into_iter()
+                .map(|index| bounding_boxes[index].get_max_x())
                 .max()
                 .unwrap_unchecked()
         }
         .min(unsafe {
             other_common_continuum_segments_ids
-                .iter()
-                .map(|&index| other_bounding_boxes[index].get_max_x())
+                .into_iter()
+                .map(|index| other_bounding_boxes[index].get_max_x())
                 .max()
                 .unwrap_unchecked()
         });
-        let common_continuum_segments = common_continuum_segments_ids
-            .into_iter()
-            .map(|index| &self.segments[index])
-            .collect::<Vec<_>>();
-        let other_common_continuum_segments =
-            other_common_continuum_segments_ids
-                .into_iter()
-                .map(|index| &other.segments[index])
-                .collect::<Vec<_>>();
         let mut operation = Operation::<Point<_>, INTERSECTION>::from((
             &common_continuum_segments,
             &other_common_continuum_segments,
@@ -143,5 +156,47 @@ where
             }
         }
         operation.reduce_events(events)
+    }
+}
+
+impl<Digit, const SHIFT: usize>
+    Intersection<&Segment<Fraction<BigInt<Digit, SHIFT>>>>
+    for &Multisegment<Fraction<BigInt<Digit, SHIFT>>>
+where
+    Fraction<BigInt<Digit, SHIFT>>: PartialEq,
+    Point<Fraction<BigInt<Digit, SHIFT>>>: Clone + Ord,
+    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
+    for<'a> &'a Point<Fraction<BigInt<Digit, SHIFT>>>: Orient,
+    for<'a> &'a Segment<Fraction<BigInt<Digit, SHIFT>>>:
+        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+{
+    type Output = Vec<Segment<Fraction<BigInt<Digit, SHIFT>>>>;
+
+    fn intersection(
+        self,
+        other: &Segment<Fraction<BigInt<Digit, SHIFT>>>,
+    ) -> Self::Output {
+        intersect_segment_with_segments(other, self.segments.iter())
+    }
+}
+
+impl<Digit, const SHIFT: usize>
+    Intersection<&Multisegment<Fraction<BigInt<Digit, SHIFT>>>>
+    for &Segment<Fraction<BigInt<Digit, SHIFT>>>
+where
+    Fraction<BigInt<Digit, SHIFT>>: PartialEq,
+    Point<Fraction<BigInt<Digit, SHIFT>>>: Clone + Ord,
+    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
+    for<'a> &'a Point<Fraction<BigInt<Digit, SHIFT>>>: Orient,
+    for<'a> &'a Segment<Fraction<BigInt<Digit, SHIFT>>>:
+        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+{
+    type Output = Vec<Segment<Fraction<BigInt<Digit, SHIFT>>>>;
+
+    fn intersection(
+        self,
+        other: &Multisegment<Fraction<BigInt<Digit, SHIFT>>>,
+    ) -> Self::Output {
+        intersect_segment_with_segments(self, other.segments.iter())
     }
 }
