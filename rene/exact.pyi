@@ -343,6 +343,12 @@ class Multisegment:
     ) -> _t.Union[Empty, Multisegment, Segment]:
         ...
 
+    @_t.overload
+    def __and__(
+            self, other: Segment, /
+    ) -> _t.Union[Empty, Multisegment, Segment]:
+        ...
+
     def __contains__(self, point: Point, /) -> bool:
         ...
 

@@ -1,12 +1,16 @@
 import typing as t
 from itertools import groupby
 
-from rene import hints
-from rene._utils import (do_boxes_have_no_common_area,
+from rene import (Orientation,
+                  hints)
+from rene._utils import (do_boxes_have_common_continuum,
+                         do_boxes_have_no_common_area,
                          do_boxes_have_no_common_continuum,
                          merge_boxes,
+                         orient,
                          to_boxes_ids_with_common_area,
-                         to_boxes_ids_with_common_continuum)
+                         to_boxes_ids_with_common_continuum,
+                         to_sorted_pair)
 from . import (linear,
                shaped)
 from .event import (Event,
@@ -136,6 +140,47 @@ def intersect_multipolygon_with_polygon(
         events.append(event)
     return operation.reduce_events(events, type(first_polygons[0].border),
                                    type(first_polygons[0]))
+
+
+def intersect_segments_with_common_continuum_bounding_boxes(
+        start: hints.Point[hints.Scalar],
+        end: hints.Point[hints.Scalar],
+        other_start: hints.Point[hints.Scalar],
+        other_end: hints.Point[hints.Scalar],
+        segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        /
+) -> t.Optional[hints.Segment[hints.Scalar]]:
+    start, end = to_sorted_pair(start, end)
+    other_start, other_end = to_sorted_pair(other_start, other_end)
+    return (segment_cls(max(start, other_start), min(end, other_end))
+            if ((start == other_start
+                 or orient(end, start, other_start) is Orientation.COLLINEAR)
+                and
+                (end == other_end
+                 or orient(end, start, other_end) is Orientation.COLLINEAR))
+            else None)
+
+
+def intersect_segment_with_segments(
+        segment: hints.Segment[hints.Scalar],
+        segments: t.Iterable[hints.Segment[hints.Scalar]],
+        /
+) -> t.List[hints.Segment[hints.Scalar]]:
+    bounding_box = segment.bounding_box
+    start, end = segment.start, segment.end
+    segment_cls = type(segment)
+    return [
+        maybe_segment
+        for maybe_segment in [
+            intersect_segments_with_common_continuum_bounding_boxes(
+                    segment.start, segment.end, start, end, segment_cls
+            )
+            for segment in segments
+            if do_boxes_have_common_continuum(segment.bounding_box,
+                                              bounding_box)
+        ]
+        if maybe_segment is not None
+    ]
 
 
 def intersect_multisegments(first: hints.Multisegment[hints.Scalar],

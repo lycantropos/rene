@@ -11,7 +11,8 @@ from rene import (MIN_MULTISEGMENT_SEGMENTS_COUNT,
                   Relation,
                   hints)
 from rene._bentley_ottmann.base import sweep
-from rene._clipping.intersection import intersect_multisegments
+from rene._clipping.intersection import (intersect_multisegments,
+                                         intersect_segment_with_segments)
 from rene._context import Context
 from rene._utils import collect_maybe_empty_segments
 
@@ -92,13 +93,32 @@ class Multisegment:
         ...
 
     @t.overload
+    def __and__(
+            self, other: hints.Segment[Fraction], /
+    ) -> t.Union[
+        hints.Empty[Fraction], hints.Multisegment[Fraction],
+        hints.Segment[Fraction]
+    ]:
+        ...
+
+    @t.overload
     def __and__(self, other: t.Any, /) -> t.Any:
         ...
 
     def __and__(self, other: t.Any, /) -> t.Any:
-        return collect_maybe_empty_segments(
-                intersect_multisegments(self, other), self._context.empty_cls,
-                self._context.multisegment_cls
+        return (
+            collect_maybe_empty_segments(
+                    intersect_multisegments(self, other),
+                    self._context.empty_cls, self._context.multisegment_cls
+            )
+            if isinstance(other, self._context.multisegment_cls)
+            else (
+                collect_maybe_empty_segments(
+                        intersect_segment_with_segments(other, self.segments),
+                        self._context.empty_cls, self._context.multisegment_cls
+                )
+                if isinstance(other, self._context.segment_cls)
+                else NotImplemented)
         )
 
     def __contains__(self, point: hints.Point[Fraction], /) -> bool:
