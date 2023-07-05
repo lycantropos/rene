@@ -11,6 +11,8 @@ from rene import (Location as _Location,
                   Relation as _Relation)
 from rene.hints import Seeder as _Seeder
 
+_ScalarT = _t.Union[_Fraction, _Rational, float, int]
+
 
 class Box:
     @property
@@ -60,10 +62,10 @@ class Box:
         ...
 
     def __new__(cls,
-                _min_x: _t.Union[_Rational, float],
-                _max_x: _t.Union[_Rational, float],
-                _min_y: _t.Union[_Rational, float],
-                _max_y: _t.Union[_Rational, float],
+                _min_x: _ScalarT,
+                _max_x: _ScalarT,
+                _min_y: _ScalarT,
+                _max_y: _ScalarT,
                 /) -> _te.Self:
         ...
 
@@ -379,10 +381,7 @@ class Point:
     def y(self) -> _Fraction:
         ...
 
-    def __new__(cls,
-                x: _t.Union[_Rational, float],
-                y: _t.Union[_Rational, float],
-                /) -> _te.Self:
+    def __new__(cls, x: _ScalarT, y: _ScalarT, /) -> _te.Self:
         ...
 
     @_t.overload
