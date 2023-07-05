@@ -5,15 +5,14 @@ use std::ops::Bound::{Excluded, Unbounded};
 
 use traiter::numbers::Parity;
 
-use crate::geometries::{Contour, Multipolygon, Point, Polygon};
+use crate::geometries::{Contour, Point, Polygon};
 use crate::operations::{
     shrink_collinear_vertices, IntersectCrossingSegments, Orient,
 };
-use crate::oriented::{Orientation, Oriented};
+use crate::oriented::Orientation;
 use crate::sweeping::traits::{EventsContainer, EventsQueue, SweepLine};
 use crate::traits::{
-    Contoural, Elemental, Multipolygonal, MultipolygonalPolygon,
-    Multisegmental, Polygonal, PolygonalContour, Segmental,
+    Contoural, Elemental, Multisegmental, Polygonal, Segmental,
 };
 
 use super::constants::UNDEFINED_INDEX;
@@ -58,13 +57,11 @@ impl<
 where
     FirstSegment: Segmental<Endpoint = Point>,
     SecondSegment: Segmental<Endpoint = Point>,
-    for<'a> &'a First: IsValid + Multisegmental<Segment = &'a FirstSegment>,
-    for<'a> &'a Second: IsValid + Multisegmental<Segment = &'a SecondSegment>,
+    for<'a> &'a First: Multisegmental<Segment = &'a FirstSegment>,
+    for<'a> &'a Second: Multisegmental<Segment = &'a SecondSegment>,
     for<'a> &'a Point: Orient,
 {
     fn from((first, second): (&First, &Second)) -> Self {
-        debug_assert!(IsValid::is_valid(first));
-        debug_assert!(IsValid::is_valid(second));
         let first_segments_count = first.segments_count();
         let second_segments_count = second.segments_count();
         let mut result =
@@ -81,12 +78,10 @@ impl<Element, Point: Ord, Segment: Clone, const KIND: u8>
     From<(&[&Element], &[&Element])> for Operation<Point, KIND>
 where
     Segment: Segmental<Endpoint = Point>,
-    for<'a> &'a Element: IsValid + Multisegmental<Segment = &'a Segment>,
+    for<'a> &'a Element: Multisegmental<Segment = &'a Segment>,
     for<'a> &'a Point: Orient,
 {
     fn from((first, second): (&[&Element], &[&Element])) -> Self {
-        debug_assert!(first.iter().all(|element| element.is_valid()));
-        debug_assert!(second.iter().all(|element| element.is_valid()));
         let first_segments_count = multisegments_to_segments_count(first);
         let second_segments_count = multisegments_to_segments_count(second);
         let mut result =
@@ -106,13 +101,11 @@ where
 impl<Element, Segment: Clone, Point: Ord, const KIND: u8>
     From<(&[&Element], &Element)> for Operation<Point, KIND>
 where
-    for<'a> &'a Element: IsValid + Multisegmental<Segment = &'a Segment>,
+    for<'a> &'a Element: Multisegmental<Segment = &'a Segment>,
     for<'a> &'a Point: Orient,
     Segment: Segmental<Endpoint = Point>,
 {
     fn from((first, second): (&[&Element], &Element)) -> Self {
-        debug_assert!(first.iter().all(|element| element.is_valid()));
-        debug_assert!(second.is_valid());
         let first_segments_count = multisegments_to_segments_count(first);
         let second_segments_count = second.segments_count();
         let mut result =
@@ -134,12 +127,10 @@ impl<
         const KIND: u8,
     > From<(&Element, &[&Element])> for Operation<Point, KIND>
 where
-    for<'a> &'a Element: IsValid + Multisegmental<Segment = &'a Segment>,
+    for<'a> &'a Element: Multisegmental<Segment = &'a Segment>,
     for<'a> &'a Point: Orient,
 {
     fn from((first, second): (&Element, &[&Element])) -> Self {
-        debug_assert!(first.is_valid());
-        debug_assert!(second.iter().all(|element| element.is_valid()));
         let first_segments_count = first.segments_count();
         let second_segments_count = multisegments_to_segments_count(second);
         let mut result =
@@ -1098,33 +1089,6 @@ where
             starts_ids: vec![UNDEFINED_INDEX; initial_events_count],
             sweep_line_data: BTreeSet::new(),
         }
-    }
-}
-
-trait IsValid {
-    fn is_valid(self) -> bool;
-}
-
-impl<'a, Scalar> IsValid for &'a Multipolygon<Scalar>
-where
-    MultipolygonalPolygon<Self>: IsValid,
-    Self: Multipolygonal,
-{
-    fn is_valid(self) -> bool {
-        self.polygons().all(|polygon| polygon.is_valid())
-    }
-}
-
-impl<'a, Scalar> IsValid for &'a Polygon<Scalar>
-where
-    Self: Polygonal,
-    PolygonalContour<Self>: Oriented,
-{
-    fn is_valid(self) -> bool {
-        self.border().to_orientation() == Orientation::Counterclockwise
-            && self
-                .holes()
-                .all(|hole| hole.to_orientation() == Orientation::Clockwise)
     }
 }
 
