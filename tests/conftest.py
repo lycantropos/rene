@@ -1,6 +1,7 @@
 import os
 import platform
 import time
+import typing as t
 from datetime import timedelta
 
 import pytest
@@ -15,18 +16,23 @@ settings.register_profile('default',
                           max_examples=max_examples,
                           suppress_health_check=[HealthCheck.too_slow])
 
+# FIXME:
+#  workaround until https://github.com/pytest-dev/pluggy/issues/191 is fixed
+hookimpl = t.cast(t.Callable[..., t.Callable[..., None]], pytest.hookimpl)
+
 if on_ci:
     time_left = timedelta(hours=1)
 
 
-    @pytest.hookimpl(tryfirst=True)
-    def pytest_runtest_call(item: pytest.Item) -> None:
+    @hookimpl(tryfirst=True)
+    def pytest_runtest_call(item: pytest.Function) -> None:
         set_deadline = settings(deadline=time_left / max_examples)
         item.obj = set_deadline(item.obj)
 
 
-    @pytest.fixture(scope='function', autouse=True)
-    def time_function_call() -> None:
+    @pytest.fixture(scope='function',
+                    autouse=True)
+    def time_function_call() -> t.Iterator[None]:
         start = time.monotonic()
         try:
             yield
@@ -36,7 +42,7 @@ if on_ci:
             time_left = max(duration, time_left) - duration
 
 
-@pytest.hookimpl(trylast=True)
+@hookimpl(trylast=True)
 def pytest_sessionfinish(session: pytest.Session,
                          exitstatus: pytest.ExitCode) -> None:
     if exitstatus == pytest.ExitCode.NO_TESTS_COLLECTED:

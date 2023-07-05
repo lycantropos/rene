@@ -4,12 +4,12 @@ import pytest
 from hypothesis import given
 
 from rene.exact import (Multipolygon,
-                        Point)
+                        Polygon)
 from . import strategies
 
 
 @given(strategies.multipolygons_polygons)
-def test_basic(polygons: Sequence[Point]) -> None:
+def test_basic(polygons: Sequence[Polygon]) -> None:
     result = Multipolygon(polygons)
 
     assert isinstance(result, Multipolygon)
@@ -17,6 +17,6 @@ def test_basic(polygons: Sequence[Point]) -> None:
 
 
 @given(strategies.invalid_count_multipolygons_polygons)
-def test_invalid_polygons_count(polygons: Sequence[Point]) -> None:
+def test_invalid_polygons_count(polygons: Sequence[Polygon]) -> None:
     with pytest.raises(ValueError):
         Multipolygon(polygons)

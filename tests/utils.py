@@ -1,34 +1,28 @@
+import typing as t
 from functools import (partial,
                        singledispatch)
-from typing import (Callable,
-                    Iterable,
-                    List,
-                    Sequence,
-                    TypeVar,
-                    Union)
 
 from rene import (MIN_CONTOUR_VERTICES_COUNT,
+                  Location,
+                  Orientation,
                   exact)
-from rene import (Location,
-                  Orientation)
 from rene._utils import (deduplicate,
                          locate_point_in_point_point_point_circle,
                          orient)
-from rene.hints import (Box,
-                        Contour,
-                        Empty,
-                        Multipolygon,
-                        Multisegment,
-                        Point,
-                        Polygon,
-                        Segment)
 
-_T1 = TypeVar('_T1')
-_T2 = TypeVar('_T2')
-Compound = Union[Empty, Multipolygon, Polygon]
+_BoxT = t.TypeVar('_BoxT', bound=exact.Box)
+_ContourT = t.TypeVar('_ContourT', bound=exact.Contour)
+_EmptyT = t.TypeVar('_EmptyT', bound=exact.Empty)
+_MultipolygonT = t.TypeVar('_MultipolygonT', bound=exact.Multipolygon)
+_MultisegmentT = t.TypeVar('_MultisegmentT', bound=exact.Multisegment)
+_PointT = t.TypeVar('_PointT', bound=exact.Point)
+_PolygonT = t.TypeVar('_PolygonT', bound=exact.Polygon)
+_SegmentT = t.TypeVar('_SegmentT', bound=exact.Segment)
+_T1 = t.TypeVar('_T1')
+_T2 = t.TypeVar('_T2')
 
 
-def apply(function: Callable[..., _T2], args: Iterable[_T1]) -> _T2:
+def apply(function: t.Callable[..., _T2], args: t.Iterable[_T1]) -> _T2:
     return function(*args)
 
 
@@ -40,47 +34,45 @@ def implication(antecedent: bool, consequent: bool) -> bool:
     return not antecedent or consequent
 
 
-def is_contour_triangular(contour: Contour) -> bool:
+def is_contour_triangular(contour: _ContourT) -> bool:
     return len(contour.vertices) == MIN_CONTOUR_VERTICES_COUNT
 
 
-def is_multisegment_inside_box(multisegment: Multisegment, box: Box) -> bool:
+def is_multisegment_inside_box(multisegment: _MultisegmentT,
+                               box: _BoxT) -> bool:
     return all(is_segment_inside_box(segment, box)
                for segment in multisegment.segments)
 
 
-def is_point_inside_box(point: Point, box: Box) -> bool:
+def is_point_inside_box(point: _PointT, box: _BoxT) -> bool:
     return (box.min_x <= point.x <= box.max_x
             and box.min_y <= point.y <= box.max_y)
 
 
-def is_point_inside_circumcircle(point: Point,
-                                 first_vertex: Point,
-                                 second_vertex: Point,
-                                 third_vertex: Point) -> bool:
+def is_point_inside_circumcircle(point: _PointT,
+                                 first_vertex: _PointT,
+                                 second_vertex: _PointT,
+                                 third_vertex: _PointT) -> bool:
     return locate_point_in_point_point_point_circle(
             point, first_vertex, second_vertex, third_vertex
     ) is Location.INTERIOR
 
 
-def is_segment_inside_box(segment: Segment, box: Box) -> bool:
+def is_segment_inside_box(segment: _SegmentT, box: _BoxT) -> bool:
     return (is_point_inside_box(segment.start, box)
             and is_point_inside_box(segment.end, box))
 
 
-def pack(function: Callable[..., _T2]) -> Callable[[Iterable[_T1]], _T2]:
+def pack(function: t.Callable[..., _T2]) -> t.Callable[[t.Iterable[_T1]], _T2]:
     return partial(apply, function)
 
 
-_T = TypeVar('_T')
-
-
-def reverse_box_coordinates(box: Box) -> Box:
+def reverse_box_coordinates(box: _BoxT) -> _BoxT:
     return type(box)(box.min_y, box.max_y, box.min_x, box.max_x)
 
 
 @singledispatch
-def reverse_compound_coordinates(compound: _T) -> _T:
+def reverse_compound_coordinates(compound: t.Any) -> t.Any:
     raise TypeError(f'Unsupported type: {type(compound)!r}.')
 
 
@@ -114,97 +106,97 @@ def _(compound: exact.Segment) -> exact.Segment:
     return reverse_segment_coordinates(compound)
 
 
-def reverse_contour(contour: Contour) -> Contour:
+def reverse_contour(contour: _ContourT) -> _ContourT:
     return type(contour)(contour.vertices[::-1])
 
 
-def reverse_contour_coordinates(contour: Contour) -> Contour:
-    return reverse_contour(type(contour)([reverse_point_coordinates(vertex)
-                                          for vertex in contour.vertices]))
+def reverse_contour_coordinates(contour: _ContourT) -> _ContourT:
+    return type(contour)([reverse_point_coordinates(vertex)
+                          for vertex in contour.vertices])
 
 
-def reverse_multipolygon(multipolygon: Multipolygon) -> Multipolygon:
+def reverse_multipolygon(multipolygon: _MultipolygonT) -> _MultipolygonT:
     return type(multipolygon)(multipolygon.polygons[::-1])
 
 
 def reverse_multipolygon_coordinates(
-        multipolygon: Multipolygon
-) -> Multipolygon:
+        multipolygon: _MultipolygonT
+) -> _MultipolygonT:
     return type(multipolygon)([reverse_polygon_coordinates(polygon)
                                for polygon in multipolygon.polygons])
 
 
-def reverse_multisegment(multisegment: Multisegment) -> Multisegment:
+def reverse_multisegment(multisegment: _MultisegmentT) -> _MultisegmentT:
     return type(multisegment)(multisegment.segments[::-1])
 
 
 def reverse_multisegment_coordinates(
-        multisegment: Multisegment
-) -> Multisegment:
+        multisegment: _MultisegmentT
+) -> _MultisegmentT:
     return type(multisegment)([reverse_segment_coordinates(segment)
                                for segment in multisegment.segments])
 
 
-def reverse_point_coordinates(point: Point) -> Point:
+def reverse_point_coordinates(point: _PointT) -> _PointT:
     return type(point)(point.y, point.x)
 
 
-def reverse_polygon_coordinates(polygon: Polygon) -> Polygon:
+def reverse_polygon_coordinates(polygon: _PolygonT) -> _PolygonT:
     return type(polygon)(reverse_contour_coordinates(polygon.border),
                          [reverse_contour_coordinates(hole)
                           for hole in polygon.holes])
 
 
-def reverse_polygon_holes(polygon: Polygon) -> Polygon:
+def reverse_polygon_holes(polygon: _PolygonT) -> _PolygonT:
     return type(polygon)(polygon.border, polygon.holes[::-1])
 
 
-def reverse_segment_coordinates(segment: Segment) -> Segment:
+def reverse_segment_coordinates(segment: _SegmentT) -> _SegmentT:
     return type(segment)(reverse_point_coordinates(segment.start),
                          reverse_point_coordinates(segment.end))
 
 
-def reverse_segment_endpoints(segment: Segment) -> Segment:
+def reverse_segment_endpoints(segment: _SegmentT) -> _SegmentT:
     return type(segment)(segment.end, segment.start)
 
 
-def rotate_contour(contour: Contour, offset: int) -> Contour:
+def rotate_contour(contour: _ContourT, offset: int) -> _ContourT:
     return type(contour)(rotate_sequence(contour.vertices, offset))
 
 
-def rotate_each_polygon_hole(polygon: Polygon, offset: int) -> Polygon:
+def rotate_each_polygon_hole(polygon: _PolygonT, offset: int) -> _PolygonT:
     return type(polygon)(polygon.border,
                          [rotate_contour(hole, offset)
                           for hole in polygon.holes])
 
 
-def rotate_multipolygon(multipolygon: Multipolygon,
-                        offset: int) -> Multipolygon:
+def rotate_multipolygon(multipolygon: _MultipolygonT,
+                        offset: int) -> _MultipolygonT:
     return type(multipolygon)(rotate_sequence(multipolygon.polygons, offset))
 
 
-def rotate_multisegment(multisegment: Multisegment,
-                        offset: int) -> Multisegment:
+def rotate_multisegment(multisegment: _MultisegmentT,
+                        offset: int) -> _MultisegmentT:
     return type(multisegment)(rotate_sequence(multisegment.segments, offset))
 
 
-def rotate_polygon_border(polygon: Polygon, offset: int) -> Polygon:
+def rotate_polygon_border(polygon: _PolygonT, offset: int) -> _PolygonT:
     return type(polygon)(rotate_contour(polygon.border, offset), polygon.holes)
 
 
-def rotate_polygon_holes(polygon: Polygon, offset: int) -> Polygon:
+def rotate_polygon_holes(polygon: _PolygonT, offset: int) -> _PolygonT:
     return type(polygon)(polygon.border,
                          rotate_sequence(polygon.holes, offset))
 
 
-def rotate_sequence(sequence: Sequence[_T1], offset: int) -> Sequence[_T1]:
+def rotate_sequence(sequence: t.Sequence[_T1], offset: int) -> t.List[_T1]:
     if not sequence:
-        return sequence
+        return []
     offset = (offset % len(sequence)) - len(sequence) * (offset < 0)
-    return sequence[-offset:] + sequence[:-offset]
+    return [*sequence[-offset:], *sequence[:-offset]]
 
 
-def to_convex_hull(points: Sequence[Point]) -> List[Point]:
+def to_convex_hull(points: t.Sequence[_PointT]) -> t.List[_PointT]:
     points = deduplicate(sorted(points))
     lower, upper = _to_sub_hull(points), _to_sub_hull(reversed(points))
     return lower[:-1] + upper[:-1] or points
@@ -213,14 +205,14 @@ def to_convex_hull(points: Sequence[Point]) -> List[Point]:
 to_distinct = dict.fromkeys
 
 
-def to_max_convex_hull(points: Sequence[Point]) -> List[Point]:
+def to_max_convex_hull(points: t.Sequence[_PointT]) -> t.List[_PointT]:
     points = deduplicate(sorted(points))
     lower, upper = _to_max_sub_hull(points), _to_max_sub_hull(reversed(points))
     return lower[:-1] + upper[:-1] or points
 
 
-def _to_max_sub_hull(points: Iterable[Point]) -> List[Point]:
-    result = []
+def _to_max_sub_hull(points: t.Iterable[_PointT]) -> t.List[_PointT]:
+    result: t.List[_PointT] = []
     for point in points:
         while len(result) >= 2:
             if orient(result[-2], result[-1], point) is Orientation.CLOCKWISE:
@@ -231,8 +223,8 @@ def _to_max_sub_hull(points: Iterable[Point]) -> List[Point]:
     return result
 
 
-def _to_sub_hull(points: Iterable[Point]) -> List[Point]:
-    result = []
+def _to_sub_hull(points: t.Iterable[_PointT]) -> t.List[_PointT]:
+    result: t.List[_PointT] = []
     for point in points:
         while len(result) >= 2:
             if (orient(result[-2], result[-1], point)

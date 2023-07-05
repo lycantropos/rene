@@ -2,7 +2,7 @@ from hypothesis import given
 
 from rene import Relation
 from rene.exact import Segment
-from rene.hints import Compound
+from tests.exact_tests.hints import Compound
 from tests.utils import (reverse_compound_coordinates,
                          reverse_segment_coordinates,
                          reverse_segment_endpoints)

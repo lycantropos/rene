@@ -2,8 +2,8 @@ from hypothesis import given
 
 from rene.exact import (Multipolygon,
                         Polygon)
-from tests.utils import (Compound,
-                         reverse_multipolygon)
+from tests.exact_tests.hints import Compound
+from tests.utils import reverse_multipolygon
 from . import strategies
 
 

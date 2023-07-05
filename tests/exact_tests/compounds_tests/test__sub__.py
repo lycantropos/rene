@@ -1,8 +1,8 @@
 from hypothesis import given
 
 from rene.exact import Empty
-from tests.utils import (Compound,
-                         equivalence,
+from tests.exact_tests.hints import Compound
+from tests.utils import (equivalence,
                          reverse_compound_coordinates)
 from . import strategies
 

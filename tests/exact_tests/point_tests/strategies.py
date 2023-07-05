@@ -1,9 +1,8 @@
-from hypothesis import strategies
+from hypothesis import strategies as _st
 
-from tests.exact_tests.strategies import (points,
-                                          scalars_strategies)
+from tests.exact_tests import strategies as _strategies
 
-integers = strategies.integers()
+integers = _st.integers()
 non_zero_integers = integers.filter(bool)
-scalars = scalars_strategies.flatmap(lambda strategy: strategy)
-points = points
+scalars = _strategies.scalars_strategies.flatmap(lambda strategy: strategy)
+points = _strategies.points

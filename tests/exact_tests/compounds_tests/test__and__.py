@@ -1,7 +1,7 @@
 from hypothesis import given
 
-from tests.utils import (Compound,
-                         reverse_compound_coordinates)
+from tests.exact_tests.hints import Compound
+from tests.utils import reverse_compound_coordinates
 from . import strategies
 
 

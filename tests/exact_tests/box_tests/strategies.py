@@ -1,15 +1,11 @@
-from hypothesis import strategies
+from hypothesis import strategies as _st
 
-from rene.exact import Box
-from tests.exact_tests.strategies import (boxes,
-                                          boxes_limits,
-                                          non_zero_integers,
-                                          scalars_strategies)
+from rene.exact import Box as _Box
+from tests.exact_tests import strategies as _strategies
 
-non_zero_integers = non_zero_integers
-boxes_limits = boxes_limits
-boxes_like = scalars_strategies.flatmap(
-        lambda scalars: strategies.builds(Box, scalars, scalars, scalars,
-                                          scalars)
+non_zero_integers = _strategies.non_zero_integers
+boxes_limits = _strategies.boxes_limits
+boxes_like = _strategies.scalars_strategies.flatmap(
+        lambda scalars: _st.builds(_Box, scalars, scalars, scalars, scalars)
 )
-boxes = boxes
+boxes = _strategies.boxes

@@ -1,8 +1,8 @@
 from operator import attrgetter
 
-from ground import hints
+from ground import hints  # type: ignore
 from hypothesis import strategies
-from hypothesis_geometry import planar
+from hypothesis_geometry import planar  # type: ignore
 
 from rene.exact import (Box,
                         Contour,

@@ -12,9 +12,8 @@ points = _strategies.points
 polygons = _strategies.polygons
 trapezoidations = (multisegments.map(_Trapezoidation.from_multisegment)
                    | polygons.map(_Trapezoidation.from_polygon))
-seeders = _st.integers(
-        min_value=0, max_value=_MAX_USIZE_VALUE
-).map(lambda seed: (lambda: seed))
+seeds = _st.integers(min_value=0, max_value=_MAX_USIZE_VALUE)
+seeders = seeds.map(lambda seed: (lambda: seed))
 invalid_seeds = (_st.integers(max_value=-1)
                  | _st.integers(min_value=_MAX_USIZE_VALUE + 1)
                  | _st.floats()

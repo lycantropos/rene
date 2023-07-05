@@ -1,3 +1,3 @@
-from tests.exact_tests.strategies import polygons
+from tests.exact_tests import strategies as _strategies
 
-polygons = polygons
+polygons = _strategies.polygons

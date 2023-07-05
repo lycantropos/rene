@@ -3,8 +3,8 @@ from hypothesis import given
 from rene.exact import (Empty,
                         Multipolygon,
                         Polygon)
-from tests.utils import (Compound,
-                         reverse_polygon_holes)
+from tests.exact_tests.hints import Compound
+from tests.utils import reverse_polygon_holes
 from . import strategies
 
 
