@@ -97,7 +97,7 @@ jobs:
       - name: 'Install Python type checker'
         run: python -m pip install -U mypy
       - name: 'Run Python type checker'
-        run: python -m mypy ${{ github.event.repository.name }}
+        run: python -m mypy ${{ github.event.repository.name }} tests
       - name: 'Install Python coverage dependencies'
         run: python -m pip install --upgrade coverage[toml]
       - name: 'Run Python doctests'
