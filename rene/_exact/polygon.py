@@ -78,8 +78,9 @@ class Polygon:
         return self
 
     @t.overload
-    def __and__(self, other: hints.Empty[Fraction], /) -> hints.Empty[
-        Fraction]:
+    def __and__(
+            self, other: hints.Empty[Fraction], /
+    ) -> hints.Empty[Fraction]:
         ...
 
     @t.overload
@@ -110,13 +111,16 @@ class Polygon:
             if isinstance(other, self._context.empty_cls)
             else (
                 collect_maybe_empty_polygons(
-                        intersect_polygon_with_multipolygon(self, other),
+                        intersect_polygon_with_multipolygon(
+                                self, other, self._context.segment_cls
+                        ),
                         self._context.empty_cls, self._context.multipolygon_cls
                 )
                 if isinstance(other, self._context.multipolygon_cls)
                 else (
                     collect_maybe_empty_polygons(
-                            intersect_polygons(self, other),
+                            intersect_polygons(self, other,
+                                               self._context.segment_cls),
                             self._context.empty_cls,
                             self._context.multipolygon_cls
                     )
@@ -173,14 +177,19 @@ class Polygon:
             if isinstance(other, self._context.empty_cls)
             else (
                 collect_non_empty_polygons(
-                        unite_polygon_with_multipolygon(self, other),
+                        unite_polygon_with_multipolygon(
+                                self, other, self._context.segment_cls
+                        ),
                         self._context.multipolygon_cls
                 )
                 if isinstance(other, self._context.multipolygon_cls)
                 else
                 (
-                    collect_non_empty_polygons(unite_polygons(self, other),
-                                               self._context.multipolygon_cls)
+                    collect_non_empty_polygons(
+                            unite_polygons(self, other,
+                                           self._context.segment_cls),
+                            self._context.multipolygon_cls
+                    )
                     if isinstance(other, Polygon)
                     else NotImplemented
                 )
@@ -225,13 +234,16 @@ class Polygon:
             if isinstance(other, self._context.empty_cls)
             else (
                 collect_maybe_empty_polygons(
-                        subtract_multipolygon_from_polygon(self, other),
+                        subtract_multipolygon_from_polygon(
+                                self, other, self._context.segment_cls
+                        ),
                         self._context.empty_cls, self._context.multipolygon_cls
                 )
                 if isinstance(other, self._context.multipolygon_cls)
                 else (
                     collect_maybe_empty_polygons(
-                            subtract_polygons(self, other),
+                            subtract_polygons(self, other,
+                                              self._context.segment_cls),
                             self._context.empty_cls,
                             self._context.multipolygon_cls
                     )
@@ -273,14 +285,17 @@ class Polygon:
             if isinstance(other, self._context.empty_cls)
             else (
                 collect_maybe_empty_polygons(
-                        symmetric_subtract_polygon_with_multipolygon(self,
-                                                                     other),
+                        symmetric_subtract_polygon_with_multipolygon(
+                                self, other, self._context.segment_cls
+                        ),
                         self._context.empty_cls, self._context.multipolygon_cls
                 )
                 if isinstance(other, self._context.multipolygon_cls)
                 else (
                     collect_maybe_empty_polygons(
-                            symmetric_subtract_polygons(self, other),
+                            symmetric_subtract_polygons(
+                                    self, other, self._context.segment_cls
+                            ),
                             self._context.empty_cls,
                             self._context.multipolygon_cls
                     )

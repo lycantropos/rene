@@ -16,7 +16,8 @@ from rene._bentley_ottmann.base import (Intersection,
 from rene._context import Context
 from rene._utils import (are_contour_vertices_non_degenerate,
                          to_arg_min,
-                         to_contour_orientation)
+                         to_contour_orientation,
+                         to_contour_segments)
 
 
 class Contour:
@@ -39,18 +40,13 @@ class Contour:
 
     @property
     def orientation(self) -> Orientation:
-        vertices = self.vertices
+        vertices = self._vertices
         min_vertex_index = to_arg_min(vertices)
         return to_contour_orientation(vertices, min_vertex_index)
 
     @property
     def segments(self) -> t.Sequence[hints.Segment[Fraction]]:
-        segment_cls = self._context.segment_cls
-        result = [segment_cls(self._vertices[index], self._vertices[index + 1])
-                  for index in range(len(self.vertices) - 1)]
-        result.append(segment_cls(self._vertices[-1],
-                                  self._vertices[0]))
-        return result
+        return to_contour_segments(self._vertices, self._context.segment_cls)
 
     @property
     def segments_count(self) -> int:

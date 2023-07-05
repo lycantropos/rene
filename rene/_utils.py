@@ -223,8 +223,8 @@ def locate_point_in_segment(start: hints.Point[hints.Scalar],
             else Location.EXTERIOR)
 
 
-def merge_boxes(boxes: t.Iterable[hints.Box[hints.Scalar]], /) -> hints.Box[
-    hints.Scalar]:
+def merge_boxes(boxes: t.Iterable[hints.Box[hints.Scalar]],
+                /) -> hints.Box[hints.Scalar]:
     boxes_iterator = iter(boxes)
     first_box = next(boxes_iterator)
     max_x, min_x = first_box.max_x, first_box.min_x
@@ -254,6 +254,22 @@ def orient(vertex: hints.Point[hints.Scalar],
                   else Orientation.CLOCKWISE))
 
 
+def permute(values: t.MutableSequence[_T], seed: int, /) -> None:
+    """
+    Based on "Ranking and unranking permutations in linear time"
+    by W. Myrvold, F. Ruskey
+
+    Time complexity: O(values.len())
+    Memory complexity: O(1)
+
+    More at: http://webhome.cs.uvic.ca/~ruskey/Publications/RankPerm/MyrvoldRuskey.pdf
+    """
+    for step in range(len(values), 0, -1):
+        values[seed % step], values[step - 1] = (values[step - 1],
+                                                 values[seed % step])
+        seed //= step
+
+
 def point_vertex_line_divides_angle(
         point: hints.Point[hints.Scalar],
         vertex: hints.Point[hints.Scalar],
@@ -263,6 +279,21 @@ def point_vertex_line_divides_angle(
 ) -> bool:
     return (orient(vertex, first_ray_point, point)
             is orient(vertex, point, second_ray_point))
+
+
+def polygon_to_correctly_oriented_segments(
+        polygon: hints.Polygon[hints.Scalar],
+        segment_cls: t.Type[hints.Segment[hints.Scalar]]
+) -> t.Iterable[hints.Segment[hints.Scalar]]:
+    yield from to_oriented_segments(polygon.border.vertices,
+                                    Orientation.COUNTERCLOCKWISE, segment_cls)
+    for hole in polygon.holes:
+        yield from to_oriented_segments(hole.vertices, Orientation.CLOCKWISE,
+                                        segment_cls)
+
+
+def rotate_sequence(value: t.Sequence[_T]) -> t.List[_T]:
+    return [value[0], *value[:0:-1]]
 
 
 def shrink_collinear_vertices(
@@ -278,6 +309,11 @@ def shrink_collinear_vertices(
             is not Orientation.COLLINEAR):
         result.append(vertices[-1])
     return result
+
+
+def to_arg_min(values: t.Sequence[_OrderedT], /) -> int:
+    return min(range(len(values)),
+               key=values.__getitem__)
 
 
 def to_boxes_have_common_area(
@@ -316,16 +352,33 @@ def to_boxes_ids_with_common_continuum(
             if do_boxes_have_common_continuum(box, target_box)]
 
 
-def to_arg_min(values: t.Sequence[_OrderedT], /) -> int:
-    return min(range(len(values)),
-               key=values.__getitem__)
-
-
 def to_contour_orientation(vertices: t.Sequence[hints.Point[hints.Scalar]],
                            min_vertex_index: int,
                            /) -> Orientation:
     return orient(vertices[min_vertex_index - 1], vertices[min_vertex_index],
                   vertices[(min_vertex_index + 1) % len(vertices)])
+
+
+def to_contour_segments(vertices: t.Sequence[hints.Point[hints.Scalar]],
+                        segment_cls: t.Type[hints.Segment[hints.Scalar]],
+                        /) -> t.List[hints.Segment[hints.Scalar]]:
+    result = [segment_cls(vertices[index], vertices[index + 1])
+              for index in range(len(vertices) - 1)]
+    result.append(segment_cls(vertices[-1], vertices[0]))
+    return result
+
+
+def to_oriented_segments(vertices: t.Sequence[hints.Point[hints.Scalar]],
+                         target_orientation: Orientation,
+                         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+                         /) -> t.List[hints.Segment[hints.Scalar]]:
+    return to_contour_segments(
+            vertices
+            if (to_contour_orientation(vertices, to_arg_min(vertices))
+                is target_orientation)
+            else rotate_sequence(vertices),
+            segment_cls
+    )
 
 
 def to_sign(value: t.Any, /) -> int:
@@ -336,22 +389,6 @@ def to_sorted_pair(
         first: _OrderedT, second: _OrderedT, /
 ) -> t.Tuple[_OrderedT, _OrderedT]:
     return (first, second) if first < second else (second, first)
-
-
-def permute(values: t.MutableSequence[_T], seed: int, /) -> None:
-    """
-    Based on "Ranking and unranking permutations in linear time"
-    by W. Myrvold, F. Ruskey
-
-    Time complexity: O(values.len())
-    Memory complexity: O(1)
-
-    More at: http://webhome.cs.uvic.ca/~ruskey/Publications/RankPerm/MyrvoldRuskey.pdf
-    """
-    for step in range(len(values), 0, -1):
-        values[seed % step], values[step - 1] = (values[step - 1],
-                                                 values[seed % step])
-        seed //= step
 
 
 _T1 = t.TypeVar('_T1')

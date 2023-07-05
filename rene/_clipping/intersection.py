@@ -8,6 +8,7 @@ from rene._utils import (do_boxes_have_common_continuum,
                          do_boxes_have_no_common_continuum,
                          merge_boxes,
                          orient,
+                         polygon_to_correctly_oriented_segments,
                          to_boxes_ids_with_common_area,
                          to_boxes_ids_with_common_continuum,
                          to_sorted_pair)
@@ -41,6 +42,7 @@ class ShapedIntersection(shaped.Operation[hints.Scalar]):
 
 def intersect_multipolygons(first: hints.Multipolygon[hints.Scalar],
                             second: hints.Multipolygon[hints.Scalar],
+                            segment_cls: t.Type[hints.Segment[hints.Scalar]],
                             /) -> t.List[hints.Polygon[hints.Scalar]]:
     first_polygons, second_polygons = first.polygons, second.polygons
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
@@ -78,12 +80,14 @@ def intersect_multipolygons(first: hints.Multipolygon[hints.Scalar],
     operation = ShapedIntersection.from_segments_iterables(
             (segment
              for polygon in first_common_area_polygons
-             for segment in polygon.segments
+             for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
             (segment
              for polygon in second_common_area_polygons
-             for segment in polygon.segments
+             for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
     )
@@ -99,6 +103,7 @@ def intersect_multipolygons(first: hints.Multipolygon[hints.Scalar],
 def intersect_multipolygon_with_polygon(
         first: hints.Multipolygon[hints.Scalar],
         second: hints.Polygon[hints.Scalar],
+        segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.List[hints.Polygon[hints.Scalar]]:
     first_polygons = first.polygons
@@ -125,11 +130,13 @@ def intersect_multipolygon_with_polygon(
     operation = ShapedIntersection.from_segments_iterables(
             (segment
              for polygon in first_common_area_polygons
-             for segment in polygon.segments
+             for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
             (segment
-             for segment in second.segments
+             for segment in polygon_to_correctly_oriented_segments(second,
+                                                                   segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x))
     )
@@ -145,6 +152,7 @@ def intersect_multipolygon_with_polygon(
 def intersect_polygon_with_multipolygon(
         first: hints.Polygon[hints.Scalar],
         second: hints.Multipolygon[hints.Scalar],
+        segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.List[hints.Polygon[hints.Scalar]]:
     second_polygons = second.polygons
@@ -170,12 +178,14 @@ def intersect_polygon_with_multipolygon(
                         for polygon_id in second_common_area_polygons_ids))
     operation = ShapedIntersection.from_segments_iterables(
             (segment
-             for segment in first.segments
+             for segment in polygon_to_correctly_oriented_segments(first,
+                                                                   segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
             (segment
              for polygon in second_common_area_polygons
-             for segment in polygon.segments
+             for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x))
     )
@@ -189,6 +199,7 @@ def intersect_polygon_with_multipolygon(
 
 def intersect_polygons(first: hints.Polygon[hints.Scalar],
                        second: hints.Polygon[hints.Scalar],
+                       segment_cls: t.Type[hints.Segment[hints.Scalar]],
                        /) -> t.List[hints.Polygon[hints.Scalar]]:
     first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)
@@ -198,11 +209,13 @@ def intersect_polygons(first: hints.Polygon[hints.Scalar],
     min_max_x = min(first_bounding_box.max_x, second_bounding_box.max_x)
     operation = ShapedIntersection.from_segments_iterables(
             (segment
-             for segment in first.segments
+             for segment in polygon_to_correctly_oriented_segments(first,
+                                                                   segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
             (segment
-             for segment in second.segments
+             for segment in polygon_to_correctly_oriented_segments(second,
+                                                                   segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x))
     )

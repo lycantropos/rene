@@ -8,6 +8,7 @@ use traiter::numbers::Parity;
 use crate::geometries::{Contour, Point, Polygon};
 use crate::operations::{
     shrink_collinear_vertices, IntersectCrossingSegments, Orient,
+    ToOrientedSegments,
 };
 use crate::oriented::Orientation;
 use crate::sweeping::traits::{EventsContainer, EventsQueue, SweepLine};
@@ -47,73 +48,24 @@ pub(crate) struct Operation<Point, const KIND: u8> {
 }
 
 impl<
-        First,
         Point: Ord,
-        Second,
-        SecondSegment: Clone,
-        FirstSegment: Clone,
+        Polygon,
+        Segment: Segmental<Endpoint = Point>,
+        Segments: Iterator<Item = Segment>,
         const KIND: u8,
-    > From<(&First, &Second)> for Operation<Point, KIND>
+    > From<(&Polygon, &Polygon)> for Operation<Point, KIND>
 where
-    FirstSegment: Segmental<Endpoint = Point>,
-    SecondSegment: Segmental<Endpoint = Point>,
-    for<'a> &'a First: Multisegmental<Segment = &'a FirstSegment>,
-    for<'a> &'a Second: Multisegmental<Segment = &'a SecondSegment>,
     for<'a> &'a Point: Orient,
+    for<'a> &'a Polygon:
+        Multisegmental + ToOrientedSegments<Output = Segments>,
 {
-    fn from((first, second): (&First, &Second)) -> Self {
+    fn from((first, second): (&Polygon, &Polygon)) -> Self {
         let first_segments_count = first.segments_count();
         let second_segments_count = second.segments_count();
         let mut result =
             Self::with_capacity(first_segments_count, second_segments_count);
-        result.extend(first.segments().cloned());
-        result.extend(second.segments().cloned());
-        let first_event = unsafe { result.peek().unwrap_unchecked() };
-        result.current_endpoint_first_event = first_event;
-        result
-    }
-}
-
-impl<Element, Point: Ord, Segment: Clone, const KIND: u8>
-    From<(&[&Element], &[&Element])> for Operation<Point, KIND>
-where
-    Segment: Segmental<Endpoint = Point>,
-    for<'a> &'a Element: Multisegmental<Segment = &'a Segment>,
-    for<'a> &'a Point: Orient,
-{
-    fn from((first, second): (&[&Element], &[&Element])) -> Self {
-        let first_segments_count = multisegments_to_segments_count(first);
-        let second_segments_count = multisegments_to_segments_count(second);
-        let mut result =
-            Self::with_capacity(first_segments_count, second_segments_count);
-        for &element in first {
-            result.extend(element.segments().cloned());
-        }
-        for &element in second {
-            result.extend(element.segments().cloned());
-        }
-        let first_event = unsafe { result.peek().unwrap_unchecked() };
-        result.current_endpoint_first_event = first_event;
-        result
-    }
-}
-
-impl<Element, Segment: Clone, Point: Ord, const KIND: u8>
-    From<(&[&Element], &Element)> for Operation<Point, KIND>
-where
-    for<'a> &'a Element: Multisegmental<Segment = &'a Segment>,
-    for<'a> &'a Point: Orient,
-    Segment: Segmental<Endpoint = Point>,
-{
-    fn from((first, second): (&[&Element], &Element)) -> Self {
-        let first_segments_count = multisegments_to_segments_count(first);
-        let second_segments_count = second.segments_count();
-        let mut result =
-            Self::with_capacity(first_segments_count, second_segments_count);
-        for element in first {
-            result.extend(element.segments().cloned());
-        }
-        result.extend(second.segments().cloned());
+        result.extend(first.to_oriented_segments());
+        result.extend(second.to_oriented_segments());
         let first_event = unsafe { result.peek().unwrap_unchecked() };
         result.current_endpoint_first_event = first_event;
         result
@@ -121,23 +73,81 @@ where
 }
 
 impl<
-        Element,
         Point: Ord,
-        Segment: Clone + Segmental<Endpoint = Point>,
+        Polygon,
+        Segment: Segmental<Endpoint = Point>,
+        Segments: Iterator<Item = Segment>,
         const KIND: u8,
-    > From<(&Element, &[&Element])> for Operation<Point, KIND>
+    > From<(&[&Polygon], &[&Polygon])> for Operation<Point, KIND>
 where
-    for<'a> &'a Element: Multisegmental<Segment = &'a Segment>,
     for<'a> &'a Point: Orient,
+    for<'a> &'a Polygon:
+        Multisegmental + ToOrientedSegments<Output = Segments>,
 {
-    fn from((first, second): (&Element, &[&Element])) -> Self {
+    fn from((first, second): (&[&Polygon], &[&Polygon])) -> Self {
+        let first_segments_count = multisegments_to_segments_count(first);
+        let second_segments_count = multisegments_to_segments_count(second);
+        let mut result =
+            Self::with_capacity(first_segments_count, second_segments_count);
+        for &first_subpolygon in first {
+            result.extend(first_subpolygon.to_oriented_segments());
+        }
+        for &second_subpolygon in second {
+            result.extend(second_subpolygon.to_oriented_segments());
+        }
+        let first_event = unsafe { result.peek().unwrap_unchecked() };
+        result.current_endpoint_first_event = first_event;
+        result
+    }
+}
+
+impl<
+        Point: Ord,
+        Polygon,
+        Segment: Segmental<Endpoint = Point>,
+        Segments: Iterator<Item = Segment>,
+        const KIND: u8,
+    > From<(&[&Polygon], &Polygon)> for Operation<Point, KIND>
+where
+    for<'a> &'a Point: Orient,
+    for<'a> &'a Polygon:
+        Multisegmental + ToOrientedSegments<Output = Segments>,
+{
+    fn from((first, second): (&[&Polygon], &Polygon)) -> Self {
+        let first_segments_count = multisegments_to_segments_count(first);
+        let second_segments_count = second.segments_count();
+        let mut result =
+            Self::with_capacity(first_segments_count, second_segments_count);
+        for first_subpolygon in first {
+            result.extend(first_subpolygon.to_oriented_segments());
+        }
+        result.extend(second.to_oriented_segments());
+        let first_event = unsafe { result.peek().unwrap_unchecked() };
+        result.current_endpoint_first_event = first_event;
+        result
+    }
+}
+
+impl<
+        Point: Ord,
+        Polygon,
+        Segment: Segmental<Endpoint = Point>,
+        Segments: Iterator<Item = Segment>,
+        const KIND: u8,
+    > From<(&Polygon, &[&Polygon])> for Operation<Point, KIND>
+where
+    for<'a> &'a Point: Orient,
+    for<'a> &'a Polygon:
+        Multisegmental + ToOrientedSegments<Output = Segments>,
+{
+    fn from((first, second): (&Polygon, &[&Polygon])) -> Self {
         let first_segments_count = first.segments_count();
         let second_segments_count = multisegments_to_segments_count(second);
         let mut result =
             Self::with_capacity(first_segments_count, second_segments_count);
-        result.extend(first.segments().cloned());
-        for element in second {
-            result.extend(element.segments().cloned());
+        result.extend(first.to_oriented_segments());
+        for second_subpolygon in second {
+            result.extend(second_subpolygon.to_oriented_segments());
         }
         let first_event = unsafe { result.peek().unwrap_unchecked() };
         result.current_endpoint_first_event = first_event;

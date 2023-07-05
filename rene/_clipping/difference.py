@@ -1,11 +1,12 @@
+import typing as t
 from itertools import chain
-from typing import List
 
 from rene import hints
 from rene._utils import (do_boxes_have_no_common_area,
                          flags_to_false_indices,
                          flags_to_true_indices,
                          merge_boxes,
+                         polygon_to_correctly_oriented_segments,
                          to_boxes_have_common_area,
                          to_boxes_ids_with_common_area)
 from . import shaped
@@ -23,8 +24,9 @@ class ShapedDifference(shaped.Operation[hints.Scalar]):
 def subtract_multipolygons(
         first: hints.Multipolygon[hints.Scalar],
         second: hints.Multipolygon[hints.Scalar],
+        segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> List[hints.Polygon[hints.Scalar]]:
+) -> t.List[hints.Polygon[hints.Scalar]]:
     first_polygons, second_polygons = first.polygons, second.polygons
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
     second_boxes = [polygon.bounding_box for polygon in second_polygons]
@@ -58,11 +60,15 @@ def subtract_multipolygons(
     first_min_x = min(first_boxes[polygon_id].min_x
                       for polygon_id in first_common_area_polygons_ids)
     operation = ShapedDifference.from_segments_iterables(
-            chain.from_iterable(polygon.segments
-                                for polygon in first_common_area_polygons),
+            chain.from_iterable(
+                    polygon_to_correctly_oriented_segments(polygon,
+                                                           segment_cls)
+                    for polygon in first_common_area_polygons
+            ),
             (segment
              for polygon in second_common_area_polygons
-             for segment in polygon.segments
+             for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   segment_cls)
              if (first_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= first_max_x))
     )
@@ -85,13 +91,13 @@ def subtract_multipolygons(
 def subtract_polygon_from_multipolygon(
         first: hints.Multipolygon[hints.Scalar],
         second: hints.Polygon[hints.Scalar],
+        segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> List[hints.Polygon[hints.Scalar]]:
+) -> t.List[hints.Polygon[hints.Scalar]]:
     first_polygons = first.polygons
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
-    first_bounding_box, second_bounding_box = (
-        merge_boxes(first_boxes), second.bounding_box
-    )
+    first_bounding_box, second_bounding_box = (merge_boxes(first_boxes),
+                                               second.bounding_box)
     if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):
         return list(first.polygons)
     first_boxes_have_common_area = to_boxes_have_common_area(
@@ -111,10 +117,14 @@ def subtract_polygon_from_multipolygon(
     first_min_x = min(first_boxes[polygon_id].min_x
                       for polygon_id in first_common_area_polygons_ids)
     operation = ShapedDifference.from_segments_iterables(
-            chain.from_iterable(polygon.segments
-                                for polygon in first_common_area_polygons),
+            chain.from_iterable(
+                    polygon_to_correctly_oriented_segments(polygon,
+                                                           segment_cls)
+                    for polygon in first_common_area_polygons
+            ),
             (segment
-             for segment in second.segments
+             for segment in polygon_to_correctly_oriented_segments(second,
+                                                                   segment_cls)
              if (first_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= first_max_x))
     )
@@ -135,8 +145,9 @@ def subtract_polygon_from_multipolygon(
 def subtract_multipolygon_from_polygon(
         first: hints.Polygon[hints.Scalar],
         second: hints.Multipolygon[hints.Scalar],
+        segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> List[hints.Polygon[hints.Scalar]]:
+) -> t.List[hints.Polygon[hints.Scalar]]:
     second_polygons = second.polygons
     second_boxes = [polygon.bounding_box for polygon in second_polygons]
     first_bounding_box, second_bounding_box = (first.bounding_box,
@@ -155,10 +166,11 @@ def subtract_multipolygon_from_polygon(
     first_max_x = first_bounding_box.max_x
     first_min_x = first_bounding_box.min_x
     operation = ShapedDifference.from_segments_iterables(
-            first.segments,
+            polygon_to_correctly_oriented_segments(first, segment_cls),
             (segment
              for polygon in second_common_area_polygons
-             for segment in polygon.segments
+             for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   segment_cls)
              if (first_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= first_max_x))
     )
@@ -173,8 +185,9 @@ def subtract_multipolygon_from_polygon(
 def subtract_polygons(
         first: hints.Polygon[hints.Scalar],
         second: hints.Polygon[hints.Scalar],
+        segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> List[hints.Polygon[hints.Scalar]]:
+) -> t.List[hints.Polygon[hints.Scalar]]:
     first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)
     if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):
@@ -182,9 +195,10 @@ def subtract_polygons(
     first_max_x, first_min_x = (first_bounding_box.max_x,
                                 first_bounding_box.min_x)
     operation = ShapedDifference.from_segments_iterables(
-            first.segments,
+            polygon_to_correctly_oriented_segments(first, segment_cls),
             (segment
-             for segment in second.segments
+             for segment in polygon_to_correctly_oriented_segments(second,
+                                                                   segment_cls)
              if (first_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= first_max_x))
     )

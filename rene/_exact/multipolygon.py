@@ -99,14 +99,18 @@ class Multipolygon:
             self._context.empty_cls()
             if isinstance(other, self._context.empty_cls)
             else (
-                collect_maybe_empty_polygons(intersect_multipolygons(self,
-                                                                     other),
-                                             self._context.empty_cls,
-                                             self._context.multipolygon_cls)
+                collect_maybe_empty_polygons(
+                        intersect_multipolygons(self, other,
+                                                self._context.segment_cls),
+                        self._context.empty_cls,
+                        self._context.multipolygon_cls
+                )
                 if isinstance(other, self._context.multipolygon_cls)
                 else (
                     collect_maybe_empty_polygons(
-                            intersect_multipolygon_with_polygon(self, other),
+                            intersect_multipolygon_with_polygon(
+                                    self, other, self._context.segment_cls
+                            ),
                             self._context.empty_cls,
                             self._context.multipolygon_cls
                     )
@@ -160,12 +164,17 @@ class Multipolygon:
             self
             if isinstance(other, self._context.empty_cls)
             else (
-                collect_non_empty_polygons(unite_multipolygons(self, other),
-                                           self._context.multipolygon_cls)
+                collect_non_empty_polygons(
+                        unite_multipolygons(self, other,
+                                            self._context.segment_cls),
+                        self._context.multipolygon_cls
+                )
                 if isinstance(other, self._context.multipolygon_cls)
                 else (
                     collect_non_empty_polygons(
-                            unite_multipolygon_with_polygon(self, other),
+                            unite_multipolygon_with_polygon(
+                                    self, other, self._context.segment_cls
+                            ),
                             self._context.multipolygon_cls
                     )
                     if isinstance(other, self._context.polygon_cls)
@@ -207,15 +216,16 @@ class Multipolygon:
             self
             if isinstance(other, self._context.empty_cls)
             else (
-                collect_maybe_empty_polygons(subtract_multipolygons(self,
-                                                                    other),
-                                             self._context.empty_cls,
-                                             self._context.multipolygon_cls)
+                collect_maybe_empty_polygons(
+                        subtract_multipolygons(self, other,
+                                               self._context.segment_cls),
+                        self._context.empty_cls, self._context.multipolygon_cls
+                )
                 if isinstance(other, self._context.multipolygon_cls)
                 else (
                     collect_maybe_empty_polygons(
                             subtract_polygon_from_multipolygon(
-                                    self, other
+                                    self, other, self._context.segment_cls
                             ),
                             self._context.empty_cls,
                             self._context.multipolygon_cls
@@ -262,7 +272,9 @@ class Multipolygon:
             if isinstance(other, self._context.empty_cls)
             else (
                 collect_maybe_empty_polygons(
-                        symmetric_subtract_multipolygons(self, other),
+                        symmetric_subtract_multipolygons(
+                                self, other, self._context.segment_cls
+                        ),
                         self._context.empty_cls,
                         self._context.multipolygon_cls
                 )
@@ -270,7 +282,7 @@ class Multipolygon:
                 else (
                     collect_maybe_empty_polygons(
                             symmetric_subtract_multipolygon_with_polygon(
-                                    self, other
+                                    self, other, self._context.segment_cls
                             ),
                             self._context.empty_cls,
                             self._context.multipolygon_cls

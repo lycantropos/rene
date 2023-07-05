@@ -14,19 +14,6 @@ use crate::traits::{
     Elemental, Multisegmental, Segmental, SegmentalCoordinate,
 };
 
-pub(crate) fn ceil_log2<
-    Number: Copy + BitLength<Output = Value> + IsPowerOfTwo,
-    Value: Sub<Output = Value> + One,
->(
-    number: Number,
-) -> Value {
-    if number.is_power_of_two() {
-        number.bit_length() - <Number as BitLength>::Output::one()
-    } else {
-        number.bit_length()
-    }
-}
-
 pub(crate) trait CrossMultiply {
     type Output;
 
@@ -61,6 +48,166 @@ where
         let (second_end_x, second_end_y) = second_end.coordinates();
         (first_end_x - first_start_x) * (second_end_y - second_start_y)
             - (first_end_y - first_start_y) * (second_end_x - second_start_x)
+    }
+}
+
+pub(crate) trait IntersectCrossingSegments {
+    type Output;
+
+    fn intersect_crossing_segments(
+        first_start: Self,
+        first_end: Self,
+        second_start: Self,
+        second_end: Self,
+    ) -> Self::Output;
+}
+
+impl<
+        Digit,
+        const SHIFT: usize,
+        Point: From<(
+            Fraction<BigInt<Digit, SHIFT>>,
+            Fraction<BigInt<Digit, SHIFT>>,
+        )>,
+    > IntersectCrossingSegments for &Point
+where
+    Fraction<BigInt<Digit, SHIFT>>: Add<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Div<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + for<'a> Mul<
+            &'a Fraction<BigInt<Digit, SHIFT>>,
+            Output = Fraction<BigInt<Digit, SHIFT>>,
+        > + Mul<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Fraction<BigInt<Digit, SHIFT>>: Add<
+            Fraction<BigInt<Digit, SHIFT>>,
+            Output = Fraction<BigInt<Digit, SHIFT>>,
+        > + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Point: CrossMultiply<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
+{
+    type Output = Point;
+
+    fn intersect_crossing_segments(
+        first_start: Self,
+        first_end: Self,
+        second_start: Self,
+        second_end: Self,
+    ) -> Self::Output {
+        let scale = to_segments_intersection_scale(
+            first_start,
+            first_end,
+            second_start,
+            second_end,
+        );
+        Point::from((
+            first_start.x() + (first_end.x() - first_start.x()) * &scale,
+            first_start.y() + (first_end.y() - first_start.y()) * scale,
+        ))
+    }
+}
+
+pub(crate) trait LocatePointInPointPointPointCircle {
+    fn locate_point_in_point_point_point_circle(
+        self,
+        first: Self,
+        second: Self,
+        third: Self,
+    ) -> Location;
+}
+
+impl<'a, Digit: 'a, const SHIFT: usize, Point>
+    LocatePointInPointPointPointCircle for &'a Point
+where
+    &'a Point: Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
+    Fraction<BigInt<Digit, SHIFT>>: Add<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Mul<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    for<'b> &'b Fraction<BigInt<Digit, SHIFT>>: Mul<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Signed
+        + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+{
+    fn locate_point_in_point_point_point_circle(
+        self,
+        first: Self,
+        second: Self,
+        third: Self,
+    ) -> Location {
+        let (first_dx, first_dy) =
+            (first.x() - self.x(), first.y() - self.y());
+        let (second_dx, second_dy) =
+            (second.x() - self.x(), second.y() - self.y());
+        let (third_dx, third_dy) =
+            (third.x() - self.x(), third.y() - self.y());
+        match ((&first_dx * &first_dx + &first_dy * &first_dy)
+            * (&second_dx * &third_dy - &second_dy * &third_dx)
+            - (&second_dx * &second_dx + &second_dy * &second_dy)
+                * (&first_dx * &third_dy - &first_dy * &third_dx)
+            + (&third_dx * &third_dx + &third_dy * &third_dy)
+                * (first_dx * second_dy - first_dy * second_dx))
+            .sign()
+        {
+            Sign::Negative => Location::Exterior,
+            Sign::Positive => Location::Interior,
+            Sign::Zero => Location::Boundary,
+        }
+    }
+}
+
+pub(crate) trait Orient {
+    fn orient(
+        self,
+        first_ray_point: Self,
+        second_ray_point: Self,
+    ) -> Orientation;
+}
+
+impl<'a, Point> Orient for &'a Point
+where
+    &'a Point: CrossMultiply,
+    <&'a Point as CrossMultiply>::Output: Signed,
+{
+    fn orient(
+        self,
+        first_ray_point: Self,
+        second_ray_point: Self,
+    ) -> Orientation {
+        match CrossMultiply::cross_multiply(
+            self,
+            first_ray_point,
+            self,
+            second_ray_point,
+        )
+        .sign()
+        {
+            Sign::Negative => Orientation::Clockwise,
+            Sign::Positive => Orientation::Counterclockwise,
+            Sign::Zero => Orientation::Collinear,
+        }
+    }
+}
+
+pub(crate) trait ToOrientedSegments {
+    type Output;
+
+    fn to_oriented_segments(self) -> Self::Output;
+}
+
+pub(crate) trait ToReversedSegments {
+    type Output;
+
+    fn to_reversed_segments(self) -> Self::Output;
+}
+
+pub(crate) fn ceil_log2<
+    Number: Copy + BitLength<Output = Value> + IsPowerOfTwo,
+    Value: Sub<Output = Value> + One,
+>(
+    number: Number,
+) -> Value {
+    if number.is_power_of_two() {
+        number.bit_length() - <Number as BitLength>::Output::one()
+    } else {
+        number.bit_length()
     }
 }
 
@@ -132,61 +279,6 @@ pub(crate) fn flags_to_true_indices(flags: &[bool]) -> Vec<usize> {
         .collect::<Vec<_>>()
 }
 
-pub(crate) trait IntersectCrossingSegments {
-    type Output;
-
-    fn intersect_crossing_segments(
-        first_start: Self,
-        first_end: Self,
-        second_start: Self,
-        second_end: Self,
-    ) -> Self::Output;
-}
-
-impl<
-        Digit,
-        const SHIFT: usize,
-        Point: From<(
-            Fraction<BigInt<Digit, SHIFT>>,
-            Fraction<BigInt<Digit, SHIFT>>,
-        )>,
-    > IntersectCrossingSegments for &Point
-where
-    Fraction<BigInt<Digit, SHIFT>>: Add<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + Div<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + for<'a> Mul<
-            &'a Fraction<BigInt<Digit, SHIFT>>,
-            Output = Fraction<BigInt<Digit, SHIFT>>,
-        > + Mul<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Fraction<BigInt<Digit, SHIFT>>: Add<
-            Fraction<BigInt<Digit, SHIFT>>,
-            Output = Fraction<BigInt<Digit, SHIFT>>,
-        > + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Point: CrossMultiply<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
-{
-    type Output = Point;
-
-    fn intersect_crossing_segments(
-        first_start: Self,
-        first_end: Self,
-        second_start: Self,
-        second_end: Self,
-    ) -> Self::Output {
-        let scale = to_segments_intersection_scale(
-            first_start,
-            first_end,
-            second_start,
-            second_end,
-        );
-        Point::from((
-            first_start.x() + (first_end.x() - first_start.x()) * &scale,
-            first_start.y() + (first_end.y() - first_start.y()) * scale,
-        ))
-    }
-}
-
 pub(crate) fn intersect_segments_with_common_continuum_bounding_boxes<
     'a,
     Point,
@@ -243,53 +335,6 @@ where
                 end_y < point_y && point_y < start_y
             }
         } && start.orient(end, point) == Orientation::Collinear)
-}
-
-pub(crate) trait LocatePointInPointPointPointCircle {
-    fn locate_point_in_point_point_point_circle(
-        self,
-        first: Self,
-        second: Self,
-        third: Self,
-    ) -> Location;
-}
-
-impl<'a, Digit: 'a, const SHIFT: usize, Point>
-    LocatePointInPointPointPointCircle for &'a Point
-where
-    &'a Point: Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
-    Fraction<BigInt<Digit, SHIFT>>: Add<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + Mul<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
-    for<'b> &'b Fraction<BigInt<Digit, SHIFT>>: Mul<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + Signed
-        + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
-{
-    fn locate_point_in_point_point_point_circle(
-        self,
-        first: Self,
-        second: Self,
-        third: Self,
-    ) -> Location {
-        let (first_dx, first_dy) =
-            (first.x() - self.x(), first.y() - self.y());
-        let (second_dx, second_dy) =
-            (second.x() - self.x(), second.y() - self.y());
-        let (third_dx, third_dy) =
-            (third.x() - self.x(), third.y() - self.y());
-        match ((&first_dx * &first_dx + &first_dy * &first_dy)
-            * (&second_dx * &third_dy - &second_dy * &third_dx)
-            - (&second_dx * &second_dx + &second_dy * &second_dy)
-                * (&first_dx * &third_dy - &first_dy * &third_dx)
-            + (&third_dx * &third_dx + &third_dy * &third_dy)
-                * (first_dx * second_dy - first_dy * second_dx))
-            .sign()
-        {
-            Sign::Negative => Location::Exterior,
-            Sign::Positive => Location::Interior,
-            Sign::Zero => Location::Boundary,
-        }
-    }
 }
 
 pub(crate) fn locate_point_in_region<
@@ -411,39 +456,6 @@ pub(crate) fn coordinates_iterator_to_bounds<
         }
     }
     (min_x, max_x, min_y, max_y)
-}
-
-pub(crate) trait Orient {
-    fn orient(
-        self,
-        first_ray_point: Self,
-        second_ray_point: Self,
-    ) -> Orientation;
-}
-
-impl<'a, Point> Orient for &'a Point
-where
-    &'a Point: CrossMultiply,
-    <&'a Point as CrossMultiply>::Output: Signed,
-{
-    fn orient(
-        self,
-        first_ray_point: Self,
-        second_ray_point: Self,
-    ) -> Orientation {
-        match CrossMultiply::cross_multiply(
-            self,
-            first_ray_point,
-            self,
-            second_ray_point,
-        )
-        .sign()
-        {
-            Sign::Negative => Orientation::Clockwise,
-            Sign::Positive => Orientation::Counterclockwise,
-            Sign::Zero => Orientation::Collinear,
-        }
-    }
 }
 
 /// Based on "Ranking and unranking permutations in linear time"
