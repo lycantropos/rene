@@ -8,7 +8,7 @@ use traiter::numbers::Parity;
 use crate::geometries::{Contour, Point, Polygon};
 use crate::operations::{
     shrink_collinear_vertices, IntersectCrossingSegments, Orient,
-    ToOrientedSegments,
+    ToCorrectlyOrientedSegments,
 };
 use crate::oriented::Orientation;
 use crate::sweeping::traits::{EventsContainer, EventsQueue, SweepLine};
@@ -57,15 +57,15 @@ impl<
 where
     for<'a> &'a Point: Orient,
     for<'a> &'a Polygon:
-        Multisegmental + ToOrientedSegments<Output = Segments>,
+        Multisegmental + ToCorrectlyOrientedSegments<Output = Segments>,
 {
     fn from((first, second): (&Polygon, &Polygon)) -> Self {
         let first_segments_count = first.segments_count();
         let second_segments_count = second.segments_count();
         let mut result =
             Self::with_capacity(first_segments_count, second_segments_count);
-        result.extend(first.to_oriented_segments());
-        result.extend(second.to_oriented_segments());
+        result.extend(first.to_correctly_oriented_segments());
+        result.extend(second.to_correctly_oriented_segments());
         let first_event = unsafe { result.peek().unwrap_unchecked() };
         result.current_endpoint_first_event = first_event;
         result
@@ -82,7 +82,7 @@ impl<
 where
     for<'a> &'a Point: Orient,
     for<'a> &'a Polygon:
-        Multisegmental + ToOrientedSegments<Output = Segments>,
+        Multisegmental + ToCorrectlyOrientedSegments<Output = Segments>,
 {
     fn from((first, second): (&[&Polygon], &[&Polygon])) -> Self {
         let first_segments_count = multisegments_to_segments_count(first);
@@ -90,10 +90,10 @@ where
         let mut result =
             Self::with_capacity(first_segments_count, second_segments_count);
         for &first_subpolygon in first {
-            result.extend(first_subpolygon.to_oriented_segments());
+            result.extend(first_subpolygon.to_correctly_oriented_segments());
         }
         for &second_subpolygon in second {
-            result.extend(second_subpolygon.to_oriented_segments());
+            result.extend(second_subpolygon.to_correctly_oriented_segments());
         }
         let first_event = unsafe { result.peek().unwrap_unchecked() };
         result.current_endpoint_first_event = first_event;
@@ -111,7 +111,7 @@ impl<
 where
     for<'a> &'a Point: Orient,
     for<'a> &'a Polygon:
-        Multisegmental + ToOrientedSegments<Output = Segments>,
+        Multisegmental + ToCorrectlyOrientedSegments<Output = Segments>,
 {
     fn from((first, second): (&[&Polygon], &Polygon)) -> Self {
         let first_segments_count = multisegments_to_segments_count(first);
@@ -119,9 +119,9 @@ where
         let mut result =
             Self::with_capacity(first_segments_count, second_segments_count);
         for first_subpolygon in first {
-            result.extend(first_subpolygon.to_oriented_segments());
+            result.extend(first_subpolygon.to_correctly_oriented_segments());
         }
-        result.extend(second.to_oriented_segments());
+        result.extend(second.to_correctly_oriented_segments());
         let first_event = unsafe { result.peek().unwrap_unchecked() };
         result.current_endpoint_first_event = first_event;
         result
@@ -138,16 +138,16 @@ impl<
 where
     for<'a> &'a Point: Orient,
     for<'a> &'a Polygon:
-        Multisegmental + ToOrientedSegments<Output = Segments>,
+        Multisegmental + ToCorrectlyOrientedSegments<Output = Segments>,
 {
     fn from((first, second): (&Polygon, &[&Polygon])) -> Self {
         let first_segments_count = first.segments_count();
         let second_segments_count = multisegments_to_segments_count(second);
         let mut result =
             Self::with_capacity(first_segments_count, second_segments_count);
-        result.extend(first.to_oriented_segments());
+        result.extend(first.to_correctly_oriented_segments());
         for second_subpolygon in second {
-            result.extend(second_subpolygon.to_oriented_segments());
+            result.extend(second_subpolygon.to_correctly_oriented_segments());
         }
         let first_event = unsafe { result.peek().unwrap_unchecked() };
         result.current_endpoint_first_event = first_event;

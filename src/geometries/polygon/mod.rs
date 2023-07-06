@@ -11,6 +11,6 @@ mod multisegmental;
 mod partial_eq;
 mod polygonal;
 mod symmetric_difference;
-mod to_oriented_segments;
+mod to_correctly_oriented_segments;
 mod types;
 mod union;

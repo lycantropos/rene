@@ -186,10 +186,10 @@ where
     }
 }
 
-pub(crate) trait ToOrientedSegments {
+pub(crate) trait ToCorrectlyOrientedSegments {
     type Output;
 
-    fn to_oriented_segments(self) -> Self::Output;
+    fn to_correctly_oriented_segments(self) -> Self::Output;
 }
 
 pub(crate) trait ToReversedSegments {
