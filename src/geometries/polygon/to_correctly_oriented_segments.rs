@@ -9,10 +9,10 @@ use super::types::Polygon;
 
 impl<'a, Scalar> ToCorrectlyOrientedSegments for &'a Polygon<Scalar>
 where
-    &'a Point<Scalar>: Orient,
     &'a Contour<Scalar>: Contoural<Segment = &'a Segment<Scalar>>
         + Oriented
         + ToReversedSegments<Output = Vec<Segment<Scalar>>>,
+    &'a Point<Scalar>: Orient,
     Point<Scalar>: Clone,
     Segment<Scalar>: Clone,
 {
