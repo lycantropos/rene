@@ -77,7 +77,7 @@ jobs:
         run: cargo fmt --check
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Run Rust doctests'
-        run: cargo test --doc --target=${{ matrix.platform.rust_target }}
+        run: rustup run nightly cargo test --doc --target=${{ matrix.platform.rust_target }}
         env:
           CARGO_INCREMENTAL: 0
           RUSTDOCFLAGS: >
@@ -87,13 +87,17 @@ jobs:
             -Zprofile -Ccodegen-units=1 -Copt-level=0 -Coverflow-checks=off
             -Zpanic_abort_tests -Cpanic=abort
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
-      - name: 'Install in editable mode'
-        run: python -m pip -v install -e .[tests]
+      - name: 'Install in editable mode with Rust extensions'
+        run: rustup run nightly python -m pip -v install -e .[tests]
         env:
           CARGO_INCREMENTAL: 0
           RUSTFLAGS: >
             -Zprofile -Ccodegen-units=1 -Copt-level=0 -Coverflow-checks=off
             -Zpanic_abort_tests -Cpanic=abort
+        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
+      - name: 'Install in editable mode'
+        run: python -m pip -v install -e .[tests]
+        if: ${{ startsWith(matrix.python_version, 'pypy') }}
       - name: 'Install Python type checker'
         run: python -m pip install -U mypy
       - name: 'Run Python type checker'
@@ -119,14 +123,14 @@ jobs:
           --ignore "/*" -o coverage_rust.xml
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Upload PyPy coverage'
-        uses: codecov/codecov-action@v3.1.1
+        uses: codecov/codecov-action@v3.1.4
         with:
           fail_ci_if_error: false
           files: ./coverage_python.xml
         if: ${{ startsWith(matrix.python_version, 'pypy') }}
         continue-on-error: true
       - name: 'Upload СPython coverage'
-        uses: codecov/codecov-action@v3.1.1
+        uses: codecov/codecov-action@v3.1.4
         with:
           fail_ci_if_error: false
           files: ./coverage_python.xml,./coverage_rust.xml
@@ -151,7 +155,7 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v3
       - name: 'Setup Rust'
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@stable
       - name: 'Upload'
         run: cargo publish --no-verify
         env:
@@ -332,7 +336,7 @@ jobs:
         with:
           architecture: ${{ matrix.platform.python_architecture }}
       - name: 'Setup Rust'
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@stable
         with:
           target: ${{ matrix.platform.rust_target }}
         if: ${{ runner.os != 'Linux' }}
@@ -342,7 +346,7 @@ jobs:
           platforms: all
         if: ${{ runner.os == 'Linux' }}
       - name: 'Build wheels'
-        uses: pypa/cibuildwheel@v2.12.0
+        uses: pypa/cibuildwheel@v2.13.0
         env:
           CIBW_ARCHS: ${{ matrix.platform.architecture }}
           CIBW_BEFORE_ALL_LINUX: |
@@ -426,7 +430,7 @@ jobs:
           name: dist
           path: dist
       - name: 'Upload'
-        uses: pypa/gh-action-pypi-publish@v1.6.4
+        uses: pypa/gh-action-pypi-publish@v1.8.6
         with:
           packages_dir: dist
           password: ${{ secrets.PYPI_API_TOKEN }}
