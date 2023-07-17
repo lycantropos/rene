@@ -327,9 +327,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         event_end = self.to_event_end(event)
         below_event_start = self.to_event_start(below_event)
         below_event_end = self.to_event_end(below_event)
-        event_start_orientation = orient(below_event_end, below_event_start,
+        event_start_orientation = orient(below_event_start, below_event_end,
                                          event_start)
-        event_end_orientation = orient(below_event_end, below_event_start,
+        event_end_orientation = orient(below_event_start, below_event_end,
                                        event_end)
         if (event_start_orientation is not Orientation.COLLINEAR
                 and event_end_orientation is not Orientation.COLLINEAR):
