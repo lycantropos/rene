@@ -194,10 +194,9 @@ def locate_point_in_region(
     is_point_inside = False
     point_y = point.y
     for edge in border.segments:
-        if (locate_point_in_segment(edge.start, edge.end, point)
-                is Location.BOUNDARY):
+        end, start = edge.end, edge.start
+        if locate_point_in_segment(start, end, point) is Location.BOUNDARY:
             return Location.BOUNDARY
-        start, end = edge.start, edge.end
         if ((start.y > point_y) is not (end.y > point_y)
                 and ((end.y > start.y)
                      is (orient(start, end, point)
