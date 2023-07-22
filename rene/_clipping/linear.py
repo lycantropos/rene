@@ -294,6 +294,18 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 if candidate is red_black.NIL
                 else candidate.value)
 
+    def _is_from_first_operand_event(self, event: Event, /) -> bool:
+        return self._is_left_event_from_first_operand(
+                self._to_left_event(event)
+        )
+
+    def _is_left_event_from_first_operand(self, event: Event, /) -> bool:
+        return (self._left_event_to_segment_id(event)
+                < self.first_segments_count)
+
+    def _left_event_to_segment_id(self, event: Event, /) -> int:
+        return self._segments_ids[left_event_to_position(event)]
+
     def _pop(self) -> Event:
         return self._events_queue_data.pop()
 
@@ -321,18 +333,6 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 event, self._is_left_event_from_first_operand(event),
                 self.endpoints, self._opposites
         )
-
-    def _is_from_first_operand_event(self, event: Event, /) -> bool:
-        return self._is_left_event_from_first_operand(
-                self._to_left_event(event)
-        )
-
-    def _is_left_event_from_first_operand(self, event: Event, /) -> bool:
-        return (self._left_event_to_segment_id(event)
-                < self.first_segments_count)
-
-    def _left_event_to_segment_id(self, event: Event, /) -> int:
-        return self._segments_ids[left_event_to_position(event)]
 
 
 def _populate_with_segments(
