@@ -100,6 +100,55 @@ where
     }
 }
 
+impl<Scalar> ReduceEvents for Operation<Point<Scalar>, DIFFERENCE>
+where
+    for<'a> &'a Segment<Scalar>: Segmental<Endpoint = &'a Point<Scalar>>,
+    EventsQueueKey<Point<Scalar>>: Ord,
+    Segment<Scalar>: From<(Point<Scalar>, Point<Scalar>)>,
+    Point<Scalar>: Clone + PartialEq,
+    for<'a> &'a Point<Scalar>: Elemental + Orient,
+{
+    type Output = Vec<Segment<Scalar>>;
+
+    fn reduce_events(&self, events: Vec<Event>) -> Self::Output {
+        if events.is_empty() {
+            vec![]
+        } else {
+            let mut result = Vec::with_capacity(events.len() / 2);
+            let mut events = events.into_iter();
+            let event = unsafe { events.next().unwrap_unchecked() };
+            let (mut previous_end, mut previous_start) =
+                (self.get_event_end(event), self.get_event_start(event));
+            let mut is_from_first_operand =
+                self.is_from_first_operand_event(event);
+            for event in events {
+                let (end, start) =
+                    (self.get_event_end(event), self.get_event_start(event));
+                if end == previous_end && start == previous_start {
+                    is_from_first_operand = false;
+                } else {
+                    if is_from_first_operand {
+                        result.push(Segment::from((
+                            previous_start.clone(),
+                            previous_end.clone(),
+                        )));
+                    }
+                    is_from_first_operand =
+                        self.is_from_first_operand_event(event);
+                    (previous_end, previous_start) = (end, start);
+                }
+            }
+            if is_from_first_operand {
+                result.push(Segment::from((
+                    previous_start.clone(),
+                    previous_end.clone(),
+                )));
+            }
+            result
+        }
+    }
+}
+
 impl<Scalar> ReduceEvents for Operation<Point<Scalar>, INTERSECTION>
 where
     for<'a> &'a Segment<Scalar>: Segmental<Endpoint = &'a Point<Scalar>>,
@@ -128,6 +177,92 @@ where
                     (previous_end, previous_start) = (end, start);
                 }
             }
+            result
+        }
+    }
+}
+
+impl<Scalar> ReduceEvents for Operation<Point<Scalar>, SYMMETRIC_DIFFERENCE>
+where
+    for<'a> &'a Segment<Scalar>: Segmental<Endpoint = &'a Point<Scalar>>,
+    EventsQueueKey<Point<Scalar>>: Ord,
+    Segment<Scalar>: From<(Point<Scalar>, Point<Scalar>)>,
+    Point<Scalar>: Clone + PartialEq,
+    for<'a> &'a Point<Scalar>: Elemental + Orient,
+{
+    type Output = Vec<Segment<Scalar>>;
+
+    fn reduce_events(&self, events: Vec<Event>) -> Self::Output {
+        if events.is_empty() {
+            vec![]
+        } else {
+            let mut result = Vec::with_capacity(events.len() / 2);
+            let mut events = events.into_iter();
+            let event = unsafe { events.next().unwrap_unchecked() };
+            let (mut previous_end, mut previous_start) =
+                (self.get_event_end(event), self.get_event_start(event));
+            let mut is_from_single_operand = true;
+            for event in events {
+                let (end, start) =
+                    (self.get_event_end(event), self.get_event_start(event));
+                if end == previous_end && start == previous_start {
+                    is_from_single_operand = false;
+                } else {
+                    if is_from_single_operand {
+                        result.push(Segment::from((
+                            previous_start.clone(),
+                            previous_end.clone(),
+                        )));
+                    }
+                    is_from_single_operand = true;
+                    (previous_end, previous_start) = (end, start);
+                }
+            }
+            if is_from_single_operand {
+                result.push(Segment::from((
+                    previous_start.clone(),
+                    previous_end.clone(),
+                )));
+            }
+            result
+        }
+    }
+}
+
+impl<Scalar> ReduceEvents for Operation<Point<Scalar>, UNION>
+where
+    for<'a> &'a Segment<Scalar>: Segmental<Endpoint = &'a Point<Scalar>>,
+    EventsQueueKey<Point<Scalar>>: Ord,
+    Segment<Scalar>: From<(Point<Scalar>, Point<Scalar>)>,
+    Point<Scalar>: Clone + PartialEq,
+    for<'a> &'a Point<Scalar>: Elemental + Orient,
+{
+    type Output = Vec<Segment<Scalar>>;
+
+    fn reduce_events(&self, events: Vec<Event>) -> Self::Output {
+        if events.is_empty() {
+            vec![]
+        } else {
+            let mut result = Vec::with_capacity(events.len() / 2);
+            let mut events = events.into_iter();
+            let event = unsafe { events.next().unwrap_unchecked() };
+            let (mut previous_end, mut previous_start) =
+                (self.get_event_end(event), self.get_event_start(event));
+            for event in events {
+                let (end, start) =
+                    (self.get_event_end(event), self.get_event_start(event));
+                if end != previous_end || start != previous_start {
+                    result.push(Segment::from((
+                        previous_start.clone(),
+                        previous_end.clone(),
+                    )));
+                    (previous_end, previous_start) = (end, start);
+                }
+            }
+            result.push(Segment::from((
+                previous_start.clone(),
+                previous_end.clone(),
+            )));
             result
         }
     }
