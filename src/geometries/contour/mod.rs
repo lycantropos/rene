@@ -5,6 +5,7 @@ mod contoural;
 mod eq;
 mod from;
 mod hash;
+mod intersection;
 mod locatable;
 mod multisegmental;
 mod multivertexal;
