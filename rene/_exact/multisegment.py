@@ -11,8 +11,10 @@ from rene import (MIN_MULTISEGMENT_SEGMENTS_COUNT,
                   Relation,
                   hints)
 from rene._bentley_ottmann.base import sweep
-from rene._clipping.intersection import (intersect_segment_with_segments,
-                                         intersect_segments_sequences)
+from rene._clipping import (intersect_segments_with_segment,
+                            intersect_segments_with_segments,
+                            symmetric_subtract_segment_from_segments,
+                            symmetric_subtract_segments_from_segments)
 from rene._context import Context
 from rene._utils import collect_maybe_empty_segments
 
@@ -85,16 +87,12 @@ class Multisegment:
 
     @t.overload
     def __and__(
-            self, other: hints.Multisegment[Fraction], /
-    ) -> t.Union[
-        hints.Empty[Fraction], hints.Multisegment[Fraction],
-        hints.Segment[Fraction]
-    ]:
-        ...
-
-    @t.overload
-    def __and__(
-            self, other: hints.Segment[Fraction], /
+            self,
+            other: t.Union[
+                hints.Contour[hints.Scalar], hints.Multisegment[Fraction],
+                hints.Segment[Fraction]
+            ],
+            /
     ) -> t.Union[
         hints.Empty[Fraction], hints.Multisegment[Fraction],
         hints.Segment[Fraction]
@@ -108,14 +106,19 @@ class Multisegment:
     def __and__(self, other: t.Any, /) -> t.Any:
         return (
             collect_maybe_empty_segments(
-                    intersect_segments_sequences(self.segments,
-                                                 other.segments),
+                    intersect_segments_with_segments(
+                            self.segments, other.segments,
+                            self._context.segment_cls
+                    ),
                     self._context.empty_cls, self._context.multisegment_cls
             )
-            if isinstance(other, self._context.multisegment_cls)
+            if isinstance(other, (self._context.contour_cls,
+                                  self._context.multisegment_cls))
             else (
                 collect_maybe_empty_segments(
-                        intersect_segment_with_segments(other, self.segments),
+                        intersect_segments_with_segment(
+                                self.segments, other, self._context.segment_cls
+                        ),
                         self._context.empty_cls, self._context.multisegment_cls
                 )
                 if isinstance(other, self._context.segment_cls)
@@ -146,3 +149,23 @@ class Multisegment:
     def __str__(self) -> str:
         return (f'{type(self).__qualname__}([{{}}])'
                 .format(', '.join(map(str, self.segments))))
+
+    def __xor__(self, other: t.Any, /) -> t.Any:
+        return (
+            collect_maybe_empty_segments(
+                    symmetric_subtract_segments_from_segments(
+                            self.segments, other.segments,
+                            self._context.segment_cls
+                    ),
+                    self._context.empty_cls, self._context.multisegment_cls
+            )
+            if isinstance(other, (self._context.contour_cls,
+                                  self._context.multisegment_cls))
+            else (
+                symmetric_subtract_segment_from_segments(
+                        self.segments, other, self._context.segment_cls
+                )
+                if isinstance(other, self._context.segment_cls)
+                else NotImplemented
+            )
+        )

@@ -13,8 +13,13 @@ from rene import (MIN_CONTOUR_VERTICES_COUNT,
                   hints)
 from rene._bentley_ottmann.base import (Intersection,
                                         sweep)
+from rene._clipping import (intersect_segments_with_segment,
+                            intersect_segments_with_segments,
+                            symmetric_subtract_segment_from_segments,
+                            symmetric_subtract_segments_from_segments)
 from rene._context import Context
 from rene._utils import (are_contour_vertices_non_degenerate,
+                         collect_maybe_empty_segments,
                          to_arg_min,
                          to_contour_orientation,
                          to_contour_segments)
@@ -96,6 +101,52 @@ class Contour:
         self._vertices = list(vertices)
         return self
 
+    @t.overload
+    def __and__(
+            self, other: hints.Empty[Fraction], /
+    ) -> hints.Empty[Fraction]:
+        ...
+
+    @t.overload
+    def __and__(
+            self,
+            other: t.Union[
+                hints.Contour[hints.Scalar], hints.Multisegment[Fraction],
+                hints.Segment[Fraction]
+            ],
+            /
+    ) -> t.Union[
+        hints.Empty[Fraction], hints.Multisegment[Fraction],
+        hints.Segment[Fraction]
+    ]:
+        ...
+
+    @t.overload
+    def __and__(self, other: t.Any, /) -> t.Any:
+        ...
+
+    def __and__(self, other: t.Any, /) -> t.Any:
+        return (
+            collect_maybe_empty_segments(
+                    intersect_segments_with_segments(
+                            self.segments, other.segments,
+                            self._context.segment_cls
+                    ),
+                    self._context.empty_cls, self._context.multisegment_cls
+            )
+            if isinstance(other, (self._context.contour_cls,
+                                  self._context.multisegment_cls))
+            else (
+                collect_maybe_empty_segments(
+                        intersect_segments_with_segment(
+                                self.segments, other, self._context.segment_cls
+                        ),
+                        self._context.empty_cls, self._context.multisegment_cls
+                )
+                if isinstance(other, self._context.segment_cls)
+                else NotImplemented)
+        )
+
     def __contains__(self, point: hints.Point[Fraction], /) -> bool:
         return self.locate(point) is not Location.EXTERIOR
 
@@ -133,6 +184,26 @@ class Contour:
     def __str__(self) -> str:
         return (f'{type(self).__qualname__}([{{}}])'
                 .format(', '.join(map(str, self.vertices))))
+
+    def __xor__(self, other: t.Any, /) -> t.Any:
+        return (
+            collect_maybe_empty_segments(
+                    symmetric_subtract_segments_from_segments(
+                            self.segments, other.segments,
+                            self._context.segment_cls
+                    ),
+                    self._context.empty_cls, self._context.multisegment_cls
+            )
+            if isinstance(other, (self._context.contour_cls,
+                                  self._context.multisegment_cls))
+            else (
+                symmetric_subtract_segment_from_segments(
+                        self.segments, other, self._context.segment_cls
+                )
+                if isinstance(other, self._context.segment_cls)
+                else NotImplemented
+            )
+        )
 
 
 def _neighbour_segments_vertices_touch(

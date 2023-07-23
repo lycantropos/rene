@@ -22,6 +22,11 @@ _OrderedT = t.TypeVar('_OrderedT',
 _T = t.TypeVar('_T')
 
 
+def all_equal(iterable: t.Iterable[t.Any]) -> bool:
+    groups = groupby(iterable)
+    return bool(next(groups, True)) and not next(groups, False)
+
+
 def are_contour_vertices_non_degenerate(
         vertices: t.Sequence[hints.Point[hints.Scalar]], /
 ) -> bool:
