@@ -7,5 +7,6 @@ mod hash;
 mod intersection;
 mod locatable;
 mod multisegmental;
+mod multisegmental2;
 mod partial_eq;
 mod types;
