@@ -1,6 +1,3 @@
-use rithm::big_int::BigInt;
-use rithm::fraction::Fraction;
-
 use crate::bounded::{Bounded, Box};
 use crate::clipping::shaped::Operation;
 use crate::clipping::traits::ReduceEvents;
@@ -45,24 +42,17 @@ impl<Scalar> Intersection<&Empty> for &Polygon<Scalar> {
     }
 }
 
-impl<Digit, const SHIFT: usize> Intersection
-    for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<Scalar> Intersection for &Polygon<Scalar>
 where
-    Fraction<BigInt<Digit, SHIFT>>: Ord,
-    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>:
-        Iterator<Item = Event>
-            + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
-            + for<'a> From<(
-                &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-                &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-            )>,
-    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> &'a Point<Fraction<BigInt<Digit, SHIFT>>>:
-        Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+    Scalar: Ord,
+    Operation<Point<Scalar>, INTERSECTION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Polygon<Scalar>>>
+        + for<'a> From<(&'a Polygon<Scalar>, &'a Polygon<Scalar>)>,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Point<Scalar>: Elemental<Coordinate = &'a Scalar>,
+    for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
 {
-    type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
+    type Output = Vec<Polygon<Scalar>>;
 
     fn intersection(self, other: Self) -> Self::Output {
         let bounding_box = self.to_bounding_box();

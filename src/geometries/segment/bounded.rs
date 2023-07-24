@@ -17,19 +17,19 @@ where
     }
 
     fn to_max_x(self) -> &'a Scalar {
-        self.start.x().max(self.end.x())
+        (&self.start).x().max((&self.end).x())
     }
 
     fn to_max_y(self) -> &'a Scalar {
-        self.start.y().max(self.end.y())
+        (&self.start).y().max((&self.end).y())
     }
 
     fn to_min_x(self) -> &'a Scalar {
-        self.start.x().min(self.end.x())
+        (&self.start).x().min((&self.end).x())
     }
 
     fn to_min_y(self) -> &'a Scalar {
-        self.start.y().min(self.end.y())
+        (&self.start).y().min((&self.end).y())
     }
 }
 

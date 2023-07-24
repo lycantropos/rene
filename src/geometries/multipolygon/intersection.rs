@@ -1,6 +1,3 @@
-use rithm::big_int::BigInt;
-use rithm::fraction::Fraction;
-
 use crate::bounded::{Bounded, Box};
 use crate::clipping::shaped::Operation;
 use crate::clipping::traits::ReduceEvents;
@@ -47,26 +44,18 @@ impl<Scalar> Intersection<&Empty> for &Multipolygon<Scalar> {
     }
 }
 
-impl<Digit, const SHIFT: usize> Intersection
-    for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<Scalar> Intersection for &Multipolygon<Scalar>
 where
-    Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>:
-        Iterator<Item = Event>
-            + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
-            + for<'a> From<(
-                &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
-                &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
-            )>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>:
-        Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+    Scalar: Clone + Ord,
+    Operation<Point<Scalar>, INTERSECTION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Polygon<Scalar>>>
+        + for<'a> From<(&'a [&'a Polygon<Scalar>], &'a [&'a Polygon<Scalar>])>,
+    Point<Scalar>: Elemental<Coordinate = Scalar>,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>,
+    for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
 {
-    type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
+    type Output = Vec<Polygon<Scalar>>;
 
     fn intersection(self, other: Self) -> Self::Output {
         let bounding_boxes = self
@@ -141,32 +130,20 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize>
-    Intersection<&Polygon<Fraction<BigInt<Digit, SHIFT>>>>
-    for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<Scalar> Intersection<&Polygon<Scalar>> for &Multipolygon<Scalar>
 where
-    Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>:
-        Iterator<Item = Event>
-            + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
-            + for<'a> From<(
-                &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
-                &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-            )>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>:
-        Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+    Scalar: Clone + Ord,
+    Operation<Point<Scalar>, INTERSECTION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Polygon<Scalar>>>
+        + for<'a> From<(&'a [&'a Polygon<Scalar>], &'a Polygon<Scalar>)>,
+    Point<Scalar>: Elemental<Coordinate = Scalar>,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>,
+    for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
 {
-    type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
+    type Output = Vec<Polygon<Scalar>>;
 
-    fn intersection(
-        self,
-        other: &Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-    ) -> Self::Output {
+    fn intersection(self, other: &Polygon<Scalar>) -> Self::Output {
         let bounding_boxes = self
             .polygons
             .iter()
@@ -217,32 +194,20 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize>
-    Intersection<&Multipolygon<Fraction<BigInt<Digit, SHIFT>>>>
-    for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<Scalar> Intersection<&Multipolygon<Scalar>> for &Polygon<Scalar>
 where
-    Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>:
-        Iterator<Item = Event>
-            + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
-            + for<'a> From<(
-                &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-                &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
-            )>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>:
-        Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+    Scalar: Clone + Ord,
+    Operation<Point<Scalar>, INTERSECTION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Polygon<Scalar>>>
+        + for<'a> From<(&'a Polygon<Scalar>, &'a [&'a Polygon<Scalar>])>,
+    Point<Scalar>: Elemental<Coordinate = Scalar>,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>,
+    for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
 {
-    type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
+    type Output = Vec<Polygon<Scalar>>;
 
-    fn intersection(
-        self,
-        other: &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>,
-    ) -> Self::Output {
+    fn intersection(self, other: &Multipolygon<Scalar>) -> Self::Output {
         let bounding_box = self.to_bounding_box();
         let other_bounding_boxes = other
             .polygons

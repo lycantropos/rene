@@ -1,22 +1,17 @@
-use rithm::big_int::BigInt;
-use rithm::fraction::Fraction;
-
 use crate::geometries::utils::MultisegmentalsSegments;
 use crate::geometries::Polygon;
 use crate::traits::Multisegmental;
 
 use super::types::Multipolygon;
 
-impl<'a, Digit, const SHIFT: usize> Multisegmental
-    for &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<'a, Scalar> Multisegmental for &'a Multipolygon<Scalar>
 where
-    for<'b> &'b Polygon<Fraction<BigInt<Digit, SHIFT>>>: Multisegmental,
+    for<'b> &'b Polygon<Scalar>: Multisegmental,
 {
-    type Segment =
-        <&'a Polygon<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segment;
+    type Segment = <&'a Polygon<Scalar> as Multisegmental>::Segment;
     type Segments = MultisegmentalsSegments<
-        std::slice::Iter<'a, Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-        <&'a Polygon<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segments,
+        std::slice::Iter<'a, Polygon<Scalar>>,
+        <&'a Polygon<Scalar> as Multisegmental>::Segments,
     >;
 
     fn segments(self) -> Self::Segments {
@@ -34,16 +29,14 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize> Multisegmental
-    for Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<Scalar> Multisegmental for Multipolygon<Scalar>
 where
-    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Multisegmental,
+    Polygon<Scalar>: Multisegmental,
 {
-    type Segment =
-        <Polygon<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segment;
+    type Segment = <Polygon<Scalar> as Multisegmental>::Segment;
     type Segments = MultisegmentalsSegments<
-        std::vec::IntoIter<Polygon<Fraction<BigInt<Digit, SHIFT>>>>,
-        <Polygon<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segments,
+        std::vec::IntoIter<Polygon<Scalar>>,
+        <Polygon<Scalar> as Multisegmental>::Segments,
     >;
 
     fn segments(self) -> Self::Segments {

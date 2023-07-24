@@ -1,17 +1,11 @@
-use rithm::big_int::BigInt;
-use rithm::fraction::Fraction;
-
 use crate::geometries::Polygon;
 use crate::traits::Multipolygonal;
 
 use super::types::Multipolygon;
 
-impl<'a, Digit, const SHIFT: usize> Multipolygonal
-    for &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
-{
-    type Polygon = &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>;
-    type Polygons =
-        std::slice::Iter<'a, Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
+impl<'a, Scalar> Multipolygonal for &'a Multipolygon<Scalar> {
+    type Polygon = &'a Polygon<Scalar>;
+    type Polygons = std::slice::Iter<'a, Polygon<Scalar>>;
 
     fn polygons(self) -> Self::Polygons {
         self.polygons.iter()
@@ -22,12 +16,9 @@ impl<'a, Digit, const SHIFT: usize> Multipolygonal
     }
 }
 
-impl<Digit, const SHIFT: usize> Multipolygonal
-    for Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
-{
-    type Polygon = Polygon<Fraction<BigInt<Digit, SHIFT>>>;
-    type Polygons =
-        std::vec::IntoIter<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
+impl<Scalar> Multipolygonal for Multipolygon<Scalar> {
+    type Polygon = Polygon<Scalar>;
+    type Polygons = std::vec::IntoIter<Polygon<Scalar>>;
 
     fn polygons(self) -> Self::Polygons {
         self.polygons.into_iter()

@@ -1,19 +1,11 @@
-use rithm::big_int::BigInt;
-use rithm::fraction::Fraction;
-
 use crate::geometries::Segment;
 use crate::traits::Multisegmental;
 
 use super::types::Multisegment;
 
-impl<'a, Digit, const SHIFT: usize> Multisegmental
-    for &'a Multisegment<Fraction<BigInt<Digit, SHIFT>>>
-where
-    BigInt<Digit, SHIFT>: Clone,
-{
-    type Segment = &'a Segment<Fraction<BigInt<Digit, SHIFT>>>;
-    type Segments =
-        std::slice::Iter<'a, Segment<Fraction<BigInt<Digit, SHIFT>>>>;
+impl<'a, Scalar> Multisegmental for &'a Multisegment<Scalar> {
+    type Segment = &'a Segment<Scalar>;
+    type Segments = std::slice::Iter<'a, Segment<Scalar>>;
 
     fn segments(self) -> Self::Segments {
         self.segments.iter()
@@ -24,14 +16,9 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize> Multisegmental
-    for Multisegment<Fraction<BigInt<Digit, SHIFT>>>
-where
-    BigInt<Digit, SHIFT>: Clone,
-{
-    type Segment = Segment<Fraction<BigInt<Digit, SHIFT>>>;
-    type Segments =
-        std::vec::IntoIter<Segment<Fraction<BigInt<Digit, SHIFT>>>>;
+impl<Scalar> Multisegmental for Multisegment<Scalar> {
+    type Segment = Segment<Scalar>;
+    type Segments = std::vec::IntoIter<Segment<Scalar>>;
 
     fn segments(self) -> Self::Segments {
         self.segments.into_iter()

@@ -1,6 +1,3 @@
-use rithm::big_int::BigInt;
-use rithm::fraction::Fraction;
-
 use crate::bounded::{Bounded, Box};
 use crate::geometries::{Empty, Point};
 use crate::operations::{
@@ -44,17 +41,15 @@ impl<Scalar> Intersection<&Empty> for &Segment<Scalar> {
     }
 }
 
-impl<Digit, const SHIFT: usize> Intersection
-    for &Segment<Fraction<BigInt<Digit, SHIFT>>>
+impl<Scalar> Intersection for &Segment<Scalar>
 where
-    Fraction<BigInt<Digit, SHIFT>>: PartialEq,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Clone + Ord,
-    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> &'a Point<Fraction<BigInt<Digit, SHIFT>>>: Orient,
-    for<'a> &'a Segment<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+    Scalar: PartialEq,
+    Point<Scalar>: Clone + Ord,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Point<Scalar>: Orient,
+    for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
 {
-    type Output = Option<Segment<Fraction<BigInt<Digit, SHIFT>>>>;
+    type Output = Option<Segment<Scalar>>;
 
     fn intersection(self, other: Self) -> Self::Output {
         if do_boxes_have_no_common_continuum(

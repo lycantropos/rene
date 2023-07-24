@@ -1,14 +1,9 @@
-use rithm::big_int::BigInt;
-use rithm::fraction::Fraction;
-
 use crate::traits::Elemental;
 
 use super::types::Point;
 
-impl<'a, Digit, const SHIFT: usize> Elemental
-    for &'a Point<Fraction<BigInt<Digit, SHIFT>>>
-{
-    type Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>;
+impl<'a, Scalar> Elemental for &'a Point<Scalar> {
+    type Coordinate = &'a Scalar;
 
     fn coordinates(self) -> (Self::Coordinate, Self::Coordinate) {
         (&self.x, &self.y)
@@ -23,10 +18,8 @@ impl<'a, Digit, const SHIFT: usize> Elemental
     }
 }
 
-impl<Digit, const SHIFT: usize> Elemental
-    for Point<Fraction<BigInt<Digit, SHIFT>>>
-{
-    type Coordinate = Fraction<BigInt<Digit, SHIFT>>;
+impl<Scalar> Elemental for Point<Scalar> {
+    type Coordinate = Scalar;
 
     fn coordinates(self) -> (Self::Coordinate, Self::Coordinate) {
         (self.x, self.y)

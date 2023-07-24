@@ -1,6 +1,3 @@
-use rithm::big_int::BigInt;
-use rithm::fraction::Fraction;
-
 use crate::bounded::{Bounded, Box};
 use crate::clipping::shaped::Operation;
 use crate::clipping::traits::ReduceEvents;
@@ -53,27 +50,20 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize> Union
-    for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<Scalar> Union for &Multipolygon<Scalar>
 where
-    Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Multipolygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
-    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, UNION>: Iterator<Item = Event>
-        + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
-        + for<'a> From<(
-            &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
-            &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
-        )>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>:
-        Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
-    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+    Scalar: Clone + Ord,
+    Multipolygon<Scalar>: Clone,
+    Operation<Point<Scalar>, UNION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Polygon<Scalar>>>
+        + for<'a> From<(&'a [&'a Polygon<Scalar>], &'a [&'a Polygon<Scalar>])>,
+    Point<Scalar>: Elemental<Coordinate = Scalar>,
+    Polygon<Scalar>: Clone,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>,
+    for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
 {
-    type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
+    type Output = Vec<Polygon<Scalar>>;
 
     fn union(self, other: Self) -> Self::Output {
         let bounding_boxes = self
@@ -161,31 +151,21 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize> Union<&Polygon<Fraction<BigInt<Digit, SHIFT>>>>
-    for &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<Scalar> Union<&Polygon<Scalar>> for &Multipolygon<Scalar>
 where
-    Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, UNION>: Iterator<Item = Event>
-        + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
-        + for<'a> From<(
-            &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
-            &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-        )>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>:
-        Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
-    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+    Scalar: Clone + Ord,
+    Operation<Point<Scalar>, UNION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Polygon<Scalar>>>
+        + for<'a> From<(&'a [&'a Polygon<Scalar>], &'a Polygon<Scalar>)>,
+    Point<Scalar>: Elemental<Coordinate = Scalar>,
+    Polygon<Scalar>: Clone,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>,
+    for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
 {
-    type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
+    type Output = Vec<Polygon<Scalar>>;
 
-    fn union(
-        self,
-        other: &Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-    ) -> Self::Output {
+    fn union(self, other: &Polygon<Scalar>) -> Self::Output {
         let bounding_boxes = self
             .polygons
             .iter()
@@ -241,32 +221,21 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize>
-    Union<&Multipolygon<Fraction<BigInt<Digit, SHIFT>>>>
-    for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<Scalar> Union<&Multipolygon<Scalar>> for &Polygon<Scalar>
 where
-    Fraction<BigInt<Digit, SHIFT>>: Clone + Ord,
-    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, UNION>: Iterator<Item = Event>
-        + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
-        + for<'a> From<(
-            &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-            &'a [&'a Polygon<Fraction<BigInt<Digit, SHIFT>>>],
-        )>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>:
-        Elemental<Coordinate = Fraction<BigInt<Digit, SHIFT>>>,
-    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
-    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> &'a Multipolygon<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+    Scalar: Clone + Ord,
+    Operation<Point<Scalar>, UNION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Polygon<Scalar>>>
+        + for<'a> From<(&'a Polygon<Scalar>, &'a [&'a Polygon<Scalar>])>,
+    Point<Scalar>: Elemental<Coordinate = Scalar>,
+    Polygon<Scalar>: Clone,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>,
+    for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
 {
-    type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
+    type Output = Vec<Polygon<Scalar>>;
 
-    fn union(
-        self,
-        other: &Multipolygon<Fraction<BigInt<Digit, SHIFT>>>,
-    ) -> Self::Output {
+    fn union(self, other: &Multipolygon<Scalar>) -> Self::Output {
         let other_bounding_boxes = other
             .polygons
             .iter()

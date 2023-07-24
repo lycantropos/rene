@@ -1,15 +1,10 @@
-use rithm::big_int::BigInt;
-use rithm::fraction::Fraction;
-
 use crate::geometries::Point;
 use crate::traits::Segmental;
 
 use super::types::Segment;
 
-impl<'a, Digit, const SHIFT: usize> Segmental
-    for &'a Segment<Fraction<BigInt<Digit, SHIFT>>>
-{
-    type Endpoint = &'a Point<Fraction<BigInt<Digit, SHIFT>>>;
+impl<'a, Scalar> Segmental for &'a Segment<Scalar> {
+    type Endpoint = &'a Point<Scalar>;
 
     fn start(self) -> Self::Endpoint {
         &self.start
@@ -24,10 +19,8 @@ impl<'a, Digit, const SHIFT: usize> Segmental
     }
 }
 
-impl<Digit, const SHIFT: usize> Segmental
-    for Segment<Fraction<BigInt<Digit, SHIFT>>>
-{
-    type Endpoint = Point<Fraction<BigInt<Digit, SHIFT>>>;
+impl<Scalar> Segmental for Segment<Scalar> {
+    type Endpoint = Point<Scalar>;
 
     fn start(self) -> Self::Endpoint {
         self.start

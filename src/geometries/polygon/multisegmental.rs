@@ -1,25 +1,18 @@
-use rithm::big_int::BigInt;
-use rithm::fraction::Fraction;
-
 use crate::geometries::utils::MultisegmentalsSegments;
 use crate::geometries::{Contour, Point, Segment};
 use crate::traits::{Multisegmental, Segmental};
 
 use super::types::Polygon;
 
-impl<'a, Digit, const SHIFT: usize> Multisegmental
-    for &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<'a, Scalar> Multisegmental for &'a Polygon<Scalar>
 where
-    for<'b> &'b Contour<Fraction<BigInt<Digit, SHIFT>>>:
-        Multisegmental<Segment = &'b Segment<Fraction<BigInt<Digit, SHIFT>>>>,
-    for<'b> &'b Segment<Fraction<BigInt<Digit, SHIFT>>>:
-        Segmental<Endpoint = &'b Point<Fraction<BigInt<Digit, SHIFT>>>>,
+    for<'b> &'b Contour<Scalar>: Multisegmental<Segment = &'b Segment<Scalar>>,
+    for<'b> &'b Segment<Scalar>: Segmental<Endpoint = &'b Point<Scalar>>,
 {
-    type Segment =
-        <&'a Contour<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segment;
+    type Segment = <&'a Contour<Scalar> as Multisegmental>::Segment;
     type Segments = MultisegmentalsSegments<
-        std::slice::Iter<'a, Contour<Fraction<BigInt<Digit, SHIFT>>>>,
-        <&'a Contour<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segments,
+        std::slice::Iter<'a, Contour<Scalar>>,
+        <&'a Contour<Scalar> as Multisegmental>::Segments,
     >;
 
     fn segments(self) -> Self::Segments {
@@ -39,19 +32,15 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize> Multisegmental
-    for Polygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<Scalar> Multisegmental for Polygon<Scalar>
 where
-    Contour<Fraction<BigInt<Digit, SHIFT>>>:
-        Multisegmental<Segment = Segment<Fraction<BigInt<Digit, SHIFT>>>>,
-    Segment<Fraction<BigInt<Digit, SHIFT>>>:
-        Segmental<Endpoint = Point<Fraction<BigInt<Digit, SHIFT>>>>,
+    Contour<Scalar>: Multisegmental<Segment = Segment<Scalar>>,
+    Segment<Scalar>: Segmental<Endpoint = Point<Scalar>>,
 {
-    type Segment =
-        <Contour<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segment;
+    type Segment = <Contour<Scalar> as Multisegmental>::Segment;
     type Segments = MultisegmentalsSegments<
-        std::vec::IntoIter<Contour<Fraction<BigInt<Digit, SHIFT>>>>,
-        <Contour<Fraction<BigInt<Digit, SHIFT>>> as Multisegmental>::Segments,
+        std::vec::IntoIter<Contour<Scalar>>,
+        <Contour<Scalar> as Multisegmental>::Segments,
     >;
 
     fn segments(self) -> Self::Segments {

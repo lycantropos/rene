@@ -1,6 +1,3 @@
-use rithm::big_int::BigInt;
-use rithm::fraction::Fraction;
-
 use crate::bounded::{Bounded, Box};
 use crate::clipping::shaped::Operation;
 use crate::clipping::traits::ReduceEvents;
@@ -50,25 +47,18 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize> SymmetricDifference
-    for &Polygon<Fraction<BigInt<Digit, SHIFT>>>
+impl<Scalar> SymmetricDifference for &Polygon<Scalar>
 where
-    Fraction<BigInt<Digit, SHIFT>>: PartialEq,
-    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, SYMMETRIC_DIFFERENCE>:
-        Iterator<Item = Event>
-            + ReduceEvents<Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>>
-            + for<'a> From<(
-                &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-                &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>,
-            )>,
-    Polygon<Fraction<BigInt<Digit, SHIFT>>>: Clone,
-    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> &'a Point<Fraction<BigInt<Digit, SHIFT>>>:
-        Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Polygon<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+    Scalar: PartialEq,
+    Operation<Point<Scalar>, SYMMETRIC_DIFFERENCE>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Polygon<Scalar>>>
+        + for<'a> From<(&'a Polygon<Scalar>, &'a Polygon<Scalar>)>,
+    Polygon<Scalar>: Clone,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Point<Scalar>: Elemental<Coordinate = &'a Scalar>,
+    for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
 {
-    type Output = Vec<Polygon<Fraction<BigInt<Digit, SHIFT>>>>;
+    type Output = Vec<Polygon<Scalar>>;
 
     fn symmetric_difference(self, other: Self) -> Self::Output {
         let bounding_box = self.to_bounding_box();

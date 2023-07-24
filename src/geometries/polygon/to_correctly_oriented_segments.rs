@@ -20,17 +20,17 @@ where
 
     fn to_correctly_oriented_segments(self) -> Self::Output {
         let mut result = Vec::<Segment<Scalar>>::with_capacity(
-            self.border.segments_count()
+            (&self.border).segments_count()
                 + self
                     .holes
                     .iter()
                     .map(Multisegmental::segments_count)
                     .sum::<usize>(),
         );
-        if self.border.to_orientation() == Orientation::Counterclockwise {
-            result.extend(self.border.segments().cloned());
+        if (&self.border).to_orientation() == Orientation::Counterclockwise {
+            result.extend((&self.border).segments().cloned());
         } else {
-            result.append(&mut self.border.to_reversed_segments());
+            result.append(&mut (&self.border).to_reversed_segments());
         }
         for hole in &self.holes {
             if hole.to_orientation() == Orientation::Clockwise {

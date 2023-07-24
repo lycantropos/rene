@@ -1,6 +1,3 @@
-use rithm::big_int::BigInt;
-use rithm::fraction::Fraction;
-
 use crate::bounded::{Bounded, Box};
 use crate::clipping::linear::Operation;
 use crate::clipping::traits::ReduceEvents;
@@ -48,24 +45,18 @@ impl<Scalar> Intersection<&Empty> for &Multisegment<Scalar> {
     }
 }
 
-impl<Digit, const SHIFT: usize> Intersection
-    for &Multisegment<Fraction<BigInt<Digit, SHIFT>>>
+impl<Scalar> Intersection for &Multisegment<Scalar>
 where
-    Fraction<BigInt<Digit, SHIFT>>: Ord,
-    Operation<Point<Fraction<BigInt<Digit, SHIFT>>>, INTERSECTION>:
-        Iterator<Item = Event>
-            + ReduceEvents<Output = Vec<Segment<Fraction<BigInt<Digit, SHIFT>>>>>
-            + for<'a> From<(
-                &'a [&'a Segment<Fraction<BigInt<Digit, SHIFT>>>],
-                &'a [&'a Segment<Fraction<BigInt<Digit, SHIFT>>>],
-            )>,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Clone,
-    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> &'a Point<Fraction<BigInt<Digit, SHIFT>>>: Orient,
-    for<'a> &'a Segment<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+    Scalar: Ord,
+    Operation<Point<Scalar>, INTERSECTION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Segment<Scalar>>>
+        + for<'a> From<(&'a [&'a Segment<Scalar>], &'a [&'a Segment<Scalar>])>,
+    Point<Scalar>: Clone,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Point<Scalar>: Orient,
+    for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
 {
-    type Output = Vec<Segment<Fraction<BigInt<Digit, SHIFT>>>>;
+    type Output = Vec<Segment<Scalar>>;
 
     fn intersection(self, other: Self) -> Self::Output {
         let bounding_boxes = self
@@ -159,44 +150,32 @@ where
     }
 }
 
-impl<Digit, const SHIFT: usize>
-    Intersection<&Segment<Fraction<BigInt<Digit, SHIFT>>>>
-    for &Multisegment<Fraction<BigInt<Digit, SHIFT>>>
+impl<Scalar> Intersection<&Segment<Scalar>> for &Multisegment<Scalar>
 where
-    Fraction<BigInt<Digit, SHIFT>>: PartialEq,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Clone + Ord,
-    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> &'a Point<Fraction<BigInt<Digit, SHIFT>>>: Orient,
-    for<'a> &'a Segment<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+    Scalar: PartialEq,
+    Point<Scalar>: Clone + Ord,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Point<Scalar>: Orient,
+    for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
 {
-    type Output = Vec<Segment<Fraction<BigInt<Digit, SHIFT>>>>;
+    type Output = Vec<Segment<Scalar>>;
 
-    fn intersection(
-        self,
-        other: &Segment<Fraction<BigInt<Digit, SHIFT>>>,
-    ) -> Self::Output {
+    fn intersection(self, other: &Segment<Scalar>) -> Self::Output {
         intersect_segment_with_segments(other, self.segments.iter())
     }
 }
 
-impl<Digit, const SHIFT: usize>
-    Intersection<&Multisegment<Fraction<BigInt<Digit, SHIFT>>>>
-    for &Segment<Fraction<BigInt<Digit, SHIFT>>>
+impl<Scalar> Intersection<&Multisegment<Scalar>> for &Segment<Scalar>
 where
-    Fraction<BigInt<Digit, SHIFT>>: PartialEq,
-    Point<Fraction<BigInt<Digit, SHIFT>>>: Clone + Ord,
-    for<'a> &'a Box<&'a Fraction<BigInt<Digit, SHIFT>>>: Relatable,
-    for<'a> &'a Point<Fraction<BigInt<Digit, SHIFT>>>: Orient,
-    for<'a> &'a Segment<Fraction<BigInt<Digit, SHIFT>>>:
-        Bounded<&'a Fraction<BigInt<Digit, SHIFT>>>,
+    Scalar: PartialEq,
+    Point<Scalar>: Clone + Ord,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Point<Scalar>: Orient,
+    for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
 {
-    type Output = Vec<Segment<Fraction<BigInt<Digit, SHIFT>>>>;
+    type Output = Vec<Segment<Scalar>>;
 
-    fn intersection(
-        self,
-        other: &Multisegment<Fraction<BigInt<Digit, SHIFT>>>,
-    ) -> Self::Output {
+    fn intersection(self, other: &Multisegment<Scalar>) -> Self::Output {
         intersect_segment_with_segments(self, other.segments.iter())
     }
 }
