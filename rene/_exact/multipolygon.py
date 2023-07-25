@@ -27,6 +27,26 @@ class Multipolygon:
     _context: t.ClassVar[Context[Fraction]]
 
     @property
+    def bounding_box(self) -> hints.Box[Fraction]:
+        polygons = iter(self._polygons)
+        first_polygon_bounding_box = next(polygons).bounding_box
+        min_x, max_x, min_y, max_y = (first_polygon_bounding_box.min_x,
+                                      first_polygon_bounding_box.max_x,
+                                      first_polygon_bounding_box.min_y,
+                                      first_polygon_bounding_box.max_y)
+        for polygon in polygons:
+            polygon_bounding_box = polygon.bounding_box
+            if polygon_bounding_box.max_x > max_x:
+                max_x = polygon_bounding_box.max_x
+            if polygon_bounding_box.min_x < min_x:
+                min_x = polygon_bounding_box.min_x
+            if polygon_bounding_box.max_y > max_y:
+                max_y = polygon_bounding_box.max_y
+            if polygon_bounding_box.min_y < min_y:
+                min_y = polygon_bounding_box.min_y
+        return self._context.box_cls(min_x, max_x, min_y, max_y)
+
+    @property
     def polygons(self) -> t.Sequence[hints.Polygon[Fraction]]:
         return self._polygons[:]
 

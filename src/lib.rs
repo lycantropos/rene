@@ -898,6 +898,11 @@ impl PyExactMultipolygon {
     }
 
     #[getter]
+    fn bounding_box(&self) -> ExactBox {
+        (&self.0).to_bounding_box().cloned()
+    }
+
+    #[getter]
     fn polygons(&self) -> Vec<ExactPolygon> {
         (&self.0).polygons().into_iter().cloned().collect()
     }

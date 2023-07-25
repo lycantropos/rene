@@ -516,6 +516,10 @@ class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]],
 class Multipolygon(_SelfComparable, Multisegmental[Segment[Scalar]],
                    _te.Protocol[Scalar]):
     @property
+    def bounding_box(self) -> Box[Scalar]:
+        ...
+
+    @property
     def polygons(self) -> _t.Sequence[Polygon[Scalar]]:
         ...
 

@@ -209,6 +209,10 @@ class Empty:
 
 class Multipolygon:
     @property
+    def bounding_box(self) -> Box:
+        ...
+
+    @property
     def polygons(self) -> _t.Sequence[Polygon]:
         ...
 
