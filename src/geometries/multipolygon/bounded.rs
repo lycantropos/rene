@@ -44,7 +44,7 @@ where
             self.polygons
                 .iter()
                 .map(Bounded::to_min_x)
-                .max()
+                .min()
                 .unwrap_unchecked()
         }
     }
@@ -54,7 +54,7 @@ where
             self.polygons
                 .iter()
                 .map(Bounded::to_min_y)
-                .max()
+                .min()
                 .unwrap_unchecked()
         }
     }
