@@ -2,7 +2,6 @@ use std::cmp::Ordering;
 use std::collections::VecDeque;
 
 use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
-use crate::geometries::{Contour, Polygon};
 use crate::locatable::Location;
 use crate::operations::{
     shrink_collinear_vertices, LocatePointInPointPointPointCircle, Orient,
@@ -93,27 +92,22 @@ struct PolygonVertexPosition {
     vertex_index: usize,
 }
 
-impl<
-        Endpoint: Clone + Elemental<Coordinate = Scalar> + Ord + PartialOrd,
-        Scalar,
-    > From<&Polygon<Scalar>> for ConstrainedDelaunayTriangulation<Endpoint>
+impl<Contour, Endpoint: Clone + Ord + PartialOrd, Polygon> From<&Polygon>
+    for ConstrainedDelaunayTriangulation<Endpoint>
 where
     Mesh<Endpoint>: DelaunayTriangulatable,
-    for<'a, 'b> &'a Multisegmental2IndexSegment<&'b Contour<Scalar>>:
+    for<'a, 'b> &'a Multisegmental2IndexSegment<&'b Contour>: Segmental,
+    for<'a, 'b> &'a Multivertexal2IndexVertex<&'b Contour>: Elemental,
+    for<'a, 'b> &'a Multisegmental2IndexSegment<Polygonal2IntoIteratorHole<&'b Polygon>>:
         Segmental,
-    for<'a, 'b> &'a Multivertexal2IndexVertex<&'b Contour<Scalar>>: Elemental,
-    for<'a, 'b> &'a Multisegmental2IndexSegment<
-        Polygonal2IntoIteratorHole<&'b Polygon<Scalar>>,
-    >: Segmental,
-    for<'a, 'b> &'a Multivertexal2IndexVertex<
-        Polygonal2IntoIteratorHole<&'b Polygon<Scalar>>,
-    >: Elemental,
+    for<'a, 'b> &'a Multivertexal2IndexVertex<Polygonal2IntoIteratorHole<&'b Polygon>>:
+        Elemental,
+    for<'a> &'a Contour: Contoural2<IndexVertex = Endpoint>,
     for<'a> &'a Endpoint: LocatePointInPointPointPointCircle + Orient,
-    for<'a> &'a Polygon<Scalar>:
-        Polygonal2<Contour = &'a Contour<Scalar>, IndexHole = Contour<Scalar>>,
-    for<'a> &'a Contour<Scalar>: Contoural2<IndexVertex = Endpoint>,
+    for<'a> &'a Polygon:
+        Polygonal2<Contour = &'a Contour, IndexHole = Contour>,
 {
-    fn from(polygon: &Polygon<Scalar>) -> Self {
+    fn from(polygon: &Polygon) -> Self {
         let holes = polygon.holes2();
         let contours_vertices = {
             let mut contours_vertices = Vec::with_capacity(1 + holes.len());

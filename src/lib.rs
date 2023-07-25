@@ -491,7 +491,7 @@ impl PyExactConstrainedDelaunayTriangulation {
     #[pyo3(signature = (polygon, /))]
     fn from_polygon(_: &PyType, polygon: &PyExactPolygon) -> Self {
         PyExactConstrainedDelaunayTriangulation(
-            ConstrainedDelaunayTriangulation::from(&polygon.0),
+            ExactConstrainedDelaunayTriangulation::from(&polygon.0),
         )
     }
 
