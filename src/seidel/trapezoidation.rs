@@ -6,7 +6,11 @@ use crate::bounded;
 use crate::bounded::Bounded;
 use crate::operations::Orient;
 use crate::oriented::{Orientation, Oriented};
-use crate::traits::{Contoural, Multisegmental, Polygonal, Segmental};
+use crate::traits::{
+    Contoural2, Elemental, Iterable, Lengthsome, Multisegmental,
+    Multisegmental2IndexSegment, Multivertexal2, Multivertexal2IndexVertex,
+    Polygonal2, Polygonal2IndexHole, Segmental,
+};
 
 use super::edge::Edge;
 use super::node::Node;
@@ -93,46 +97,54 @@ impl<Point> Trapezoidation<Point> {
     }
 
     pub(crate) fn from_polygon<
-        'a,
         Scalar,
-        Contour: 'a,
+        Contour,
         Polygon,
         Shuffler: FnOnce(&mut Vec<Edge>),
     >(
-        polygon: &'a Polygon,
+        polygon: &Polygon,
         shuffler: Shuffler,
     ) -> Self
     where
-        &'a Contour: Contoural<Vertex = &'a Point> + Oriented,
-        Point: 'a + Clone + From<(Scalar, Scalar)> + PartialOrd,
+        Point: Clone + From<(Scalar, Scalar)> + PartialOrd,
         Scalar: Clone + One,
-        for<'b> &'b Point: Orient,
-        for<'b> &'b Polygon: Bounded<&'b Scalar>
-            + Polygonal<Contour = &'b Contour>
-            + Multisegmental,
-        for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
+        for<'a> &'a Contour: Contoural2<IndexVertex = Point> + Oriented,
+        for<'a> &'a Point: Elemental + Orient,
+        for<'a> &'a Polygon: Bounded<&'a Scalar>
+            + Polygonal2<Contour = &'a Contour, IntoIteratorHole = &'a Contour>,
+        for<'a> &'a Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
             + Sub<Output = Scalar>
             + Zeroable,
+        for<'a, 'b> &'a Multisegmental2IndexSegment<&'b Contour>: Segmental,
+        for<'a, 'b> &'a Polygonal2IndexHole<&'b Polygon>: Contoural2,
+        for<'a, 'b, 'c> &'a Multisegmental2IndexSegment<&'b Polygonal2IndexHole<&'c Polygon>>:
+            Segmental,
+        for<'a, 'b, 'c> &'a Multivertexal2IndexVertex<&'b Polygonal2IndexHole<&'c Polygon>>:
+            Elemental,
     {
-        let mut edges = Vec::<Edge>::with_capacity(polygon.segments_count());
-        let mut endpoints =
-            Vec::<Point>::with_capacity(polygon.segments_count());
-        {
-            let border = polygon.border();
-            let is_border_correctly_oriented =
-                border.to_orientation() == Orientation::Counterclockwise;
-            Self::populate_from_contour(
-                border,
-                is_border_correctly_oriented,
-                &mut edges,
-                &mut endpoints,
-            );
-        }
-        for hole in polygon.holes() {
-            Self::populate_from_contour(
-                hole,
-                hole.to_orientation() == Orientation::Clockwise,
+        let (border, holes) = (polygon.border2(), polygon.holes2());
+        let endpoints_count = border.vertices2().len()
+            + holes
+                .iter()
+                .map(|hole| hole.vertices2().len())
+                .sum::<usize>();
+        let mut edges = Vec::<Edge>::with_capacity(endpoints_count);
+        let mut endpoints = Vec::<Point>::with_capacity(endpoints_count);
+        let is_border_correctly_oriented =
+            border.to_orientation() == Orientation::Counterclockwise;
+        Self::populate_from_points(
+            border.vertices2().iter().cloned(),
+            is_border_correctly_oriented,
+            &mut edges,
+            &mut endpoints,
+        );
+        for hole in holes {
+            let is_hole_correctly_oriented =
+                hole.to_orientation() == Orientation::Clockwise;
+            Self::populate_from_points(
+                hole.vertices2().iter().cloned(),
+                is_hole_correctly_oriented,
                 &mut edges,
                 &mut endpoints,
             );
@@ -237,17 +249,18 @@ impl<Point> Trapezoidation<Point> {
         )
     }
 
-    fn populate_from_contour<'a, Contour: Contoural<Vertex = &'a Point>>(
-        contour: Contour,
+    fn populate_from_points<'a, PointsIterator>(
+        points: PointsIterator,
         is_contour_correctly_oriented: bool,
         edges: &mut Vec<Edge>,
         endpoints: &mut Vec<Point>,
     ) where
         Point: 'a + Clone + PartialOrd,
+        PointsIterator: Iterator<Item = Point>,
     {
         let first_start_index = endpoints.len();
         let mut start_index = endpoints.len();
-        endpoints.extend(contour.vertices().cloned());
+        endpoints.extend(points);
         let mut start = &endpoints[start_index];
         for (end_offset, end) in
             endpoints[first_start_index + 1..].iter().enumerate()

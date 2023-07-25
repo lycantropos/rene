@@ -192,6 +192,7 @@ pub type PolygonalContour<T> = <T as Polygonal>::Contour;
 
 pub type Multisegmental2IndexSegment<T> = <T as Multisegmental2>::IndexSegment;
 pub type Multivertexal2IndexVertex<T> = <T as Multivertexal2>::IndexVertex;
+pub type Polygonal2IndexHole<T> = <T as Polygonal2>::IndexHole;
 pub type Polygonal2IntoIteratorHole<T> = <T as Polygonal2>::IntoIteratorHole;
 
 pub trait Intersection<Other = Self> {
