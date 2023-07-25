@@ -5,7 +5,8 @@ use crate::contracts::are_contour_vertices_non_degenerate;
 use crate::operations::Orient;
 use crate::relatable::Relation;
 use crate::traits::{
-    Contoural, Elemental, Multisegmental, Multivertexal, Segmental,
+    Contoural2, Elemental, Iterable, Lengthsome, Multisegmental2,
+    Multivertexal2, Segmental,
 };
 
 use super::event::{is_left_event, Event};
@@ -16,20 +17,22 @@ pub(crate) fn is_contour_valid<Contour, Point: Ord, Scalar, Segment>(
     contour: &Contour,
 ) -> bool
 where
-    Sweep<Point>:
-        Iterator<Item = Intersection<Point>> + for<'a> From<&'a Contour>,
-    for<'a> &'a Contour: Contoural<Vertex = &'a Point, Segment = &'a Segment>,
+    Sweep<Point>: Iterator<Item = Intersection<Point>>
+        + for<'a, 'b> From<&'a <&'b Contour as Multisegmental2>::Segments>,
+    for<'a> &'a Contour:
+        Contoural2<IndexVertex = Point, IndexSegment = Segment>,
     for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
     for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
 {
     are_contour_vertices_non_degenerate(
-        &contour.vertices().collect::<Vec<_>>(),
+        &contour.vertices2().iter().collect::<Vec<_>>(),
     ) && {
-        contour.segments().all(|segment| {
+        let segments = contour.segments2();
+        segments.iter().all(|segment| {
             let (start, end) = segment.endpoints();
             start != end
         }) && {
-            let mut sweep = Sweep::from(contour);
+            let mut sweep = Sweep::from(&segments);
             let mut neighbour_segments_touches_count = 0usize;
             while let Some(intersection) = sweep.next() {
                 debug_assert_eq!(
@@ -53,18 +56,16 @@ where
                     .first_segment_id
                     .abs_diff(intersection.second_segment_id)
                     == 1
-                    || (intersection.first_segment_id
-                        == contour.segments_count() - 1
+                    || (intersection.first_segment_id == segments.len() - 1
                         && intersection.second_segment_id == 0)
-                    || (intersection.second_segment_id
-                        == contour.segments_count() - 1
+                    || (intersection.second_segment_id == segments.len() - 1
                         && intersection.first_segment_id == 0);
                 if !(touches_at_vertices && neighbour_segments_intersection) {
                     return false;
                 }
                 neighbour_segments_touches_count += 1;
             }
-            neighbour_segments_touches_count == contour.segments_count()
+            neighbour_segments_touches_count == segments.len()
         }
     }
 }
@@ -78,17 +79,18 @@ pub(crate) fn is_multisegment_valid<
     multisegment: &'a Multisegment,
 ) -> bool
 where
-    Sweep<Point>:
-        From<&'a Multisegment> + Iterator<Item = Intersection<Point>>,
-    for<'b> &'b Multisegment: Multisegmental<Segment = &'b Segment>,
+    Sweep<Point>: for<'b, 'c> From<&'b <&'c Multisegment as Multisegmental2>::Segments>
+        + Iterator<Item = Intersection<Point>>,
+    for<'b> &'b Multisegment: Multisegmental2<IndexSegment = Segment>,
     for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
 {
-    multisegment.segments_count() >= MIN_MULTISEGMENT_SEGMENTS_COUNT
-        && multisegment.segments().all(|segment| {
+    let segments = multisegment.segments2();
+    segments.len() >= MIN_MULTISEGMENT_SEGMENTS_COUNT
+        && segments.iter().all(|segment| {
             let (start, end) = segment.endpoints();
             start != end
         })
-        && Sweep::from(multisegment)
+        && Sweep::from(&segments)
             .all(|intersection| intersection.relation == Relation::Touch)
 }
 

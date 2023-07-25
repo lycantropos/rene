@@ -6,7 +6,7 @@ use std::ops::Bound::{Excluded, Unbounded};
 use crate::operations::{to_sorted_pair, IntersectCrossingSegments, Orient};
 use crate::oriented::Orientation;
 use crate::sweeping::traits::{EventsQueue, SweepLine};
-use crate::traits::{Multisegmental, Segmental};
+use crate::traits::{Segmental, Sequence};
 
 use super::event::{
     is_left_event, segment_id_to_left_event, segment_id_to_right_event, Event,
@@ -152,19 +152,15 @@ impl<Point, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
 }
 
 impl<
-        'a,
-        Multisegment,
         Point: Ord,
         Segment: Clone + Segmental<Endpoint = Point>,
+        Segments: Sequence<IndexItem = Segment>,
         const UNIQUE: bool,
-    > From<&'a Multisegment> for EventsRegistry<Point, UNIQUE>
-where
-    for<'b> &'b Multisegment: Multisegmental<Segment = &'b Segment>,
-    for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
+    > From<&Segments> for EventsRegistry<Point, UNIQUE>
 {
-    fn from(multisegment: &'a Multisegment) -> Self {
-        let mut result = Self::with_capacity(multisegment.segments_count());
-        result.extend(multisegment.segments().cloned());
+    fn from(segments: &Segments) -> Self {
+        let mut result = Self::with_capacity(segments.len());
+        result.extend(segments.iter().cloned());
         result
     }
 }
