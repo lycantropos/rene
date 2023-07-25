@@ -9,7 +9,6 @@ mod intersection;
 mod locatable;
 mod multisegmental;
 mod partial_eq;
-mod polygonal;
 mod polygonal2;
 mod symmetric_difference;
 mod to_correctly_oriented_segments;

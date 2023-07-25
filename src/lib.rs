@@ -30,8 +30,8 @@ use crate::relatable::{Relatable, Relation};
 use crate::seidel::Trapezoidation;
 use crate::traits::{
     Difference, Elemental, Intersection, Lengthsome, Multipolygonal,
-    Multisegmental, Multivertexal, Polygonal, Segmental, SymmetricDifference,
-    Union,
+    Multisegmental, Multivertexal2, Polygonal2, Segmental,
+    SymmetricDifference, Union,
 };
 use crate::triangulation::{
     BoundaryEndpoints, ConstrainedDelaunayTriangulation, DelaunayTriangulation,
@@ -1299,7 +1299,7 @@ impl PyExactPolygon {
 
     #[getter]
     fn border(&self) -> ExactContour {
-        (&self.0).border().clone()
+        (&self.0).border2().clone()
     }
 
     #[getter]
@@ -1309,12 +1309,12 @@ impl PyExactPolygon {
 
     #[getter]
     fn holes(&self) -> Vec<ExactContour> {
-        (&self.0).holes().cloned().collect()
+        (&self.0).holes2().into_iter().cloned().collect()
     }
 
     #[getter]
     fn holes_count(&self) -> usize {
-        (&self.0).holes_count()
+        (&self.0).holes2().len()
     }
 
     #[getter]

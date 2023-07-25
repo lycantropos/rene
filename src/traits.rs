@@ -85,15 +85,6 @@ pub trait Multivertexal {
 
 pub trait Contoural: Multisegmental + Multivertexal {}
 
-pub trait Polygonal {
-    type Contour: Contoural;
-    type Holes: Iterator<Item = Self::Contour>;
-
-    fn border(self) -> Self::Contour;
-    fn holes(self) -> Self::Holes;
-    fn holes_count(self) -> usize;
-}
-
 pub trait Multisegmental2
 where
     for<'a> &'a Self::IndexSegment: Segmental,
@@ -185,10 +176,6 @@ pub type MultisegmentalSegment<T> = <T as Multisegmental>::Segment;
 pub type MultivertexalCoordinate<T> =
     ElementalCoordinate<MultivertexalVertex<T>>;
 pub type MultivertexalVertex<T> = <T as Multivertexal>::Vertex;
-pub type PolygonalCoordinate<T> = MultivertexalCoordinate<PolygonalContour<T>>;
-pub type PolygonalSegment<T> = MultisegmentalSegment<PolygonalContour<T>>;
-pub type PolygonalVertex<T> = MultivertexalVertex<PolygonalContour<T>>;
-pub type PolygonalContour<T> = <T as Polygonal>::Contour;
 
 pub type Multisegmental2IndexSegment<T> = <T as Multisegmental2>::IndexSegment;
 pub type Multivertexal2IndexVertex<T> = <T as Multivertexal2>::IndexVertex;
