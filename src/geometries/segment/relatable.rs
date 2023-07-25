@@ -1,10 +1,11 @@
+use std::hash::Hash;
+use std::ops::Div;
+
 use crate::geometries::{Contour, Empty, Multisegment, Point};
 use crate::operations::{CrossMultiply, Orient};
 use crate::relatable::{Relatable, Relation};
 use crate::relating::segment;
-use crate::traits::{Contoural, Elemental, Multisegmental, Segmental};
-use std::hash::Hash;
-use std::ops::Div;
+use crate::traits::{Contoural2, Elemental, Multisegmental, Segmental};
 
 use super::types::Segment;
 
@@ -37,8 +38,7 @@ where
 impl<'a, Scalar> Relatable<&'a Contour<Scalar>> for &Segment<Scalar>
 where
     Point<Scalar>: Clone + PartialOrd,
-    for<'b> &'b Contour<Scalar>:
-        Contoural<Segment = &'b Segment<Scalar>, Vertex = &'b Point<Scalar>>,
+    for<'b> &'b Contour<Scalar>: Contoural2<IndexSegment = Segment<Scalar>>,
     for<'b> &'b Point<Scalar>: Orient,
     for<'b> &'b Segment<Scalar>: Segmental<Endpoint = &'b Point<Scalar>>,
 {

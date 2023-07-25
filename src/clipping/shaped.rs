@@ -12,7 +12,7 @@ use crate::operations::{
 };
 use crate::oriented::Orientation;
 use crate::sweeping::traits::{EventsContainer, EventsQueue, SweepLine};
-use crate::traits::{Contoural, Elemental, Multisegmental, Segmental};
+use crate::traits::{Elemental, Multisegmental, Segmental};
 
 use super::constants::UNDEFINED_INDEX;
 use super::event::is_right_event;
@@ -274,7 +274,6 @@ where
 
 impl<Scalar, const KIND: u8> ReduceEvents for Operation<Point<Scalar>, KIND>
 where
-    for<'a> &'a Contour<Scalar>: Contoural<Vertex = &'a Point<Scalar>>,
     Contour<Scalar>: From<Vec<Point<Scalar>>>,
     EventsQueueKey<Point<Scalar>>: Ord,
     Polygon<Scalar>: From<(Contour<Scalar>, Vec<Contour<Scalar>>)>,

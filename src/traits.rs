@@ -83,8 +83,6 @@ pub trait Multivertexal {
     fn vertices_count(self) -> usize;
 }
 
-pub trait Contoural: Multisegmental + Multivertexal {}
-
 pub trait Multisegmental2
 where
     for<'a> &'a Self::IndexSegment: Segmental,

@@ -8,7 +8,10 @@ use crate::operations::{
 };
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
-use crate::traits::{Contoural, Elemental, Multisegmental, Segmental};
+use crate::traits::{
+    Contoural2, Elemental, Iterable, Lengthsome, Multisegmental,
+    Multisegmental2, Segmental,
+};
 
 pub(crate) fn relate_to_contour<
     'a,
@@ -21,7 +24,7 @@ pub(crate) fn relate_to_contour<
     contour: &'a Contour,
 ) -> Relation
 where
-    for<'b> &'b Contour: Contoural<Segment = &'b Segment>,
+    for<'b> &'b Contour: Contoural2<IndexSegment = Segment>,
     for<'b> &'b Point: Orient,
     for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
 {
@@ -29,7 +32,8 @@ where
     let mut has_no_touch = true;
     let mut last_touched_edge_index: Option<usize> = None;
     let mut last_touched_edge_start: Option<Point> = None;
-    for (index, contour_segment) in contour.segments().enumerate() {
+    let contour_segments = contour.segments2();
+    for (index, contour_segment) in contour_segments.iter().enumerate() {
         let (contour_segment_start, contour_segment_end) =
             contour_segment.endpoints();
         let relation = relate_to_segment(
@@ -89,11 +93,10 @@ where
         && unsafe {
             debug_assert!(last_touched_edge_index.is_some());
             last_touched_edge_index.unwrap_unchecked()
-        } == contour.segments_count() - 1
+        } == contour_segments.len() - 1
     {
         let (first_contour_segment_start, first_contour_segment_end) =
-            unsafe { contour.segments().next().unwrap_unchecked() }
-                .endpoints();
+            contour_segments[0].endpoints();
         if first_contour_segment_start.ne(start)
             && first_contour_segment_start.ne(end)
             && first_contour_segment_end.ne(start)
