@@ -120,13 +120,11 @@ where
 
 pub trait Polygonal
 where
-    for<'a> &'a <Self::Contour as Multisegmental2>::IndexSegment: Segmental,
-    for<'a> &'a <Self::Contour as Multivertexal2>::IndexVertex: Elemental,
-    for<'a> &'a <Self::IntoIteratorHole as Multisegmental2>::IndexSegment:
-        Segmental,
-    for<'a> &'a <Self::IntoIteratorHole as Multivertexal2>::IndexVertex:
-        Elemental,
     for<'a> &'a Self::IndexHole: Contoural,
+    for<'a> &'a Multisegmental2IndexSegment<Self::Contour>: Segmental,
+    for<'a> &'a Multivertexal2IndexVertex<Self::Contour>: Elemental,
+    for<'a> &'a Multisegmental2IndexSegment<Self::IntoIteratorHole>: Segmental,
+    for<'a> &'a Multivertexal2IndexVertex<Self::IntoIteratorHole>: Elemental,
     for<'a, 'b> &'a Multisegmental2IndexSegment<&'b Self::IndexHole>:
         Segmental,
     for<'a, 'b> &'a Multivertexal2IndexVertex<&'b Self::IndexHole>: Elemental,
