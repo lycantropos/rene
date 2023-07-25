@@ -138,6 +138,7 @@ where
     >;
 
     fn border(self) -> Self::Contour;
+    fn components(self) -> (Self::Contour, Self::Holes);
     fn holes(self) -> Self::Holes;
 }
 

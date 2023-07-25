@@ -14,6 +14,10 @@ impl<'a, Scalar> Polygonal for &'a Polygon<Scalar> {
         &self.border
     }
 
+    fn components(self) -> (Self::Contour, Self::Holes) {
+        (self.border(), self.holes())
+    }
+
     fn holes(self) -> Self::Holes {
         SliceSequence::new(&self.holes)
     }
@@ -27,6 +31,10 @@ impl<Scalar> Polygonal for Polygon<Scalar> {
 
     fn border(self) -> Self::Contour {
         self.border
+    }
+
+    fn components(self) -> (Self::Contour, Self::Holes) {
+        (self.border, self.holes)
     }
 
     fn holes(self) -> Self::Holes {
