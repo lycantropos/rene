@@ -11,7 +11,10 @@ use crate::locatable::Location;
 use crate::oriented::Orientation;
 use crate::relatable::Relatable;
 use crate::traits::{
-    Elemental, Multisegmental, Segmental, SegmentalCoordinate,
+    Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
+    Multisegmental2, Multisegmental2IndexSegment, Multivertexal2IndexVertex,
+    Polygonal, PolygonalContour, PolygonalIndexHole,
+    PolygonalIntoIteratorHole, Segmental, SegmentalCoordinate,
 };
 
 pub(crate) trait CrossMultiply {
@@ -583,6 +586,38 @@ where
             do_boxes_have_common_continuum(&boxes[index], target_box)
         })
         .collect::<Vec<_>>()
+}
+
+pub(crate) trait SegmentsCountable {
+    fn segments_count(self) -> usize;
+}
+
+impl<Polygon: Polygonal> SegmentsCountable for Polygon
+where
+    for<'a> &'a Multisegmental2IndexSegment<PolygonalContour<Polygon>>:
+        Segmental,
+    for<'a> &'a Multivertexal2IndexVertex<PolygonalContour<Polygon>>:
+        Elemental,
+    for<'a> &'a PolygonalIndexHole<Polygon>: Contoural,
+    for<'a, 'b> &'a Multisegmental2IndexSegment<&'b PolygonalIndexHole<Polygon>>:
+        Segmental,
+    for<'a, 'b> &'a Multivertexal2IndexVertex<&'b PolygonalIndexHole<Polygon>>:
+        Elemental,
+    for<'a, 'b> &'a Multisegmental2IndexSegment<PolygonalIntoIteratorHole<Polygon>>:
+        Segmental,
+    for<'a, 'b> &'a Multivertexal2IndexVertex<PolygonalIntoIteratorHole<Polygon>>:
+        Elemental,
+    Polygon: Polygonal,
+    PolygonalContour<Polygon>: Contoural,
+{
+    fn segments_count(self) -> usize {
+        let (border, holes) = self.components();
+        border.segments2().len()
+            + holes
+                .iter()
+                .map(|hole| hole.segments2().len())
+                .sum::<usize>()
+    }
 }
 
 pub(crate) fn to_segments_intersection_scale<Point, Scalar>(

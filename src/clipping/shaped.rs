@@ -8,11 +8,11 @@ use traiter::numbers::Parity;
 use crate::geometries::{Contour, Point, Polygon};
 use crate::operations::{
     shrink_collinear_vertices, IntersectCrossingSegments, Orient,
-    ToCorrectlyOrientedSegments,
+    SegmentsCountable, ToCorrectlyOrientedSegments,
 };
 use crate::oriented::Orientation;
 use crate::sweeping::traits::{EventsContainer, EventsQueue, SweepLine};
-use crate::traits::{Elemental, Multisegmental, Segmental};
+use crate::traits::{Elemental, Segmental};
 
 use super::constants::UNDEFINED_INDEX;
 use super::event::is_right_event;
@@ -55,7 +55,7 @@ impl<
 where
     for<'a> &'a Point: Orient,
     for<'a> &'a Polygon:
-        Multisegmental + ToCorrectlyOrientedSegments<Output = Segments>,
+        SegmentsCountable + ToCorrectlyOrientedSegments<Output = Segments>,
 {
     fn from((first, second): (&Polygon, &Polygon)) -> Self {
         let first_segments_count = first.segments_count();
@@ -80,11 +80,19 @@ impl<
 where
     for<'a> &'a Point: Orient,
     for<'a> &'a Polygon:
-        Multisegmental + ToCorrectlyOrientedSegments<Output = Segments>,
+        SegmentsCountable + ToCorrectlyOrientedSegments<Output = Segments>,
 {
     fn from((first, second): (&[&Polygon], &[&Polygon])) -> Self {
-        let first_segments_count = multisegments_to_segments_count(first);
-        let second_segments_count = multisegments_to_segments_count(second);
+        let first_segments_count = first
+            .iter()
+            .copied()
+            .map(SegmentsCountable::segments_count)
+            .sum::<usize>();
+        let second_segments_count = second
+            .iter()
+            .copied()
+            .map(SegmentsCountable::segments_count)
+            .sum::<usize>();
         let mut result =
             Self::with_capacity(first_segments_count, second_segments_count);
         for &first_subpolygon in first {
@@ -109,10 +117,14 @@ impl<
 where
     for<'a> &'a Point: Orient,
     for<'a> &'a Polygon:
-        Multisegmental + ToCorrectlyOrientedSegments<Output = Segments>,
+        SegmentsCountable + ToCorrectlyOrientedSegments<Output = Segments>,
 {
     fn from((first, second): (&[&Polygon], &Polygon)) -> Self {
-        let first_segments_count = multisegments_to_segments_count(first);
+        let first_segments_count = first
+            .iter()
+            .copied()
+            .map(SegmentsCountable::segments_count)
+            .sum::<usize>();
         let second_segments_count = second.segments_count();
         let mut result =
             Self::with_capacity(first_segments_count, second_segments_count);
@@ -136,11 +148,15 @@ impl<
 where
     for<'a> &'a Point: Orient,
     for<'a> &'a Polygon:
-        Multisegmental + ToCorrectlyOrientedSegments<Output = Segments>,
+        SegmentsCountable + ToCorrectlyOrientedSegments<Output = Segments>,
 {
     fn from((first, second): (&Polygon, &[&Polygon])) -> Self {
         let first_segments_count = first.segments_count();
-        let second_segments_count = multisegments_to_segments_count(second);
+        let second_segments_count = second
+            .iter()
+            .copied()
+            .map(SegmentsCountable::segments_count)
+            .sum::<usize>();
         let mut result =
             Self::with_capacity(first_segments_count, second_segments_count);
         result.extend(first.to_correctly_oriented_segments());
@@ -1101,17 +1117,4 @@ where
 #[inline]
 fn collect_references<T: Clone>(vertices: &[&T]) -> Vec<T> {
     vertices.iter().copied().cloned().collect()
-}
-
-fn multisegments_to_segments_count<'a, Multisegment>(
-    multisegments: &[&'a Multisegment],
-) -> usize
-where
-    &'a Multisegment: Multisegmental,
-{
-    multisegments
-        .iter()
-        .copied()
-        .map(Multisegmental::segments_count)
-        .sum()
 }
