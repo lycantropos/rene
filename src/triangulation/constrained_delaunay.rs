@@ -10,7 +10,7 @@ use crate::oriented::Orientation;
 use crate::relatable::Relation;
 use crate::relating::segment;
 use crate::traits::{
-    Contoural2, Elemental, Iterable, Lengthsome, Multisegmental2IndexSegment,
+    Contoural, Elemental, Iterable, Lengthsome, Multisegmental2IndexSegment,
     Multivertexal2, Multivertexal2IndexVertex, Polygonal, PolygonalIndexHole,
     Segmental, Sequence,
 };
@@ -98,12 +98,12 @@ where
     Mesh<Endpoint>: DelaunayTriangulatable,
     for<'a, 'b> &'a Multisegmental2IndexSegment<&'b Contour>: Segmental,
     for<'a, 'b> &'a Multivertexal2IndexVertex<&'b Contour>: Elemental,
-    for<'a, 'b> &'a PolygonalIndexHole<&'b Polygon>: Contoural2,
+    for<'a, 'b> &'a PolygonalIndexHole<&'b Polygon>: Contoural,
     for<'a, 'b, 'c> &'a Multisegmental2IndexSegment<&'b PolygonalIndexHole<&'c Polygon>>:
         Segmental,
     for<'a, 'b, 'c> &'a Multivertexal2IndexVertex<&'b PolygonalIndexHole<&'c Polygon>>:
         Elemental,
-    for<'a> &'a Contour: Contoural2<IndexVertex = Endpoint>,
+    for<'a> &'a Contour: Contoural<IndexVertex = Endpoint>,
     for<'a> &'a Endpoint: LocatePointInPointPointPointCircle + Orient,
     for<'a> &'a Polygon:
         Polygonal<Contour = &'a Contour, IntoIteratorHole = &'a Contour>,

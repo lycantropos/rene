@@ -4,7 +4,7 @@ use crate::operations::{
 };
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{
-    Contoural2, Elemental, Iterable, Lengthsome, Multisegmental2,
+    Contoural, Elemental, Iterable, Lengthsome, Multisegmental2,
     Multivertexal2IndexVertex, Segmental,
 };
 
@@ -12,7 +12,7 @@ use super::types::Polygon;
 
 impl<Scalar> ToCorrectlyOrientedSegments for &Polygon<Scalar>
 where
-    for<'a> &'a Contour<Scalar>: Contoural2<IndexSegment = Segment<Scalar>>
+    for<'a> &'a Contour<Scalar>: Contoural<IndexSegment = Segment<Scalar>>
         + Oriented
         + ToReversedSegments<Output = Vec<Segment<Scalar>>>,
     for<'a> &'a Segment<Scalar>: Segmental,

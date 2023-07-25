@@ -7,7 +7,7 @@ use crate::bounded::Bounded;
 use crate::operations::Orient;
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{
-    Contoural2, Elemental, Iterable, Lengthsome, Multisegmental,
+    Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
     Multisegmental2IndexSegment, Multivertexal2, Multivertexal2IndexVertex,
     Polygonal, PolygonalIndexHole, Segmental,
 };
@@ -108,7 +108,7 @@ impl<Point> Trapezoidation<Point> {
     where
         Point: Clone + From<(Scalar, Scalar)> + PartialOrd,
         Scalar: Clone + One,
-        for<'a> &'a Contour: Contoural2<IndexVertex = Point> + Oriented,
+        for<'a> &'a Contour: Contoural<IndexVertex = Point> + Oriented,
         for<'a> &'a Point: Elemental + Orient,
         for<'a> &'a Polygon: Bounded<&'a Scalar>
             + Polygonal<Contour = &'a Contour, IntoIteratorHole = &'a Contour>,
@@ -117,7 +117,7 @@ impl<Point> Trapezoidation<Point> {
             + Sub<Output = Scalar>
             + Zeroable,
         for<'a, 'b> &'a Multisegmental2IndexSegment<&'b Contour>: Segmental,
-        for<'a, 'b> &'a PolygonalIndexHole<&'b Polygon>: Contoural2,
+        for<'a, 'b> &'a PolygonalIndexHole<&'b Polygon>: Contoural,
         for<'a, 'b, 'c> &'a Multisegmental2IndexSegment<&'b PolygonalIndexHole<&'c Polygon>>:
             Segmental,
         for<'a, 'b, 'c> &'a Multivertexal2IndexVertex<&'b PolygonalIndexHole<&'c Polygon>>:

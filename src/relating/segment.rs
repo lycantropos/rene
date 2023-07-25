@@ -9,7 +9,7 @@ use crate::operations::{
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
 use crate::traits::{
-    Contoural2, Elemental, Iterable, Lengthsome, Multisegmental,
+    Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
     Multisegmental2, Segmental,
 };
 
@@ -24,7 +24,7 @@ pub(crate) fn relate_to_contour<
     contour: &'a Contour,
 ) -> Relation
 where
-    for<'b> &'b Contour: Contoural2<IndexSegment = Segment>,
+    for<'b> &'b Contour: Contoural<IndexSegment = Segment>,
     for<'b> &'b Point: Orient,
     for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
 {

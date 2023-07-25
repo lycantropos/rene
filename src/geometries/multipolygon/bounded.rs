@@ -3,7 +3,7 @@ use crate::bounded::Bounded;
 use crate::geometries::Polygon;
 use crate::operations::{coordinates_iterator_to_bounds, merge_bounds};
 use crate::traits::{
-    Contoural2, Elemental, Iterable, Multisegmental2IndexSegment,
+    Contoural, Elemental, Iterable, Multisegmental2IndexSegment,
     Multivertexal2IndexVertex, Polygonal, PolygonalIndexHole,
     PolygonalIntoIteratorHole, Segmental,
 };
@@ -66,7 +66,7 @@ where
 
 impl<Contour, Point, Scalar: Ord> Bounded<Scalar> for Multipolygon<Scalar>
 where
-    Contour: Contoural2<IntoIteratorVertex = Point>,
+    Contour: Contoural<IntoIteratorVertex = Point>,
     Point: Elemental<Coordinate = Scalar>,
     Polygon<Scalar>: Bounded<Scalar> + Polygonal<Contour = Contour>,
     for<'a, 'b> &'a Multisegmental2IndexSegment<&'b PolygonalIndexHole<Polygon<Scalar>>>:
@@ -80,7 +80,7 @@ where
         Elemental,
     for<'a> &'a Multisegmental2IndexSegment<Contour>: Segmental,
     for<'a> &'a Multivertexal2IndexVertex<Contour>: Elemental,
-    for<'a> &'a PolygonalIndexHole<Polygon<Scalar>>: Contoural2,
+    for<'a> &'a PolygonalIndexHole<Polygon<Scalar>>: Contoural,
 {
     fn to_bounding_box(self) -> bounded::Box<Scalar> {
         let (min_x, max_x, min_y, max_y) =

@@ -1,10 +1,10 @@
 use crate::traits::{
-    Contoural2, Elemental, Multisegmental2, Multivertexal2, Segmental,
+    Contoural, Elemental, Multisegmental2, Multivertexal2, Segmental,
 };
 
 use super::types::Contour;
 
-impl<Scalar> Contoural2 for &Contour<Scalar>
+impl<Scalar> Contoural for &Contour<Scalar>
 where
     Self: Multisegmental2 + Multivertexal2,
     for<'a> &'a <Self as Multivertexal2>::IndexVertex: Elemental,
@@ -12,7 +12,7 @@ where
 {
 }
 
-impl<Scalar> Contoural2 for Contour<Scalar>
+impl<Scalar> Contoural for Contour<Scalar>
 where
     Self: Multisegmental2 + Multivertexal2,
     for<'a> &'a <Self as Multivertexal2>::IndexVertex: Elemental,

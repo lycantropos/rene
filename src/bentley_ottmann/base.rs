@@ -5,7 +5,7 @@ use crate::contracts::are_contour_vertices_non_degenerate;
 use crate::operations::Orient;
 use crate::relatable::Relation;
 use crate::traits::{
-    Contoural2, Elemental, Iterable, Lengthsome, Multisegmental2,
+    Contoural, Elemental, Iterable, Lengthsome, Multisegmental2,
     Multivertexal2, Segmental,
 };
 
@@ -20,7 +20,7 @@ where
     Sweep<Point>: Iterator<Item = Intersection<Point>>
         + for<'a, 'b> From<&'a <&'b Contour as Multisegmental2>::Segments>,
     for<'a> &'a Contour:
-        Contoural2<IndexVertex = Point, IndexSegment = Segment>,
+        Contoural<IndexVertex = Point, IndexSegment = Segment>,
     for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
     for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
 {
