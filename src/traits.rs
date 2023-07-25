@@ -148,14 +148,25 @@ where
 
 pub trait Multipolygonal
 where
-    for<'a, 'b> &'a <&'b <Self::IntoIteratorPolygon as Polygonal>::IndexHole as Multisegmental2>::IndexSegment: Segmental,
-    for<'a, 'b> &'a <&'b <Self::IntoIteratorPolygon as Polygonal>::IndexHole as Multivertexal2>::IndexVertex: Elemental,
-    for<'a> &'a <<Self::IntoIteratorPolygon as Polygonal>::Contour as Multisegmental2>::IndexSegment: Segmental,
-    for<'a> &'a <<Self::IntoIteratorPolygon as Polygonal>::Contour as Multivertexal2>::IndexVertex: Elemental,
-    for<'a> &'a <<Self::IntoIteratorPolygon as Polygonal>::IntoIteratorHole as Multisegmental2>::IndexSegment: Segmental,
-    for<'a> &'a <<Self::IntoIteratorPolygon as Polygonal>::IntoIteratorHole as Multivertexal2>::IndexVertex: Elemental,
-    for<'a> &'a <Self::IntoIteratorPolygon as Polygonal>::IndexHole: Contoural2,
+    for<'a> &'a Multisegmental2IndexSegment<
+        PolygonalContour<Self::IntoIteratorPolygon>,
+    >: Segmental,
+    for<'a> &'a Multivertexal2IndexVertex<PolygonalContour<Self::IntoIteratorPolygon>>:
+        Elemental,
+    for<'a> &'a Multisegmental2IndexSegment<
+        PolygonalIntoIteratorHole<Self::IntoIteratorPolygon>,
+    >: Segmental,
+    for<'a> &'a Multivertexal2IndexVertex<
+        PolygonalIntoIteratorHole<Self::IntoIteratorPolygon>,
+    >: Elemental,
+    for<'a> &'a PolygonalIndexHole<Self::IntoIteratorPolygon>: Contoural2,
     for<'a> &'a Self::IndexPolygon: Polygonal,
+    for<'a, 'b> &'a Multisegmental2IndexSegment<
+        &'b PolygonalIndexHole<Self::IntoIteratorPolygon>,
+    >: Segmental,
+    for<'a, 'b> &'a Multivertexal2IndexVertex<
+        &'b PolygonalIndexHole<Self::IntoIteratorPolygon>,
+    >: Elemental,
 {
     type IndexPolygon;
     type IntoIteratorPolygon: Polygonal;
@@ -179,6 +190,7 @@ pub type MultivertexalVertex<T> = <T as Multivertexal>::Vertex;
 
 pub type Multisegmental2IndexSegment<T> = <T as Multisegmental2>::IndexSegment;
 pub type Multivertexal2IndexVertex<T> = <T as Multivertexal2>::IndexVertex;
+pub type PolygonalContour<T> = <T as Polygonal>::Contour;
 pub type PolygonalIndexHole<T> = <T as Polygonal>::IndexHole;
 pub type PolygonalIntoIteratorHole<T> = <T as Polygonal>::IntoIteratorHole;
 
