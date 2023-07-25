@@ -155,7 +155,7 @@ where
     fn holes2(self) -> Self::Holes;
 }
 
-pub trait Multipolygonal2
+pub trait Multipolygonal
 where
     for<'a, 'b> &'a <&'b <Self::IntoIteratorPolygon as Polygonal2>::IndexHole as Multisegmental2>::IndexSegment: Segmental,
     for<'a, 'b> &'a <&'b <Self::IntoIteratorPolygon as Polygonal2>::IndexHole as Multivertexal2>::IndexVertex: Elemental,
@@ -173,7 +173,7 @@ where
         IntoIteratorItem = Self::IntoIteratorPolygon,
     >;
 
-    fn polygons2(self) -> Self::Polygons;
+    fn polygons(self) -> Self::Polygons;
 }
 
 pub type ElementalCoordinate<T> = <T as Elemental>::Coordinate;

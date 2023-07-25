@@ -9,7 +9,7 @@ use crate::operations::{
 use crate::relatable::Relatable;
 use crate::sweeping::traits::EventsContainer;
 use crate::traits::{
-    Elemental, Intersection, Iterable, Multipolygonal2, Polygonal,
+    Elemental, Intersection, Iterable, Multipolygonal, Polygonal,
 };
 
 use super::types::Polygon;
@@ -94,7 +94,7 @@ where
     Point<Scalar>: Elemental<Coordinate = Scalar>,
     for<'a> &'a Box<&'a Scalar>: Relatable,
     for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>
-        + Multipolygonal2<
+        + Multipolygonal<
             IndexPolygon = Polygon<Scalar>,
             IntoIteratorPolygon = &'a Polygon<Scalar>,
         >,
@@ -108,7 +108,7 @@ where
         if do_boxes_have_no_common_area(&bounding_box, &other_bounding_box) {
             return vec![];
         }
-        let other_polygons = other.polygons2();
+        let other_polygons = other.polygons();
         let other_bounding_boxes = other_polygons
             .iter()
             .map(Bounded::to_bounding_box)
