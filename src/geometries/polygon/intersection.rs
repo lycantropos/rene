@@ -8,9 +8,7 @@ use crate::operations::{
 };
 use crate::relatable::Relatable;
 use crate::sweeping::traits::EventsContainer;
-use crate::traits::{
-    Elemental, Intersection, Iterable, Multipolygonal, Polygonal,
-};
+use crate::traits::{Elemental, Intersection, Iterable, Multipolygonal};
 
 use super::types::Polygon;
 
@@ -98,7 +96,7 @@ where
             IndexPolygon = Polygon<Scalar>,
             IntoIteratorPolygon = &'a Polygon<Scalar>,
         >,
-    for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar> + Polygonal,
+    for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
 {
     type Output = Vec<Polygon<Scalar>>;
 
