@@ -75,14 +75,6 @@ pub trait Multisegmental {
     fn segments_count(self) -> usize;
 }
 
-pub trait Multivertexal {
-    type Vertex: Elemental;
-    type Vertices: Iterator<Item = Self::Vertex>;
-
-    fn vertices(self) -> Self::Vertices;
-    fn vertices_count(self) -> usize;
-}
-
 pub trait Multisegmental2
 where
     for<'a> &'a Self::IndexSegment: Segmental,
@@ -180,9 +172,6 @@ pub type SegmentalEndpoint<T> = <T as Segmental>::Endpoint;
 pub type MultisegmentalCoordinate<T> =
     SegmentalCoordinate<MultisegmentalSegment<T>>;
 pub type MultisegmentalSegment<T> = <T as Multisegmental>::Segment;
-pub type MultivertexalCoordinate<T> =
-    ElementalCoordinate<MultivertexalVertex<T>>;
-pub type MultivertexalVertex<T> = <T as Multivertexal>::Vertex;
 
 pub type Multisegmental2IndexSegment<T> = <T as Multisegmental2>::IndexSegment;
 pub type Multivertexal2IndexVertex<T> = <T as Multivertexal2>::IndexVertex;

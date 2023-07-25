@@ -9,7 +9,6 @@ mod intersection;
 mod locatable;
 mod multisegmental;
 mod multisegmental2;
-mod multivertexal;
 mod multivertexal2;
 mod oriented;
 mod partial_eq;
