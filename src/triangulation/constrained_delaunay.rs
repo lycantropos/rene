@@ -2,6 +2,7 @@ use std::cmp::Ordering;
 use std::collections::VecDeque;
 
 use crate::constants::MIN_CONTOUR_VERTICES_COUNT;
+use crate::geometries::{Contour, Polygon};
 use crate::locatable::Location;
 use crate::operations::{
     shrink_collinear_vertices, LocatePointInPointPointPointCircle, Orient,
@@ -9,7 +10,11 @@ use crate::operations::{
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
 use crate::relating::segment;
-use crate::traits::{Contoural, Multivertexal, Polygonal};
+use crate::traits::{
+    Contoural, Contoural2, Elemental, Iterable, Lengthsome,
+    Multisegmental2IndexSegment, Multivertexal2, Multivertexal2IndexVertex,
+    Polygonal2, Polygonal2IntoIteratorHole, Segmental, Sequence,
+};
 
 use super::mesh::Mesh;
 use super::operations::{BoundaryEndpoints, DelaunayTriangulatable};
@@ -88,69 +93,95 @@ struct PolygonVertexPosition {
     vertex_index: usize,
 }
 
-impl<Contour, Endpoint: Clone + Ord + PartialOrd, Polygon> From<&Polygon>
-    for ConstrainedDelaunayTriangulation<Endpoint>
+impl<
+        Endpoint: Clone + Elemental<Coordinate = Scalar> + Ord + PartialOrd,
+        Scalar,
+    > From<&Polygon<Scalar>> for ConstrainedDelaunayTriangulation<Endpoint>
 where
     Mesh<Endpoint>: DelaunayTriangulatable,
-    for<'a> &'a Contour: Contoural<Vertex = &'a Endpoint>,
+    for<'a, 'b> &'a Multisegmental2IndexSegment<&'b Contour<Scalar>>:
+        Segmental,
+    for<'a, 'b> &'a Multivertexal2IndexVertex<&'b Contour<Scalar>>: Elemental,
+    for<'a, 'b> &'a Multisegmental2IndexSegment<
+        Polygonal2IntoIteratorHole<&'b Polygon<Scalar>>,
+    >: Segmental,
+    for<'a, 'b> &'a Multivertexal2IndexVertex<
+        Polygonal2IntoIteratorHole<&'b Polygon<Scalar>>,
+    >: Elemental,
+    for<'a> &'a Contour<Scalar>: Contoural<Vertex = &'a Endpoint>,
     for<'a> &'a Endpoint: LocatePointInPointPointPointCircle + Orient,
-    for<'a> &'a Polygon: Polygonal<Contour = &'a Contour>,
+    for<'a> &'a Polygon<Scalar>:
+        Polygonal2<Contour = &'a Contour<Scalar>, IndexHole = Contour<Scalar>>,
+    for<'a> &'a Contour<Scalar>: Contoural2<IndexVertex = Endpoint>,
 {
-    fn from(polygon: &Polygon) -> Self {
-        let mut contours_vertices =
-            Vec::with_capacity(1 + polygon.holes_count());
-        contours_vertices
-            .push(polygon.border().vertices().collect::<Vec<_>>());
-        for hole in polygon.holes() {
-            contours_vertices.push(hole.vertices().collect::<Vec<_>>());
-        }
-        let mut polygon_endpoints =
-            Vec::<PolygonEndpoint<Endpoint>>::with_capacity(
-                contours_vertices.iter().map(Vec::len).sum(),
-            );
-        for (contour_index, contour_vertices) in
-            contours_vertices.iter().enumerate()
-        {
-            polygon_endpoints.extend(
-                contour_vertices.iter().copied().enumerate().map(
-                    |(vertex_index, point)| PolygonEndpoint {
-                        contour_index,
-                        vertex_index,
-                        point,
-                    },
-                ),
-            );
-        }
-        polygon_endpoints.sort();
-        let mut polygon_vertices_positions =
-            Vec::with_capacity(polygon_endpoints.len());
-        let mut polygon_vertices =
-            Vec::<Endpoint>::with_capacity(polygon_endpoints.len());
-        let mut endpoint = &polygon_endpoints[0];
-        polygon_vertices.push(endpoint.point.clone());
-        polygon_vertices_positions.push(vec![PolygonVertexPosition {
-            contour_index: endpoint.contour_index,
-            vertex_index: endpoint.vertex_index,
-        }]);
-        let mut vertex_index = 0usize;
-        for next_endpoint in &polygon_endpoints[1..] {
-            if next_endpoint.point.eq(endpoint.point) {
-                polygon_vertices_positions[vertex_index].push(
-                    PolygonVertexPosition {
-                        contour_index: next_endpoint.contour_index,
-                        vertex_index: next_endpoint.vertex_index,
-                    },
-                );
-            } else {
-                vertex_index += 1;
-                polygon_vertices.push(next_endpoint.point.clone());
-                polygon_vertices_positions.push(vec![PolygonVertexPosition {
-                    contour_index: next_endpoint.contour_index,
-                    vertex_index: next_endpoint.vertex_index,
-                }]);
-                endpoint = next_endpoint;
+    fn from(polygon: &Polygon<Scalar>) -> Self {
+        let holes = polygon.holes2();
+        let contours_vertices = {
+            let mut contours_vertices = Vec::with_capacity(1 + holes.len());
+            contours_vertices.push(polygon.border2().vertices2());
+            for hole in holes.iter() {
+                contours_vertices.push(hole.vertices2());
             }
-        }
+            contours_vertices
+        };
+        let polygon_endpoints = {
+            let mut polygon_endpoints =
+                Vec::<PolygonEndpoint<Endpoint>>::with_capacity(
+                    contours_vertices
+                        .iter()
+                        .map(|vertices| vertices.len())
+                        .sum::<usize>(),
+                );
+            for (contour_index, contour_vertices) in
+                contours_vertices.iter().enumerate()
+            {
+                polygon_endpoints.extend(
+                    contour_vertices.iter().enumerate().map(
+                        |(vertex_index, point)| PolygonEndpoint {
+                            contour_index,
+                            vertex_index,
+                            point,
+                        },
+                    ),
+                );
+            }
+            polygon_endpoints.sort();
+            polygon_endpoints
+        };
+        let (polygon_vertices, polygon_vertices_positions) = {
+            let mut polygon_vertices_positions =
+                Vec::with_capacity(polygon_endpoints.len());
+            let mut polygon_vertices =
+                Vec::<Endpoint>::with_capacity(polygon_endpoints.len());
+            let mut endpoint = &polygon_endpoints[0];
+            polygon_vertices.push(endpoint.point.clone());
+            polygon_vertices_positions.push(vec![PolygonVertexPosition {
+                contour_index: endpoint.contour_index,
+                vertex_index: endpoint.vertex_index,
+            }]);
+            let mut vertex_index = 0usize;
+            for next_endpoint in &polygon_endpoints[1..] {
+                if next_endpoint.point.eq(endpoint.point) {
+                    polygon_vertices_positions[vertex_index].push(
+                        PolygonVertexPosition {
+                            contour_index: next_endpoint.contour_index,
+                            vertex_index: next_endpoint.vertex_index,
+                        },
+                    );
+                } else {
+                    vertex_index += 1;
+                    polygon_vertices.push(next_endpoint.point.clone());
+                    polygon_vertices_positions.push(vec![
+                        PolygonVertexPosition {
+                            contour_index: next_endpoint.contour_index,
+                            vertex_index: next_endpoint.vertex_index,
+                        },
+                    ]);
+                    endpoint = next_endpoint;
+                }
+            }
+            (polygon_vertices, polygon_vertices_positions)
+        };
         let mut mesh = Mesh::from(polygon_vertices);
         let (left_side, right_side) = mesh.delaunay_triangulation();
         let triangular_holes_indices = contours_vertices[1..]
@@ -168,7 +199,7 @@ where
         };
         let contours_sizes = contours_vertices
             .iter()
-            .map(Vec::len)
+            .map(|contour| contour.len())
             .collect::<Vec<usize>>();
         result.constrain(&contours_sizes, &contours_vertices);
         result.bound(&contours_sizes);
@@ -280,10 +311,10 @@ where
         }
     }
 
-    fn constrain(
+    fn constrain<ContourVertices: Sequence<IndexItem = Endpoint>>(
         &mut self,
         contours_sizes: &[usize],
-        contours_vertices: &[Vec<&Endpoint>],
+        contours_vertices: &[ContourVertices],
     ) {
         let mut contours_constraints_flags = to_contours_constraints_flags(
             &self.mesh,
@@ -304,9 +335,9 @@ where
                 if !contours_constraints_flags[contour_index][constraint_index]
                 {
                     let vertex_point =
-                        contours_vertices[contour_index][vertex_index];
+                        &contours_vertices[contour_index][vertex_index];
                     let next_vertex_point =
-                        contours_vertices[contour_index][next_vertex_index];
+                        &contours_vertices[contour_index][next_vertex_index];
                     let angle_base_edge = to_angle_containing_constraint_base(
                         &self.mesh,
                         edge,
@@ -333,7 +364,10 @@ where
         }
     }
 
-    fn cut(&mut self, contours_vertices: &[Vec<&Endpoint>]) {
+    fn cut<ContourVertices: Sequence<IndexItem = Endpoint>>(
+        &mut self,
+        contours_vertices: &[ContourVertices],
+    ) {
         for edge in self.mesh.to_unique_edges() {
             if is_edge_inside_hole(
                 &self.mesh,
@@ -498,10 +532,13 @@ fn intersect_polygon_vertices_positions_slices_impl<
     result
 }
 
-fn is_edge_inside_hole<Endpoint>(
+fn is_edge_inside_hole<
+    Endpoint,
+    ContourVertices: Sequence<IndexItem = Endpoint>,
+>(
     mesh: &Mesh<Endpoint>,
     edge: QuadEdge,
-    contours_vertices: &[Vec<&Endpoint>],
+    contours_vertices: &[ContourVertices],
     polygon_vertices_positions: &[Vec<PolygonVertexPosition>],
 ) -> bool
 where
@@ -543,20 +580,20 @@ where
         ) {
             return false;
         }
-        let prior_to_start_point = hole_vertices[if start_vertex_index == 0 {
+        let prior_to_start_point = &hole_vertices[if start_vertex_index == 0 {
             hole_size - 1
         } else {
             start_vertex_index - 1
         }];
-        let prior_to_end_point = hole_vertices[if end_vertex_index == 0 {
+        let prior_to_end_point = &hole_vertices[if end_vertex_index == 0 {
             hole_size - 1
         } else {
             end_vertex_index - 1
         }];
         let next_to_start_point =
-            hole_vertices[(start_vertex_index + 1) % hole_size];
+            &hole_vertices[(start_vertex_index + 1) % hole_size];
         let next_to_end_point =
-            hole_vertices[(end_vertex_index + 1) % hole_size];
+            &hole_vertices[(end_vertex_index + 1) % hole_size];
         let start_angle_orientation =
             start.orient(prior_to_start_point, next_to_start_point);
         let end_angle_orientation =
