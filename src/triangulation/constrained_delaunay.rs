@@ -12,7 +12,7 @@ use crate::relating::segment;
 use crate::traits::{
     Contoural2, Elemental, Iterable, Lengthsome, Multisegmental2IndexSegment,
     Multivertexal2, Multivertexal2IndexVertex, Polygonal2,
-    Polygonal2IntoIteratorHole, Segmental, Sequence,
+    Polygonal2IndexHole, Segmental, Sequence,
 };
 
 use super::mesh::Mesh;
@@ -98,33 +98,33 @@ where
     Mesh<Endpoint>: DelaunayTriangulatable,
     for<'a, 'b> &'a Multisegmental2IndexSegment<&'b Contour>: Segmental,
     for<'a, 'b> &'a Multivertexal2IndexVertex<&'b Contour>: Elemental,
-    for<'a, 'b> &'a Multisegmental2IndexSegment<Polygonal2IntoIteratorHole<&'b Polygon>>:
+    for<'a, 'b> &'a Polygonal2IndexHole<&'b Polygon>: Contoural2,
+    for<'a, 'b, 'c> &'a Multisegmental2IndexSegment<&'b Polygonal2IndexHole<&'c Polygon>>:
         Segmental,
-    for<'a, 'b> &'a Multivertexal2IndexVertex<Polygonal2IntoIteratorHole<&'b Polygon>>:
+    for<'a, 'b, 'c> &'a Multivertexal2IndexVertex<&'b Polygonal2IndexHole<&'c Polygon>>:
         Elemental,
     for<'a> &'a Contour: Contoural2<IndexVertex = Endpoint>,
     for<'a> &'a Endpoint: LocatePointInPointPointPointCircle + Orient,
     for<'a> &'a Polygon:
-        Polygonal2<Contour = &'a Contour, IndexHole = Contour>,
+        Polygonal2<Contour = &'a Contour, IntoIteratorHole = &'a Contour>,
 {
     fn from(polygon: &Polygon) -> Self {
-        let holes = polygon.holes2();
         let contours_vertices = {
+            let holes = polygon.holes2();
             let mut contours_vertices = Vec::with_capacity(1 + holes.len());
             contours_vertices.push(polygon.border2().vertices2());
-            for hole in holes.iter() {
+            for hole in holes {
                 contours_vertices.push(hole.vertices2());
             }
             contours_vertices
         };
         let polygon_endpoints = {
-            let mut polygon_endpoints =
-                Vec::<PolygonEndpoint<Endpoint>>::with_capacity(
-                    contours_vertices
-                        .iter()
-                        .map(|vertices| vertices.len())
-                        .sum::<usize>(),
-                );
+            let mut polygon_endpoints = Vec::with_capacity(
+                contours_vertices
+                    .iter()
+                    .map(|vertices| vertices.len())
+                    .sum::<usize>(),
+            );
             for (contour_index, contour_vertices) in
                 contours_vertices.iter().enumerate()
             {
