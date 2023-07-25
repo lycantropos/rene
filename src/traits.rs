@@ -94,14 +94,6 @@ pub trait Polygonal {
     fn holes_count(self) -> usize;
 }
 
-pub trait Multipolygonal {
-    type Polygon: Polygonal;
-    type Polygons: Iterator<Item = Self::Polygon>;
-
-    fn polygons(self) -> Self::Polygons;
-    fn polygons_count(self) -> usize;
-}
-
 pub trait Multisegmental2
 where
     for<'a> &'a Self::IndexSegment: Segmental,
@@ -197,11 +189,6 @@ pub type PolygonalCoordinate<T> = MultivertexalCoordinate<PolygonalContour<T>>;
 pub type PolygonalSegment<T> = MultisegmentalSegment<PolygonalContour<T>>;
 pub type PolygonalVertex<T> = MultivertexalVertex<PolygonalContour<T>>;
 pub type PolygonalContour<T> = <T as Polygonal>::Contour;
-pub type MultipolygonalCoordinate<T> =
-    PolygonalCoordinate<MultipolygonalPolygon<T>>;
-pub type MultipolygonalVertex<T> = PolygonalVertex<MultipolygonalPolygon<T>>;
-pub type MultipolygonalContour<T> = PolygonalContour<MultipolygonalPolygon<T>>;
-pub type MultipolygonalPolygon<T> = <T as Multipolygonal>::Polygon;
 
 pub type Multisegmental2IndexSegment<T> = <T as Multisegmental2>::IndexSegment;
 pub type Multivertexal2IndexVertex<T> = <T as Multivertexal2>::IndexVertex;

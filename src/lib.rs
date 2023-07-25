@@ -29,8 +29,9 @@ use crate::oriented::{Orientation, Oriented};
 use crate::relatable::{Relatable, Relation};
 use crate::seidel::Trapezoidation;
 use crate::traits::{
-    Difference, Elemental, Intersection, Multipolygonal, Multisegmental,
-    Multivertexal, Polygonal, Segmental, SymmetricDifference, Union,
+    Difference, Elemental, Intersection, Lengthsome, Multipolygonal2,
+    Multisegmental, Multivertexal, Polygonal, Segmental, SymmetricDifference,
+    Union,
 };
 use crate::triangulation::{
     BoundaryEndpoints, ConstrainedDelaunayTriangulation, DelaunayTriangulation,
@@ -898,12 +899,12 @@ impl PyExactMultipolygon {
 
     #[getter]
     fn polygons(&self) -> Vec<ExactPolygon> {
-        (&self.0).polygons().cloned().collect()
+        (&self.0).polygons2().into_iter().cloned().collect()
     }
 
     #[getter]
     fn polygons_count(&self) -> usize {
-        (&self.0).polygons_count()
+        (&self.0).polygons2().len()
     }
 
     #[getter]
