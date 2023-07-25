@@ -3,16 +3,21 @@ use crate::operations::{
     Orient, ToCorrectlyOrientedSegments, ToReversedSegments,
 };
 use crate::oriented::{Orientation, Oriented};
-use crate::traits::{Contoural, Multisegmental};
+use crate::traits::{
+    Contoural2, Elemental, Iterable, Lengthsome, Multisegmental2,
+    Multivertexal2IndexVertex, Segmental,
+};
 
 use super::types::Polygon;
 
-impl<'a, Scalar> ToCorrectlyOrientedSegments for &'a Polygon<Scalar>
+impl<Scalar> ToCorrectlyOrientedSegments for &Polygon<Scalar>
 where
-    &'a Contour<Scalar>: Contoural<Segment = &'a Segment<Scalar>>
+    for<'a> &'a Contour<Scalar>: Contoural2<IndexSegment = Segment<Scalar>>
         + Oriented
         + ToReversedSegments<Output = Vec<Segment<Scalar>>>,
-    &'a Point<Scalar>: Orient,
+    for<'a> &'a Segment<Scalar>: Segmental,
+    for<'a, 'b> &'a Multivertexal2IndexVertex<&'b Contour<Scalar>>: Elemental,
+    for<'a> &'a Point<Scalar>: Orient,
     Point<Scalar>: Clone,
     Segment<Scalar>: Clone,
 {
@@ -20,21 +25,21 @@ where
 
     fn to_correctly_oriented_segments(self) -> Self::Output {
         let mut result = Vec::<Segment<Scalar>>::with_capacity(
-            (&self.border).segments_count()
+            (&self.border).segments2().len()
                 + self
                     .holes
                     .iter()
-                    .map(Multisegmental::segments_count)
+                    .map(|hole| hole.segments2().len())
                     .sum::<usize>(),
         );
         if (&self.border).to_orientation() == Orientation::Counterclockwise {
-            result.extend((&self.border).segments().cloned());
+            result.extend((&self.border).segments2().iter().cloned());
         } else {
             result.append(&mut (&self.border).to_reversed_segments());
         }
         for hole in &self.holes {
             if hole.to_orientation() == Orientation::Clockwise {
-                result.extend(hole.segments().cloned());
+                result.extend(hole.segments2().iter().cloned());
             } else {
                 result.append(&mut hole.to_reversed_segments());
             }
