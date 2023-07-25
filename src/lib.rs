@@ -30,8 +30,8 @@ use crate::relatable::{Relatable, Relation};
 use crate::seidel::Trapezoidation;
 use crate::traits::{
     Difference, Elemental, Intersection, Lengthsome, Multipolygonal,
-    Multisegmental, Multivertexal2, Polygonal2, Segmental,
-    SymmetricDifference, Union,
+    Multisegmental, Multivertexal2, Polygonal, Segmental, SymmetricDifference,
+    Union,
 };
 use crate::triangulation::{
     BoundaryEndpoints, ConstrainedDelaunayTriangulation, DelaunayTriangulation,
@@ -549,12 +549,12 @@ impl PyExactContour {
 
     #[getter]
     fn vertices(&self) -> Vec<ExactPoint> {
-        (&self.0).vertices().cloned().collect()
+        (&self.0).vertices2().into_iter().cloned().collect()
     }
 
     #[getter]
     fn vertices_count(&self) -> usize {
-        (&self.0).vertices_count()
+        (&self.0).vertices2().len()
     }
 
     #[getter]
@@ -622,7 +622,8 @@ impl PyExactContour {
     }
 
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
-        let mut vertices = (&self.0).vertices().collect::<Vec<_>>();
+        let mut vertices =
+            (&self.0).vertices2().into_iter().collect::<Vec<_>>();
         let min_vertex_index =
             unsafe { to_arg_min(&vertices).unwrap_unchecked() };
         vertices.rotate_left(min_vertex_index);
@@ -1299,7 +1300,7 @@ impl PyExactPolygon {
 
     #[getter]
     fn border(&self) -> ExactContour {
-        (&self.0).border2().clone()
+        (&self.0).border().clone()
     }
 
     #[getter]
@@ -1309,12 +1310,12 @@ impl PyExactPolygon {
 
     #[getter]
     fn holes(&self) -> Vec<ExactContour> {
-        (&self.0).holes2().into_iter().cloned().collect()
+        (&self.0).holes().into_iter().cloned().collect()
     }
 
     #[getter]
     fn holes_count(&self) -> usize {
-        (&self.0).holes2().len()
+        (&self.0).holes().len()
     }
 
     #[getter]

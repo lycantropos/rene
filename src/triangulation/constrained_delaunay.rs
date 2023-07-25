@@ -11,8 +11,8 @@ use crate::relatable::Relation;
 use crate::relating::segment;
 use crate::traits::{
     Contoural2, Elemental, Iterable, Lengthsome, Multisegmental2IndexSegment,
-    Multivertexal2, Multivertexal2IndexVertex, Polygonal2,
-    Polygonal2IndexHole, Segmental, Sequence,
+    Multivertexal2, Multivertexal2IndexVertex, Polygonal, PolygonalIndexHole,
+    Segmental, Sequence,
 };
 
 use super::mesh::Mesh;
@@ -98,21 +98,21 @@ where
     Mesh<Endpoint>: DelaunayTriangulatable,
     for<'a, 'b> &'a Multisegmental2IndexSegment<&'b Contour>: Segmental,
     for<'a, 'b> &'a Multivertexal2IndexVertex<&'b Contour>: Elemental,
-    for<'a, 'b> &'a Polygonal2IndexHole<&'b Polygon>: Contoural2,
-    for<'a, 'b, 'c> &'a Multisegmental2IndexSegment<&'b Polygonal2IndexHole<&'c Polygon>>:
+    for<'a, 'b> &'a PolygonalIndexHole<&'b Polygon>: Contoural2,
+    for<'a, 'b, 'c> &'a Multisegmental2IndexSegment<&'b PolygonalIndexHole<&'c Polygon>>:
         Segmental,
-    for<'a, 'b, 'c> &'a Multivertexal2IndexVertex<&'b Polygonal2IndexHole<&'c Polygon>>:
+    for<'a, 'b, 'c> &'a Multivertexal2IndexVertex<&'b PolygonalIndexHole<&'c Polygon>>:
         Elemental,
     for<'a> &'a Contour: Contoural2<IndexVertex = Endpoint>,
     for<'a> &'a Endpoint: LocatePointInPointPointPointCircle + Orient,
     for<'a> &'a Polygon:
-        Polygonal2<Contour = &'a Contour, IntoIteratorHole = &'a Contour>,
+        Polygonal<Contour = &'a Contour, IntoIteratorHole = &'a Contour>,
 {
     fn from(polygon: &Polygon) -> Self {
         let contours_vertices = {
-            let holes = polygon.holes2();
+            let holes = polygon.holes();
             let mut contours_vertices = Vec::with_capacity(1 + holes.len());
-            contours_vertices.push(polygon.border2().vertices2());
+            contours_vertices.push(polygon.border().vertices2());
             for hole in holes {
                 contours_vertices.push(hole.vertices2());
             }

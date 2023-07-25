@@ -9,7 +9,7 @@ use crate::oriented::{Orientation, Oriented};
 use crate::traits::{
     Contoural2, Elemental, Iterable, Lengthsome, Multisegmental,
     Multisegmental2IndexSegment, Multivertexal2, Multivertexal2IndexVertex,
-    Polygonal2, Polygonal2IndexHole, Segmental,
+    Polygonal, PolygonalIndexHole, Segmental,
 };
 
 use super::edge::Edge;
@@ -111,19 +111,19 @@ impl<Point> Trapezoidation<Point> {
         for<'a> &'a Contour: Contoural2<IndexVertex = Point> + Oriented,
         for<'a> &'a Point: Elemental + Orient,
         for<'a> &'a Polygon: Bounded<&'a Scalar>
-            + Polygonal2<Contour = &'a Contour, IntoIteratorHole = &'a Contour>,
+            + Polygonal<Contour = &'a Contour, IntoIteratorHole = &'a Contour>,
         for<'a> &'a Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
             + Sub<Output = Scalar>
             + Zeroable,
         for<'a, 'b> &'a Multisegmental2IndexSegment<&'b Contour>: Segmental,
-        for<'a, 'b> &'a Polygonal2IndexHole<&'b Polygon>: Contoural2,
-        for<'a, 'b, 'c> &'a Multisegmental2IndexSegment<&'b Polygonal2IndexHole<&'c Polygon>>:
+        for<'a, 'b> &'a PolygonalIndexHole<&'b Polygon>: Contoural2,
+        for<'a, 'b, 'c> &'a Multisegmental2IndexSegment<&'b PolygonalIndexHole<&'c Polygon>>:
             Segmental,
-        for<'a, 'b, 'c> &'a Multivertexal2IndexVertex<&'b Polygonal2IndexHole<&'c Polygon>>:
+        for<'a, 'b, 'c> &'a Multivertexal2IndexVertex<&'b PolygonalIndexHole<&'c Polygon>>:
             Elemental,
     {
-        let (border, holes) = (polygon.border2(), polygon.holes2());
+        let (border, holes) = (polygon.border(), polygon.holes());
         let endpoints_count = border.vertices2().len()
             + holes
                 .iter()

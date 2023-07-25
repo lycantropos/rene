@@ -4,8 +4,8 @@ use crate::geometries::Polygon;
 use crate::operations::{coordinates_iterator_to_bounds, merge_bounds};
 use crate::traits::{
     Contoural2, Elemental, Iterable, Multisegmental2IndexSegment,
-    Multivertexal2IndexVertex, Polygonal2, Polygonal2IndexHole,
-    Polygonal2IntoIteratorHole, Segmental,
+    Multivertexal2IndexVertex, Polygonal, PolygonalIndexHole,
+    PolygonalIntoIteratorHole, Segmental,
 };
 
 use super::types::Multipolygon;
@@ -68,26 +68,26 @@ impl<Contour, Point, Scalar: Ord> Bounded<Scalar> for Multipolygon<Scalar>
 where
     Contour: Contoural2<IntoIteratorVertex = Point>,
     Point: Elemental<Coordinate = Scalar>,
-    Polygon<Scalar>: Bounded<Scalar> + Polygonal2<Contour = Contour>,
-    for<'a, 'b> &'a Multisegmental2IndexSegment<&'b Polygonal2IndexHole<Polygon<Scalar>>>:
+    Polygon<Scalar>: Bounded<Scalar> + Polygonal<Contour = Contour>,
+    for<'a, 'b> &'a Multisegmental2IndexSegment<&'b PolygonalIndexHole<Polygon<Scalar>>>:
         Segmental,
-    for<'a, 'b> &'a Multivertexal2IndexVertex<&'b Polygonal2IndexHole<Polygon<Scalar>>>:
+    for<'a, 'b> &'a Multivertexal2IndexVertex<&'b PolygonalIndexHole<Polygon<Scalar>>>:
         Elemental,
     for<'a> &'a Multisegmental2IndexSegment<
-        Polygonal2IntoIteratorHole<Polygon<Scalar>>,
+        PolygonalIntoIteratorHole<Polygon<Scalar>>,
     >: Segmental,
-    for<'a> &'a Multivertexal2IndexVertex<Polygonal2IntoIteratorHole<Polygon<Scalar>>>:
+    for<'a> &'a Multivertexal2IndexVertex<PolygonalIntoIteratorHole<Polygon<Scalar>>>:
         Elemental,
     for<'a> &'a Multisegmental2IndexSegment<Contour>: Segmental,
     for<'a> &'a Multivertexal2IndexVertex<Contour>: Elemental,
-    for<'a> &'a Polygonal2IndexHole<Polygon<Scalar>>: Contoural2,
+    for<'a> &'a PolygonalIndexHole<Polygon<Scalar>>: Contoural2,
 {
     fn to_bounding_box(self) -> bounded::Box<Scalar> {
         let (min_x, max_x, min_y, max_y) =
             merge_bounds(self.polygons.into_iter().map(|polygon| {
                 coordinates_iterator_to_bounds(
                     polygon
-                        .border2()
+                        .border()
                         .vertices2()
                         .into_iter()
                         .map(Elemental::coordinates),
