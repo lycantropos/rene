@@ -2,7 +2,11 @@ use crate::bounded;
 use crate::bounded::Bounded;
 use crate::geometries::Polygon;
 use crate::operations::{coordinates_iterator_to_bounds, merge_bounds};
-use crate::traits::{Contoural, Elemental, Polygonal};
+use crate::traits::{
+    Contoural2, Elemental, Iterable, Multisegmental2IndexSegment,
+    Multivertexal2IndexVertex, Polygonal2, Polygonal2IndexHole,
+    Polygonal2IntoIteratorHole, Segmental,
+};
 
 use super::types::Multipolygon;
 
@@ -62,15 +66,31 @@ where
 
 impl<Contour, Point, Scalar: Ord> Bounded<Scalar> for Multipolygon<Scalar>
 where
-    Contour: Contoural<Vertex = Point>,
-    Polygon<Scalar>: Bounded<Scalar> + Polygonal<Contour = Contour>,
+    Contour: Contoural2<IntoIteratorVertex = Point>,
     Point: Elemental<Coordinate = Scalar>,
+    Polygon<Scalar>: Bounded<Scalar> + Polygonal2<Contour = Contour>,
+    for<'a, 'b> &'a Multisegmental2IndexSegment<&'b Polygonal2IndexHole<Polygon<Scalar>>>:
+        Segmental,
+    for<'a, 'b> &'a Multivertexal2IndexVertex<&'b Polygonal2IndexHole<Polygon<Scalar>>>:
+        Elemental,
+    for<'a> &'a Multisegmental2IndexSegment<
+        Polygonal2IntoIteratorHole<Polygon<Scalar>>,
+    >: Segmental,
+    for<'a> &'a Multivertexal2IndexVertex<Polygonal2IntoIteratorHole<Polygon<Scalar>>>:
+        Elemental,
+    for<'a> &'a Multisegmental2IndexSegment<Contour>: Segmental,
+    for<'a> &'a Multivertexal2IndexVertex<Contour>: Elemental,
+    for<'a> &'a Polygonal2IndexHole<Polygon<Scalar>>: Contoural2,
 {
     fn to_bounding_box(self) -> bounded::Box<Scalar> {
         let (min_x, max_x, min_y, max_y) =
             merge_bounds(self.polygons.into_iter().map(|polygon| {
                 coordinates_iterator_to_bounds(
-                    polygon.border().vertices().map(Elemental::coordinates),
+                    polygon
+                        .border2()
+                        .vertices2()
+                        .into_iter()
+                        .map(Elemental::coordinates),
                 )
             }));
         bounded::Box::new(min_x, max_x, min_y, max_y)
