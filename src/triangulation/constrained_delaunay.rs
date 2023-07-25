@@ -11,9 +11,9 @@ use crate::oriented::Orientation;
 use crate::relatable::Relation;
 use crate::relating::segment;
 use crate::traits::{
-    Contoural, Contoural2, Elemental, Iterable, Lengthsome,
-    Multisegmental2IndexSegment, Multivertexal2, Multivertexal2IndexVertex,
-    Polygonal2, Polygonal2IntoIteratorHole, Segmental, Sequence,
+    Contoural2, Elemental, Iterable, Lengthsome, Multisegmental2IndexSegment,
+    Multivertexal2, Multivertexal2IndexVertex, Polygonal2,
+    Polygonal2IntoIteratorHole, Segmental, Sequence,
 };
 
 use super::mesh::Mesh;
@@ -108,7 +108,6 @@ where
     for<'a, 'b> &'a Multivertexal2IndexVertex<
         Polygonal2IntoIteratorHole<&'b Polygon<Scalar>>,
     >: Elemental,
-    for<'a> &'a Contour<Scalar>: Contoural<Vertex = &'a Endpoint>,
     for<'a> &'a Endpoint: LocatePointInPointPointPointCircle + Orient,
     for<'a> &'a Polygon<Scalar>:
         Polygonal2<Contour = &'a Contour<Scalar>, IndexHole = Contour<Scalar>>,
