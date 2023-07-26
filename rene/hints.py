@@ -417,10 +417,6 @@ class Polygon(_SelfComparable, Multisegmental[Segment[Scalar]],
         ...
 
     @property
-    def bounding_box(self) -> Box[Scalar]:
-        ...
-
-    @property
     def holes(self) -> _t.Sequence[Contour[Scalar]]:
         ...
 
