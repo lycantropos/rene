@@ -913,16 +913,6 @@ impl PyExactMultipolygon {
         (&self.0).polygons().len()
     }
 
-    #[getter]
-    fn segments(&self) -> Vec<ExactSegment> {
-        (&self.0).segments().cloned().collect()
-    }
-
-    #[getter]
-    fn segments_count(&self) -> usize {
-        (&self.0).segments_count()
-    }
-
     #[pyo3(signature = (point, /))]
     fn locate(&self, point: &PyExactPoint) -> PyResult<&PyAny> {
         try_location_to_py_location(self.0.locate(&point.0))
@@ -1316,16 +1306,6 @@ impl PyExactPolygon {
     #[getter]
     fn holes_count(&self) -> usize {
         (&self.0).holes().len()
-    }
-
-    #[getter]
-    fn segments(&self) -> Vec<ExactSegment> {
-        (&self.0).segments().cloned().collect()
-    }
-
-    #[getter]
-    fn segments_count(&self) -> usize {
-        (&self.0).segments_count()
     }
 
     #[pyo3(signature = (point, /))]

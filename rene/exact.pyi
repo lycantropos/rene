@@ -220,14 +220,6 @@ class Multipolygon:
     def polygons_count(self) -> int:
         ...
 
-    @property
-    def segments(self) -> _t.Sequence[Segment]:
-        ...
-
-    @property
-    def segments_count(self) -> int:
-        ...
-
     def locate(self, point: Point, /) -> _Location:
         ...
 
@@ -433,14 +425,6 @@ class Polygon:
 
     @property
     def holes_count(self) -> int:
-        ...
-
-    @property
-    def segments(self) -> _t.Sequence[Segment]:
-        ...
-
-    @property
-    def segments_count(self) -> int:
         ...
 
     def locate(self, point: Point, /) -> _Location:

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import typing as t
-from itertools import chain
 
 import typing_extensions as te
 from reprit.base import generate_repr
@@ -39,17 +38,6 @@ class Polygon:
     @property
     def holes_count(self) -> int:
         return len(self._holes)
-
-    @property
-    def segments(self) -> t.Sequence[hints.Segment[Fraction]]:
-        return list(chain(self._border.segments,
-                          chain.from_iterable(hole.segments
-                                              for hole in self._holes)))
-
-    @property
-    def segments_count(self) -> int:
-        return sum([hole.segments_count for hole in self._holes],
-                   self._border.segments_count)
 
     def locate(self, point: hints.Point[Fraction], /) -> Location:
         location_without_holes = locate_point_in_region(self._border, point)

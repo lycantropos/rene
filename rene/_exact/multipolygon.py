@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import typing as t
-from itertools import chain
 
 import typing_extensions as te
 from reprit.base import generate_repr
@@ -53,15 +52,6 @@ class Multipolygon:
     @property
     def polygons_count(self) -> int:
         return len(self._polygons)
-
-    @property
-    def segments(self) -> t.Sequence[hints.Segment[Fraction]]:
-        return list(chain.from_iterable(polygon.segments
-                                        for polygon in self._polygons))
-
-    @property
-    def segments_count(self) -> int:
-        return sum(polygon.segments_count for polygon in self._polygons)
 
     def locate(self, point: hints.Point[Fraction], /) -> Location:
         for polygon in self._polygons:
