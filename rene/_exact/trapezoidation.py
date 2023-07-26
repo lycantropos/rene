@@ -10,7 +10,8 @@ from rene import (Location,
                   hints)
 from rene._context import Context
 from rene._seidel.trapezoidation import Trapezoidation as _RawTrapezoidation
-from rene._utils import validate_seed
+from rene._utils import (polygon_to_segments_count,
+                         validate_seed)
 
 
 class Trapezoidation:
@@ -32,10 +33,7 @@ class Trapezoidation:
                      /,
                      *,
                      seeder: t.Optional[hints.Seeder] = None) -> te.Self:
-        seed = (random.randint(0,
-                               polygon.border.segments_count
-                               + sum(hole.segments_count
-                                     for hole in polygon.holes))
+        seed = (random.randint(0, polygon_to_segments_count(polygon))
                 if seeder is None
                 else seeder())
         validate_seed(seed)
