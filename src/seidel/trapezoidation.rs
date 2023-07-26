@@ -7,7 +7,7 @@ use crate::bounded::Bounded;
 use crate::operations::Orient;
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{
-    Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
+    Contoural, Elemental, Iterable, Lengthsome, Multisegmental2,
     Multisegmental2IndexSegment, Multivertexal2, Multivertexal2IndexVertex,
     Polygonal, PolygonalIndexHole, Segmental,
 };
@@ -47,32 +47,36 @@ impl<Point> Trapezoidation<Point> {
 
 impl<Point> Trapezoidation<Point> {
     pub(crate) fn from_multisegment<
-        'a,
+        IndexSegment,
         Multisegment,
         Scalar,
         Segment,
         Shuffler: FnOnce(&mut Vec<Edge>),
     >(
-        multisegment: &'a Multisegment,
+        multisegment: &Multisegment,
         shuffler: Shuffler,
     ) -> Self
     where
         Point: Clone + From<(Scalar, Scalar)> + PartialOrd,
         Scalar: Clone + One,
-        for<'b> &'b Multisegment:
-            Bounded<&'b Scalar> + Multisegmental<Segment = &'b Segment>,
-        for<'b> &'b Point: Orient,
-        for<'b> &'b Scalar: Add<Scalar, Output = Scalar>
+        for<'a> &'a Multisegment: Bounded<&'a Scalar>
+            + Multisegmental2<
+                IndexSegment = IndexSegment,
+                IntoIteratorSegment = &'a Segment,
+            >,
+        for<'a> &'a IndexSegment: Segmental,
+        for<'a> &'a Point: Orient,
+        for<'a> &'a Scalar: Add<Scalar, Output = Scalar>
             + Sub<Scalar, Output = Scalar>
             + Sub<Output = Scalar>
             + Zeroable,
-        for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
+        for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
     {
         let mut edges =
-            Vec::<Edge>::with_capacity(multisegment.segments_count());
+            Vec::<Edge>::with_capacity(multisegment.segments2().len());
         let mut endpoints =
-            Vec::<Point>::with_capacity(2 * multisegment.segments_count());
-        for segment in multisegment.segments() {
+            Vec::<Point>::with_capacity(2 * multisegment.segments2().len());
+        for segment in multisegment.segments2() {
             let (start, end) = segment.endpoints();
             let start_index = endpoints.len();
             let end_index = endpoints.len() + 1;
