@@ -5,7 +5,10 @@ use crate::geometries::{Contour, Empty, Multisegment, Point};
 use crate::operations::{CrossMultiply, Orient};
 use crate::relatable::{Relatable, Relation};
 use crate::relating::segment;
-use crate::traits::{Contoural, Elemental, Multisegmental, Segmental};
+use crate::traits::{
+    Contoural, Elemental, Multisegmental2, Multisegmental2IndexSegment,
+    Segmental,
+};
 
 use super::types::Segment;
 
@@ -51,7 +54,9 @@ impl<Scalar: Div<Output = Scalar> + Eq + Hash + PartialOrd>
     Relatable<&Multisegment<Scalar>> for &Segment<Scalar>
 where
     for<'a> &'a Multisegment<Scalar>:
-        Multisegmental<Segment = &'a Segment<Scalar>>,
+        Multisegmental2<IntoIteratorSegment = &'a Segment<Scalar>>,
+    for<'a, 'b> &'a Multisegmental2IndexSegment<&'b Multisegment<Scalar>>:
+        Segmental,
     Point<Scalar>: Eq + Hash + Ord,
     for<'a> &'a Segment<Scalar>: Segmental<Endpoint = &'a Point<Scalar>>,
     for<'a> &'a Point<Scalar>: CrossMultiply<Output = Scalar>
