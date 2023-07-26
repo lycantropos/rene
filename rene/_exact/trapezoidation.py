@@ -32,7 +32,10 @@ class Trapezoidation:
                      /,
                      *,
                      seeder: t.Optional[hints.Seeder] = None) -> te.Self:
-        seed = (random.randint(0, polygon.segments_count)
+        seed = (random.randint(0,
+                               polygon.border.segments_count
+                               + sum(hole.segments_count
+                                     for hole in polygon.holes))
                 if seeder is None
                 else seeder())
         validate_seed(seed)
