@@ -54,7 +54,7 @@ else:
                          polygon: Polygon,
                          *,
                          seeder: _t.Optional[_Seeder] = None) -> _te.Self:
-            seed = (_random.randint(0, polygon_to_segments_count(polygon))
+            seed = (_random.randint(0, _polygon_to_segments_count(polygon))
                     if seeder is None
                     else seeder())
             _validate_seed(seed)
