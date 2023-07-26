@@ -29,7 +29,10 @@ else:
     import typing_extensions as _te
 
     from ._crene import Location as _Location
-    from ._utils import validate_seed as _validate_seed
+    from ._utils import (
+        polygon_to_segments_count as _polygon_to_segments_count,
+        validate_seed as _validate_seed
+    )
     from .hints import Seeder as _Seeder
 
 
@@ -51,7 +54,7 @@ else:
                          polygon: Polygon,
                          *,
                          seeder: _t.Optional[_Seeder] = None) -> _te.Self:
-            seed = (_random.randint(0, polygon.segments_count)
+            seed = (_random.randint(0, polygon_to_segments_count(polygon))
                     if seeder is None
                     else seeder())
             _validate_seed(seed)

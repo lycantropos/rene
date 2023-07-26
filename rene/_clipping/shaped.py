@@ -703,15 +703,6 @@ def _populate_with_segments(
         endpoints.append(end)
 
 
-def _multisegmentals_to_segments_count(
-        multisegmentals: t.Sequence[
-            hints.Multisegmental[hints.Segment[hints.Scalar]]
-        ],
-        /
-) -> int:
-    return sum(multisegment.segments_count for multisegment in multisegmentals)
-
-
 def _to_next_event_id(event_id: int,
                       are_events_processed: t.Sequence[bool],
                       connectivity: t.Sequence[int],
