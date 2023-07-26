@@ -12,7 +12,7 @@ use crate::oriented::Orientation;
 use crate::relatable::Relatable;
 use crate::traits::{
     Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
-    Multisegmental2IndexSegment, Multivertexal2IndexVertex, Polygonal,
+    MultisegmentalIndexSegment, MultivertexalIndexVertex, Polygonal,
     PolygonalContour, PolygonalIndexHole, PolygonalIntoIteratorHole,
     Segmental, SegmentalCoordinate,
 };
@@ -594,18 +594,17 @@ pub(crate) trait SegmentsCountable {
 
 impl<Polygon: Polygonal> SegmentsCountable for Polygon
 where
-    for<'a> &'a Multisegmental2IndexSegment<PolygonalContour<Polygon>>:
+    for<'a> &'a MultisegmentalIndexSegment<PolygonalContour<Polygon>>:
         Segmental,
-    for<'a> &'a Multivertexal2IndexVertex<PolygonalContour<Polygon>>:
-        Elemental,
+    for<'a> &'a MultivertexalIndexVertex<PolygonalContour<Polygon>>: Elemental,
     for<'a> &'a PolygonalIndexHole<Polygon>: Contoural,
-    for<'a, 'b> &'a Multisegmental2IndexSegment<&'b PolygonalIndexHole<Polygon>>:
+    for<'a, 'b> &'a MultisegmentalIndexSegment<&'b PolygonalIndexHole<Polygon>>:
         Segmental,
-    for<'a, 'b> &'a Multivertexal2IndexVertex<&'b PolygonalIndexHole<Polygon>>:
+    for<'a, 'b> &'a MultivertexalIndexVertex<&'b PolygonalIndexHole<Polygon>>:
         Elemental,
-    for<'a, 'b> &'a Multisegmental2IndexSegment<PolygonalIntoIteratorHole<Polygon>>:
+    for<'a, 'b> &'a MultisegmentalIndexSegment<PolygonalIntoIteratorHole<Polygon>>:
         Segmental,
-    for<'a, 'b> &'a Multivertexal2IndexVertex<PolygonalIntoIteratorHole<Polygon>>:
+    for<'a, 'b> &'a MultivertexalIndexVertex<PolygonalIntoIteratorHole<Polygon>>:
         Elemental,
     Polygon: Polygonal,
     PolygonalContour<Polygon>: Contoural,

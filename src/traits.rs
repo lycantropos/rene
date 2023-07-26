@@ -105,13 +105,12 @@ where
 pub trait Polygonal
 where
     for<'a> &'a Self::IndexHole: Contoural,
-    for<'a> &'a Multisegmental2IndexSegment<Self::Contour>: Segmental,
-    for<'a> &'a Multivertexal2IndexVertex<Self::Contour>: Elemental,
-    for<'a> &'a Multisegmental2IndexSegment<Self::IntoIteratorHole>: Segmental,
-    for<'a> &'a Multivertexal2IndexVertex<Self::IntoIteratorHole>: Elemental,
-    for<'a, 'b> &'a Multisegmental2IndexSegment<&'b Self::IndexHole>:
-        Segmental,
-    for<'a, 'b> &'a Multivertexal2IndexVertex<&'b Self::IndexHole>: Elemental,
+    for<'a> &'a MultisegmentalIndexSegment<Self::Contour>: Segmental,
+    for<'a> &'a MultivertexalIndexVertex<Self::Contour>: Elemental,
+    for<'a> &'a MultisegmentalIndexSegment<Self::IntoIteratorHole>: Segmental,
+    for<'a> &'a MultivertexalIndexVertex<Self::IntoIteratorHole>: Elemental,
+    for<'a, 'b> &'a MultisegmentalIndexSegment<&'b Self::IndexHole>: Segmental,
+    for<'a, 'b> &'a MultivertexalIndexVertex<&'b Self::IndexHole>: Elemental,
 {
     type Contour: Contoural;
     type IndexHole;
@@ -128,23 +127,23 @@ where
 
 pub trait Multipolygonal
 where
-    for<'a> &'a Multisegmental2IndexSegment<
+    for<'a> &'a MultisegmentalIndexSegment<
         PolygonalContour<Self::IntoIteratorPolygon>,
     >: Segmental,
-    for<'a> &'a Multivertexal2IndexVertex<PolygonalContour<Self::IntoIteratorPolygon>>:
+    for<'a> &'a MultivertexalIndexVertex<PolygonalContour<Self::IntoIteratorPolygon>>:
         Elemental,
-    for<'a> &'a Multisegmental2IndexSegment<
+    for<'a> &'a MultisegmentalIndexSegment<
         PolygonalIntoIteratorHole<Self::IntoIteratorPolygon>,
     >: Segmental,
-    for<'a> &'a Multivertexal2IndexVertex<
+    for<'a> &'a MultivertexalIndexVertex<
         PolygonalIntoIteratorHole<Self::IntoIteratorPolygon>,
     >: Elemental,
     for<'a> &'a PolygonalIndexHole<Self::IntoIteratorPolygon>: Contoural,
     for<'a> &'a Self::IndexPolygon: Polygonal,
-    for<'a, 'b> &'a Multisegmental2IndexSegment<
+    for<'a, 'b> &'a MultisegmentalIndexSegment<
         &'b PolygonalIndexHole<Self::IntoIteratorPolygon>,
     >: Segmental,
-    for<'a, 'b> &'a Multivertexal2IndexVertex<
+    for<'a, 'b> &'a MultivertexalIndexVertex<
         &'b PolygonalIndexHole<Self::IntoIteratorPolygon>,
     >: Elemental,
 {
@@ -159,14 +158,13 @@ where
 }
 
 pub type ElementalCoordinate<T> = <T as Elemental>::Coordinate;
-pub type SegmentalCoordinate<T> = ElementalCoordinate<SegmentalEndpoint<T>>;
-pub type SegmentalEndpoint<T> = <T as Segmental>::Endpoint;
-
-pub type Multisegmental2IndexSegment<T> = <T as Multisegmental>::IndexSegment;
-pub type Multivertexal2IndexVertex<T> = <T as Multivertexal>::IndexVertex;
+pub type MultisegmentalIndexSegment<T> = <T as Multisegmental>::IndexSegment;
+pub type MultivertexalIndexVertex<T> = <T as Multivertexal>::IndexVertex;
 pub type PolygonalContour<T> = <T as Polygonal>::Contour;
 pub type PolygonalIndexHole<T> = <T as Polygonal>::IndexHole;
 pub type PolygonalIntoIteratorHole<T> = <T as Polygonal>::IntoIteratorHole;
+pub type SegmentalCoordinate<T> = ElementalCoordinate<SegmentalEndpoint<T>>;
+pub type SegmentalEndpoint<T> = <T as Segmental>::Endpoint;
 
 pub trait Intersection<Other = Self> {
     type Output;

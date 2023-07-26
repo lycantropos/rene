@@ -10,8 +10,8 @@ use crate::oriented::Orientation;
 use crate::relatable::Relation;
 use crate::relating::segment;
 use crate::traits::{
-    Contoural, Elemental, Iterable, Lengthsome, Multisegmental2IndexSegment,
-    Multivertexal, Multivertexal2IndexVertex, Polygonal, PolygonalIndexHole,
+    Contoural, Elemental, Iterable, Lengthsome, MultisegmentalIndexSegment,
+    Multivertexal, MultivertexalIndexVertex, Polygonal, PolygonalIndexHole,
     Segmental, Sequence,
 };
 
@@ -96,12 +96,12 @@ impl<Contour, Endpoint: Clone + Ord + PartialOrd, Polygon> From<&Polygon>
     for ConstrainedDelaunayTriangulation<Endpoint>
 where
     Mesh<Endpoint>: DelaunayTriangulatable,
-    for<'a, 'b> &'a Multisegmental2IndexSegment<&'b Contour>: Segmental,
-    for<'a, 'b> &'a Multivertexal2IndexVertex<&'b Contour>: Elemental,
+    for<'a, 'b> &'a MultisegmentalIndexSegment<&'b Contour>: Segmental,
+    for<'a, 'b> &'a MultivertexalIndexVertex<&'b Contour>: Elemental,
     for<'a, 'b> &'a PolygonalIndexHole<&'b Polygon>: Contoural,
-    for<'a, 'b, 'c> &'a Multisegmental2IndexSegment<&'b PolygonalIndexHole<&'c Polygon>>:
+    for<'a, 'b, 'c> &'a MultisegmentalIndexSegment<&'b PolygonalIndexHole<&'c Polygon>>:
         Segmental,
-    for<'a, 'b, 'c> &'a Multivertexal2IndexVertex<&'b PolygonalIndexHole<&'c Polygon>>:
+    for<'a, 'b, 'c> &'a MultivertexalIndexVertex<&'b PolygonalIndexHole<&'c Polygon>>:
         Elemental,
     for<'a> &'a Contour: Contoural<IndexVertex = Endpoint>,
     for<'a> &'a Endpoint: LocatePointInPointPointPointCircle + Orient,

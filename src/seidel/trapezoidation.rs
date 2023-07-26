@@ -8,7 +8,7 @@ use crate::operations::Orient;
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{
     Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
-    Multisegmental2IndexSegment, Multivertexal, Multivertexal2IndexVertex,
+    MultisegmentalIndexSegment, Multivertexal, MultivertexalIndexVertex,
     Polygonal, PolygonalIndexHole, Segmental,
 };
 
@@ -120,11 +120,11 @@ impl<Point> Trapezoidation<Point> {
             + Sub<Scalar, Output = Scalar>
             + Sub<Output = Scalar>
             + Zeroable,
-        for<'a, 'b> &'a Multisegmental2IndexSegment<&'b Contour>: Segmental,
+        for<'a, 'b> &'a MultisegmentalIndexSegment<&'b Contour>: Segmental,
         for<'a, 'b> &'a PolygonalIndexHole<&'b Polygon>: Contoural,
-        for<'a, 'b, 'c> &'a Multisegmental2IndexSegment<&'b PolygonalIndexHole<&'c Polygon>>:
+        for<'a, 'b, 'c> &'a MultisegmentalIndexSegment<&'b PolygonalIndexHole<&'c Polygon>>:
             Segmental,
-        for<'a, 'b, 'c> &'a Multivertexal2IndexVertex<&'b PolygonalIndexHole<&'c Polygon>>:
+        for<'a, 'b, 'c> &'a MultivertexalIndexVertex<&'b PolygonalIndexHole<&'c Polygon>>:
             Elemental,
     {
         let (border, holes) = (polygon.border(), polygon.holes());

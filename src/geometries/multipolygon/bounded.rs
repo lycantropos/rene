@@ -3,8 +3,8 @@ use crate::bounded::Bounded;
 use crate::geometries::Polygon;
 use crate::operations::{coordinates_iterator_to_bounds, merge_bounds};
 use crate::traits::{
-    Contoural, Elemental, Iterable, Multisegmental2IndexSegment,
-    Multivertexal2IndexVertex, Polygonal, PolygonalIndexHole,
+    Contoural, Elemental, Iterable, MultisegmentalIndexSegment,
+    MultivertexalIndexVertex, Polygonal, PolygonalIndexHole,
     PolygonalIntoIteratorHole, Segmental,
 };
 
@@ -69,17 +69,16 @@ where
     Contour: Contoural<IntoIteratorVertex = Point>,
     Point: Elemental<Coordinate = Scalar>,
     Polygon<Scalar>: Bounded<Scalar> + Polygonal<Contour = Contour>,
-    for<'a, 'b> &'a Multisegmental2IndexSegment<&'b PolygonalIndexHole<Polygon<Scalar>>>:
+    for<'a, 'b> &'a MultisegmentalIndexSegment<&'b PolygonalIndexHole<Polygon<Scalar>>>:
         Segmental,
-    for<'a, 'b> &'a Multivertexal2IndexVertex<&'b PolygonalIndexHole<Polygon<Scalar>>>:
+    for<'a, 'b> &'a MultivertexalIndexVertex<&'b PolygonalIndexHole<Polygon<Scalar>>>:
         Elemental,
-    for<'a> &'a Multisegmental2IndexSegment<
-        PolygonalIntoIteratorHole<Polygon<Scalar>>,
-    >: Segmental,
-    for<'a> &'a Multivertexal2IndexVertex<PolygonalIntoIteratorHole<Polygon<Scalar>>>:
+    for<'a> &'a MultisegmentalIndexSegment<PolygonalIntoIteratorHole<Polygon<Scalar>>>:
+        Segmental,
+    for<'a> &'a MultivertexalIndexVertex<PolygonalIntoIteratorHole<Polygon<Scalar>>>:
         Elemental,
-    for<'a> &'a Multisegmental2IndexSegment<Contour>: Segmental,
-    for<'a> &'a Multivertexal2IndexVertex<Contour>: Elemental,
+    for<'a> &'a MultisegmentalIndexSegment<Contour>: Segmental,
+    for<'a> &'a MultivertexalIndexVertex<Contour>: Elemental,
     for<'a> &'a PolygonalIndexHole<Polygon<Scalar>>: Contoural,
 {
     fn to_bounding_box(self) -> bounded::Box<Scalar> {

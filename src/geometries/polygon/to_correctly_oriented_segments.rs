@@ -5,7 +5,7 @@ use crate::operations::{
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{
     Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
-    Multivertexal2IndexVertex, Segmental,
+    MultivertexalIndexVertex, Segmental,
 };
 
 use super::types::Polygon;
@@ -16,7 +16,7 @@ where
         + Oriented
         + ToReversedSegments<Output = Vec<Segment<Scalar>>>,
     for<'a> &'a Segment<Scalar>: Segmental,
-    for<'a, 'b> &'a Multivertexal2IndexVertex<&'b Contour<Scalar>>: Elemental,
+    for<'a, 'b> &'a MultivertexalIndexVertex<&'b Contour<Scalar>>: Elemental,
     for<'a> &'a Point<Scalar>: Orient,
     Point<Scalar>: Clone,
     Segment<Scalar>: Clone,

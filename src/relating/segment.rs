@@ -10,7 +10,7 @@ use crate::oriented::Orientation;
 use crate::relatable::Relation;
 use crate::traits::{
     Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
-    Multisegmental2IndexSegment, Segmental,
+    MultisegmentalIndexSegment, Segmental,
 };
 
 pub(crate) fn relate_to_contour<
@@ -141,7 +141,7 @@ pub(crate) fn relate_to_multisegment<
 where
     &'a Multisegment: Multisegmental<IntoIteratorSegment = &'a Segment>,
     &'a Segment: Segmental<Endpoint = &'a Point>,
-    for<'b> &'b Multisegmental2IndexSegment<&'a Multisegment>: Segmental,
+    for<'b> &'b MultisegmentalIndexSegment<&'a Multisegment>: Segmental,
     for<'b> &'b Point: CrossMultiply<Output = Scalar>
         + Elemental<Coordinate = &'b Scalar>
         + Orient,
