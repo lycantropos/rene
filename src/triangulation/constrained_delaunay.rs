@@ -114,7 +114,7 @@ where
             let mut contours_vertices = Vec::with_capacity(1 + holes.len());
             contours_vertices.push(polygon.border().vertices());
             for hole in holes {
-                contours_vertices.push(hole.vertices2());
+                contours_vertices.push(hole.vertices());
             }
             contours_vertices
         };

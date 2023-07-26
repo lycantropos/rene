@@ -614,7 +614,7 @@ where
         border.segments().len()
             + holes
                 .iter()
-                .map(|hole| hole.segments2().len())
+                .map(|hole| hole.segments().len())
                 .sum::<usize>()
     }
 }

@@ -131,7 +131,7 @@ impl<Point> Trapezoidation<Point> {
         let endpoints_count = border.vertices().len()
             + holes
                 .iter()
-                .map(|hole| hole.vertices2().len())
+                .map(|hole| hole.vertices().len())
                 .sum::<usize>();
         let mut edges = Vec::<Edge>::with_capacity(endpoints_count);
         let mut endpoints = Vec::<Point>::with_capacity(endpoints_count);
@@ -147,7 +147,7 @@ impl<Point> Trapezoidation<Point> {
             let is_hole_correctly_oriented =
                 hole.to_orientation() == Orientation::Clockwise;
             Self::populate_from_points(
-                hole.vertices2().iter().cloned(),
+                hole.vertices().iter().cloned(),
                 is_hole_correctly_oriented,
                 &mut edges,
                 &mut endpoints,
