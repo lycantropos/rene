@@ -5,8 +5,8 @@ use crate::contracts::are_contour_vertices_non_degenerate;
 use crate::operations::Orient;
 use crate::relatable::Relation;
 use crate::traits::{
-    Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
-    Multivertexal2, Segmental,
+    Contoural, Elemental, Iterable, Lengthsome, Multisegmental, Multivertexal,
+    Segmental,
 };
 
 use super::event::{is_left_event, Event};
@@ -25,7 +25,7 @@ where
     for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
 {
     are_contour_vertices_non_degenerate(
-        &contour.vertices2().iter().collect::<Vec<_>>(),
+        &contour.vertices().iter().collect::<Vec<_>>(),
     ) && {
         let segments = contour.segments();
         segments.iter().all(|segment| {

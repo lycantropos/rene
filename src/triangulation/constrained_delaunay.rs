@@ -11,7 +11,7 @@ use crate::relatable::Relation;
 use crate::relating::segment;
 use crate::traits::{
     Contoural, Elemental, Iterable, Lengthsome, Multisegmental2IndexSegment,
-    Multivertexal2, Multivertexal2IndexVertex, Polygonal, PolygonalIndexHole,
+    Multivertexal, Multivertexal2IndexVertex, Polygonal, PolygonalIndexHole,
     Segmental, Sequence,
 };
 
@@ -112,7 +112,7 @@ where
         let contours_vertices = {
             let holes = polygon.holes();
             let mut contours_vertices = Vec::with_capacity(1 + holes.len());
-            contours_vertices.push(polygon.border().vertices2());
+            contours_vertices.push(polygon.border().vertices());
             for hole in holes {
                 contours_vertices.push(hole.vertices2());
             }

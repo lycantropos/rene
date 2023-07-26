@@ -8,7 +8,7 @@ use crate::operations::Orient;
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{
     Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
-    Multisegmental2IndexSegment, Multivertexal2, Multivertexal2IndexVertex,
+    Multisegmental2IndexSegment, Multivertexal, Multivertexal2IndexVertex,
     Polygonal, PolygonalIndexHole, Segmental,
 };
 
@@ -128,7 +128,7 @@ impl<Point> Trapezoidation<Point> {
             Elemental,
     {
         let (border, holes) = (polygon.border(), polygon.holes());
-        let endpoints_count = border.vertices2().len()
+        let endpoints_count = border.vertices().len()
             + holes
                 .iter()
                 .map(|hole| hole.vertices2().len())
@@ -138,7 +138,7 @@ impl<Point> Trapezoidation<Point> {
         let is_border_correctly_oriented =
             border.to_orientation() == Orientation::Counterclockwise;
         Self::populate_from_points(
-            border.vertices2().iter().cloned(),
+            border.vertices().iter().cloned(),
             is_border_correctly_oriented,
             &mut edges,
             &mut endpoints,

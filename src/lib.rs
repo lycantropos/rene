@@ -30,7 +30,7 @@ use crate::relatable::{Relatable, Relation};
 use crate::seidel::Trapezoidation;
 use crate::traits::{
     Difference, Elemental, Intersection, Lengthsome, Multipolygonal,
-    Multisegmental, Multivertexal2, Polygonal, Segmental, SymmetricDifference,
+    Multisegmental, Multivertexal, Polygonal, Segmental, SymmetricDifference,
     Union,
 };
 use crate::triangulation::{
@@ -549,12 +549,12 @@ impl PyExactContour {
 
     #[getter]
     fn vertices(&self) -> Vec<ExactPoint> {
-        (&self.0).vertices2().into_iter().cloned().collect()
+        (&self.0).vertices().into_iter().cloned().collect()
     }
 
     #[getter]
     fn vertices_count(&self) -> usize {
-        (&self.0).vertices2().len()
+        (&self.0).vertices().len()
     }
 
     #[getter]
@@ -623,7 +623,7 @@ impl PyExactContour {
 
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
         let mut vertices =
-            (&self.0).vertices2().into_iter().collect::<Vec<_>>();
+            (&self.0).vertices().into_iter().collect::<Vec<_>>();
         let min_vertex_index =
             unsafe { to_arg_min(&vertices).unwrap_unchecked() };
         vertices.rotate_left(min_vertex_index);

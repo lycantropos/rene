@@ -8,7 +8,7 @@ mod hash;
 mod intersection;
 mod locatable;
 mod multisegmental;
-mod multivertexal2;
+mod multivertexal;
 mod oriented;
 mod partial_eq;
 mod to_reversed_segments;

@@ -88,7 +88,7 @@ where
                 coordinates_iterator_to_bounds(
                     polygon
                         .border()
-                        .vertices2()
+                        .vertices()
                         .into_iter()
                         .map(Elemental::coordinates),
                 )
