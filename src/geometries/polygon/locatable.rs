@@ -1,7 +1,7 @@
 use crate::geometries::{Contour, Point, Segment};
 use crate::locatable::{Locatable, Location};
 use crate::operations::{locate_point_in_region, Orient};
-use crate::traits::{Elemental, Multisegmental2, Segmental};
+use crate::traits::{Elemental, Multisegmental, Segmental};
 
 use super::types::Polygon;
 
@@ -9,7 +9,7 @@ impl<'a, Scalar: PartialOrd> Locatable<&Point<Scalar>> for &'a Polygon<Scalar>
 where
     Point<Scalar>: Elemental<Coordinate = Scalar>,
     for<'b> &'b Contour<Scalar>:
-        Multisegmental2<IndexSegment = Segment<Scalar>>,
+        Multisegmental<IndexSegment = Segment<Scalar>>,
     for<'b> &'b Point<Scalar>: Elemental<Coordinate = &'b Scalar> + Orient,
     for<'b> &'b Segment<Scalar>: Segmental<Endpoint = &'b Point<Scalar>>,
 {

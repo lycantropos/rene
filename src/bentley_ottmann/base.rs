@@ -5,7 +5,7 @@ use crate::contracts::are_contour_vertices_non_degenerate;
 use crate::operations::Orient;
 use crate::relatable::Relation;
 use crate::traits::{
-    Contoural, Elemental, Iterable, Lengthsome, Multisegmental2,
+    Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
     Multivertexal2, Segmental,
 };
 
@@ -18,7 +18,7 @@ pub(crate) fn is_contour_valid<Contour, Point: Ord, Scalar, Segment>(
 ) -> bool
 where
     Sweep<Point>: Iterator<Item = Intersection<Point>>
-        + for<'a, 'b> From<&'a <&'b Contour as Multisegmental2>::Segments>,
+        + for<'a, 'b> From<&'a <&'b Contour as Multisegmental>::Segments>,
     for<'a> &'a Contour:
         Contoural<IndexVertex = Point, IndexSegment = Segment>,
     for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
@@ -27,7 +27,7 @@ where
     are_contour_vertices_non_degenerate(
         &contour.vertices2().iter().collect::<Vec<_>>(),
     ) && {
-        let segments = contour.segments2();
+        let segments = contour.segments();
         segments.iter().all(|segment| {
             let (start, end) = segment.endpoints();
             start != end
@@ -79,12 +79,12 @@ pub(crate) fn is_multisegment_valid<
     multisegment: &'a Multisegment,
 ) -> bool
 where
-    Sweep<Point>: for<'b, 'c> From<&'b <&'c Multisegment as Multisegmental2>::Segments>
+    Sweep<Point>: for<'b, 'c> From<&'b <&'c Multisegment as Multisegmental>::Segments>
         + Iterator<Item = Intersection<Point>>,
-    for<'b> &'b Multisegment: Multisegmental2<IndexSegment = Segment>,
+    for<'b> &'b Multisegment: Multisegmental<IndexSegment = Segment>,
     for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
 {
-    let segments = multisegment.segments2();
+    let segments = multisegment.segments();
     segments.len() >= MIN_MULTISEGMENT_SEGMENTS_COUNT
         && segments.iter().all(|segment| {
             let (start, end) = segment.endpoints();

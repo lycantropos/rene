@@ -4,7 +4,7 @@ use crate::operations::{
 };
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{
-    Contoural, Elemental, Iterable, Lengthsome, Multisegmental2,
+    Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
     Multivertexal2IndexVertex, Segmental,
 };
 
@@ -25,21 +25,21 @@ where
 
     fn to_correctly_oriented_segments(self) -> Self::Output {
         let mut result = Vec::<Segment<Scalar>>::with_capacity(
-            (&self.border).segments2().len()
+            (&self.border).segments().len()
                 + self
                     .holes
                     .iter()
-                    .map(|hole| hole.segments2().len())
+                    .map(|hole| hole.segments().len())
                     .sum::<usize>(),
         );
         if (&self.border).to_orientation() == Orientation::Counterclockwise {
-            result.extend((&self.border).segments2().iter().cloned());
+            result.extend((&self.border).segments().iter().cloned());
         } else {
             result.append(&mut (&self.border).to_reversed_segments());
         }
         for hole in &self.holes {
             if hole.to_orientation() == Orientation::Clockwise {
-                result.extend(hole.segments2().iter().cloned());
+                result.extend(hole.segments().iter().cloned());
             } else {
                 result.append(&mut hole.to_reversed_segments());
             }

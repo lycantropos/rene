@@ -9,7 +9,7 @@ use crate::operations::{
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
 use crate::traits::{
-    Contoural, Elemental, Iterable, Lengthsome, Multisegmental2,
+    Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
     Multisegmental2IndexSegment, Segmental,
 };
 
@@ -32,7 +32,7 @@ where
     let mut has_no_touch = true;
     let mut last_touched_edge_index: Option<usize> = None;
     let mut last_touched_edge_start: Option<Point> = None;
-    let contour_segments = contour.segments2();
+    let contour_segments = contour.segments();
     for (index, contour_segment) in contour_segments.iter().enumerate() {
         let (contour_segment_start, contour_segment_end) =
             contour_segment.endpoints();
@@ -139,7 +139,7 @@ pub(crate) fn relate_to_multisegment<
     multisegment: &'a Multisegment,
 ) -> Relation
 where
-    &'a Multisegment: Multisegmental2<IntoIteratorSegment = &'a Segment>,
+    &'a Multisegment: Multisegmental<IntoIteratorSegment = &'a Segment>,
     &'a Segment: Segmental<Endpoint = &'a Point>,
     for<'b> &'b Multisegmental2IndexSegment<&'a Multisegment>: Segmental,
     for<'b> &'b Point: CrossMultiply<Output = Scalar>
@@ -157,7 +157,7 @@ where
         (start, end) = (end, start);
     }
     let (original_start, original_end) = (start, end);
-    for multisegment_segment in multisegment.segments2() {
+    for multisegment_segment in multisegment.segments() {
         let (multisegment_segment_start, multisegment_segment_end) =
             multisegment_segment.endpoints();
         let relation = relate_to_segment(

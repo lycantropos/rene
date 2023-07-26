@@ -11,7 +11,7 @@ use crate::locatable::Location;
 use crate::oriented::Orientation;
 use crate::relatable::Relatable;
 use crate::traits::{
-    Contoural, Elemental, Iterable, Lengthsome, Multisegmental2,
+    Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
     Multisegmental2IndexSegment, Multivertexal2IndexVertex, Polygonal,
     PolygonalContour, PolygonalIndexHole, PolygonalIntoIteratorHole,
     Segmental, SegmentalCoordinate,
@@ -351,13 +351,13 @@ pub(crate) fn locate_point_in_region<
 ) -> Location
 where
     Scalar: PartialOrd,
-    for<'a> &'a Border: Multisegmental2<IndexSegment = Segment>,
+    for<'a> &'a Border: Multisegmental<IndexSegment = Segment>,
     for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
     for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
 {
     let mut result = false;
     let point_y = point.y();
-    for edge in border.segments2().iter() {
+    for edge in border.segments().iter() {
         let (start, end) = edge.endpoints();
         if is_point_in_segment(point, start, end) {
             return Location::Boundary;
@@ -612,7 +612,7 @@ where
 {
     fn segments_count(self) -> usize {
         let (border, holes) = self.components();
-        border.segments2().len()
+        border.segments().len()
             + holes
                 .iter()
                 .map(|hole| hole.segments2().len())

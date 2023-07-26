@@ -7,7 +7,7 @@ mod from;
 mod hash;
 mod intersection;
 mod locatable;
-mod multisegmental2;
+mod multisegmental;
 mod multivertexal2;
 mod oriented;
 mod partial_eq;

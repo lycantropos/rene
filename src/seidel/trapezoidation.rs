@@ -7,7 +7,7 @@ use crate::bounded::Bounded;
 use crate::operations::Orient;
 use crate::oriented::{Orientation, Oriented};
 use crate::traits::{
-    Contoural, Elemental, Iterable, Lengthsome, Multisegmental2,
+    Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
     Multisegmental2IndexSegment, Multivertexal2, Multivertexal2IndexVertex,
     Polygonal, PolygonalIndexHole, Segmental,
 };
@@ -60,7 +60,7 @@ impl<Point> Trapezoidation<Point> {
         Point: Clone + From<(Scalar, Scalar)> + PartialOrd,
         Scalar: Clone + One,
         for<'a> &'a Multisegment: Bounded<&'a Scalar>
-            + Multisegmental2<
+            + Multisegmental<
                 IndexSegment = IndexSegment,
                 IntoIteratorSegment = &'a Segment,
             >,
@@ -73,10 +73,10 @@ impl<Point> Trapezoidation<Point> {
         for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
     {
         let mut edges =
-            Vec::<Edge>::with_capacity(multisegment.segments2().len());
+            Vec::<Edge>::with_capacity(multisegment.segments().len());
         let mut endpoints =
-            Vec::<Point>::with_capacity(2 * multisegment.segments2().len());
-        for segment in multisegment.segments2() {
+            Vec::<Point>::with_capacity(2 * multisegment.segments().len());
+        for segment in multisegment.segments() {
             let (start, end) = segment.endpoints();
             let start_index = endpoints.len();
             let end_index = endpoints.len() + 1;

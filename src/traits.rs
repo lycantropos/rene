@@ -67,7 +67,7 @@ pub trait Segmental {
     fn endpoints(self) -> (Self::Endpoint, Self::Endpoint);
 }
 
-pub trait Multisegmental2
+pub trait Multisegmental
 where
     for<'a> &'a Self::IndexSegment: Segmental,
 {
@@ -78,7 +78,7 @@ where
         IntoIteratorItem = Self::IntoIteratorSegment,
     >;
 
-    fn segments2(self) -> Self::Segments;
+    fn segments(self) -> Self::Segments;
 }
 
 pub trait Multivertexal2
@@ -95,7 +95,7 @@ where
     fn vertices2(self) -> Self::Vertices;
 }
 
-pub trait Contoural: Multisegmental2 + Multivertexal2
+pub trait Contoural: Multisegmental + Multivertexal2
 where
     for<'a> &'a Self::IndexSegment: Segmental,
     for<'a> &'a Self::IndexVertex: Elemental,
@@ -162,7 +162,7 @@ pub type ElementalCoordinate<T> = <T as Elemental>::Coordinate;
 pub type SegmentalCoordinate<T> = ElementalCoordinate<SegmentalEndpoint<T>>;
 pub type SegmentalEndpoint<T> = <T as Segmental>::Endpoint;
 
-pub type Multisegmental2IndexSegment<T> = <T as Multisegmental2>::IndexSegment;
+pub type Multisegmental2IndexSegment<T> = <T as Multisegmental>::IndexSegment;
 pub type Multivertexal2IndexVertex<T> = <T as Multivertexal2>::IndexVertex;
 pub type PolygonalContour<T> = <T as Polygonal>::Contour;
 pub type PolygonalIndexHole<T> = <T as Polygonal>::IndexHole;
