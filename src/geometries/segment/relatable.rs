@@ -35,29 +35,30 @@ where
     }
 }
 
-impl<'a, Scalar> Relatable<&'a Contour<Scalar>> for &Segment<Scalar>
+impl<Scalar> Relatable<&Contour<Scalar>> for &Segment<Scalar>
 where
     Point<Scalar>: Clone + PartialOrd,
-    for<'b> &'b Contour<Scalar>: Contoural<IndexSegment = Segment<Scalar>>,
-    for<'b> &'b Point<Scalar>: Orient,
-    for<'b> &'b Segment<Scalar>: Segmental<Endpoint = &'b Point<Scalar>>,
+    for<'a> &'a Contour<Scalar>: Contoural<IndexSegment = Segment<Scalar>>,
+    for<'a> &'a Point<Scalar>: Orient,
+    for<'a> &'a Segment<Scalar>: Segmental<Endpoint = &'a Point<Scalar>>,
 {
-    fn relate_to(self, other: &'a Contour<Scalar>) -> Relation {
+    fn relate_to(self, other: &Contour<Scalar>) -> Relation {
         segment::relate_to_contour(&self.start, &self.end, other)
     }
 }
 
-impl<'a, Scalar: Div<Output = Scalar> + Eq + Hash + PartialOrd>
-    Relatable<&'a Multisegment<Scalar>> for &'a Segment<Scalar>
+impl<Scalar: Div<Output = Scalar> + Eq + Hash + PartialOrd>
+    Relatable<&Multisegment<Scalar>> for &Segment<Scalar>
 where
-    Self: Segmental<Endpoint = &'a Point<Scalar>>,
-    &'a Multisegment<Scalar>: Multisegmental<Segment = &'a Segment<Scalar>>,
+    for<'a> &'a Multisegment<Scalar>:
+        Multisegmental<Segment = &'a Segment<Scalar>>,
     Point<Scalar>: Eq + Hash + Ord,
-    for<'b> &'b Point<Scalar>: CrossMultiply<Output = Scalar>
-        + Elemental<Coordinate = &'b Scalar>
+    for<'a> &'a Segment<Scalar>: Segmental<Endpoint = &'a Point<Scalar>>,
+    for<'a> &'a Point<Scalar>: CrossMultiply<Output = Scalar>
+        + Elemental<Coordinate = &'a Scalar>
         + Orient,
 {
-    fn relate_to(self, other: &'a Multisegment<Scalar>) -> Relation {
+    fn relate_to(self, other: &Multisegment<Scalar>) -> Relation {
         segment::relate_to_multisegment(&self.start, &self.end, other)
     }
 }
