@@ -30,8 +30,8 @@ use crate::relatable::{Relatable, Relation};
 use crate::seidel::Trapezoidation;
 use crate::traits::{
     Difference, Elemental, Intersection, Lengthsome, Multipolygonal,
-    Multisegmental, Multivertexal2, Polygonal, Segmental, SymmetricDifference,
-    Union,
+    Multisegmental2, Multivertexal2, Polygonal, Segmental,
+    SymmetricDifference, Union,
 };
 use crate::triangulation::{
     BoundaryEndpoints, ConstrainedDelaunayTriangulation, DelaunayTriangulation,
@@ -539,12 +539,12 @@ impl PyExactContour {
 
     #[getter]
     fn segments(&self) -> Vec<ExactSegment> {
-        (&self.0).segments().cloned().collect()
+        (&self.0).segments2().into_iter().cloned().collect()
     }
 
     #[getter]
     fn segments_count(&self) -> usize {
-        (&self.0).segments_count()
+        (&self.0).segments2().len()
     }
 
     #[getter]
@@ -1119,12 +1119,12 @@ impl PyExactMultisegment {
 
     #[getter]
     fn segments(&self) -> Vec<ExactSegment> {
-        (&self.0).segments().cloned().collect()
+        (&self.0).segments2().into_iter().cloned().collect()
     }
 
     #[getter]
     fn segments_count(&self) -> usize {
-        (&self.0).segments_count()
+        (&self.0).segments2().len()
     }
 
     fn is_valid(&self) -> bool {
