@@ -10,6 +10,13 @@ impl<'a, T> SliceSequence<'a, T> {
     pub(crate) fn new(slice: &'a [T]) -> Self {
         Self { slice }
     }
+
+    pub(crate) fn contains(&self, value: &T) -> bool
+    where
+        T: PartialEq,
+    {
+        self.slice.contains(value)
+    }
 }
 
 impl<'a, T> Index<usize> for SliceSequence<'a, T> {
@@ -48,6 +55,14 @@ impl<'a, T> Lengthsome for SliceSequence<'a, T> {
         self.slice.len()
     }
 }
+
+impl<'a, T: PartialEq> PartialEq for SliceSequence<'a, T> {
+    fn eq(&self, other: &Self) -> bool {
+        std::ptr::eq(self.slice, other.slice) || self.slice.eq(other.slice)
+    }
+}
+
+impl<'a, T: Eq> Eq for SliceSequence<'a, T> {}
 
 impl<'a, T> Sequence for SliceSequence<'a, T> {
     type IndexItem = T;
