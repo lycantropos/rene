@@ -798,7 +798,7 @@ impl PyRelation {
     }
 }
 
-#[pyclass(name = "Box", module = "rene.exact", subclass)]
+#[pyclass(name = "Box", module = "rene.exact")]
 #[derive(Clone)]
 struct PyExactBox(ExactBox);
 
@@ -808,7 +808,7 @@ struct PyExactConstrainedDelaunayTriangulation(
     ExactConstrainedDelaunayTriangulation,
 );
 
-#[pyclass(name = "Contour", module = "rene.exact", subclass)]
+#[pyclass(name = "Contour", module = "rene.exact")]
 #[derive(Clone)]
 struct PyExactContour(ExactContour);
 
@@ -820,23 +820,23 @@ struct PyExactDelaunayTriangulation(ExactDelaunayTriangulation);
 #[derive(Clone)]
 struct PyExactEmpty(Empty);
 
-#[pyclass(name = "Multipolygon", module = "rene.exact", subclass)]
+#[pyclass(name = "Multipolygon", module = "rene.exact")]
 #[derive(Clone)]
 struct PyExactMultipolygon(ExactMultipolygon);
 
-#[pyclass(name = "Multisegment", module = "rene.exact", subclass)]
+#[pyclass(name = "Multisegment", module = "rene.exact")]
 #[derive(Clone)]
 struct PyExactMultisegment(ExactMultisegment);
 
-#[pyclass(name = "Point", module = "rene.exact", subclass)]
+#[pyclass(name = "Point", module = "rene.exact")]
 #[derive(Clone)]
 struct PyExactPoint(ExactPoint);
 
-#[pyclass(name = "Polygon", module = "rene.exact", subclass)]
+#[pyclass(name = "Polygon", module = "rene.exact")]
 #[derive(Clone)]
 struct PyExactPolygon(ExactPolygon);
 
-#[pyclass(name = "Segment", module = "rene.exact", subclass)]
+#[pyclass(name = "Segment", module = "rene.exact")]
 #[derive(Clone)]
 struct PyExactSegment(ExactSegment);
 
