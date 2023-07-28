@@ -954,7 +954,7 @@ impl PyExactBox {
     fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactBox::type_object(py))? {
-            let other = other.extract::<PyExactBox>()?;
+            let other = other.extract::<PyRef<PyExactBox>>()?;
             match op {
                 CompareOp::Eq => Ok((self.0 == other.0).into_py(py)),
                 CompareOp::Ne => Ok((self.0 != other.0).into_py(py)),
@@ -1142,7 +1142,7 @@ impl PyExactContour {
     fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactContour::type_object(py))? {
-            let other = other.extract::<PyExactContour>()?;
+            let other = other.extract::<PyRef<PyExactContour>>()?;
             match op {
                 CompareOp::Eq => Ok((self.0 == other.0).into_py(py)),
                 CompareOp::Ne => Ok((self.0 != other.0).into_py(py)),
@@ -1220,27 +1220,34 @@ impl PyExactEmpty {
     fn relate_to(&self, other: &PyAny) -> PyResult<&PyAny> {
         if other.is_instance_of::<PyExactContour>() {
             try_relation_to_py_relation(
-                self.0.relate_to(&other.extract::<PyExactContour>()?.0),
+                self.0
+                    .relate_to(&other.extract::<PyRef<PyExactContour>>()?.0),
             )
         } else if other.is_instance_of::<PyExactEmpty>() {
             try_relation_to_py_relation(
-                self.0.relate_to(&other.extract::<PyExactEmpty>()?.0),
+                self.0.relate_to(&other.extract::<PyRef<PyExactEmpty>>()?.0),
             )
         } else if other.is_instance_of::<PyExactMultipolygon>() {
             try_relation_to_py_relation(
-                self.0.relate_to(&other.extract::<PyExactMultipolygon>()?.0),
+                self.0.relate_to(
+                    &other.extract::<PyRef<PyExactMultipolygon>>()?.0,
+                ),
             )
         } else if other.is_instance_of::<PyExactMultisegment>() {
             try_relation_to_py_relation(
-                self.0.relate_to(&other.extract::<PyExactMultisegment>()?.0),
+                self.0.relate_to(
+                    &other.extract::<PyRef<PyExactMultisegment>>()?.0,
+                ),
             )
         } else if other.is_instance_of::<PyExactPolygon>() {
             try_relation_to_py_relation(
-                self.0.relate_to(&other.extract::<PyExactPolygon>()?.0),
+                self.0
+                    .relate_to(&other.extract::<PyRef<PyExactPolygon>>()?.0),
             )
         } else if other.is_instance_of::<PyExactSegment>() {
             try_relation_to_py_relation(
-                self.0.relate_to(&other.extract::<PyExactSegment>()?.0),
+                self.0
+                    .relate_to(&other.extract::<PyRef<PyExactSegment>>()?.0),
             )
         } else {
             Err(PyTypeError::new_err(format!(
@@ -1253,22 +1260,22 @@ impl PyExactEmpty {
     fn __and__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactContour::type_object(py))? {
-            let other = other.extract::<PyExactContour>()?;
+            let other = other.extract::<PyRef<PyExactContour>>()?;
             Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
         } else if other.is_instance(PyExactEmpty::type_object(py))? {
-            let other = other.extract::<PyExactEmpty>()?;
+            let other = other.extract::<PyRef<PyExactEmpty>>()?;
             Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
-            let other = other.extract::<PyExactMultipolygon>()?;
+            let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
         } else if other.is_instance(PyExactMultisegment::type_object(py))? {
-            let other = other.extract::<PyExactMultisegment>()?;
+            let other = other.extract::<PyRef<PyExactMultisegment>>()?;
             Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
-            let other = other.extract::<PyExactPolygon>()?;
+            let other = other.extract::<PyRef<PyExactPolygon>>()?;
             Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
         } else if other.is_instance(PyExactSegment::type_object(py))? {
-            let other = other.extract::<PyExactSegment>()?;
+            let other = other.extract::<PyRef<PyExactSegment>>()?;
             Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
         } else {
             Ok(py.NotImplemented())
@@ -1286,22 +1293,22 @@ impl PyExactEmpty {
     fn __or__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactContour::type_object(py))? {
-            let other = other.extract::<PyExactContour>()?;
+            let other = other.extract::<PyRef<PyExactContour>>()?;
             Ok(PyExactContour((&self.0).union(&other.0)).into_py(py))
         } else if other.is_instance(PyExactEmpty::type_object(py))? {
-            let other = other.extract::<PyExactEmpty>()?;
+            let other = other.extract::<PyRef<PyExactEmpty>>()?;
             Ok(PyExactEmpty((&self.0).union(&other.0)).into_py(py))
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
-            let other = other.extract::<PyExactMultipolygon>()?;
+            let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             Ok((&self.0).union(&other.0).into_py(py))
         } else if other.is_instance(PyExactMultisegment::type_object(py))? {
-            let other = other.extract::<PyExactMultisegment>()?;
+            let other = other.extract::<PyRef<PyExactMultisegment>>()?;
             Ok(PyExactMultisegment((&self.0).union(&other.0)).into_py(py))
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
-            let other = other.extract::<PyExactPolygon>()?;
+            let other = other.extract::<PyRef<PyExactPolygon>>()?;
             Ok((&self.0).union(&other.0).into_py(py))
         } else if other.is_instance(PyExactSegment::type_object(py))? {
-            let other = other.extract::<PyExactSegment>()?;
+            let other = other.extract::<PyRef<PyExactSegment>>()?;
             Ok(PyExactSegment((&self.0).union(&other.0)).into_py(py))
         } else {
             Ok(py.NotImplemented())
@@ -1315,7 +1322,7 @@ impl PyExactEmpty {
     fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactEmpty::type_object(py))? {
-            let other = other.extract::<PyExactEmpty>()?;
+            let other = other.extract::<PyRef<PyExactEmpty>>()?;
             match op {
                 CompareOp::Eq => Ok((self.0 == other.0).into_py(py)),
                 CompareOp::Ne => Ok((self.0 != other.0).into_py(py)),
@@ -1329,22 +1336,22 @@ impl PyExactEmpty {
     fn __sub__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactContour::type_object(py))? {
-            let other = other.extract::<PyExactContour>()?;
+            let other = other.extract::<PyRef<PyExactContour>>()?;
             Ok(PyExactEmpty((&self.0).difference(&other.0)).into_py(py))
         } else if other.is_instance(PyExactEmpty::type_object(py))? {
-            let other = other.extract::<PyExactEmpty>()?;
+            let other = other.extract::<PyRef<PyExactEmpty>>()?;
             Ok(PyExactEmpty((&self.0).difference(&other.0)).into_py(py))
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
-            let other = other.extract::<PyExactMultipolygon>()?;
+            let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             Ok(PyExactEmpty((&self.0).difference(&other.0)).into_py(py))
         } else if other.is_instance(PyExactMultisegment::type_object(py))? {
-            let other = other.extract::<PyExactMultisegment>()?;
+            let other = other.extract::<PyRef<PyExactMultisegment>>()?;
             Ok(PyExactEmpty((&self.0).difference(&other.0)).into_py(py))
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
-            let other = other.extract::<PyExactPolygon>()?;
+            let other = other.extract::<PyRef<PyExactPolygon>>()?;
             Ok(PyExactEmpty((&self.0).difference(&other.0)).into_py(py))
         } else if other.is_instance(PyExactSegment::type_object(py))? {
-            let other = other.extract::<PyExactSegment>()?;
+            let other = other.extract::<PyRef<PyExactSegment>>()?;
             Ok(PyExactEmpty((&self.0).difference(&other.0)).into_py(py))
         } else {
             Ok(py.NotImplemented())
@@ -1354,27 +1361,27 @@ impl PyExactEmpty {
     fn __xor__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactContour::type_object(py))? {
-            let other = other.extract::<PyExactContour>()?;
+            let other = other.extract::<PyRef<PyExactContour>>()?;
             Ok(PyExactContour((&self.0).symmetric_difference(&other.0))
                 .into_py(py))
         } else if other.is_instance(PyExactEmpty::type_object(py))? {
-            let other = other.extract::<PyExactEmpty>()?;
+            let other = other.extract::<PyRef<PyExactEmpty>>()?;
             Ok(PyExactEmpty((&self.0).symmetric_difference(&other.0))
                 .into_py(py))
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
-            let other = other.extract::<PyExactMultipolygon>()?;
+            let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             Ok((&self.0).symmetric_difference(&other.0).into_py(py))
         } else if other.is_instance(PyExactMultisegment::type_object(py))? {
-            let other = other.extract::<PyExactMultisegment>()?;
+            let other = other.extract::<PyRef<PyExactMultisegment>>()?;
             Ok(
                 PyExactMultisegment((&self.0).symmetric_difference(&other.0))
                     .into_py(py),
             )
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
-            let other = other.extract::<PyExactPolygon>()?;
+            let other = other.extract::<PyRef<PyExactPolygon>>()?;
             Ok((&self.0).symmetric_difference(&other.0).into_py(py))
         } else if other.is_instance(PyExactSegment::type_object(py))? {
-            let other = other.extract::<PyExactSegment>()?;
+            let other = other.extract::<PyRef<PyExactSegment>>()?;
             Ok(PyExactSegment((&self.0).symmetric_difference(&other.0))
                 .into_py(py))
         } else {
@@ -1417,10 +1424,10 @@ impl PyExactMultipolygon {
     fn __and__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactEmpty::type_object(py))? {
-            let other = other.extract::<PyExactEmpty>()?;
+            let other = other.extract::<PyRef<PyExactEmpty>>()?;
             Ok(PyExactEmpty((&self.0).intersection(&other.0)).into_py(py))
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
-            let other = other.extract::<PyExactMultipolygon>()?;
+            let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             let polygons = (&self.0).intersection(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
@@ -1432,7 +1439,7 @@ impl PyExactMultipolygon {
                     .into_py(py)),
             }
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
-            let other = other.extract::<PyExactPolygon>()?;
+            let other = other.extract::<PyRef<PyExactPolygon>>()?;
             let polygons = (&self.0).intersection(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
@@ -1459,10 +1466,10 @@ impl PyExactMultipolygon {
     fn __or__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactEmpty::type_object(py))? {
-            let other = other.extract::<PyExactEmpty>()?;
+            let other = other.extract::<PyRef<PyExactEmpty>>()?;
             Ok((&self.0).union(other.0).into_py(py))
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
-            let other = other.extract::<PyExactMultipolygon>()?;
+            let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             let polygons = (&self.0).union(&other.0);
             debug_assert!(!polygons.is_empty());
             match polygons.len() {
@@ -1474,7 +1481,7 @@ impl PyExactMultipolygon {
                     .into_py(py)),
             }
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
-            let other = other.extract::<PyExactPolygon>()?;
+            let other = other.extract::<PyRef<PyExactPolygon>>()?;
             let polygons = (&self.0).union(&other.0);
             debug_assert!(!polygons.is_empty());
             match polygons.len() {
@@ -1505,7 +1512,7 @@ impl PyExactMultipolygon {
     fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactMultipolygon::type_object(py))? {
-            let other = other.extract::<PyExactMultipolygon>()?;
+            let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             match op {
                 CompareOp::Eq => Ok((self.0 == other.0).into_py(py)),
                 CompareOp::Ne => Ok((self.0 != other.0).into_py(py)),
@@ -1531,10 +1538,10 @@ impl PyExactMultipolygon {
     fn __sub__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactEmpty::type_object(py))? {
-            let other = other.extract::<PyExactEmpty>()?;
+            let other = other.extract::<PyRef<PyExactEmpty>>()?;
             Ok((&self.0).difference(&other.0).into_py(py))
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
-            let other = other.extract::<PyExactMultipolygon>()?;
+            let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             let polygons = (&self.0).difference(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
@@ -1546,7 +1553,7 @@ impl PyExactMultipolygon {
                     .into_py(py)),
             }
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
-            let other = other.extract::<PyExactPolygon>()?;
+            let other = other.extract::<PyRef<PyExactPolygon>>()?;
             let polygons = (&self.0).difference(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
@@ -1565,10 +1572,10 @@ impl PyExactMultipolygon {
     fn __xor__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactEmpty::type_object(py))? {
-            let other = other.extract::<PyExactEmpty>()?;
+            let other = other.extract::<PyRef<PyExactEmpty>>()?;
             Ok((&self.0).symmetric_difference(&other.0).into_py(py))
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
-            let other = other.extract::<PyExactMultipolygon>()?;
+            let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             let polygons = (&self.0).symmetric_difference(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
@@ -1580,7 +1587,7 @@ impl PyExactMultipolygon {
                     .into_py(py)),
             }
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
-            let other = other.extract::<PyExactPolygon>()?;
+            let other = other.extract::<PyRef<PyExactPolygon>>()?;
             let polygons = (&self.0).symmetric_difference(&other.0);
             match polygons.len() {
                 0 => Ok(PyExactEmpty::new().into_py(py)),
@@ -1696,8 +1703,8 @@ impl PyExactMultisegment {
         if other.is_instance(PyExactMultisegment::type_object(py))? {
             let other = other.extract::<PyRef<PyExactMultisegment>>()?;
             match op {
-                CompareOp::Eq => Ok((self.0.eq(&other.0)).into_py(py)),
-                CompareOp::Ne => Ok((self.0.ne(&other.0)).into_py(py)),
+                CompareOp::Eq => Ok((self.0 == other.0).into_py(py)),
+                CompareOp::Ne => Ok((self.0 != other.0).into_py(py)),
                 _ => Ok(py.NotImplemented()),
             }
         } else {
