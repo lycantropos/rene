@@ -209,8 +209,9 @@ def rotate_polygon_holes(polygon: _PolygonT, offset: int) -> _PolygonT:
 def rotate_sequence(sequence: t.Sequence[_T1], offset: int) -> t.List[_T1]:
     if not sequence:
         return []
-    offset = (offset % len(sequence)) - len(sequence) * (offset < 0)
-    return [*sequence[-offset:], *sequence[:-offset]]
+    offset %= len(sequence)
+    return [*[sequence[index] for index in range(offset, len(sequence))],
+            *[sequence[index] for index in range(0, offset)]]
 
 
 def to_convex_hull(points: t.Sequence[_PointT]) -> t.List[_PointT]:
