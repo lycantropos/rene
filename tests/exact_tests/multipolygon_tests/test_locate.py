@@ -3,7 +3,7 @@ from hypothesis import given
 from rene import Location
 from rene.exact import (Multipolygon,
                         Point)
-from tests.utils import reverse_multipolygon
+from tests.utils import reverse_multipolygon_polygons
 from . import strategies
 
 
@@ -25,4 +25,4 @@ def test_vertices(multipolygon: Multipolygon) -> None:
 @given(strategies.multipolygons, strategies.points)
 def test_reversals(multipolygon: Multipolygon, point: Point) -> None:
     assert (multipolygon.locate(point)
-            is reverse_multipolygon(multipolygon).locate(point))
+            is reverse_multipolygon_polygons(multipolygon).locate(point))

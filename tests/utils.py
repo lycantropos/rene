@@ -113,8 +113,12 @@ def _(compound: exact.Segment) -> exact.Segment:
     return reverse_segment_coordinates(compound)
 
 
-def reverse_contour(contour: _ContourT) -> _ContourT:
-    return type(contour)(contour.vertices[::-1])
+def reverse_contour_vertices(contour: _ContourT) -> _ContourT:
+    vertices = contour.vertices
+    return type(contour)(reverse_sequence(vertices))
+
+
+_T = t.TypeVar('_T')
 
 
 def reverse_contour_coordinates(contour: _ContourT) -> _ContourT:
@@ -122,8 +126,10 @@ def reverse_contour_coordinates(contour: _ContourT) -> _ContourT:
                           for vertex in contour.vertices])
 
 
-def reverse_multipolygon(multipolygon: _MultipolygonT) -> _MultipolygonT:
-    return type(multipolygon)(multipolygon.polygons[::-1])
+def reverse_multipolygon_polygons(
+        multipolygon: _MultipolygonT
+) -> _MultipolygonT:
+    return type(multipolygon)(reverse_sequence(multipolygon.polygons))
 
 
 def reverse_multipolygon_coordinates(
@@ -134,7 +140,7 @@ def reverse_multipolygon_coordinates(
 
 
 def reverse_multisegment(multisegment: _MultisegmentT) -> _MultisegmentT:
-    return type(multisegment)(multisegment.segments[::-1])
+    return type(multisegment)(reverse_sequence(multisegment.segments))
 
 
 def reverse_multisegment_coordinates(
@@ -155,7 +161,7 @@ def reverse_polygon_coordinates(polygon: _PolygonT) -> _PolygonT:
 
 
 def reverse_polygon_holes(polygon: _PolygonT) -> _PolygonT:
-    return type(polygon)(polygon.border, polygon.holes[::-1])
+    return type(polygon)(polygon.border, reverse_sequence(polygon.holes))
 
 
 def reverse_segment_coordinates(segment: _SegmentT) -> _SegmentT:
@@ -165,6 +171,10 @@ def reverse_segment_coordinates(segment: _SegmentT) -> _SegmentT:
 
 def reverse_segment_endpoints(segment: _SegmentT) -> _SegmentT:
     return type(segment)(segment.end, segment.start)
+
+
+def reverse_sequence(value: t.Sequence[_T]) -> t.Sequence[_T]:
+    return list(reversed(value))
 
 
 def rotate_contour(contour: _ContourT, offset: int) -> _ContourT:

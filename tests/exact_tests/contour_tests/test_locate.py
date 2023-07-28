@@ -3,7 +3,7 @@ from hypothesis import given
 from rene import Location
 from rene.exact import (Contour,
                         Point)
-from tests.utils import (reverse_contour,
+from tests.utils import (reverse_contour_vertices,
                          reverse_contour_coordinates,
                          reverse_point_coordinates)
 from . import strategies
@@ -25,7 +25,7 @@ def test_vertices(contour: Contour) -> None:
 
 @given(strategies.contours, strategies.points)
 def test_reversals(contour: Contour, point: Point) -> None:
-    assert contour.locate(point) is reverse_contour(contour).locate(point)
+    assert contour.locate(point) is reverse_contour_vertices(contour).locate(point)
     assert (contour.locate(point)
             is reverse_contour_coordinates(contour).locate(
                     reverse_point_coordinates(point)

@@ -2,7 +2,7 @@ from hypothesis import given
 
 from rene.exact import Contour
 from tests.utils import (equivalence,
-                         reverse_contour,
+                         reverse_contour_vertices,
                          reverse_contour_coordinates,
                          rotate_contour)
 from . import strategies
@@ -27,4 +27,4 @@ def test_vertices_rotations(contour: Contour, offset: int) -> None:
 
 @given(strategies.contours)
 def test_vertices_reversal(contour: Contour) -> None:
-    assert equivalence(contour.is_valid(), reverse_contour(contour).is_valid())
+    assert equivalence(contour.is_valid(), reverse_contour_vertices(contour).is_valid())

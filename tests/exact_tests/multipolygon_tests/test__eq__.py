@@ -3,7 +3,7 @@ from hypothesis import given
 from rene.exact import Multipolygon
 from tests.utils import (equivalence,
                          implication,
-                         reverse_multipolygon,
+                         reverse_multipolygon_polygons,
                          rotate_multipolygon)
 from . import strategies
 
@@ -30,7 +30,7 @@ def test_alternatives(first: Multipolygon, second: Multipolygon) -> None:
 
 @given(strategies.multipolygons)
 def test_polygons_reversal(multipolygon: Multipolygon) -> None:
-    assert multipolygon == reverse_multipolygon(multipolygon)
+    assert multipolygon == reverse_multipolygon_polygons(multipolygon)
 
 
 @given(strategies.multipolygons, strategies.non_zero_integers)
@@ -40,4 +40,4 @@ def test_polygons_rotations(multipolygon: Multipolygon, offset: int) -> None:
 
 @given(strategies.multipolygons, strategies.non_zero_integers)
 def test_polygons_rotations_of_reversal(multipolygon: Multipolygon, offset: int) -> None:
-    assert multipolygon == rotate_multipolygon(reverse_multipolygon(multipolygon), offset)
+    assert multipolygon == rotate_multipolygon(reverse_multipolygon_polygons(multipolygon), offset)

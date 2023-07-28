@@ -3,7 +3,7 @@ from hypothesis import given
 from rene.exact import (Multipolygon,
                         Polygon)
 from tests.exact_tests.hints import Compound
-from tests.utils import reverse_multipolygon
+from tests.utils import reverse_multipolygon_polygons
 from . import strategies
 
 
@@ -18,4 +18,4 @@ def test_basic(first: Multipolygon, second: Compound) -> None:
 def test_reversals(first: Multipolygon, second: Compound) -> None:
     result = first | second
 
-    assert result == reverse_multipolygon(first) | second
+    assert result == reverse_multipolygon_polygons(first) | second
