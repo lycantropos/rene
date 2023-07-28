@@ -5,6 +5,7 @@ from hypothesis import given
 
 from rene.exact import (Multipolygon,
                         Polygon)
+from tests.utils import are_sequences_equivalent
 from . import strategies
 
 
@@ -13,7 +14,7 @@ def test_basic(polygons: Sequence[Polygon]) -> None:
     result = Multipolygon(polygons)
 
     assert isinstance(result, Multipolygon)
-    assert result.polygons == polygons
+    assert are_sequences_equivalent(result.polygons, polygons)
 
 
 @given(strategies.invalid_count_multipolygons_polygons)

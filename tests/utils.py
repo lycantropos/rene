@@ -26,6 +26,13 @@ def apply(function: t.Callable[..., _T2], args: t.Iterable[_T1]) -> _T2:
     return function(*args)
 
 
+def are_sequences_equivalent(first: t.Sequence[t.Any],
+                             second: t.Sequence[t.Any]) -> bool:
+    return (len(first) == len(second)
+            and all(first[index] == second[index]
+                    for index in range(len(first))))
+
+
 def equivalence(left: bool, right: bool) -> bool:
     return left is right
 

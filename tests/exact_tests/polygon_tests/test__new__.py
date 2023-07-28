@@ -5,6 +5,7 @@ from hypothesis import given
 
 from rene.exact import (Contour,
                         Polygon)
+from tests.utils import are_sequences_equivalent
 from . import strategies
 
 
@@ -16,4 +17,4 @@ def test_basic(components: Tuple[Contour, Sequence[Contour]]) -> None:
 
     assert isinstance(result, Polygon)
     assert result.border == border
-    assert result.holes == holes
+    assert are_sequences_equivalent(result.holes, holes)

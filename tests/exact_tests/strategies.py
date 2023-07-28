@@ -61,6 +61,8 @@ multisegments = (scalars_strategies
                  .flatmap(planar.multisegments)
                  .map(to_multisegment))
 multisegments_segments = multisegments.map(attrgetter('segments'))
+multisegments_segments |= (multisegments_segments.map(list)
+                           | multisegments_segments.map(tuple))
 
 
 def to_contour(raw_contour: hints.Contour) -> Contour:
@@ -69,6 +71,8 @@ def to_contour(raw_contour: hints.Contour) -> Contour:
 
 contours = scalars_strategies.flatmap(planar.contours).map(to_contour)
 contours_vertices = contours.map(attrgetter('vertices'))
+contours_vertices |= (contours_vertices.map(list)
+                      | contours_vertices.map(tuple))
 
 
 def to_polygon(raw_polygon: hints.Polygon) -> Polygon:
@@ -78,6 +82,12 @@ def to_polygon(raw_polygon: hints.Polygon) -> Polygon:
 
 polygons = scalars_strategies.flatmap(planar.polygons).map(to_polygon)
 polygons_components = polygons.map(attrgetter('border', 'holes'))
+polygons_components |= (
+        polygons_components.map(lambda components:
+                                (components[0], list(components[1])))
+        | polygons_components.map(lambda components:
+                                  (components[0], tuple(components[1])))
+)
 
 
 def to_multipolygon(raw_multipolygon: hints.Multipolygon) -> Multipolygon:
@@ -89,3 +99,5 @@ multipolygons = (scalars_strategies
                  .flatmap(planar.multipolygons)
                  .map(to_multipolygon))
 multipolygons_polygons = multipolygons.map(attrgetter('polygons'))
+multipolygons_polygons |= (multipolygons_polygons.map(list)
+                           | multipolygons_polygons.map(tuple))
