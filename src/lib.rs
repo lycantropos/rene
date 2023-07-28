@@ -1,15 +1,19 @@
 use std::cmp::Ordering;
 use std::convert::TryFrom;
+use std::ops::Deref;
 
 use pyo3::basic::CompareOp;
 use pyo3::exceptions::{
-    PyOverflowError, PyTypeError, PyValueError, PyZeroDivisionError,
+    PyIndexError, PyOverflowError, PyTypeError, PyValueError,
+    PyZeroDivisionError,
 };
 use pyo3::prelude::{
     pyclass, pymethods, pymodule, PyModule, PyResult, Python,
 };
 use pyo3::type_object::PyTypeInfo;
-use pyo3::types::{PyFloat, PyFrozenSet, PyLong, PySequence, PyTuple, PyType};
+use pyo3::types::{
+    PyFloat, PyFrozenSet, PyLong, PySequence, PyString, PyTuple, PyType,
+};
 use pyo3::{
     ffi, intern, AsPyPointer, FromPyObject, IntoPy, Py, PyAny, PyErr,
     PyObject, PyRef, ToPyObject,
@@ -28,10 +32,11 @@ use crate::operations::{permute, to_arg_min};
 use crate::oriented::{Orientation, Oriented};
 use crate::relatable::{Relatable, Relation};
 use crate::seidel::Trapezoidation;
+use crate::slice_sequence::SliceSequence;
 use crate::traits::{
-    Difference, Elemental, Intersection, Lengthsome, Multipolygonal,
-    Multisegmental, Multivertexal, Polygonal, Segmental, SymmetricDifference,
-    Union,
+    Difference, Elemental, Intersection, Iterable, Lengthsome, Multipolygonal,
+    Multisegmental, Multivertexal, Polygonal, Segmental, Sequence,
+    SymmetricDifference, Union,
 };
 use crate::triangulation::{
     BoundaryEndpoints, ConstrainedDelaunayTriangulation, DelaunayTriangulation,
@@ -78,6 +83,493 @@ type ExactPoint = geometries::Point<Fraction>;
 type ExactPolygon = geometries::Polygon<Fraction>;
 type ExactSegment = geometries::Segment<Fraction>;
 type ExactTrapezoidation = Trapezoidation<ExactPoint>;
+
+mod reference {
+    use pyo3::{AsPyPointer, PyClass, PyObject, PyRef};
+    use std::ops::Deref;
+
+    pub(super) struct Reference<T> {
+        _python_value: PyObject,
+        rust_ptr: *const T,
+    }
+
+    unsafe impl<T> Send for Reference<T> {}
+
+    impl<T> Deref for Reference<T> {
+        type Target = T;
+
+        fn deref(&self) -> &Self::Target {
+            unsafe { &*self.rust_ptr }
+        }
+    }
+
+    impl<T> Reference<T> {
+        pub(super) fn from_py_ref(value: PyRef<T>) -> Self
+        where
+            T: PyClass,
+        {
+            Reference {
+                _python_value: unsafe {
+                    PyObject::from_borrowed_ptr(value.py(), value.as_ptr())
+                },
+                rust_ptr: value.deref() as *const T,
+            }
+        }
+    }
+}
+
+use reference::Reference;
+
+trait Count<T> {
+    fn count(&self, value: &T) -> usize;
+}
+
+impl<'a, T: PartialEq> Count<T> for SliceSequence<'a, T> {
+    fn count(&self, value: &T) -> usize {
+        self.iter()
+            .filter(|&candidate| candidate.eq(&value))
+            .count()
+    }
+}
+
+trait Position<T> {
+    fn position(
+        &self,
+        value: &T,
+        start: Option<usize>,
+        stop: Option<usize>,
+    ) -> Option<usize>;
+}
+
+impl<'a, T: PartialEq> Position<T> for SliceSequence<'a, T> {
+    fn position(
+        &self,
+        value: &T,
+        start: Option<usize>,
+        stop: Option<usize>,
+    ) -> Option<usize> {
+        let start = start.unwrap_or(0usize);
+        let stop = stop.unwrap_or_else(|| self.len());
+        self.iter()
+            .skip(start)
+            .take(stop.saturating_sub(start))
+            .position(|candidate| candidate.eq(&value))
+            .map(|offset| start + offset)
+    }
+}
+
+type PyExactMultisegmentReference = Reference<PyExactMultisegment>;
+
+#[pyclass(name = "_MultisegmentSegments", module = "rene.exact", sequence)]
+struct PyExactMultisegmentSegments(PyExactMultisegmentReference);
+
+impl PyExactMultisegmentSegments {
+    fn get_segments(&self) -> SliceSequence<ExactSegment> {
+        (&self.0.deref().0).segments()
+    }
+}
+
+#[pymethods]
+impl PyExactMultisegmentSegments {
+    #[pyo3(signature = (segment, /))]
+    fn count(&self, segment: &PyExactSegment) -> usize {
+        self.get_segments().count(&segment.0)
+    }
+
+    #[pyo3(signature = (segment, start=None, stop=None, /))]
+    fn index(
+        &self,
+        segment: &PyExactSegment,
+        start: Option<&PyLong>,
+        stop: Option<&PyLong>,
+        py: Python,
+    ) -> PyResult<usize> {
+        let segments = self.get_segments();
+        match segments.position(
+            &segment.0,
+            start.map(|value| value.extract::<usize>().unwrap_or(0usize)),
+            stop.map(|value| value.extract::<usize>().unwrap_or(0usize))
+            )
+        {
+            Some(result) => Ok(result),
+            None => Err(PyValueError::new_err(format!(
+                "{} is not found among multisegment segments with indices from range({}, {}).",
+                segment.__repr__()?,
+                match start {
+                    Some(start) => start.repr()?,
+                    None => intern!(py, "0"),
+                },
+                match stop {
+                    Some(stop) => stop.repr()?,
+                    None =>
+                        PyString::new(py, &segments.len().to_string()),
+                }
+            ))),
+        }
+    }
+
+    fn __contains__(&self, value: &PyExactSegment) -> bool {
+        self.get_segments().contains(&value.0)
+    }
+
+    fn __getitem__(&self, item: &PyAny) -> PyResult<PyExactSegment> {
+        sequence_get_item(&self.get_segments(), item).map(PyExactSegment)
+    }
+
+    fn __len__(&self) -> usize {
+        self.get_segments().len()
+    }
+
+    fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactMultisegmentSegments::type_object(py))? {
+            let other =
+                other.extract::<PyRef<PyExactMultisegmentSegments>>()?;
+            match op {
+                CompareOp::Eq => Ok(self
+                    .get_segments()
+                    .eq(&other.get_segments())
+                    .into_py(py)),
+                CompareOp::Ne => Ok(self
+                    .get_segments()
+                    .ne(&other.get_segments())
+                    .into_py(py)),
+                _ => Ok(py.NotImplemented()),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
+}
+
+type PyExactContourReference = Reference<PyExactContour>;
+
+#[pyclass(name = "_ContourSegments", module = "rene.exact", sequence)]
+struct PyExactContourSegments(PyExactContourReference);
+
+impl PyExactContourSegments {
+    fn get_segments(&self) -> SliceSequence<ExactSegment> {
+        (&self.0.deref().0).segments()
+    }
+}
+
+#[pymethods]
+impl PyExactContourSegments {
+    #[pyo3(signature = (segment, /))]
+    fn count(&self, segment: &PyExactSegment) -> usize {
+        self.get_segments().count(&segment.0)
+    }
+
+    #[pyo3(signature = (segment, start=None, stop=None, /))]
+    fn index(
+        &self,
+        segment: &PyExactSegment,
+        start: Option<&PyLong>,
+        stop: Option<&PyLong>,
+        py: Python,
+    ) -> PyResult<usize> {
+        let segments = self.get_segments();
+        match segments.position(
+            &segment.0,
+            start.map(|value| value.extract::<usize>().unwrap_or(0usize)),
+            stop.map(|value| value.extract::<usize>().unwrap_or(0usize))
+            )
+        {
+            Some(result) => Ok(result),
+            None => Err(PyValueError::new_err(format!(
+                "{} is not found among contour segments with indices from range({}, {}).",
+                segment.__repr__()?,
+                match start {
+                    Some(start) => start.repr()?,
+                    None => intern!(py, "0"),
+                },
+                match stop {
+                    Some(stop) => stop.repr()?,
+                    None =>
+                        PyString::new(py, &segments.len().to_string()),
+                }
+            ))),
+        }
+    }
+
+    fn __contains__(&self, value: &PyExactSegment) -> bool {
+        self.get_segments().contains(&value.0)
+    }
+
+    fn __getitem__(&self, item: &PyAny) -> PyResult<PyExactSegment> {
+        sequence_get_item(&self.get_segments(), item).map(PyExactSegment)
+    }
+
+    fn __len__(&self) -> usize {
+        self.get_segments().len()
+    }
+
+    fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactContourSegments::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactContourSegments>>()?;
+            match op {
+                CompareOp::Eq => Ok(self
+                    .get_segments()
+                    .eq(&other.get_segments())
+                    .into_py(py)),
+                CompareOp::Ne => Ok(self
+                    .get_segments()
+                    .ne(&other.get_segments())
+                    .into_py(py)),
+                _ => Ok(py.NotImplemented()),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
+}
+
+#[pyclass(name = "_ContourVertices", module = "rene.exact", sequence)]
+struct PyExactContourVertices(PyExactContourReference);
+
+impl PyExactContourVertices {
+    fn get_vertices(&self) -> SliceSequence<ExactPoint> {
+        (&self.0.deref().0).vertices()
+    }
+}
+
+#[pymethods]
+impl PyExactContourVertices {
+    #[pyo3(signature = (point, /))]
+    fn count(&self, point: &PyExactPoint) -> usize {
+        self.get_vertices().count(&point.0)
+    }
+
+    #[pyo3(signature = (point, start=None, stop=None, /))]
+    fn index(
+        &self,
+        point: &PyExactPoint,
+        start: Option<&PyLong>,
+        stop: Option<&PyLong>,
+        py: Python,
+    ) -> PyResult<usize> {
+        let vertices = self.get_vertices();
+        match vertices.position(
+                &point.0,
+                start.map(|value| value.extract::<usize>().unwrap_or(0usize)),
+                stop.map(|value| value.extract::<usize>().unwrap_or(0usize))
+            )
+        {
+            Some(result) => Ok(result),
+            None => Err(PyValueError::new_err(format!(
+                "{} is not found among contour vertices with indices from range({}, {}).",
+                point.__repr__()?,
+                match start {
+                    Some(start) => start.repr()?,
+                    None => intern!(py, "0"),
+                },
+                match stop {
+                    Some(stop) => stop.repr()?,
+                    None =>
+                        PyString::new(py, &vertices.len().to_string()),
+                }
+            ))),
+        }
+    }
+
+    fn __contains__(&self, value: &PyExactPoint) -> bool {
+        self.get_vertices().contains(&value.0)
+    }
+
+    fn __getitem__(&self, item: &PyAny) -> PyResult<PyExactPoint> {
+        sequence_get_item(&self.get_vertices(), item).map(PyExactPoint)
+    }
+
+    fn __len__(&self) -> usize {
+        self.get_vertices().len()
+    }
+
+    fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactContourVertices::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactContourVertices>>()?;
+            match op {
+                CompareOp::Eq => Ok(self
+                    .get_vertices()
+                    .eq(&other.get_vertices())
+                    .into_py(py)),
+                CompareOp::Ne => Ok(self
+                    .get_vertices()
+                    .ne(&other.get_vertices())
+                    .into_py(py)),
+                _ => Ok(py.NotImplemented()),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
+}
+
+type PyExactPolygonReference = Reference<PyExactPolygon>;
+
+#[pyclass(name = "_PolygonHoles", module = "rene.exact", sequence)]
+struct PyExactPolygonHoles(PyExactPolygonReference);
+
+impl PyExactPolygonHoles {
+    fn get_holes(&self) -> SliceSequence<ExactContour> {
+        (&self.0.deref().0).holes()
+    }
+}
+
+#[pymethods]
+impl PyExactPolygonHoles {
+    #[pyo3(signature = (contour, /))]
+    fn count(&self, contour: &PyExactContour) -> usize {
+        self.get_holes().count(&contour.0)
+    }
+
+    #[pyo3(signature = (contour, start=None, stop=None, /))]
+    fn index(
+        &self,
+        contour: &PyExactContour,
+        start: Option<&PyLong>,
+        stop: Option<&PyLong>,
+        py: Python,
+    ) -> PyResult<usize> {
+        let holes = self.get_holes();
+        match holes.position(
+            &contour.0,
+            start.map(|value| value.extract::<usize>().unwrap_or(0usize)),
+            stop.map(|value| value.extract::<usize>().unwrap_or(0usize))
+            )
+        {
+            Some(result) => Ok(result),
+            None => Err(PyValueError::new_err(format!(
+                "{} is not found among polygon holes with indices from range({}, {}).",
+                contour.__repr__()?,
+                match start {
+                    Some(start) => start.repr()?,
+                    None => intern!(py, "0"),
+                },
+                match stop {
+                    Some(stop) => stop.repr()?,
+                    None =>
+                        PyString::new(py, &holes.len().to_string()),
+                }
+            ))),
+        }
+    }
+
+    fn __contains__(&self, value: &PyExactContour) -> bool {
+        self.get_holes().contains(&value.0)
+    }
+
+    fn __getitem__(&self, item: &PyAny) -> PyResult<PyExactContour> {
+        sequence_get_item(&self.get_holes(), item).map(PyExactContour)
+    }
+
+    fn __len__(&self) -> usize {
+        self.get_holes().len()
+    }
+
+    fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactPolygonHoles::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactPolygonHoles>>()?;
+            match op {
+                CompareOp::Eq => {
+                    Ok(self.get_holes().eq(&other.get_holes()).into_py(py))
+                }
+                CompareOp::Ne => {
+                    Ok(self.get_holes().ne(&other.get_holes()).into_py(py))
+                }
+                _ => Ok(py.NotImplemented()),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
+}
+
+type PyExactMultipolygonReference = Reference<PyExactMultipolygon>;
+
+#[pyclass(name = "_MultipolygonPolygons", module = "rene.exact", sequence)]
+struct PyExactMultipolygonPolygons(PyExactMultipolygonReference);
+
+impl PyExactMultipolygonPolygons {
+    fn get_polygons(&self) -> SliceSequence<ExactPolygon> {
+        (&self.0.deref().0).polygons()
+    }
+}
+
+#[pymethods]
+impl PyExactMultipolygonPolygons {
+    #[pyo3(signature = (polygon, /))]
+    fn count(&self, polygon: &PyExactPolygon) -> usize {
+        self.get_polygons().count(&polygon.0)
+    }
+
+    #[pyo3(signature = (polygon, start=None, stop=None, /))]
+    fn index(
+        &self,
+        polygon: &PyExactPolygon,
+        start: Option<&PyLong>,
+        stop: Option<&PyLong>,
+        py: Python,
+    ) -> PyResult<usize> {
+        let polygons = self.get_polygons();
+        match polygons.position(
+            &polygon.0,
+            start.map(|value| value.extract::<usize>().unwrap_or(0usize)),
+            stop.map(|value| value.extract::<usize>().unwrap_or(0usize))
+            )
+        {
+            Some(result) => Ok(result),
+            None => Err(PyValueError::new_err(format!(
+                "{} is not found among multipolygon polygons with indices from range({}, {}).",
+                polygon.__repr__(py)?,
+                match start {
+                    Some(start) => start.repr()?,
+                    None => intern!(py, "0"),
+                },
+                match stop {
+                    Some(stop) => stop.repr()?,
+                    None =>
+                        PyString::new(py, &polygons.len().to_string()),
+                }
+            ))),
+        }
+    }
+
+    fn __contains__(&self, value: &PyExactPolygon) -> bool {
+        self.get_polygons().contains(&value.0)
+    }
+
+    fn __getitem__(&self, item: &PyAny) -> PyResult<PyExactPolygon> {
+        sequence_get_item(&self.get_polygons(), item).map(PyExactPolygon)
+    }
+
+    fn __len__(&self) -> usize {
+        self.get_polygons().len()
+    }
+
+    fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<PyObject> {
+        let py = other.py();
+        if other.is_instance(PyExactMultipolygonPolygons::type_object(py))? {
+            let other =
+                other.extract::<PyRef<PyExactMultipolygonPolygons>>()?;
+            match op {
+                CompareOp::Eq => Ok(self
+                    .get_polygons()
+                    .eq(&other.get_polygons())
+                    .into_py(py)),
+                CompareOp::Ne => Ok(self
+                    .get_polygons()
+                    .ne(&other.get_polygons())
+                    .into_py(py)),
+                _ => Ok(py.NotImplemented()),
+            }
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
+}
 
 impl IntoPy<PyObject> for ExactBox {
     fn into_py(self, py: Python<'_>) -> PyObject {
@@ -526,7 +1018,7 @@ impl PyExactContour {
     #[new]
     #[pyo3(signature = (vertices, /))]
     fn new(vertices: &PySequence) -> PyResult<Self> {
-        try_vertices_to_py_exact_contour(extract_from_sequence::<
+        try_vertices_to_py_exact_contour(extract_from_py_sequence::<
             PyExactPoint,
             ExactPoint,
         >(vertices)?)
@@ -538,8 +1030,8 @@ impl PyExactContour {
     }
 
     #[getter]
-    fn segments(&self) -> Vec<ExactSegment> {
-        (&self.0).segments().into_iter().cloned().collect()
+    fn segments(slf: PyRef<Self>) -> PyExactContourSegments {
+        PyExactContourSegments(PyExactContourReference::from_py_ref(slf))
     }
 
     #[getter]
@@ -548,8 +1040,8 @@ impl PyExactContour {
     }
 
     #[getter]
-    fn vertices(&self) -> Vec<ExactPoint> {
-        (&self.0).vertices().into_iter().cloned().collect()
+    fn vertices(slf: PyRef<Self>) -> PyExactContourVertices {
+        PyExactContourVertices(PyExactContourReference::from_py_ref(slf))
     }
 
     #[getter]
@@ -633,15 +1125,17 @@ impl PyExactContour {
         PyTuple::new(py, &vertices).hash()
     }
 
-    fn __repr__(&self, py: Python) -> PyResult<String> {
+    fn __repr__(&self) -> PyResult<String> {
         Ok(format!(
-            "{}({})",
+            "{}([{}])",
             Self::NAME,
-            self.vertices()
-                .into_py(py)
-                .as_ref(py)
-                .repr()?
-                .extract::<String>()?
+            (&self.0)
+                .vertices()
+                .into_iter()
+                .cloned()
+                .map(|vertex| PyExactPoint(vertex).__repr__())
+                .collect::<PyResult<Vec<String>>>()?
+                .join(", ")
         ))
     }
 
@@ -662,8 +1156,10 @@ impl PyExactContour {
     fn __str__(&self) -> PyResult<String> {
         Ok(format!(
             "Contour([{}])",
-            self.vertices()
+            (&self.0)
+                .vertices()
                 .into_iter()
+                .cloned()
                 .map(|vertex| PyExactPoint(vertex).__str__())
                 .collect::<PyResult<Vec<String>>>()?
                 .join(", ")
@@ -677,7 +1173,7 @@ impl PyExactDelaunayTriangulation {
     #[pyo3(signature = (points, /))]
     fn from_points(_: &PyType, points: &PySequence) -> PyResult<Self> {
         Ok(PyExactDelaunayTriangulation(DelaunayTriangulation::from(
-            extract_from_sequence::<PyExactPoint, ExactPoint>(points)?,
+            extract_from_py_sequence::<PyExactPoint, ExactPoint>(points)?,
         )))
     }
 
@@ -892,7 +1388,7 @@ impl PyExactMultipolygon {
     #[new]
     #[pyo3(signature = (polygons, /))]
     fn new(polygons: &PySequence) -> PyResult<Self> {
-        try_polygons_to_py_exact_multipolygon(extract_from_sequence::<
+        try_polygons_to_py_exact_multipolygon(extract_from_py_sequence::<
             PyExactPolygon,
             ExactPolygon,
         >(polygons)?)
@@ -1106,7 +1602,7 @@ impl PyExactMultisegment {
     #[new]
     #[pyo3(signature = (segments, /))]
     fn new(segments: &PySequence) -> PyResult<Self> {
-        try_segments_to_py_exact_multisegment(extract_from_sequence::<
+        try_segments_to_py_exact_multisegment(extract_from_py_sequence::<
             PyExactSegment,
             ExactSegment,
         >(segments)?)
@@ -1118,8 +1614,10 @@ impl PyExactMultisegment {
     }
 
     #[getter]
-    fn segments(&self) -> Vec<ExactSegment> {
-        (&self.0).segments().into_iter().cloned().collect()
+    fn segments(slf: PyRef<Self>) -> PyExactMultisegmentSegments {
+        PyExactMultisegmentSegments(PyExactMultisegmentReference::from_py_ref(
+            slf,
+        ))
     }
 
     #[getter]
@@ -1174,14 +1672,18 @@ impl PyExactMultisegment {
     }
 
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
-        PyFrozenSet::new(py, &self.segments())?.hash()
+        PyFrozenSet::new(py, (&self.0).segments())?.hash()
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
         Ok(format!(
             "{}({})",
             Self::NAME,
-            self.segments()
+            (&self.0)
+                .segments()
+                .iter()
+                .cloned()
+                .collect::<Vec<_>>()
                 .into_py(py)
                 .as_ref(py)
                 .repr()?
@@ -1207,8 +1709,10 @@ impl PyExactMultisegment {
         Ok(format!(
             "{}([{}])",
             Self::NAME,
-            self.segments()
-                .into_iter()
+            (&self.0)
+                .segments()
+                .iter()
+                .cloned()
                 .map(|segment| PyExactSegment(segment).__str__())
                 .collect::<PyResult<Vec<String>>>()?
                 .join(", ")
@@ -1284,7 +1788,7 @@ impl PyExactPolygon {
     fn new(border: &PyExactContour, holes: &PySequence) -> PyResult<Self> {
         Ok(PyExactPolygon(ExactPolygon::new(
             border.0.clone(),
-            extract_from_sequence::<PyExactContour, ExactContour>(holes)?,
+            extract_from_py_sequence::<PyExactContour, ExactContour>(holes)?,
         )))
     }
 
@@ -1299,8 +1803,8 @@ impl PyExactPolygon {
     }
 
     #[getter]
-    fn holes(&self) -> Vec<ExactContour> {
-        (&self.0).holes().into_iter().cloned().collect()
+    fn holes(slf: PyRef<Self>) -> PyExactPolygonHoles {
+        PyExactPolygonHoles(PyExactPolygonReference::from_py_ref(slf))
     }
 
     #[getter]
@@ -1356,7 +1860,7 @@ impl PyExactPolygon {
             py,
             &[
                 self.border().into_py(py),
-                PyFrozenSet::new(py, &self.holes())?.into_py(py),
+                PyFrozenSet::new(py, (&self.0).holes())?.into_py(py),
             ],
         )
         .hash()
@@ -1400,8 +1904,12 @@ impl PyExactPolygon {
         Ok(format!(
             "{}({}, {})",
             Self::NAME,
-            PyExactContour(self.border()).__repr__(py)?,
-            self.holes()
+            PyExactContour(self.border()).__repr__()?,
+            (&self.0)
+                .holes()
+                .iter()
+                .cloned()
+                .collect::<Vec<_>>()
                 .into_py(py)
                 .as_ref(py)
                 .repr()?
@@ -1428,8 +1936,10 @@ impl PyExactPolygon {
             "{}({}, [{}])",
             Self::NAME,
             PyExactContour(self.border()).__str__()?,
-            self.holes()
-                .into_iter()
+            (&self.0)
+                .holes()
+                .iter()
+                .cloned()
                 .map(|hole| PyExactContour(hole).__str__())
                 .collect::<PyResult<Vec<String>>>()?
                 .join(", ")
@@ -1680,6 +2190,10 @@ impl PyExactTrapezoidation {
     }
 }
 
+fn try_fraction_to_repr(value: &Fraction) -> PyResult<&PyString> {
+    try_fraction_to_py_fraction(value)?.repr()
+}
+
 fn try_fraction_to_py_fraction<'a>(value: &Fraction) -> PyResult<&'a PyAny> {
     let fraction_cls = unsafe { MAYBE_FRACTION_CLS.unwrap_unchecked() };
     fraction_cls.call(
@@ -1851,7 +2365,7 @@ static mut MAYBE_ORIENTATION_CLS: Option<&PyAny> = None;
 static mut MAYBE_LOCATION_CLS: Option<&PyAny> = None;
 static mut MAYBE_RELATION_CLS: Option<&PyAny> = None;
 
-fn extract_from_sequence<
+fn extract_from_py_sequence<
     'a,
     Wrapper: FromPyObject<'a>,
     Wrapped: From<Wrapper>,
@@ -1865,8 +2379,44 @@ fn extract_from_sequence<
     Ok(result)
 }
 
+fn sequence_get_item<T: Clone, SequenceT: Sequence<IndexItem = T>>(
+    sequence: &SequenceT,
+    item: &PyAny,
+) -> PyResult<T> {
+    if item.is_instance_of::<PyLong>() {
+        if let Ok(index) = item.extract::<isize>() {
+            let elements_count = sequence.len() as isize;
+            if !(-elements_count <= index && index < elements_count) {
+                Err(PyIndexError::new_err(format!(
+                    "Index {} is out of range({}, {}).",
+                    index, -elements_count, elements_count
+                )))
+            } else {
+                Ok(sequence[(if index < 0 {
+                    index + elements_count
+                } else {
+                    index
+                }) as usize]
+                    .clone())
+            }
+        } else {
+            Err(PyIndexError::new_err(format!(
+                "Index {} is out of index integer range({}, {}).",
+                item.repr()?,
+                isize::MIN,
+                (isize::MAX as usize) + 1
+            )))
+        }
+    } else {
+        Err(PyTypeError::new_err(format!(
+            "Unsupported item type: {}.",
+            item.get_type().repr()?
+        )))
+    }
+}
+
 #[pymodule]
-fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
+fn _cexact(py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactBox>()?;
     module.add_class::<PyExactConstrainedDelaunayTriangulation>()?;
     module.add_class::<PyExactContour>()?;
@@ -1878,6 +2428,23 @@ fn _cexact(_py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactPoint>()?;
     module.add_class::<PyExactPolygon>()?;
     module.add_class::<PyExactSegment>()?;
+    let collections_abc_module = py.import("collections.abc")?;
+    let sequence_cls =
+        collections_abc_module.getattr(intern!(py, "Sequence"))?;
+    sequence_cls.call_method1(
+        "register",
+        (PyExactContourSegments::type_object(py),),
+    )?;
+    sequence_cls.call_method1(
+        "register",
+        (PyExactContourVertices::type_object(py),),
+    )?;
+    sequence_cls.call_method1(
+        "register",
+        (PyExactMultisegmentSegments::type_object(py),),
+    )?;
+    sequence_cls
+        .call_method1("register", (PyExactPolygonHoles::type_object(py),))?;
     unsafe {
         let py = Python::assume_gil_acquired();
         MAYBE_FRACTION_CLS = Some(
