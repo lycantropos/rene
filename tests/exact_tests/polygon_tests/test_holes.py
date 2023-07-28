@@ -1,3 +1,5 @@
+from collections import abc
+
 from hypothesis import given
 
 from rene.exact import (Contour,
@@ -9,5 +11,5 @@ from . import strategies
 def test_basic(polygon: Polygon) -> None:
     result = polygon.holes
 
-    assert isinstance(result, list)
+    assert isinstance(result, abc.Sequence)
     assert all(isinstance(element, Contour) for element in result)
