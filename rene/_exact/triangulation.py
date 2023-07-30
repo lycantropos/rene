@@ -17,6 +17,7 @@ from rene._triangulation.delaunay import (
 from rene._utils import shrink_collinear_vertices
 
 
+@te.final
 class ConstrainedDelaunayTriangulation:
     @classmethod
     def from_polygon(cls, polygon: hints.Polygon[Fraction], /) -> te.Self:
@@ -43,8 +44,9 @@ class ConstrainedDelaunayTriangulation:
     __module__ = 'rene.exact'
     __slots__ = '_raw',
 
-    def __bool__(self) -> bool:
-        return bool(self._raw)
+    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+        raise TypeError(f'type {cls.__qualname__!r} '
+                        'is not an acceptable base type')
 
     def __new__(
             cls, raw: _RawConstrainedDelaunayTriangulation[Fraction], /
@@ -52,6 +54,9 @@ class ConstrainedDelaunayTriangulation:
         self = super().__new__(cls)
         self._raw = raw
         return self
+
+    def __bool__(self) -> bool:
+        return bool(self._raw)
 
 
 class DelaunayTriangulation:
@@ -82,10 +87,14 @@ class DelaunayTriangulation:
     __module__ = 'rene.exact'
     __slots__ = '_raw',
 
-    def __bool__(self) -> bool:
-        return bool(self._raw)
+    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+        raise TypeError(f'type {cls.__qualname__!r} '
+                        'is not an acceptable base type')
 
     def __new__(cls, raw: _RawDelaunayTriangulation[Fraction], /) -> te.Self:
         self = super().__new__(cls)
         self._raw = raw
         return self
+
+    def __bool__(self) -> bool:
+        return bool(self._raw)

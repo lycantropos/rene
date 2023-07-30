@@ -25,6 +25,7 @@ from rene._utils import (are_contour_vertices_non_degenerate,
                          to_contour_segments)
 
 
+@te.final
 class Contour:
     @property
     def bounding_box(self) -> hints.Box[Fraction]:
@@ -89,6 +90,10 @@ class Contour:
 
     __module__ = 'rene.exact'
     __slots__ = '_vertices',
+
+    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+        raise TypeError(f'type {cls.__qualname__!r} '
+                        'is not an acceptable base type')
 
     def __new__(
             cls, vertices: t.Sequence[hints.Point[Fraction]], /

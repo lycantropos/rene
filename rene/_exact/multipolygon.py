@@ -22,6 +22,7 @@ from rene._utils import (collect_maybe_empty_polygons,
                          collect_non_empty_polygons)
 
 
+@te.final
 class Multipolygon:
     _context: t.ClassVar[Context[Fraction]]
 
@@ -64,6 +65,10 @@ class Multipolygon:
 
     __module__ = 'rene.exact'
     __slots__ = '_polygons',
+
+    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+        raise TypeError(f'type {cls.__qualname__!r} '
+                        'is not an acceptable base type')
 
     def __new__(
             cls, polygons: t.Sequence[hints.Polygon[Fraction]], /

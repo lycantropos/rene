@@ -22,6 +22,7 @@ from rene._utils import (collect_maybe_empty_polygons,
                          locate_point_in_region)
 
 
+@te.final
 class Polygon:
     @property
     def border(self) -> hints.Contour[Fraction]:
@@ -56,6 +57,10 @@ class Polygon:
 
     __module__ = 'rene.exact'
     __slots__ = '_border', '_holes'
+
+    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+        raise TypeError(f'type {cls.__qualname__!r} '
+                        'is not an acceptable base type')
 
     def __new__(cls,
                 border: hints.Contour[Fraction],

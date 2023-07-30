@@ -19,6 +19,7 @@ from rene._context import Context
 from rene._utils import collect_maybe_empty_segments
 
 
+@te.final
 class Multisegment:
     @property
     def bounding_box(self) -> hints.Box[Fraction]:
@@ -67,6 +68,10 @@ class Multisegment:
 
     __module__ = 'rene.exact'
     __slots__ = '_segments',
+
+    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+        raise TypeError(f'type {cls.__qualname__!r} '
+                        'is not an acceptable base type')
 
     def __new__(
             cls, segments: t.Sequence[hints.Segment[Fraction]], /

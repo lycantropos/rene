@@ -20,6 +20,7 @@ from rene._utils import (collect_maybe_empty_segments,
                          unwrap_or_else)
 
 
+@te.final
 class Segment:
     @property
     def bounding_box(self) -> hints.Box[Fraction]:
@@ -56,6 +57,10 @@ class Segment:
 
     __module__ = 'rene.exact'
     __slots__ = '_end', '_start'
+
+    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+        raise TypeError(f'type {cls.__qualname__!r} '
+                        'is not an acceptable base type')
 
     def __new__(cls,
                 start: hints.Point[Fraction],
