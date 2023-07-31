@@ -2,7 +2,6 @@ import typing as t
 from numbers import Rational
 
 import typing_extensions as te
-from reprit.base import generate_repr
 from rithm.fraction import Fraction
 from rithm.integer import Int
 
@@ -43,7 +42,7 @@ class Point:
         ...
 
     def __eq__(self, other: t.Any, /) -> t.Any:
-        return (self.x == other.x and self.y == other.y
+        return (self._x == other._x and self._y == other._y
                 if isinstance(other, Point)
                 else NotImplemented)
 
@@ -56,7 +55,8 @@ class Point:
         ...
 
     def __ge__(self, other: t.Any, /) -> t.Any:
-        return (self.x > other.x or self.x == other.x and self.y >= other.y
+        return (self._x > other._x
+                or self._x == other._x and self._y >= other._y
                 if isinstance(other, Point)
                 else NotImplemented)
 
@@ -69,12 +69,13 @@ class Point:
         ...
 
     def __gt__(self, other: t.Any, /) -> t.Any:
-        return (self.x > other.x or self.x == other.x and self.y > other.y
+        return (self._x > other._x
+                or self._x == other._x and self._y > other._y
                 if isinstance(other, Point)
                 else NotImplemented)
 
     def __hash__(self) -> int:
-        return hash((self.x, self.y))
+        return hash((self._x, self._y))
 
     @t.overload
     def __le__(self, other: te.Self, /) -> bool:
@@ -85,7 +86,8 @@ class Point:
         ...
 
     def __le__(self, other: t.Any, /) -> t.Any:
-        return (self.x < other.x or self.x == other.x and self.y <= other.y
+        return (self._x < other._x
+                or self._x == other._x and self._y <= other._y
                 if isinstance(other, Point)
                 else NotImplemented)
 
@@ -98,11 +100,13 @@ class Point:
         ...
 
     def __lt__(self, other: t.Any, /) -> t.Any:
-        return (self.x < other.x or self.x == other.x and self.y < other.y
+        return (self._x < other._x
+                or self._x == other._x and self._y < other._y
                 if isinstance(other, Point)
                 else NotImplemented)
 
-    __repr__ = generate_repr(__new__)
+    def __repr__(self) -> str:
+        return f'{type(self).__qualname__}({self._x!r}, {self._y!r})'
 
     def __str__(self) -> str:
-        return f'{type(self).__qualname__}({self.x}, {self.y})'
+        return f'{type(self).__qualname__}({self._x}, {self._y})'
