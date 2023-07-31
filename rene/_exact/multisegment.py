@@ -62,6 +62,19 @@ class _MultisegmentSegments(t.Sequence[hints.Segment[Fraction]]):
         return self
 
     @t.overload
+    def __eq__(self, other: te.Self, /) -> bool:
+        ...
+
+    @t.overload
+    def __eq__(self, other: t.Any, /) -> t.Any:
+        ...
+
+    def __eq__(self, other: t.Any, /) -> t.Any:
+        return (self._segments == other._segments
+                if isinstance(other, _MultisegmentSegments)
+                else NotImplemented)
+
+    @t.overload
     def __getitem__(self, item: int) -> hints.Segment[Fraction]:
         ...
 
@@ -198,7 +211,7 @@ class Multisegment:
         return self.locate(point) is not Location.EXTERIOR
 
     @t.overload
-    def __eq__(self, other: Multisegment, /) -> bool:
+    def __eq__(self, other: te.Self, /) -> bool:
         ...
 
     @t.overload
