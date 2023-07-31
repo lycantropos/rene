@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import enum
 import typing as t
 
 import typing_extensions as te
-from reprit.base import generate_repr
 from rithm.fraction import Fraction
 
 from rene import (MIN_CONTOUR_VERTICES_COUNT,
@@ -23,6 +23,151 @@ from rene._utils import (are_contour_vertices_non_degenerate,
                          to_arg_min,
                          to_contour_orientation,
                          to_contour_segments)
+
+
+class _Token(enum.Enum):
+    VALUE = object()
+
+
+_TOKEN = _Token.VALUE
+
+
+@te.final
+class _ContourSegments(t.Sequence[hints.Segment[Fraction]]):
+    def count(self, segment: hints.Segment[Fraction], /) -> int:
+        return self._segments.count(segment)
+
+    def index(self,
+              segment: hints.Segment[Fraction],
+              start: int = 0,
+              stop: t.Optional[int] = None,
+              /) -> int:
+        return self._segments.index(segment, start,
+                                    *(() if stop is None else (stop,)))
+
+    _segments: t.Sequence[hints.Segment[Fraction]]
+
+    __module__ = 'rene.exact'
+    __slots__ = '_segments',
+
+    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+        raise TypeError(f'type {cls.__qualname__!r} '
+                        'is not an acceptable base type')
+
+    def __new__(cls,
+                segments: t.Sequence[hints.Segment[Fraction]],
+                token: _Token,
+                /) -> te.Self:
+        if token is not _TOKEN:
+            raise ValueError(f'{cls.__qualname__!r} is internal '
+                             'and its instances should not be instantiated '
+                             'outside of the library.')
+        self = super().__new__(cls)
+        self._segments = segments
+        return self
+
+    @t.overload
+    def __eq__(self, other: te.Self, /) -> bool:
+        ...
+
+    @t.overload
+    def __eq__(self, other: t.Any, /) -> t.Any:
+        ...
+
+    def __eq__(self, other: t.Any, /) -> t.Any:
+        return (self._segments == other._segments
+                if isinstance(other, _ContourSegments)
+                else NotImplemented)
+
+    @t.overload
+    def __getitem__(self, item: int) -> hints.Segment[Fraction]:
+        ...
+
+    @t.overload
+    def __getitem__(self, item: slice) -> te.Self:
+        ...
+
+    def __getitem__(
+            self, item: t.Union[int, slice]
+    ) -> t.Union[hints.Segment[Fraction], te.Self]:
+        return (_ContourSegments(self._segments[item], _TOKEN)
+                if type(item) is slice
+                else self._segments[item])
+
+    def __hash__(self) -> int:
+        return hash(self._segments)
+
+    def __len__(self) -> int:
+        return len(self._segments)
+
+
+@te.final
+class _ContourVertices(t.Sequence[hints.Point[Fraction]]):
+    def count(self, point: hints.Point[Fraction], /) -> int:
+        return self._vertices.count(point)
+
+    def index(self,
+              point: hints.Point[Fraction],
+              start: int = 0,
+              stop: t.Optional[int] = None,
+              /) -> int:
+        return self._vertices.index(point, start,
+                                    *(() if stop is None else (stop,)))
+
+    _vertices: t.Sequence[hints.Point[Fraction]]
+
+    __module__ = 'rene.exact'
+    __slots__ = '_vertices',
+
+    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+        raise TypeError(f'type {cls.__qualname__!r} '
+                        'is not an acceptable base type')
+
+    def __new__(cls,
+                vertices: t.Sequence[hints.Point[Fraction]],
+                token: _Token,
+                /) -> te.Self:
+        if token is not _TOKEN:
+            raise ValueError(f'{cls.__qualname__!r} is internal '
+                             'and its instances should not be instantiated '
+                             'outside of the library.')
+        self = super().__new__(cls)
+        self._vertices = vertices
+        return self
+
+    @t.overload
+    def __eq__(self, other: te.Self, /) -> bool:
+        ...
+
+    @t.overload
+    def __eq__(self, other: t.Any, /) -> t.Any:
+        ...
+
+    def __eq__(self, other: t.Any, /) -> t.Any:
+        return (self._vertices == other._vertices
+                if isinstance(other, _ContourVertices)
+                else NotImplemented)
+
+    @t.overload
+    def __getitem__(self, item: int) -> hints.Point[Fraction]:
+        ...
+
+    @t.overload
+    def __getitem__(self, item: slice) -> te.Self:
+        ...
+
+    def __getitem__(
+            self, item: t.Union[int, slice]
+    ) -> t.Union[hints.Point[Fraction], te.Self]:
+        return (_ContourVertices(self._vertices[item], _TOKEN)
+                if type(item) is slice
+                else self._vertices[item])
+
+    def __hash__(self) -> int:
+        return hash(self._vertices)
+
+    def __len__(self) -> int:
+        return len(self._vertices)
 
 
 @te.final
@@ -52,24 +197,24 @@ class Contour:
 
     @property
     def segments(self) -> t.Sequence[hints.Segment[Fraction]]:
-        return to_contour_segments(self._vertices, self._context.segment_cls)
+        return _ContourSegments(self._segments, _TOKEN)
 
     @property
     def segments_count(self) -> int:
-        return len(self._vertices)
+        return len(self._segments)
 
     @property
     def vertices(self) -> t.Sequence[hints.Point[Fraction]]:
-        return self._vertices[:]
+        return _ContourVertices(self._vertices, _TOKEN)
 
     @property
     def vertices_count(self) -> int:
         return len(self._vertices)
 
     def is_valid(self) -> bool:
-        if not are_contour_vertices_non_degenerate(self.vertices):
+        if not are_contour_vertices_non_degenerate(self._vertices):
             return False
-        segments = self.segments
+        segments = self._segments
         if len(segments) < MIN_CONTOUR_VERTICES_COUNT:
             return False
         neighbour_segments_touches_count = 0
@@ -82,14 +227,15 @@ class Contour:
     def locate(self, point: hints.Point[Fraction], /) -> Location:
         return (Location.EXTERIOR
                 if all(segment.locate(point) is Location.EXTERIOR
-                       for segment in self.segments)
+                       for segment in self._segments)
                 else Location.BOUNDARY)
 
     _context: t.ClassVar[Context[Fraction]]
-    _vertices: t.List[hints.Point[Fraction]]
+    _segments: t.Sequence[hints.Segment[Fraction]]
+    _vertices: t.Sequence[hints.Point[Fraction]]
 
     __module__ = 'rene.exact'
-    __slots__ = '_vertices',
+    __slots__ = '_segments', '_vertices'
 
     def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
         raise TypeError(f'type {cls.__qualname__!r} '
@@ -103,7 +249,9 @@ class Contour:
                              f'{MIN_CONTOUR_VERTICES_COUNT} vertices, '
                              f'but found {len(vertices)}.')
         self = super().__new__(cls)
-        self._vertices = list(vertices)
+        self._vertices = tuple(vertices)
+        self._segments = to_contour_segments(self._vertices,
+                                             self._context.segment_cls)
         return self
 
     @t.overload
@@ -134,7 +282,7 @@ class Contour:
         return (
             collect_maybe_empty_segments(
                     intersect_segments_with_segments(
-                            self.segments, other.segments,
+                            self._segments, other.segments,
                             self._context.segment_cls
                     ),
                     self._context.empty_cls, self._context.multisegment_cls
@@ -144,7 +292,8 @@ class Contour:
             else (
                 collect_maybe_empty_segments(
                         intersect_segments_with_segment(
-                                self.segments, other, self._context.segment_cls
+                                self._segments, other,
+                                self._context.segment_cls
                         ),
                         self._context.empty_cls, self._context.multisegment_cls
                 )
@@ -166,7 +315,7 @@ class Contour:
     def __eq__(self, other: t.Any, /) -> t.Any:
         return (
             _are_non_empty_unique_sequences_rotationally_equivalent(
-                    self.vertices, other.vertices
+                    self._vertices, other._vertices
             )
             if isinstance(other, Contour)
             else NotImplemented
@@ -175,26 +324,28 @@ class Contour:
     def __hash__(self) -> int:
         vertices = self._vertices
         min_vertex_index = to_arg_min(vertices)
-        vertices = (vertices[min_vertex_index:min_vertex_index + 1]
-                    + vertices[:min_vertex_index][::-1]
-                    + vertices[:min_vertex_index:-1]
+        vertices = ((*vertices[min_vertex_index:min_vertex_index + 1],
+                     *vertices[:min_vertex_index][::-1],
+                     *vertices[:min_vertex_index:-1])
                     if (to_contour_orientation(vertices, min_vertex_index)
                         is Orientation.CLOCKWISE)
-                    else (vertices[min_vertex_index:]
-                          + vertices[:min_vertex_index]))
-        return hash(tuple(vertices))
+                    else (*vertices[min_vertex_index:],
+                          *vertices[:min_vertex_index]))
+        return hash(vertices)
 
-    __repr__ = generate_repr(__new__)
+    def __repr__(self) -> str:
+        return (f'{type(self).__qualname__}([{{}}])'
+                .format(', '.join(map(repr, self._vertices))))
 
     def __str__(self) -> str:
         return (f'{type(self).__qualname__}([{{}}])'
-                .format(', '.join(map(str, self.vertices))))
+                .format(', '.join(map(str, self._vertices))))
 
     def __xor__(self, other: t.Any, /) -> t.Any:
         return (
             collect_maybe_empty_segments(
                     symmetric_subtract_segments_from_segments(
-                            self.segments, other.segments,
+                            self._segments, other.segments,
                             self._context.segment_cls
                     ),
                     self._context.empty_cls, self._context.multisegment_cls
@@ -203,7 +354,7 @@ class Contour:
                                   self._context.multisegment_cls))
             else (
                 symmetric_subtract_segment_from_segments(
-                        self.segments, other, self._context.segment_cls
+                        self._segments, other, self._context.segment_cls
                 )
                 if isinstance(other, self._context.segment_cls)
                 else NotImplemented
