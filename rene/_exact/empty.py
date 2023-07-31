@@ -1,7 +1,6 @@
 import typing as t
 
 import typing_extensions as te
-from reprit.base import generate_repr
 from rithm.fraction import Fraction
 
 from rene import (Location,
@@ -99,10 +98,7 @@ class Empty:
                                context.segment_cls))
                 else NotImplemented)
 
-    __repr__ = generate_repr(__new__,
-                             with_module_name=True)
-
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f'{type(self).__qualname__}()'
 
     @t.overload
