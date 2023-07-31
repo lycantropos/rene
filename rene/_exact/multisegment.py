@@ -4,7 +4,6 @@ import enum
 import typing as t
 
 import typing_extensions as te
-from reprit.base import generate_repr
 from rithm.fraction import Fraction
 
 from rene import (MIN_MULTISEGMENT_SEGMENTS_COUNT,
@@ -189,7 +188,7 @@ class Multisegment:
         return (
             collect_maybe_empty_segments(
                     intersect_segments_with_segments(
-                            self.segments, other.segments,
+                            self._segments, other.segments,
                             self._context.segment_cls
                     ),
                     self._context.empty_cls, self._context.multisegment_cls
@@ -199,7 +198,8 @@ class Multisegment:
             else (
                 collect_maybe_empty_segments(
                         intersect_segments_with_segment(
-                                self.segments, other, self._context.segment_cls
+                                self._segments, other,
+                                self._context.segment_cls
                         ),
                         self._context.empty_cls, self._context.multisegment_cls
                 )
@@ -219,24 +219,26 @@ class Multisegment:
         ...
 
     def __eq__(self, other: t.Any, /) -> t.Any:
-        return (frozenset(self.segments) == frozenset(other.segments)
+        return (frozenset(self._segments) == frozenset(other._segments)
                 if isinstance(other, Multisegment)
                 else NotImplemented)
 
     def __hash__(self) -> int:
-        return hash(frozenset(self.segments))
+        return hash(frozenset(self._segments))
 
-    __repr__ = generate_repr(__new__)
+    def __repr__(self) -> str:
+        return (f'{type(self).__qualname__}([{{}}])'
+                .format(', '.join(map(repr, self._segments))))
 
     def __str__(self) -> str:
         return (f'{type(self).__qualname__}([{{}}])'
-                .format(', '.join(map(str, self.segments))))
+                .format(', '.join(map(str, self._segments))))
 
     def __xor__(self, other: t.Any, /) -> t.Any:
         return (
             collect_maybe_empty_segments(
                     symmetric_subtract_segments_from_segments(
-                            self.segments, other.segments,
+                            self._segments, other.segments,
                             self._context.segment_cls
                     ),
                     self._context.empty_cls, self._context.multisegment_cls
@@ -245,7 +247,7 @@ class Multisegment:
                                   self._context.multisegment_cls))
             else (
                 symmetric_subtract_segment_from_segments(
-                        self.segments, other, self._context.segment_cls
+                        self._segments, other, self._context.segment_cls
                 )
                 if isinstance(other, self._context.segment_cls)
                 else NotImplemented
