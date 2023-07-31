@@ -3,7 +3,6 @@ from __future__ import annotations
 import typing as t
 
 import typing_extensions as te
-from reprit.base import generate_repr
 from rithm.fraction import Fraction
 
 from rene import (Location,
@@ -38,15 +37,16 @@ class Segment:
         return self._start
 
     def locate(self, point: hints.Point[Fraction], /) -> Location:
-        return locate_point_in_segment(self.start, self.end, point)
+        return locate_point_in_segment(self._start, self._end, point)
 
     def relate_to(self, other: hints.Compound[Fraction], /) -> Relation:
         if isinstance(other, self._context.contour_cls):
-            return segment.relate_to_contour(self.start, self.end, other)
+            return segment.relate_to_contour(self._start, self._end, other)
         elif isinstance(other, self._context.multisegment_cls):
-            return segment.relate_to_multisegment(self.start, self.end, other)
+            return segment.relate_to_multisegment(self._start, self._end,
+                                                  other)
         elif isinstance(other, self._context.segment_cls):
-            return segment.relate_to_segment(self.start, self.end,
+            return segment.relate_to_segment(self._start, self._end,
                                              other.start, other.end)
         else:
             raise TypeError(f'Unsupported type: {type(other)!r}.')
@@ -123,7 +123,7 @@ class Segment:
         return self.locate(point) is not Location.EXTERIOR
 
     def __hash__(self) -> int:
-        return hash(frozenset((self.start, self.end)))
+        return hash(frozenset((self._start, self._end)))
 
     @t.overload
     def __eq__(self, other: Segment, /) -> bool:
@@ -134,15 +134,16 @@ class Segment:
         pass
 
     def __eq__(self, other: t.Any, /) -> t.Any:
-        return (self.start == other.start and self.end == other.end
-                or self.end == other.start and self.start == other.end
+        return (self._start == other.start and self._end == other.end
+                or self._end == other.start and self._start == other.end
                 if isinstance(other, Segment)
                 else NotImplemented)
 
-    __repr__ = generate_repr(__new__)
+    def __repr__(self) -> str:
+        return f'{type(self).__qualname__}({self._start!r}, {self._end!r})'
 
     def __str__(self) -> str:
-        return f'{type(self).__qualname__}({self.start}, {self.end})'
+        return f'{type(self).__qualname__}({self._start}, {self._end})'
 
     def __xor__(self, other: t.Any, /) -> t.Any:
         return (
