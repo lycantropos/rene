@@ -42,7 +42,7 @@ else:
                               multisegment: Multisegment,
                               *,
                               seeder: _t.Optional[_Seeder] = None) -> _te.Self:
-            seed = (_random.randint(0, multisegment.segments_count)
+            seed = (_random.randint(0, len(multisegment.segments))
                     if seeder is None
                     else seeder())
             _validate_seed(seed)
