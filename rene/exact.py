@@ -36,10 +36,12 @@ else:
     from .hints import Seeder as _Seeder
 
 
+    @_te.final
     class Trapezoidation:
         @classmethod
         def from_multisegment(cls,
                               multisegment: Multisegment,
+                              /,
                               *,
                               seeder: _t.Optional[_Seeder] = None) -> _te.Self:
             seed = (_random.randint(0, len(multisegment.segments))
@@ -52,6 +54,7 @@ else:
         @classmethod
         def from_polygon(cls,
                          polygon: Polygon,
+                         /,
                          *,
                          seeder: _t.Optional[_Seeder] = None) -> _te.Self:
             seed = (_random.randint(0, _polygon_to_segments_count(polygon))
@@ -70,6 +73,10 @@ else:
         _raw: _RawTrapezoidation
 
         __slots__ = '_raw',
+
+        def __init_subclass__(cls, /, **_kwargs: _t.Any) -> _t.NoReturn:
+            raise TypeError(f'type {cls.__qualname__!r} '
+                            'is not an acceptable base type')
 
         def __new__(cls, raw: _RawTrapezoidation, /) -> _te.Self:
             self = super().__new__(cls)
