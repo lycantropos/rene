@@ -10,13 +10,6 @@ impl<'a, T> SliceSequence<'a, T> {
     pub(crate) fn new(slice: &'a [T]) -> Self {
         Self { slice }
     }
-
-    pub(crate) fn contains(&self, value: &T) -> bool
-    where
-        T: PartialEq,
-    {
-        self.slice.contains(value)
-    }
 }
 
 impl<'a, T> Index<usize> for SliceSequence<'a, T> {
