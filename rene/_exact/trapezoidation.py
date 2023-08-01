@@ -22,7 +22,7 @@ class Trapezoidation:
                           /,
                           *,
                           seeder: t.Optional[hints.Seeder] = None) -> te.Self:
-        seed = (random.randint(0, multisegment.segments_count)
+        seed = (random.randint(0, len(multisegment.segments))
                 if seeder is None
                 else seeder())
         validate_seed(seed)

@@ -297,8 +297,8 @@ def polygon_to_correctly_oriented_segments(
 
 
 def polygon_to_segments_count(polygon: hints.Polygon[hints.Scalar], /) -> int:
-    return polygon.border.segments_count + sum(hole.segments_count
-                                               for hole in polygon.holes)
+    return len(polygon.border.segments) + sum(len(hole.segments)
+                                              for hole in polygon.holes)
 
 
 def rotate_sequence(value: t.Sequence[_T]) -> t.List[_T]:

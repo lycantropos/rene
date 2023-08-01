@@ -317,10 +317,6 @@ class Multisegmental(_te.Protocol[_Segmental_co]):
     def segments(self) -> _t.Sequence[_Segmental_co]:
         ...
 
-    @property
-    def segments_count(self) -> int:
-        ...
-
 
 class Contour(_SelfComparable, Multisegmental[Segment[Scalar]],
               _te.Protocol[Scalar]):
@@ -334,10 +330,6 @@ class Contour(_SelfComparable, Multisegmental[Segment[Scalar]],
 
     @property
     def vertices(self) -> _t.Sequence[Point[Scalar]]:
-        ...
-
-    @property
-    def vertices_count(self) -> int:
         ...
 
     def is_valid(self) -> bool:

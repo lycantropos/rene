@@ -101,15 +101,7 @@ class Contour:
         ...
 
     @property
-    def segments_count(self) -> int:
-        ...
-
-    @property
     def vertices(self) -> _t.Sequence[Point]:
-        ...
-
-    @property
-    def vertices_count(self) -> int:
         ...
 
     def is_valid(self) -> bool:
@@ -216,10 +208,6 @@ class Multipolygon:
     def polygons(self) -> _t.Sequence[Polygon]:
         ...
 
-    @property
-    def polygons_count(self) -> int:
-        ...
-
     def locate(self, point: Point, /) -> _Location:
         ...
 
@@ -316,10 +304,6 @@ class Multisegment:
 
     @property
     def segments(self) -> _t.Sequence[Segment]:
-        ...
-
-    @property
-    def segments_count(self) -> int:
         ...
 
     def locate(self, point: Point, /) -> _Location:
@@ -421,10 +405,6 @@ class Polygon:
 
     @property
     def holes(self) -> _t.Sequence[Contour]:
-        ...
-
-    @property
-    def holes_count(self) -> int:
         ...
 
     def locate(self, point: Point, /) -> _Location:

@@ -61,7 +61,7 @@ def relate_to_contour(
             assert relation is Relation.DISJOINT
     if (not has_no_touch
             and has_no_cross
-            and last_touched_edge_index == contour.segments_count - 1
+            and last_touched_edge_index == len(contour.segments) - 1
             and start != first_contour_segment.start != end
             and start != first_contour_segment.end != end
             and (orient(start, end, first_contour_segment.start)

@@ -981,11 +981,6 @@ impl PyExactContour {
     }
 
     #[getter]
-    fn segments_count(&self) -> usize {
-        (&self.0).segments().len()
-    }
-
-    #[getter]
     fn vertices(slf: PyRef<Self>) -> PyExactContourVertices {
         let vertices_count = (&slf.0).vertices().len();
         PyExactContourVertices {
@@ -994,11 +989,6 @@ impl PyExactContour {
             stop: vertices_count as isize,
             step: 1isize,
         }
-    }
-
-    #[getter]
-    fn vertices_count(&self) -> usize {
-        (&self.0).vertices().len()
     }
 
     #[getter]
@@ -1369,11 +1359,6 @@ impl PyExactMultipolygon {
         }
     }
 
-    #[getter]
-    fn polygons_count(&self) -> usize {
-        (&self.0).polygons().len()
-    }
-
     #[pyo3(signature = (point, /))]
     fn locate(&self, point: &PyExactPoint) -> PyResult<&PyAny> {
         try_location_to_py_location(self.0.locate(&point.0))
@@ -1603,11 +1588,6 @@ impl PyExactMultisegment {
         }
     }
 
-    #[getter]
-    fn segments_count(&self) -> usize {
-        (&self.0).segments().len()
-    }
-
     fn is_valid(&self) -> bool {
         is_multisegment_valid(&self.0)
     }
@@ -1794,11 +1774,6 @@ impl PyExactPolygon {
             stop: holes_count as isize,
             step: 1isize,
         }
-    }
-
-    #[getter]
-    fn holes_count(&self) -> usize {
-        (&self.0).holes().len()
     }
 
     #[pyo3(signature = (point, /))]

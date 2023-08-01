@@ -498,7 +498,7 @@ def _populate_from_contour(
         )
         start, start_index = end, end_index
     last_end_index, last_end = len(endpoints) - 1, endpoints[-1]
-    assert last_end_index == first_start_index + contour.vertices_count - 1
+    assert last_end_index == first_start_index + len(contour.vertices) - 1
     edges.append(
             Edge.from_endpoints(first_start_index, last_end_index,
                                 is_contour_correctly_oriented)
