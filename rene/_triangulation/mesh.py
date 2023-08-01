@@ -3,7 +3,6 @@ from __future__ import annotations
 import typing as t
 
 import typing_extensions as te
-from reprit.base import generate_repr
 
 from rene import (Location,
                   Orientation)
@@ -13,9 +12,7 @@ from rene._utils import (ceil_log2,
                          orient)
 from rene.hints import (Point,
                         Scalar)
-from .quad_edge import (UNDEFINED_EDGE,
-                        QuadEdge,
-                        to_opposite_edge,
+from .quad_edge import (QuadEdge, UNDEFINED_EDGE, to_opposite_edge,
                         to_rotated_edge)
 
 
@@ -160,8 +157,6 @@ class Mesh(t.Generic[Scalar]):
         self.endpoints, self.left_from_start, self.starts_indices = (
             endpoints, left_from_start, starts_indices
         )
-
-    __repr__ = generate_repr(__init__)
 
 
 def build_base_edge(

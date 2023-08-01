@@ -7,7 +7,6 @@ from itertools import (chain,
 from operator import attrgetter
 
 import typing_extensions as te
-from reprit.base import generate_repr
 
 from rene import (Location,
                   Orientation,
@@ -19,9 +18,7 @@ from rene._utils import (locate_point_in_point_point_point_circle,
 from .mesh import (Mesh,
                    build_delaunay_triangulation,
                    orient_point_to_edge)
-from .quad_edge import (UNDEFINED_EDGE,
-                        QuadEdge,
-                        to_opposite_edge)
+from .quad_edge import (QuadEdge, UNDEFINED_EDGE, to_opposite_edge)
 from .vertices import (ContourVertex,
                        PolygonVertexPosition)
 
@@ -252,8 +249,6 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
         assert result is (self.left_side != UNDEFINED_EDGE)
         assert result is (self.right_side != UNDEFINED_EDGE)
         return result
-
-    __repr__ = generate_repr(__init__)
 
 
 def angle_contains_point(vertex: hints.Point[hints.Scalar],

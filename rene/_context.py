@@ -4,8 +4,6 @@ from typing import (Generic,
                     Type)
 
 import typing_extensions as te
-from reprit import serializers
-from reprit.base import generate_repr
 
 from . import hints
 
@@ -76,7 +74,3 @@ class Context(Generic[hints.Scalar]):
         ) = (box_cls, contour_cls, empty_cls, multipolygon_cls,
              multisegment_cls, point_cls, polygon_cls, segment_cls)
         return self
-
-    __repr__ = generate_repr(__new__,
-                             argument_serializer=serializers.complex_,
-                             with_module_name=True)

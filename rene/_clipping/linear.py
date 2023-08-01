@@ -8,7 +8,6 @@ import typing_extensions as te
 from dendroid import red_black
 from dendroid.hints import KeyedSet
 from prioq.base import PriorityQueue
-from reprit.base import generate_repr
 
 from rene import (Orientation,
                   hints)
@@ -88,8 +87,6 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 )
         )
         self._sweep_line_data = red_black.set_(key=self._to_sweep_line_key)
-
-    __repr__ = generate_repr(__init__)
 
     def __bool__(self) -> bool:
         return bool(self._events_queue_data)

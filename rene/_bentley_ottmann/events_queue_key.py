@@ -3,7 +3,6 @@ from __future__ import annotations
 import typing as t
 
 import typing_extensions as te
-from reprit.base import generate_repr
 
 from rene._hints import Map
 from rene.hints import (Point,
@@ -28,8 +27,6 @@ class EventsQueueKey(t.Generic[Scalar]):
         self.endpoints, self.event, self.opposites = (endpoints, event,
                                                       opposites)
         return self
-
-    __repr__ = generate_repr(__new__)
 
     def __lt__(self, other: te.Self, /) -> bool:
         """

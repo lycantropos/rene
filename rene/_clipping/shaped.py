@@ -8,7 +8,6 @@ import typing_extensions as te
 from dendroid import red_black
 from dendroid.hints import KeyedSet
 from prioq.base import PriorityQueue
-from reprit.base import generate_repr
 
 from rene import (Orientation,
                   hints)
@@ -18,10 +17,7 @@ from rene._utils import (is_even,
                          shrink_collinear_vertices,
                          to_segments_intersection_point)
 from .constants import UNDEFINED_INDEX
-from .event import (UNDEFINED_EVENT,
-                    Event,
-                    is_left_event,
-                    is_right_event,
+from .event import (Event, UNDEFINED_EVENT, is_left_event, is_right_event,
                     left_event_to_position)
 from .events_queue_key import BinaryEventsQueueKey as EventsQueueKey
 from .overlap_kind import OverlapKind
@@ -175,8 +171,6 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 )
         )
         self._sweep_line_data = red_black.set_(key=self._to_sweep_line_key)
-
-    __repr__ = generate_repr(__init__)
 
     def __bool__(self) -> bool:
         return bool(self._events_queue_data)

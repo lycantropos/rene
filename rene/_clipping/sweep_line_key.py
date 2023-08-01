@@ -1,7 +1,6 @@
 import typing as t
 
 import typing_extensions as te
-from reprit.base import generate_repr
 
 from rene import (Orientation,
                   hints)
@@ -30,8 +29,6 @@ class BinarySweepLineKey(t.Generic[hints.Scalar]):
             self.opposites
         ) = endpoints, event, is_from_first_operand, opposites
         return self
-
-    __repr__ = generate_repr(__new__)
 
     def __lt__(self, other: te.Self, /) -> bool:
         """

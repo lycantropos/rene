@@ -3,7 +3,6 @@ from __future__ import annotations
 import typing as t
 
 import typing_extensions as te
-from reprit.base import generate_repr
 
 from rene import (Orientation,
                   hints)
@@ -94,5 +93,3 @@ class DelaunayTriangulation(t.Generic[hints.Scalar]):
             left_side, mesh, right_side
         )
         return self
-
-    __repr__ = generate_repr(__new__)

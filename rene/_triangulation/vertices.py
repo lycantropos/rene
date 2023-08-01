@@ -3,7 +3,6 @@ from __future__ import annotations
 import typing as t
 
 import typing_extensions as te
-from reprit.base import generate_repr
 
 from rene.hints import (Point,
                         Scalar)
@@ -53,8 +52,6 @@ class ContourVertex(t.Generic[Scalar]):
                 if isinstance(other, ContourVertex)
                 else NotImplemented)
 
-    __repr__ = generate_repr(__new__)
-
 
 class PolygonVertexPosition:
     contour_index: int
@@ -92,5 +89,3 @@ class PolygonVertexPosition:
                 < (other.contour_index, other.index)
                 if isinstance(other, ContourVertex)
                 else NotImplemented)
-
-    __repr__ = generate_repr(__new__)
