@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import enum
 import typing as t
 
 import typing_extensions as te
-from reprit.base import generate_repr
 from rithm.fraction import Fraction
 
 from rene import (MIN_MULTIPOLYGON_POLYGONS_COUNT,
@@ -22,10 +22,84 @@ from rene._utils import (collect_maybe_empty_polygons,
                          collect_non_empty_polygons)
 
 
+class _Token(enum.Enum):
+    VALUE = object()
+
+
+_TOKEN = _Token.VALUE
+
+
+@te.final
+class _MultipolygonPolygons(t.Sequence[hints.Polygon[Fraction]]):
+    def count(self, polygon: hints.Polygon[Fraction], /) -> int:
+        return self._polygons.count(polygon)
+
+    def index(self,
+              polygon: hints.Polygon[Fraction],
+              start: int = 0,
+              stop: t.Optional[int] = None,
+              /) -> int:
+        return self._polygons.index(polygon, start,
+                                    *(() if stop is None else (stop,)))
+
+    _polygons: t.Sequence[hints.Polygon[Fraction]]
+
+    __module__ = 'rene.exact'
+    __slots__ = '_polygons',
+
+    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+        raise TypeError(f'type {cls.__qualname__!r} '
+                        'is not an acceptable base type')
+
+    def __new__(cls,
+                polygons: t.Sequence[hints.Polygon[Fraction]],
+                token: _Token,
+                /) -> te.Self:
+        if token is not _TOKEN:
+            raise ValueError(f'{cls.__qualname__!r} is internal '
+                             'and its instances should not be instantiated '
+                             'outside of the library.')
+        self = super().__new__(cls)
+        self._polygons = polygons
+        return self
+
+    @t.overload
+    def __eq__(self, other: te.Self, /) -> bool:
+        ...
+
+    @t.overload
+    def __eq__(self, other: t.Any, /) -> t.Any:
+        ...
+
+    def __eq__(self, other: t.Any, /) -> t.Any:
+        return (self._polygons == other._polygons
+                if isinstance(other, _MultipolygonPolygons)
+                else NotImplemented)
+
+    @t.overload
+    def __getitem__(self, item: int) -> hints.Polygon[Fraction]:
+        ...
+
+    @t.overload
+    def __getitem__(self, item: slice) -> te.Self:
+        ...
+
+    def __getitem__(
+            self, item: t.Union[int, slice]
+    ) -> t.Union[hints.Polygon[Fraction], te.Self]:
+        return (_MultipolygonPolygons(self._polygons[item], _TOKEN)
+                if type(item) is slice
+                else self._polygons[item])
+
+    def __hash__(self) -> int:
+        return hash(self._polygons)
+
+    def __len__(self) -> int:
+        return len(self._polygons)
+
+
 @te.final
 class Multipolygon:
-    _context: t.ClassVar[Context[Fraction]]
-
     @property
     def bounding_box(self) -> hints.Box[Fraction]:
         polygons = iter(self._polygons)
@@ -48,7 +122,7 @@ class Multipolygon:
 
     @property
     def polygons(self) -> t.Sequence[hints.Polygon[Fraction]]:
-        return self._polygons[:]
+        return _MultipolygonPolygons(self._polygons, _TOKEN)
 
     @property
     def polygons_count(self) -> int:
@@ -61,6 +135,7 @@ class Multipolygon:
                 return location
         return Location.EXTERIOR
 
+    _context: t.ClassVar[Context[Fraction]]
     _polygons: t.Sequence[hints.Polygon[Fraction]]
 
     __module__ = 'rene.exact'
@@ -116,7 +191,7 @@ class Multipolygon:
             else (
                 collect_maybe_empty_polygons(
                         intersect_polygons_with_polygons(
-                                self.polygons, other.polygons,
+                                self._polygons, other.polygons,
                                 self._context.contour_cls,
                                 self._context.polygon_cls,
                                 self._context.segment_cls
@@ -128,7 +203,7 @@ class Multipolygon:
                 else (
                     collect_maybe_empty_polygons(
                             intersect_polygons_with_polygon(
-                                    self.polygons, other,
+                                    self._polygons, other,
                                     self._context.contour_cls,
                                     self._context.polygon_cls,
                                     self._context.segment_cls
@@ -154,12 +229,12 @@ class Multipolygon:
         ...
 
     def __eq__(self, other: t.Any, /) -> t.Any:
-        return (frozenset(self.polygons) == frozenset(other.polygons)
-                if isinstance(other, self._context.multipolygon_cls)
+        return (frozenset(self._polygons) == frozenset(other.polygons)
+                if isinstance(other, Multipolygon)
                 else NotImplemented)
 
     def __hash__(self) -> int:
-        return hash(frozenset(self.polygons))
+        return hash(frozenset(self._polygons))
 
     @t.overload
     def __or__(self, other: hints.Empty[Fraction], /) -> te.Self:
@@ -188,7 +263,7 @@ class Multipolygon:
             else (
                 collect_non_empty_polygons(
                         unite_polygons_with_polygons(
-                                self.polygons, other.polygons,
+                                self._polygons, other.polygons,
                                 self._context.contour_cls,
                                 self._context.polygon_cls,
                                 self._context.segment_cls
@@ -199,7 +274,7 @@ class Multipolygon:
                 else (
                     collect_non_empty_polygons(
                             unite_polygons_with_polygon(
-                                    self.polygons, other,
+                                    self._polygons, other,
                                     self._context.contour_cls,
                                     self._context.polygon_cls,
                                     self._context.segment_cls
@@ -212,7 +287,13 @@ class Multipolygon:
             )
         )
 
-    __repr__ = generate_repr(__new__)
+    def __repr__(self) -> str:
+        return (f'{type(self).__qualname__}([{{}}])'
+                .format(', '.join(map(repr, self._polygons))))
+
+    def __str__(self) -> str:
+        return (f'{type(self).__qualname__}([{{}}])'
+                .format(', '.join(map(str, self._polygons))))
 
     @t.overload
     def __sub__(self, other: hints.Empty[Fraction], /) -> te.Self:
@@ -247,7 +328,7 @@ class Multipolygon:
             else (
                 collect_maybe_empty_polygons(
                         subtract_polygons_from_polygons(
-                                self.polygons, other.polygons,
+                                self._polygons, other.polygons,
                                 self._context.contour_cls,
                                 self._context.polygon_cls,
                                 self._context.segment_cls
@@ -258,7 +339,7 @@ class Multipolygon:
                 else (
                     collect_maybe_empty_polygons(
                             subtract_polygon_from_polygons(
-                                    self.polygons, other,
+                                    self._polygons, other,
                                     self._context.contour_cls,
                                     self._context.polygon_cls,
                                     self._context.segment_cls
@@ -271,10 +352,6 @@ class Multipolygon:
                 )
             )
         )
-
-    def __str__(self) -> str:
-        return (f'{type(self).__qualname__}([{{}}])'
-                .format(', '.join(map(str, self.polygons))))
 
     @t.overload
     def __xor__(self, other: hints.Empty[Fraction], /) -> te.Self:
@@ -309,7 +386,7 @@ class Multipolygon:
             else (
                 collect_maybe_empty_polygons(
                         symmetric_subtract_polygons_from_polygons(
-                                self.polygons, other.polygons,
+                                self._polygons, other.polygons,
                                 self._context.contour_cls,
                                 self._context.polygon_cls,
                                 self._context.segment_cls
@@ -321,7 +398,7 @@ class Multipolygon:
                 else (
                     collect_maybe_empty_polygons(
                             symmetric_subtract_polygon_from_polygons(
-                                    self.polygons, other,
+                                    self._polygons, other,
                                     self._context.contour_cls,
                                     self._context.polygon_cls,
                                     self._context.segment_cls
