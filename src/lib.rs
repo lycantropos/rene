@@ -191,32 +191,6 @@ impl<'a, T: PartialEq> Count<T> for SliceSequence<'a, T> {
     }
 }
 
-trait Position<T> {
-    fn position(
-        &self,
-        value: &T,
-        start: Option<usize>,
-        stop: Option<usize>,
-    ) -> Option<usize>;
-}
-
-impl<'a, T: PartialEq> Position<T> for SliceSequence<'a, T> {
-    fn position(
-        &self,
-        value: &T,
-        start: Option<usize>,
-        stop: Option<usize>,
-    ) -> Option<usize> {
-        let start = start.unwrap_or(0usize);
-        let stop = stop.unwrap_or_else(|| self.len());
-        self.iter()
-            .skip(start)
-            .take(stop.saturating_sub(start))
-            .position(|candidate| candidate.eq(&value))
-            .map(|offset| start + offset)
-    }
-}
-
 enum GenericIterator<I> {
     Forward(I),
     Backward(std::iter::Rev<I>),
@@ -230,12 +204,6 @@ impl<I: DoubleEndedIterator> Iterator for GenericIterator<I> {
             Self::Forward(iterator) => iterator.next(),
             Self::Backward(iterator) => iterator.next(),
         }
-    }
-}
-
-impl<I: DoubleEndedIterator> ExactSizeIterator for GenericIterator<I> {
-    fn len(&self) -> usize {
-        todo!()
     }
 }
 
