@@ -216,8 +216,6 @@ where
     }
 }
 
-type PyExactMultisegmentReference = Reference<PyExactMultisegment>;
-
 macro_rules! declare_py_sequence {
     (
         $py_sequence: ident,
@@ -414,17 +412,6 @@ macro_rules! declare_py_sequence {
     };
 }
 
-declare_py_sequence!(
-    PyExactMultisegmentSegments,
-    "_MultisegmentSegments",
-    multisegment,
-    PyExactMultisegmentReference,
-    segment,
-    segments,
-    PyExactSegment,
-    ExactSegment
-);
-
 type PyExactContourReference = Reference<PyExactContour>;
 
 declare_py_sequence!(
@@ -449,17 +436,17 @@ declare_py_sequence!(
     ExactPoint
 );
 
-type PyExactPolygonReference = Reference<PyExactPolygon>;
+type PyExactMultisegmentReference = Reference<PyExactMultisegment>;
 
 declare_py_sequence!(
-    PyExactPolygonHoles,
-    "_PolygonHoles",
-    polygon,
-    PyExactPolygonReference,
-    contour,
-    holes,
-    PyExactContour,
-    ExactContour
+    PyExactMultisegmentSegments,
+    "_MultisegmentSegments",
+    multisegment,
+    PyExactMultisegmentReference,
+    segment,
+    segments,
+    PyExactSegment,
+    ExactSegment
 );
 
 type PyExactMultipolygonReference = Reference<PyExactMultipolygon>;
@@ -473,6 +460,19 @@ declare_py_sequence!(
     polygons,
     PyExactPolygon,
     ExactPolygon
+);
+
+type PyExactPolygonReference = Reference<PyExactPolygon>;
+
+declare_py_sequence!(
+    PyExactPolygonHoles,
+    "_PolygonHoles",
+    polygon,
+    PyExactPolygonReference,
+    contour,
+    holes,
+    PyExactContour,
+    ExactContour
 );
 
 impl IntoPy<PyObject> for ExactBox {
