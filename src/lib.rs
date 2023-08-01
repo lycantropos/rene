@@ -23,6 +23,8 @@ use pyo3::{
 use rithm::{big_int, fraction};
 use traiter::numbers::{Endianness, FromBytes, ToBytes, Zero};
 
+use reference::Reference;
+
 use crate::bentley_ottmann::{is_contour_valid, is_multisegment_valid};
 use crate::bounded::Bounded;
 use crate::constants::{
@@ -37,8 +39,8 @@ use crate::seidel::Trapezoidation;
 use crate::slice_sequence::SliceSequence;
 use crate::traits::{
     Difference, Elemental, Intersection, Iterable, Lengthsome, Multipolygonal,
-    Multisegmental, Multivertexal, Polygonal, Segmental, Sequence,
-    SymmetricDifference, Union,
+    Multisegmental, Multivertexal, Polygonal, Segmental, SymmetricDifference,
+    Union,
 };
 use crate::triangulation::{
     BoundaryEndpoints, ConstrainedDelaunayTriangulation, DelaunayTriangulation,
@@ -143,8 +145,9 @@ fn _crene(_py: Python, module: &PyModule) -> PyResult<()> {
 }
 
 mod reference {
-    use pyo3::{AsPyPointer, PyClass, PyObject, PyRef};
     use std::ops::Deref;
+
+    use pyo3::{AsPyPointer, PyClass, PyObject, PyRef};
 
     #[derive(Clone)]
     pub(super) struct Reference<T> {
@@ -176,8 +179,6 @@ mod reference {
         }
     }
 }
-
-use reference::Reference;
 
 trait Count<T> {
     fn count(&self, value: &T) -> usize;
