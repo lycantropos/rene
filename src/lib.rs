@@ -71,6 +71,11 @@ const DIGIT_BITNESS: usize = (Digit::BITS - 1) as usize;
 const _: () =
     assert!(big_int::is_valid_digit_bitness::<Digit, DIGIT_BITNESS>());
 
+static mut MAYBE_FRACTION_CLS: Option<&PyAny> = None;
+static mut MAYBE_ORIENTATION_CLS: Option<&PyAny> = None;
+static mut MAYBE_LOCATION_CLS: Option<&PyAny> = None;
+static mut MAYBE_RELATION_CLS: Option<&PyAny> = None;
+
 type BigInt = big_int::BigInt<Digit, DIGIT_BITNESS>;
 type Fraction = fraction::Fraction<BigInt>;
 type Empty = geometries::Empty;
@@ -100,19 +105,10 @@ fn _cexact(py: Python, module: &PyModule) -> PyResult<()> {
     module.add_class::<PyExactPolygon>()?;
     module.add_class::<PyExactSegment>()?;
     PySequence::register::<PyExactContourSegments>(py)?;
-    let collections_abc_module = py.import("collections.abc")?;
-    let sequence_cls =
-        collections_abc_module.getattr(intern!(py, "Sequence"))?;
-    sequence_cls.call_method1(
-        "register",
-        (PyExactContourVertices::type_object(py),),
-    )?;
-    sequence_cls.call_method1(
-        "register",
-        (PyExactMultisegmentSegments::type_object(py),),
-    )?;
-    sequence_cls
-        .call_method1("register", (PyExactPolygonHoles::type_object(py),))?;
+    PySequence::register::<PyExactContourVertices>(py)?;
+    PySequence::register::<PyExactMultipolygonPolygons>(py)?;
+    PySequence::register::<PyExactMultisegmentSegments>(py)?;
+    PySequence::register::<PyExactPolygonHoles>(py)?;
     unsafe {
         let py = Python::assume_gil_acquired();
         MAYBE_FRACTION_CLS = Some(
@@ -2319,11 +2315,6 @@ fn try_segments_to_py_exact_multisegment(
         Ok(PyExactMultisegment(ExactMultisegment::new(segments)))
     }
 }
-
-static mut MAYBE_FRACTION_CLS: Option<&PyAny> = None;
-static mut MAYBE_ORIENTATION_CLS: Option<&PyAny> = None;
-static mut MAYBE_LOCATION_CLS: Option<&PyAny> = None;
-static mut MAYBE_RELATION_CLS: Option<&PyAny> = None;
 
 fn extract_from_py_sequence<
     'a,
