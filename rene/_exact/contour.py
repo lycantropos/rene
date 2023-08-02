@@ -242,8 +242,8 @@ class Contour:
                              f'but found {len(vertices)}.')
         self = super().__new__(cls)
         self._vertices = tuple(vertices)
-        self._segments = to_contour_segments(self._vertices,
-                                             self._context.segment_cls)
+        self._segments = tuple(to_contour_segments(self._vertices,
+                                                   self._context.segment_cls))
         return self
 
     @t.overload
