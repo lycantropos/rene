@@ -1,9 +1,10 @@
 use crate::bounded::{Bounded, Box};
-use crate::geometries::{Contour, Empty, Point};
-use crate::operations::{
-    do_boxes_have_no_common_continuum, intersect_segment_with_segments,
-    intersect_segments_with_common_continuum_bounding_boxes, Orient,
+use crate::clipping::linear::{
+    intersect_segment_with_segments,
+    intersect_segments_with_common_continuum_bounding_boxes,
 };
+use crate::geometries::{Contour, Empty, Point};
+use crate::operations::{do_boxes_have_no_common_continuum, Orient};
 use crate::relatable::Relatable;
 use crate::traits::{Intersection, Multisegmental, Segmental};
 

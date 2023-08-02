@@ -1,11 +1,11 @@
 use crate::bounded::{Bounded, Box};
-use crate::clipping::linear::Operation;
+use crate::clipping::linear::{intersect_segment_with_segments, Operation};
 use crate::clipping::traits::ReduceEvents;
 use crate::clipping::{is_right_event, Event, INTERSECTION};
 use crate::geometries::{Empty, Point, Segment};
 use crate::operations::{
-    do_boxes_have_no_common_continuum, intersect_segment_with_segments,
-    merge_boxes, to_boxes_ids_with_common_continuum, Orient,
+    do_boxes_have_no_common_continuum, merge_boxes,
+    to_boxes_ids_with_common_continuum, Orient,
 };
 use crate::relatable::Relatable;
 use crate::sweeping::traits::EventsContainer;

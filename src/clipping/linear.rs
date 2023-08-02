@@ -3,11 +3,17 @@ use std::cmp::Reverse;
 use std::collections::{BTreeSet, BinaryHeap};
 use std::ops::Bound::{Excluded, Unbounded};
 
+use crate::bounded;
+use crate::bounded::Bounded;
 use crate::geometries::{Point, Segment};
-use crate::operations::{to_sorted_pair, IntersectCrossingSegments, Orient};
+use crate::operations::{
+    do_boxes_have_common_continuum, to_boxes_ids_with_common_continuum,
+    to_sorted_pair, IntersectCrossingSegments, Orient,
+};
 use crate::oriented::Orientation;
+use crate::relatable::Relatable;
 use crate::sweeping::traits::{EventsContainer, EventsQueue, SweepLine};
-use crate::traits::{Elemental, Segmental};
+use crate::traits::{Elemental, Iterable, Segmental, Sequence};
 
 use super::event::is_right_event;
 use super::event::{
@@ -645,5 +651,164 @@ where
             segments_ids: (0..segments_count).collect(),
             sweep_line_data: BTreeSet::new(),
         }
+    }
+}
+
+pub(crate) fn intersect_segments<
+    Scalar: Ord,
+    Segments: Sequence<IndexItem = Segment<Scalar>>,
+>(
+    first_segments: Segments,
+    second_segments: Segments,
+    first_bounding_box: bounded::Box<&Scalar>,
+    second_bounding_box: bounded::Box<&Scalar>,
+) -> Vec<Segment<Scalar>>
+where
+    Operation<Point<Scalar>, INTERSECTION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Segment<Scalar>>>
+        + for<'a> From<(&'a [&'a Segment<Scalar>], &'a [&'a Segment<Scalar>])>,
+    Point<Scalar>: Clone,
+    for<'a> &'a Point<Scalar>: Orient,
+    for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
+{
+    let first_bounding_boxes = first_segments
+        .iter()
+        .map(Bounded::to_bounding_box)
+        .collect::<Vec<_>>();
+    let first_common_continuum_segments_ids =
+        to_boxes_ids_with_common_continuum(
+            &first_bounding_boxes,
+            &second_bounding_box,
+        );
+    if first_common_continuum_segments_ids.is_empty() {
+        return vec![];
+    } else if first_common_continuum_segments_ids.len() == 1 {
+        return intersect_segment_with_segments(
+            &first_segments[first_common_continuum_segments_ids[0]],
+            second_segments.iter(),
+        );
+    }
+    let second_bounding_boxes = second_segments
+        .iter()
+        .map(Bounded::to_bounding_box)
+        .collect::<Vec<_>>();
+    let second_common_continuum_segments_ids =
+        to_boxes_ids_with_common_continuum(
+            &second_bounding_boxes,
+            &first_bounding_box,
+        );
+    if second_common_continuum_segments_ids.is_empty() {
+        return vec![];
+    }
+    let first_common_continuum_segments = first_common_continuum_segments_ids
+        .iter()
+        .map(|&index| &first_segments[index]);
+    if second_common_continuum_segments_ids.len() == 1 {
+        return intersect_segment_with_segments(
+            &second_segments[second_common_continuum_segments_ids[0]],
+            first_common_continuum_segments,
+        );
+    }
+    let first_common_continuum_segments =
+        first_common_continuum_segments.collect::<Vec<_>>();
+    let second_common_continuum_segments =
+        second_common_continuum_segments_ids
+            .iter()
+            .map(|&index| &second_segments[index])
+            .collect::<Vec<_>>();
+    let min_max_x = unsafe {
+        first_common_continuum_segments_ids
+            .into_iter()
+            .map(|index| first_bounding_boxes[index].get_max_x())
+            .max()
+            .unwrap_unchecked()
+    }
+    .min(unsafe {
+        second_common_continuum_segments_ids
+            .into_iter()
+            .map(|index| second_bounding_boxes[index].get_max_x())
+            .max()
+            .unwrap_unchecked()
+    });
+    let mut operation = Operation::<Point<_>, INTERSECTION>::from((
+        &first_common_continuum_segments,
+        &second_common_continuum_segments,
+    ));
+    let mut events = {
+        let (_, maybe_events_count) = operation.size_hint();
+        debug_assert!(maybe_events_count.is_some());
+        Vec::with_capacity(unsafe { maybe_events_count.unwrap_unchecked() })
+    };
+    while let Some(event) = operation.next() {
+        if operation.get_event_start(event).x().gt(min_max_x) {
+            break;
+        }
+        if is_right_event(event) {
+            events.push(operation.to_opposite_event(event));
+        }
+    }
+    operation.reduce_events(events)
+}
+
+pub(crate) fn intersect_segment_with_segments<
+    'a,
+    Point,
+    Scalar,
+    Segment: From<(Point, Point)>,
+>(
+    segment: &'a Segment,
+    segments: impl Iterator<Item = &'a Segment>,
+) -> Vec<Segment>
+where
+    Scalar: PartialEq,
+    Point: Clone + Ord,
+    for<'b> &'b bounded::Box<&'b Scalar>: Relatable,
+    for<'b> &'b Point: Orient,
+    for<'b> &'b Segment: Bounded<&'b Scalar> + Segmental<Endpoint = &'b Point>,
+{
+    let (start, end) = segment.endpoints();
+    let segment_bounding_box = segment.to_bounding_box();
+    segments
+        .filter(|&segment| {
+            do_boxes_have_common_continuum(
+                &segment.to_bounding_box(),
+                &segment_bounding_box,
+            )
+        })
+        .filter_map(|segment| {
+            intersect_segments_with_common_continuum_bounding_boxes(
+                segment.start(),
+                segment.end(),
+                start,
+                end,
+            )
+            .map(|(start, end)| Segment::from((start.clone(), end.clone())))
+        })
+        .collect()
+}
+
+pub(crate) fn intersect_segments_with_common_continuum_bounding_boxes<
+    'a,
+    Point,
+>(
+    start: &'a Point,
+    end: &'a Point,
+    other_start: &'a Point,
+    other_end: &'a Point,
+) -> Option<(&'a Point, &'a Point)>
+where
+    &'a Point: Orient,
+    Point: Ord,
+{
+    let (start, end) = to_sorted_pair((start, end));
+    let (other_start, other_end) = to_sorted_pair((other_start, other_end));
+    if (start == other_start
+        || end.orient(start, other_start) == Orientation::Collinear)
+        && (end == other_end
+            || end.orient(start, other_end) == Orientation::Collinear)
+    {
+        Some((start.max(other_start), end.min(other_end)))
+    } else {
+        None
     }
 }
