@@ -44,13 +44,11 @@ def test_reversed(segments: t.Sequence[Segment]) -> None:
 
     assert result != segments
     assert len(result) == len(segments)
-    assert [
-               segment
-               for index, (segment, reversed_segment) in enumerate(
-                zip(result, reversed(segments))
-        )
-               if segment != reversed_segment
-           ] == []
+    assert [segment
+            for index, (segment, reversed_segment) in (
+                enumerate(zip(result, reversed(segments)))
+            )
+            if segment != reversed_segment] == []
 
 
 @given(strategies.multisegments_segments)

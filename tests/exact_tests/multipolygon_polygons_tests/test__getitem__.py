@@ -44,13 +44,11 @@ def test_reversed(polygons: t.Sequence[Polygon]) -> None:
 
     assert result != polygons
     assert len(result) == len(polygons)
-    assert [
-               polygon
-               for index, (polygon, reversed_polygon) in enumerate(
-                zip(result, reversed(polygons))
-        )
-               if polygon != reversed_polygon
-           ] == []
+    assert [polygon
+            for index, (polygon, reversed_polygon) in (
+                enumerate(zip(result, reversed(polygons)))
+            )
+            if polygon != reversed_polygon] == []
 
 
 @given(strategies.multipolygons_polygons)

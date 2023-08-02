@@ -44,13 +44,11 @@ def test_reversed(vertices: t.Sequence[Point]) -> None:
 
     assert result != vertices
     assert len(result) == len(vertices)
-    assert [
-               point
-               for index, (point, reversed_point) in enumerate(
-                zip(result, reversed(vertices))
-        )
-               if point != reversed_point
-           ] == []
+    assert [point
+            for index, (point, reversed_point) in (
+                enumerate(zip(result, reversed(vertices)))
+            )
+            if point != reversed_point] == []
 
 
 @given(strategies.contours_vertices)
