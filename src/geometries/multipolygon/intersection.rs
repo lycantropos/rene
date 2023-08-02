@@ -4,7 +4,7 @@ use crate::clipping::traits::ReduceEvents;
 use crate::clipping::{Event, INTERSECTION};
 use crate::geometries::{Empty, Point, Polygon};
 use crate::operations::{
-    do_boxes_have_no_common_area, merge_boxes, to_boxes_ids_with_common_area,
+    do_boxes_have_no_common_area, to_boxes_ids_with_common_area,
 };
 use crate::relatable::Relatable;
 use crate::sweeping::traits::EventsContainer;
@@ -58,21 +58,16 @@ where
     type Output = Vec<Polygon<Scalar>>;
 
     fn intersection(self, other: Self) -> Self::Output {
+        let bounding_box = self.to_bounding_box();
+        let other_bounding_box = other.to_bounding_box();
+        if do_boxes_have_no_common_area(&bounding_box, &other_bounding_box) {
+            return vec![];
+        }
         let bounding_boxes = self
             .polygons
             .iter()
             .map(Bounded::to_bounding_box)
             .collect::<Vec<_>>();
-        let other_bounding_boxes = other
-            .polygons
-            .iter()
-            .map(Bounded::to_bounding_box)
-            .collect::<Vec<_>>();
-        let bounding_box = merge_boxes(&bounding_boxes);
-        let other_bounding_box = merge_boxes(&other_bounding_boxes);
-        if do_boxes_have_no_common_area(&bounding_box, &other_bounding_box) {
-            return vec![];
-        }
         let common_area_polygons_ids = to_boxes_ids_with_common_area(
             &bounding_boxes,
             &other_bounding_box,
@@ -80,6 +75,11 @@ where
         if common_area_polygons_ids.is_empty() {
             return vec![];
         }
+        let other_bounding_boxes = other
+            .polygons
+            .iter()
+            .map(Bounded::to_bounding_box)
+            .collect::<Vec<_>>();
         let other_common_area_polygons_ids = to_boxes_ids_with_common_area(
             &other_bounding_boxes,
             &bounding_box,
@@ -144,16 +144,16 @@ where
     type Output = Vec<Polygon<Scalar>>;
 
     fn intersection(self, other: &Polygon<Scalar>) -> Self::Output {
+        let bounding_box = self.to_bounding_box();
+        let other_bounding_box = other.to_bounding_box();
+        if do_boxes_have_no_common_area(&bounding_box, &other_bounding_box) {
+            return vec![];
+        }
         let bounding_boxes = self
             .polygons
             .iter()
             .map(Bounded::to_bounding_box)
             .collect::<Vec<_>>();
-        let bounding_box = merge_boxes(&bounding_boxes);
-        let other_bounding_box = other.to_bounding_box();
-        if do_boxes_have_no_common_area(&bounding_box, &other_bounding_box) {
-            return vec![];
-        }
         let common_area_polygons_ids = to_boxes_ids_with_common_area(
             &bounding_boxes,
             &other_bounding_box,
