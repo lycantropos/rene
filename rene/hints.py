@@ -411,10 +411,6 @@ class Polygon(_SelfComparable, _te.Protocol[Scalar]):
     def holes(self) -> _t.Sequence[Contour[Scalar]]:
         ...
 
-    @property
-    def holes_count(self) -> int:
-        ...
-
     def locate(self, point: Point[Scalar], /) -> _Location:
         ...
 
@@ -507,10 +503,6 @@ class Multipolygon(_SelfComparable, _te.Protocol[Scalar]):
 
     @property
     def polygons(self) -> _t.Sequence[Polygon[Scalar]]:
-        ...
-
-    @property
-    def polygons_count(self) -> int:
         ...
 
     def locate(self, point: Point[Scalar], /) -> _Location:
