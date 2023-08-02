@@ -4,6 +4,7 @@ from collections import abc
 from hypothesis import given
 
 from rene.exact import Contour
+from tests.utils import equivalence
 from . import strategies
 
 
@@ -42,7 +43,7 @@ def test_shallow_copy(holes: t.Sequence[Contour]) -> None:
 def test_reversed(holes: t.Sequence[Contour]) -> None:
     result = holes[::-1]
 
-    assert result != holes
+    assert equivalence(len(result) == 0, result == holes)
     assert len(result) == len(holes)
     assert [contour
             for index, (contour, reversed_contour) in (
