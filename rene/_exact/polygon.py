@@ -150,16 +150,11 @@ class Polygon:
 
     @t.overload
     def __and__(
-            self, other: hints.Multipolygon[Fraction], /
-    ) -> t.Union[
-        hints.Empty[Fraction], hints.Multipolygon[Fraction],
-        hints.Polygon[Fraction]
-    ]:
-        ...
-
-    @t.overload
-    def __and__(
-            self, other: hints.Polygon[Fraction], /
+            self,
+            other: t.Union[
+                hints.Multipolygon[Fraction], hints.Polygon[Fraction]
+            ],
+            /
     ) -> t.Union[
         hints.Empty[Fraction], hints.Multipolygon[Fraction],
         hints.Polygon[Fraction]
@@ -228,13 +223,11 @@ class Polygon:
 
     @t.overload
     def __or__(
-            self, other: hints.Multipolygon[Fraction], /
-    ) -> t.Union[hints.Multipolygon[Fraction], hints.Polygon[Fraction]]:
-        ...
-
-    @t.overload
-    def __or__(
-            self, other: hints.Polygon[Fraction], /
+            self,
+            other: t.Union[
+                hints.Multipolygon[Fraction], hints.Polygon[Fraction]
+            ],
+            /
     ) -> t.Union[hints.Multipolygon[Fraction], hints.Polygon[Fraction]]:
         ...
 
@@ -287,16 +280,11 @@ class Polygon:
 
     @t.overload
     def __sub__(
-            self, other: hints.Multipolygon[Fraction], /
-    ) -> t.Union[
-        hints.Empty[Fraction], hints.Multipolygon[Fraction],
-        hints.Polygon[Fraction]
-    ]:
-        ...
-
-    @t.overload
-    def __sub__(
-            self, other: hints.Polygon[Fraction], /
+            self,
+            other: t.Union[
+                hints.Multipolygon[Fraction], hints.Polygon[Fraction]
+            ],
+            /
     ) -> t.Union[
         hints.Empty[Fraction], hints.Multipolygon[Fraction],
         hints.Polygon[Fraction]
@@ -344,16 +332,11 @@ class Polygon:
 
     @t.overload
     def __xor__(
-            self, other: hints.Multipolygon[Fraction], /
-    ) -> t.Union[
-        hints.Empty[Fraction], hints.Multipolygon[Fraction],
-        hints.Polygon[Fraction]
-    ]:
-        ...
-
-    @t.overload
-    def __xor__(
-            self, other: hints.Polygon[Fraction], /
+            self,
+            other: t.Union[
+                hints.Multipolygon[Fraction], hints.Polygon[Fraction]
+            ],
+            /
     ) -> t.Union[
         hints.Empty[Fraction], hints.Multipolygon[Fraction],
         hints.Polygon[Fraction]

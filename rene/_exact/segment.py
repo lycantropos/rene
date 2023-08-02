@@ -78,16 +78,12 @@ class Segment:
 
     @t.overload
     def __and__(
-            self, other: hints.Multisegment[Fraction], /
-    ) -> t.Union[
-        hints.Empty[Fraction], hints.Multisegment[Fraction],
-        hints.Segment[Fraction]
-    ]:
-        ...
-
-    @t.overload
-    def __and__(
-            self, other: hints.Segment[Fraction], /
+            self,
+            other: t.Union[
+                hints.Contour[Fraction], hints.Multisegment[Fraction],
+                hints.Segment[Fraction]
+            ],
+            /
     ) -> t.Union[
         hints.Empty[Fraction], hints.Multisegment[Fraction],
         hints.Segment[Fraction]
