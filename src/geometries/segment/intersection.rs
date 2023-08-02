@@ -3,7 +3,7 @@ use crate::clipping::linear::{
     intersect_segment_with_common_continuum_bounding_box_segment,
     intersect_segment_with_segments,
 };
-use crate::geometries::{Contour, Empty, Point};
+use crate::geometries::{Contour, Empty, Multisegment, Point};
 use crate::operations::{do_boxes_have_no_common_continuum, Orient};
 use crate::relatable::Relatable;
 use crate::traits::{Intersection, Multisegmental, Segmental};
@@ -69,6 +69,21 @@ where
             )
             .map(|(start, end)| Segment::new(start.clone(), end.clone()))
         }
+    }
+}
+
+impl<Scalar> Intersection<&Multisegment<Scalar>> for &Segment<Scalar>
+where
+    Scalar: PartialEq,
+    Point<Scalar>: Clone + Ord,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Point<Scalar>: Orient,
+    for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
+{
+    type Output = Vec<Segment<Scalar>>;
+
+    fn intersection(self, other: &Multisegment<Scalar>) -> Self::Output {
+        intersect_segment_with_segments(self, other.segments().into_iter())
     }
 }
 

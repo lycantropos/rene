@@ -164,18 +164,3 @@ where
         intersect_segment_with_segments(other, self.segments.iter())
     }
 }
-
-impl<Scalar> Intersection<&Multisegment<Scalar>> for &Segment<Scalar>
-where
-    Scalar: PartialEq,
-    Point<Scalar>: Clone + Ord,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
-    for<'a> &'a Point<Scalar>: Orient,
-    for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
-{
-    type Output = Vec<Segment<Scalar>>;
-
-    fn intersection(self, other: &Multisegment<Scalar>) -> Self::Output {
-        intersect_segment_with_segments(self, other.segments.iter())
-    }
-}
