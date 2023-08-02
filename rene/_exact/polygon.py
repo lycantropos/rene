@@ -125,7 +125,7 @@ class Polygon:
 
     _context: t.ClassVar[Context[Fraction]]
     _border: hints.Contour[Fraction]
-    _holes: t.List[hints.Contour[Fraction]]
+    _holes: t.Sequence[hints.Contour[Fraction]]
 
     __module__ = 'rene.exact'
     __slots__ = '_border', '_holes'
