@@ -149,7 +149,7 @@ class Multipolygon:
                              f'{MIN_MULTIPOLYGON_POLYGONS_COUNT} polygons, '
                              f'but found {len(polygons)}.')
         self = super().__new__(cls)
-        self._polygons = list(polygons)
+        self._polygons = tuple(polygons)
         return self
 
     @t.overload
