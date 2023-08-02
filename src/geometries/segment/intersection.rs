@@ -1,7 +1,7 @@
 use crate::bounded::{Bounded, Box};
 use crate::clipping::linear::{
+    intersect_segment_with_common_continuum_bounding_box_segment,
     intersect_segment_with_segments,
-    intersect_segments_with_common_continuum_bounding_boxes,
 };
 use crate::geometries::{Contour, Empty, Point};
 use crate::operations::{do_boxes_have_no_common_continuum, Orient};
@@ -61,7 +61,7 @@ where
         } else {
             let (start, end) = self.endpoints();
             let (other_start, other_end) = other.endpoints();
-            intersect_segments_with_common_continuum_bounding_boxes(
+            intersect_segment_with_common_continuum_bounding_box_segment(
                 start,
                 end,
                 other_start,

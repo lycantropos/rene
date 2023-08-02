@@ -654,22 +654,87 @@ where
     }
 }
 
-pub(crate) fn intersect_segments<
+pub(crate) fn intersect_segment_with_segments<
+    'a,
+    Point,
+    Scalar,
+    Segment: From<(Point, Point)>,
+>(
+    segment: &'a Segment,
+    segments: impl Iterator<Item = &'a Segment>,
+) -> Vec<Segment>
+where
+    Scalar: PartialEq,
+    Point: Clone + Ord,
+    for<'b> &'b bounded::Box<&'b Scalar>: Relatable,
+    for<'b> &'b Point: Orient,
+    for<'b> &'b Segment: Bounded<&'b Scalar> + Segmental<Endpoint = &'b Point>,
+{
+    let (start, end) = segment.endpoints();
+    let segment_bounding_box = segment.to_bounding_box();
+    segments
+        .filter(|&segment| {
+            do_boxes_have_common_continuum(
+                &segment.to_bounding_box(),
+                &segment_bounding_box,
+            )
+        })
+        .filter_map(|segment| {
+            intersect_segment_with_common_continuum_bounding_box_segment(
+                segment.start(),
+                segment.end(),
+                start,
+                end,
+            )
+            .map(|(start, end)| Segment::from((start.clone(), end.clone())))
+        })
+        .collect()
+}
+
+pub(crate) fn intersect_segment_with_common_continuum_bounding_box_segment<
+    'a,
+    Point,
+>(
+    start: &'a Point,
+    end: &'a Point,
+    other_start: &'a Point,
+    other_end: &'a Point,
+) -> Option<(&'a Point, &'a Point)>
+where
+    &'a Point: Orient,
+    Point: Ord,
+{
+    let (start, end) = to_sorted_pair((start, end));
+    let (other_start, other_end) = to_sorted_pair((other_start, other_end));
+    if (start == other_start
+        || end.orient(start, other_start) == Orientation::Collinear)
+        && (end == other_end
+            || end.orient(start, other_end) == Orientation::Collinear)
+    {
+        Some((start.max(other_start), end.min(other_end)))
+    } else {
+        None
+    }
+}
+
+pub(crate) fn intersect_segments_with_segments<
     Scalar: Ord,
-    Segments: Sequence<IndexItem = Segment<Scalar>>,
+    Point,
+    Segment: From<(Point, Point)>,
+    Segments: Sequence<IndexItem = Segment>,
 >(
     first_segments: Segments,
     second_segments: Segments,
     first_bounding_box: bounded::Box<&Scalar>,
     second_bounding_box: bounded::Box<&Scalar>,
-) -> Vec<Segment<Scalar>>
+) -> Vec<Segment>
 where
-    Operation<Point<Scalar>, INTERSECTION>: Iterator<Item = Event>
-        + ReduceEvents<Output = Vec<Segment<Scalar>>>
-        + for<'a> From<(&'a [&'a Segment<Scalar>], &'a [&'a Segment<Scalar>])>,
-    Point<Scalar>: Clone,
-    for<'a> &'a Point<Scalar>: Orient,
-    for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
+    Operation<Point, INTERSECTION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Segment>>
+        + for<'a> From<(&'a [&'a Segment], &'a [&'a Segment])>,
+    Point: Clone + Ord,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
+    for<'a> &'a Segment: Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point>,
 {
     let first_bounding_boxes = first_segments
         .iter()
@@ -730,7 +795,7 @@ where
             .max()
             .unwrap_unchecked()
     });
-    let mut operation = Operation::<Point<_>, INTERSECTION>::from((
+    let mut operation = Operation::<Point, INTERSECTION>::from((
         &first_common_continuum_segments,
         &second_common_continuum_segments,
     ));
@@ -748,67 +813,4 @@ where
         }
     }
     operation.reduce_events(events)
-}
-
-pub(crate) fn intersect_segment_with_segments<
-    'a,
-    Point,
-    Scalar,
-    Segment: From<(Point, Point)>,
->(
-    segment: &'a Segment,
-    segments: impl Iterator<Item = &'a Segment>,
-) -> Vec<Segment>
-where
-    Scalar: PartialEq,
-    Point: Clone + Ord,
-    for<'b> &'b bounded::Box<&'b Scalar>: Relatable,
-    for<'b> &'b Point: Orient,
-    for<'b> &'b Segment: Bounded<&'b Scalar> + Segmental<Endpoint = &'b Point>,
-{
-    let (start, end) = segment.endpoints();
-    let segment_bounding_box = segment.to_bounding_box();
-    segments
-        .filter(|&segment| {
-            do_boxes_have_common_continuum(
-                &segment.to_bounding_box(),
-                &segment_bounding_box,
-            )
-        })
-        .filter_map(|segment| {
-            intersect_segments_with_common_continuum_bounding_boxes(
-                segment.start(),
-                segment.end(),
-                start,
-                end,
-            )
-            .map(|(start, end)| Segment::from((start.clone(), end.clone())))
-        })
-        .collect()
-}
-
-pub(crate) fn intersect_segments_with_common_continuum_bounding_boxes<
-    'a,
-    Point,
->(
-    start: &'a Point,
-    end: &'a Point,
-    other_start: &'a Point,
-    other_end: &'a Point,
-) -> Option<(&'a Point, &'a Point)>
-where
-    &'a Point: Orient,
-    Point: Ord,
-{
-    let (start, end) = to_sorted_pair((start, end));
-    let (other_start, other_end) = to_sorted_pair((other_start, other_end));
-    if (start == other_start
-        || end.orient(start, other_start) == Orientation::Collinear)
-        && (end == other_end
-            || end.orient(start, other_end) == Orientation::Collinear)
-    {
-        Some((start.max(other_start), end.min(other_end)))
-    } else {
-        None
-    }
 }

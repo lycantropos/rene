@@ -1,6 +1,7 @@
 use crate::bounded::{Bounded, Box};
 use crate::clipping::linear::{
-    intersect_segment_with_segments, intersect_segments, Operation,
+    intersect_segment_with_segments, intersect_segments_with_segments,
+    Operation,
 };
 use crate::clipping::traits::ReduceEvents;
 use crate::clipping::{Event, INTERSECTION};
@@ -64,7 +65,7 @@ where
         ) {
             return vec![];
         }
-        intersect_segments(
+        intersect_segments_with_segments(
             self.segments(),
             other.segments(),
             bounding_box,
@@ -109,7 +110,7 @@ where
         ) {
             return vec![];
         }
-        intersect_segments(
+        intersect_segments_with_segments(
             self.segments(),
             other.segments(),
             bounding_box,
