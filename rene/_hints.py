@@ -10,4 +10,4 @@ _Value = t.TypeVar('_Value',
 
 class Map(te.Protocol[_Key, _Value]):
     def __getitem__(self, key: _Key, /) -> _Value:
-        pass
+        ...
