@@ -166,12 +166,7 @@ where
     type Output = Vec<Polygon<Scalar>>;
 
     fn union(self, other: &Polygon<Scalar>) -> Self::Output {
-        let bounding_boxes = self
-            .polygons
-            .iter()
-            .map(Bounded::to_bounding_box)
-            .collect::<Vec<_>>();
-        let bounding_box = merge_boxes(&bounding_boxes);
+        let bounding_box = self.to_bounding_box();
         let other_bounding_box = other.to_bounding_box();
         if do_boxes_have_no_common_continuum(
             &bounding_box,
@@ -181,6 +176,11 @@ where
             result.push(other.clone());
             return result;
         }
+        let bounding_boxes = self
+            .polygons
+            .iter()
+            .map(Bounded::to_bounding_box)
+            .collect::<Vec<_>>();
         let boxes_have_common_continuum = to_boxes_have_common_continuum(
             &bounding_boxes,
             &other_bounding_box,
