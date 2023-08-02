@@ -22,82 +22,6 @@ from rene._utils import (collect_maybe_empty_polygons,
                          collect_non_empty_polygons)
 
 
-class _Token(enum.Enum):
-    VALUE = object()
-
-
-_TOKEN = _Token.VALUE
-
-
-@te.final
-class _MultipolygonPolygons(t.Sequence[hints.Polygon[Fraction]]):
-    def count(self, polygon: hints.Polygon[Fraction], /) -> int:
-        return self._polygons.count(polygon)
-
-    def index(self,
-              polygon: hints.Polygon[Fraction],
-              start: int = 0,
-              stop: t.Optional[int] = None,
-              /) -> int:
-        return self._polygons.index(polygon, start,
-                                    *(() if stop is None else (stop,)))
-
-    _polygons: t.Sequence[hints.Polygon[Fraction]]
-
-    __module__ = 'rene.exact'
-    __slots__ = '_polygons',
-
-    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
-        raise TypeError(f'type {cls.__qualname__!r} '
-                        'is not an acceptable base type')
-
-    def __new__(cls,
-                polygons: t.Sequence[hints.Polygon[Fraction]],
-                token: _Token,
-                /) -> te.Self:
-        if token is not _TOKEN:
-            raise ValueError(f'{cls.__qualname__!r} is internal '
-                             'and its instances should not be instantiated '
-                             'outside of the library.')
-        self = super().__new__(cls)
-        self._polygons = polygons
-        return self
-
-    @t.overload
-    def __eq__(self, other: te.Self, /) -> bool:
-        ...
-
-    @t.overload
-    def __eq__(self, other: t.Any, /) -> t.Any:
-        ...
-
-    def __eq__(self, other: t.Any, /) -> t.Any:
-        return (self._polygons == other._polygons
-                if isinstance(other, _MultipolygonPolygons)
-                else NotImplemented)
-
-    @t.overload
-    def __getitem__(self, item: int) -> hints.Polygon[Fraction]:
-        ...
-
-    @t.overload
-    def __getitem__(self, item: slice) -> te.Self:
-        ...
-
-    def __getitem__(
-            self, item: t.Union[int, slice]
-    ) -> t.Union[hints.Polygon[Fraction], te.Self]:
-        return (_MultipolygonPolygons(self._polygons[item], _TOKEN)
-                if type(item) is slice
-                else self._polygons[item])
-
-    def __hash__(self) -> int:
-        return hash(self._polygons)
-
-    def __len__(self) -> int:
-        return len(self._polygons)
-
-
 @te.final
 class Multipolygon:
     @property
@@ -390,3 +314,79 @@ class Multipolygon:
                 )
             )
         )
+
+
+class _Token(enum.Enum):
+    VALUE = object()
+
+
+_TOKEN = _Token.VALUE
+
+
+@te.final
+class _MultipolygonPolygons(t.Sequence[hints.Polygon[Fraction]]):
+    def count(self, polygon: hints.Polygon[Fraction], /) -> int:
+        return self._polygons.count(polygon)
+
+    def index(self,
+              polygon: hints.Polygon[Fraction],
+              start: int = 0,
+              stop: t.Optional[int] = None,
+              /) -> int:
+        return self._polygons.index(polygon, start,
+                                    *(() if stop is None else (stop,)))
+
+    _polygons: t.Sequence[hints.Polygon[Fraction]]
+
+    __module__ = 'rene.exact'
+    __slots__ = '_polygons',
+
+    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+        raise TypeError(f'type {cls.__qualname__!r} '
+                        'is not an acceptable base type')
+
+    def __new__(cls,
+                polygons: t.Sequence[hints.Polygon[Fraction]],
+                token: _Token,
+                /) -> te.Self:
+        if token is not _TOKEN:
+            raise ValueError(f'{cls.__qualname__!r} is internal '
+                             'and its instances should not be instantiated '
+                             'outside of the library.')
+        self = super().__new__(cls)
+        self._polygons = polygons
+        return self
+
+    @t.overload
+    def __eq__(self, other: te.Self, /) -> bool:
+        ...
+
+    @t.overload
+    def __eq__(self, other: t.Any, /) -> t.Any:
+        ...
+
+    def __eq__(self, other: t.Any, /) -> t.Any:
+        return (self._polygons == other._polygons
+                if isinstance(other, _MultipolygonPolygons)
+                else NotImplemented)
+
+    @t.overload
+    def __getitem__(self, item: int) -> hints.Polygon[Fraction]:
+        ...
+
+    @t.overload
+    def __getitem__(self, item: slice) -> te.Self:
+        ...
+
+    def __getitem__(
+            self, item: t.Union[int, slice]
+    ) -> t.Union[hints.Polygon[Fraction], te.Self]:
+        return (_MultipolygonPolygons(self._polygons[item], _TOKEN)
+                if type(item) is slice
+                else self._polygons[item])
+
+    def __hash__(self) -> int:
+        return hash(self._polygons)
+
+    def __len__(self) -> int:
+        return len(self._polygons)
