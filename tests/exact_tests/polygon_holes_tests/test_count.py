@@ -12,7 +12,7 @@ def test_basic(holes: t.Sequence[Contour], contour: Contour) -> None:
     result = holes.count(contour)
 
     assert isinstance(result, int)
-    assert result in range(len(holes))
+    assert result in range(max(len(holes), 1))
     assert equivalence(result == 0, contour not in holes)
 
 
