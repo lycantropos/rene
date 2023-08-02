@@ -8,8 +8,8 @@ from . import strategies
 
 
 @given(strategies.multisegments_segments)
-def test_irreflexivity(multisegment: t.Sequence[Segment]) -> None:
-    assert not multisegment != multisegment
+def test_irreflexivity(segments: t.Sequence[Segment]) -> None:
+    assert not segments != segments
 
 
 @given(strategies.multisegments_segments, strategies.multisegments_segments)

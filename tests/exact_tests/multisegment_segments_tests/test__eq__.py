@@ -10,8 +10,8 @@ from . import strategies
 
 
 @given(strategies.multisegments_segments)
-def test_reflexivity(multisegment: t.Sequence[Segment]) -> None:
-    assert multisegment == multisegment
+def test_reflexivity(segments: t.Sequence[Segment]) -> None:
+    assert segments == segments
 
 
 @given(strategies.multisegments_segments, strategies.multisegments_segments)
