@@ -1,15 +1,18 @@
 use crate::bounded::{Bounded, Box};
-use crate::clipping::linear::{intersect_segment_with_segments, Operation};
+use crate::clipping::linear::{
+    intersect_segment_with_segments, intersect_segments_with_segments,
+    Operation,
+};
 use crate::clipping::traits::ReduceEvents;
 use crate::clipping::{is_right_event, Event, INTERSECTION};
-use crate::geometries::{Empty, Point, Segment};
+use crate::geometries::{Contour, Empty, Point, Segment};
 use crate::operations::{
     do_boxes_have_no_common_continuum, to_boxes_ids_with_common_continuum,
     Orient,
 };
 use crate::relatable::Relatable;
 use crate::sweeping::traits::EventsContainer;
-use crate::traits::{Elemental, Intersection};
+use crate::traits::{Elemental, Intersection, Multisegmental};
 
 use super::types::Multisegment;
 
@@ -147,6 +150,36 @@ where
             }
         }
         operation.reduce_events(events)
+    }
+}
+
+impl<Scalar: Ord> Intersection<&Contour<Scalar>> for &Multisegment<Scalar>
+where
+    Operation<Point<Scalar>, INTERSECTION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Segment<Scalar>>>
+        + for<'a> From<(&'a [&'a Segment<Scalar>], &'a [&'a Segment<Scalar>])>,
+    Point<Scalar>: Clone,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Point<Scalar>: Orient,
+    for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
+{
+    type Output = Vec<Segment<Scalar>>;
+
+    fn intersection(self, other: &Contour<Scalar>) -> Self::Output {
+        let bounding_box = self.to_bounding_box();
+        let other_bounding_box = other.to_bounding_box();
+        if do_boxes_have_no_common_continuum(
+            &bounding_box,
+            &other_bounding_box,
+        ) {
+            return vec![];
+        }
+        intersect_segments_with_segments(
+            self.segments(),
+            other.segments(),
+            bounding_box,
+            other_bounding_box,
+        )
     }
 }
 
