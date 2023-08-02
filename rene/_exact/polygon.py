@@ -139,7 +139,7 @@ class Polygon:
                 holes: t.Sequence[hints.Contour[Fraction]],
                 /) -> te.Self:
         self = super().__new__(cls)
-        self._border, self._holes = border, list(holes)
+        self._border, self._holes = border, tuple(holes)
         return self
 
     @t.overload
