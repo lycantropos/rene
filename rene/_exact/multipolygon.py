@@ -124,10 +124,6 @@ class Multipolygon:
     def polygons(self) -> t.Sequence[hints.Polygon[Fraction]]:
         return _MultipolygonPolygons(self._polygons, _TOKEN)
 
-    @property
-    def polygons_count(self) -> int:
-        return len(self._polygons)
-
     def locate(self, point: hints.Point[Fraction], /) -> Location:
         for polygon in self._polygons:
             location = polygon.locate(point)

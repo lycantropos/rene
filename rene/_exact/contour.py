@@ -200,16 +200,8 @@ class Contour:
         return _ContourSegments(self._segments, _TOKEN)
 
     @property
-    def segments_count(self) -> int:
-        return len(self._segments)
-
-    @property
     def vertices(self) -> t.Sequence[hints.Point[Fraction]]:
         return _ContourVertices(self._vertices, _TOKEN)
-
-    @property
-    def vertices_count(self) -> int:
-        return len(self._vertices)
 
     def is_valid(self) -> bool:
         if not are_contour_vertices_non_degenerate(self._vertices):

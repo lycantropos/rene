@@ -124,10 +124,6 @@ class Multisegment:
     def segments(self) -> t.Sequence[hints.Segment[Fraction]]:
         return _MultisegmentSegments(self._segments, _TOKEN)
 
-    @property
-    def segments_count(self) -> int:
-        return len(self._segments)
-
     def locate(self, point: hints.Point[Fraction], /) -> Location:
         for segment in self._segments:
             location = segment.locate(point)

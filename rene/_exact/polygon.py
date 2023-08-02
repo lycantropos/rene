@@ -112,10 +112,6 @@ class Polygon:
     def holes(self) -> t.Sequence[hints.Contour[Fraction]]:
         return _PolygonHoles(self._holes, _TOKEN)
 
-    @property
-    def holes_count(self) -> int:
-        return len(self._holes)
-
     def locate(self, point: hints.Point[Fraction], /) -> Location:
         location_without_holes = locate_point_in_region(self._border, point)
         if location_without_holes is Location.INTERIOR:
