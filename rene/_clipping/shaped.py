@@ -163,7 +163,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         self._events_queue_data: PriorityQueue[
             EventsQueueKey[hints.Scalar], Event
         ] = PriorityQueue(
-                *range(initial_events_count),
+                *map(Event, range(initial_events_count)),
                 key=lambda event: EventsQueueKey(
                         event,
                         self._is_from_first_operand_event(event),
