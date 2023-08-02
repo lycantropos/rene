@@ -11,6 +11,7 @@ use pyo3::exceptions::{
 use pyo3::prelude::{
     pyclass, pymethods, pymodule, PyModule, PyResult, Python,
 };
+use pyo3::sync::GILOnceCell;
 use pyo3::type_object::PyTypeInfo;
 use pyo3::types::{
     PyFloat, PyFrozenSet, PyLong, PySequence, PySlice, PyString, PyTuple,
@@ -18,7 +19,7 @@ use pyo3::types::{
 };
 use pyo3::{
     ffi, intern, AsPyPointer, FromPyObject, FromPyPointer, IntoPy, Py, PyAny,
-    PyErr, PyObject, PyRef, ToPyObject,
+    PyCell, PyErr, PyObject, PyRef, ToPyObject,
 };
 use rithm::{big_int, fraction};
 use traiter::numbers::{Endianness, FromBytes, ToBytes, Zero};
@@ -630,56 +631,149 @@ impl PyOrientation {
 #[pyclass(name = "Relation", module = "rene")]
 struct PyRelation(Relation);
 
+fn to_py_relation_values(py: Python) -> &[Py<PyRelation>; 11] {
+    static VALUES: GILOnceCell<[Py<PyRelation>; 11]> = GILOnceCell::new();
+    VALUES.get_or_init(py, || {
+        [
+            PyCell::new(py, PyRelation(Relation::Component))
+                .unwrap()
+                .into(),
+            PyCell::new(py, PyRelation(Relation::Composite))
+                .unwrap()
+                .into(),
+            PyCell::new(py, PyRelation(Relation::Cover)).unwrap().into(),
+            PyCell::new(py, PyRelation(Relation::Cross)).unwrap().into(),
+            PyCell::new(py, PyRelation(Relation::Disjoint))
+                .unwrap()
+                .into(),
+            PyCell::new(py, PyRelation(Relation::Enclosed))
+                .unwrap()
+                .into(),
+            PyCell::new(py, PyRelation(Relation::Encloses))
+                .unwrap()
+                .into(),
+            PyCell::new(py, PyRelation(Relation::Equal)).unwrap().into(),
+            PyCell::new(py, PyRelation(Relation::Overlap))
+                .unwrap()
+                .into(),
+            PyCell::new(py, PyRelation(Relation::Touch)).unwrap().into(),
+            PyCell::new(py, PyRelation(Relation::Within))
+                .unwrap()
+                .into(),
+        ]
+    })
+}
+
+#[allow(non_snake_case)]
 #[pymethods]
 impl PyRelation {
     #[classattr]
-    const COMPONENT: PyRelation = PyRelation(Relation::Component);
+    fn COMPONENT(py: Python) -> Py<PyRelation> {
+        to_py_relation_values(py)[0].clone_ref(py)
+    }
 
     #[classattr]
-    const COMPOSITE: PyRelation = PyRelation(Relation::Composite);
+    fn COMPOSITE(py: Python) -> Py<PyRelation> {
+        to_py_relation_values(py)[1].clone_ref(py)
+    }
 
     #[classattr]
-    const COVER: PyRelation = PyRelation(Relation::Cover);
+    fn COVER(py: Python) -> Py<PyRelation> {
+        to_py_relation_values(py)[2].clone_ref(py)
+    }
 
     #[classattr]
-    const CROSS: PyRelation = PyRelation(Relation::Cross);
+    fn CROSS(py: Python) -> Py<PyRelation> {
+        to_py_relation_values(py)[3].clone_ref(py)
+    }
 
     #[classattr]
-    const DISJOINT: PyRelation = PyRelation(Relation::Disjoint);
+    fn DISJOINT(py: Python) -> Py<PyRelation> {
+        to_py_relation_values(py)[4].clone_ref(py)
+    }
 
     #[classattr]
-    const ENCLOSED: PyRelation = PyRelation(Relation::Enclosed);
+    fn ENCLOSED(py: Python) -> Py<PyRelation> {
+        to_py_relation_values(py)[5].clone_ref(py)
+    }
 
     #[classattr]
-    const ENCLOSES: PyRelation = PyRelation(Relation::Encloses);
+    fn ENCLOSES(py: Python) -> Py<PyRelation> {
+        to_py_relation_values(py)[6].clone_ref(py)
+    }
 
     #[classattr]
-    const EQUAL: PyRelation = PyRelation(Relation::Equal);
+    fn EQUAL(py: Python) -> Py<PyRelation> {
+        to_py_relation_values(py)[7].clone_ref(py)
+    }
 
     #[classattr]
-    const OVERLAP: PyRelation = PyRelation(Relation::Overlap);
+    fn OVERLAP(py: Python) -> Py<PyRelation> {
+        to_py_relation_values(py)[8].clone_ref(py)
+    }
 
     #[classattr]
-    const TOUCH: PyRelation = PyRelation(Relation::Touch);
+    fn TOUCH(py: Python) -> Py<PyRelation> {
+        to_py_relation_values(py)[9].clone_ref(py)
+    }
 
     #[classattr]
-    const WITHIN: PyRelation = PyRelation(Relation::Within);
+    fn WITHIN(py: Python) -> Py<PyRelation> {
+        to_py_relation_values(py)[10].clone_ref(py)
+    }
+
+    #[new]
+    #[pyo3(signature = (value, /))]
+    fn new(value: &PyAny, py: Python) -> PyResult<Py<Self>> {
+        let values = to_py_relation_values(py);
+        match value.extract::<usize>() {
+            Ok(value) if 1 <= value && value <= values.len() => {
+                Ok(values[value - 1].clone_ref(py))
+            }
+            _ => Err(PyValueError::new_err(format!(
+                "{} is not a valid {}",
+                value.repr()?,
+                Self::NAME
+            ))),
+        }
+    }
 
     #[getter]
-    fn complement<'a>(&self, py: Python<'a>) -> PyResult<&'a PyAny> {
-        PyRelation::type_object(py).getattr(match self.0 {
-            Relation::Component => intern!(py, "COMPOSITE"),
-            Relation::Composite => intern!(py, "COMPONENT"),
-            Relation::Cover => intern!(py, "WITHIN"),
-            Relation::Cross => intern!(py, "CROSS"),
-            Relation::Disjoint => intern!(py, "DISJOINT"),
-            Relation::Enclosed => intern!(py, "ENCLOSES"),
-            Relation::Encloses => intern!(py, "ENCLOSED"),
-            Relation::Equal => intern!(py, "EQUAL"),
-            Relation::Overlap => intern!(py, "OVERLAP"),
-            Relation::Touch => intern!(py, "TOUCH"),
-            Relation::Within => intern!(py, "COVER"),
-        })
+    fn complement(&self, py: Python) -> Py<PyRelation> {
+        match self.0 {
+            Relation::Component => Self::COMPOSITE(py),
+            Relation::Composite => Self::COMPONENT(py),
+            Relation::Cover => Self::WITHIN(py),
+            Relation::Cross => Self::CROSS(py),
+            Relation::Disjoint => Self::DISJOINT(py),
+            Relation::Enclosed => Self::ENCLOSES(py),
+            Relation::Encloses => Self::ENCLOSED(py),
+            Relation::Equal => Self::EQUAL(py),
+            Relation::Overlap => Self::OVERLAP(py),
+            Relation::Touch => Self::TOUCH(py),
+            Relation::Within => Self::COVER(py),
+        }
+    }
+
+    #[getter]
+    fn value(&self) -> u8 {
+        match self.0 {
+            Relation::Component => 1,
+            Relation::Composite => 2,
+            Relation::Cover => 3,
+            Relation::Cross => 4,
+            Relation::Disjoint => 5,
+            Relation::Enclosed => 6,
+            Relation::Encloses => 7,
+            Relation::Equal => 8,
+            Relation::Overlap => 9,
+            Relation::Touch => 10,
+            Relation::Within => 11,
+        }
+    }
+
+    fn __getnewargs__<'a>(&self, py: Python<'a>) -> &'a PyTuple {
+        PyTuple::new(py, [self.value()])
     }
 
     fn __repr__(&self) -> String {
