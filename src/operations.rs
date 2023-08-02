@@ -377,37 +377,6 @@ pub(crate) fn merge_bounds<
     (min_x, max_x, min_y, max_y)
 }
 
-pub(crate) fn merge_boxes<Scalar: Clone + PartialOrd>(
-    boxes: &[bounded::Box<Scalar>],
-) -> bounded::Box<Scalar> {
-    debug_assert!(!boxes.is_empty());
-    let first_box = &boxes[0];
-    let mut max_x = first_box.get_max_x();
-    let mut max_y = first_box.get_max_y();
-    let mut min_x = first_box.get_min_x();
-    let mut min_y = first_box.get_min_y();
-    for box_ in &boxes[1..] {
-        if box_.get_max_x() > max_x {
-            max_x = box_.get_max_x();
-        }
-        if box_.get_max_y() > max_y {
-            max_y = box_.get_max_y();
-        }
-        if box_.get_min_x() < min_x {
-            min_x = box_.get_min_x();
-        }
-        if box_.get_min_y() < min_y {
-            min_y = box_.get_min_y();
-        }
-    }
-    bounded::Box::new(
-        min_x.clone(),
-        max_x.clone(),
-        min_y.clone(),
-        max_y.clone(),
-    )
-}
-
 pub(crate) fn coordinates_iterator_to_bounds<
     Iterator: std::iter::Iterator<Item = (Scalar, Scalar)>,
     Scalar: PartialOrd,
