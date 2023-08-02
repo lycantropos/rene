@@ -4,8 +4,8 @@ use crate::clipping::traits::ReduceEvents;
 use crate::clipping::{is_right_event, Event, INTERSECTION};
 use crate::geometries::{Empty, Point, Segment};
 use crate::operations::{
-    do_boxes_have_no_common_continuum, merge_boxes,
-    to_boxes_ids_with_common_continuum, Orient,
+    do_boxes_have_no_common_continuum, to_boxes_ids_with_common_continuum,
+    Orient,
 };
 use crate::relatable::Relatable;
 use crate::sweeping::traits::EventsContainer;
@@ -59,24 +59,19 @@ where
     type Output = Vec<Segment<Scalar>>;
 
     fn intersection(self, other: Self) -> Self::Output {
-        let bounding_boxes = self
-            .segments
-            .iter()
-            .map(Bounded::to_bounding_box)
-            .collect::<Vec<_>>();
-        let other_bounding_boxes = other
-            .segments
-            .iter()
-            .map(Bounded::to_bounding_box)
-            .collect::<Vec<_>>();
-        let bounding_box = merge_boxes(&bounding_boxes);
-        let other_bounding_box = merge_boxes(&other_bounding_boxes);
+        let bounding_box = self.to_bounding_box();
+        let other_bounding_box = other.to_bounding_box();
         if do_boxes_have_no_common_continuum(
             &bounding_box,
             &other_bounding_box,
         ) {
             return vec![];
         }
+        let bounding_boxes = self
+            .segments
+            .iter()
+            .map(Bounded::to_bounding_box)
+            .collect::<Vec<_>>();
         let common_continuum_segments_ids = to_boxes_ids_with_common_continuum(
             &bounding_boxes,
             &other_bounding_box,
@@ -89,6 +84,11 @@ where
                 other.segments.iter(),
             );
         }
+        let other_bounding_boxes = other
+            .segments
+            .iter()
+            .map(Bounded::to_bounding_box)
+            .collect::<Vec<_>>();
         let other_common_continuum_segments_ids =
             to_boxes_ids_with_common_continuum(
                 &other_bounding_boxes,
