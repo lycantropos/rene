@@ -5,7 +5,7 @@ use crate::clipping::{Event, UNION};
 use crate::geometries::{Empty, Point, Polygon};
 use crate::operations::{
     do_boxes_have_no_common_continuum, flags_to_false_indices,
-    flags_to_true_indices, merge_boxes, to_boxes_have_common_continuum,
+    flags_to_true_indices, to_boxes_have_common_continuum,
 };
 use crate::relatable::Relatable;
 use crate::traits::{Elemental, Union};
@@ -66,18 +66,8 @@ where
     type Output = Vec<Polygon<Scalar>>;
 
     fn union(self, other: Self) -> Self::Output {
-        let bounding_boxes = self
-            .polygons
-            .iter()
-            .map(Bounded::to_bounding_box)
-            .collect::<Vec<_>>();
-        let other_bounding_boxes = other
-            .polygons
-            .iter()
-            .map(Bounded::to_bounding_box)
-            .collect::<Vec<_>>();
-        let bounding_box = merge_boxes(&bounding_boxes);
-        let other_bounding_box = merge_boxes(&other_bounding_boxes);
+        let bounding_box = self.to_bounding_box();
+        let other_bounding_box = other.to_bounding_box();
         if do_boxes_have_no_common_continuum(
             &bounding_box,
             &other_bounding_box,
@@ -86,6 +76,11 @@ where
             result.extend_from_slice(&other.polygons);
             return result;
         }
+        let bounding_boxes = self
+            .polygons
+            .iter()
+            .map(Bounded::to_bounding_box)
+            .collect::<Vec<_>>();
         let boxes_have_common_continuum = to_boxes_have_common_continuum(
             &bounding_boxes,
             &other_bounding_box,
@@ -97,6 +92,11 @@ where
             result.extend_from_slice(&other.polygons);
             return result;
         }
+        let other_bounding_boxes = other
+            .polygons
+            .iter()
+            .map(Bounded::to_bounding_box)
+            .collect::<Vec<_>>();
         let other_boxes_have_common_continuum = to_boxes_have_common_continuum(
             &other_bounding_boxes,
             &bounding_box,
