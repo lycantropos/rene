@@ -1,11 +1,11 @@
 use crate::bounded::{Bounded, Box};
-use crate::geometries::{Empty, Point};
+use crate::geometries::{Contour, Empty, Point};
 use crate::operations::{
-    do_boxes_have_no_common_continuum,
+    do_boxes_have_no_common_continuum, intersect_segment_with_segments,
     intersect_segments_with_common_continuum_bounding_boxes, Orient,
 };
 use crate::relatable::Relatable;
-use crate::traits::{Intersection, Segmental};
+use crate::traits::{Intersection, Multisegmental, Segmental};
 
 use super::types::Segment;
 
@@ -68,5 +68,20 @@ where
             )
             .map(|(start, end)| Segment::new(start.clone(), end.clone()))
         }
+    }
+}
+
+impl<Scalar> Intersection<&Contour<Scalar>> for &Segment<Scalar>
+where
+    Scalar: PartialEq,
+    Point<Scalar>: Clone + Ord,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Point<Scalar>: Orient,
+    for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
+{
+    type Output = Vec<Segment<Scalar>>;
+
+    fn intersection(self, other: &Contour<Scalar>) -> Self::Output {
+        intersect_segment_with_segments(self, other.segments().into_iter())
     }
 }
