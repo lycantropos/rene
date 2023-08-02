@@ -17,9 +17,7 @@ class Empty:
     def locate(self, _point: hints.Point[Fraction], /) -> Location:
         return Location.EXTERIOR
 
-    def relate_to(
-            self, other: t.Union[hints.Compound[Fraction]], /
-    ) -> Relation:
+    def relate_to(self, other: hints.Compound[Fraction], /) -> Relation:
         context = self._context
         if not isinstance(other,
                           (context.contour_cls, context.empty_cls,

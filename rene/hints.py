@@ -134,7 +134,7 @@ class Empty(_SelfComparable, _te.Protocol[Scalar]):
     def locate(self, point: Point[Scalar], /) -> _Location:
         ...
 
-    def relate_to(self, other: _t.Union[Compound[Scalar]], /) -> _Relation:
+    def relate_to(self, other: Compound[Scalar], /) -> _Relation:
         ...
 
     def __new__(cls) -> _te.Self:
