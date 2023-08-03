@@ -4,16 +4,24 @@ from . import (difference,
                union)
 
 intersect_polygon_with_polygon = intersection.intersect_polygon_with_polygon
-intersect_polygon_with_polygons = intersection.intersect_polygon_with_polygons
-intersect_polygons_with_polygon = intersection.intersect_polygons_with_polygon
-intersect_polygons_with_polygons = (
-    intersection.intersect_polygons_with_polygons
+intersect_polygon_with_multipolygon = (
+    intersection.intersect_polygon_with_multipolygon
+)
+intersect_multipolygon_with_polygon = (
+    intersection.intersect_multipolygon_with_polygon
+)
+intersect_multipolygon_with_multipolygon = (
+    intersection.intersect_multipolygon_with_multipolygon
 )
 intersect_segment_with_segment = intersection.intersect_segment_with_segment
-intersect_segment_with_segments = intersection.intersect_segment_with_segments
-intersect_segments_with_segment = intersection.intersect_segments_with_segment
-intersect_segments_with_segments = (
-    intersection.intersect_segments_with_segments
+intersect_segment_with_multisegmental = (
+    intersection.intersect_segment_with_multisegmental
+)
+intersect_multisegmental_with_segment = (
+    intersection.intersect_multisegmental_with_segment
+)
+intersect_multisegmental_with_multisegmental = (
+    intersection.intersect_multisegmental_with_multisegmental
 )
 
 subtract_polygon_from_polygon = difference.subtract_polygon_from_polygon

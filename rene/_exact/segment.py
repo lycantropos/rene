@@ -8,8 +8,8 @@ from rithm.fraction import Fraction
 from rene import (Location,
                   Relation,
                   hints)
-from rene._clipping import (intersect_segment_with_segment,
-                            intersect_segment_with_segments,
+from rene._clipping import (intersect_segment_with_multisegmental,
+                            intersect_segment_with_segment,
                             symmetric_subtract_segment_from_segment,
                             symmetric_subtract_segments_from_segment)
 from rene._context import Context
@@ -97,8 +97,9 @@ class Segment:
     def __and__(self, other: t.Any, /) -> t.Any:
         return (
             collect_maybe_empty_segments(
-                    intersect_segment_with_segments(self, other.segments,
-                                                    self._context.segment_cls),
+                    intersect_segment_with_multisegmental(
+                            self, other, self._context.segment_cls
+                    ),
                     self._context.empty_cls, self._context.multisegment_cls
             )
             if isinstance(other, (self._context.contour_cls,

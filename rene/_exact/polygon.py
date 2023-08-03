@@ -8,8 +8,8 @@ from rithm.fraction import Fraction
 
 from rene import (Location,
                   hints)
-from rene._clipping import (intersect_polygon_with_polygon,
-                            intersect_polygon_with_polygons,
+from rene._clipping import (intersect_polygon_with_multipolygon,
+                            intersect_polygon_with_polygon,
                             subtract_polygon_from_polygon,
                             subtract_polygons_from_polygon,
                             symmetric_subtract_polygon_from_polygon,
@@ -95,9 +95,8 @@ class Polygon:
             if isinstance(other, self._context.empty_cls)
             else (
                 collect_maybe_empty_polygons(
-                        intersect_polygon_with_polygons(
-                                self, other.polygons,
-                                self._context.contour_cls,
+                        intersect_polygon_with_multipolygon(
+                                self, other, self._context.contour_cls,
                                 self._context.polygon_cls,
                                 self._context.segment_cls
                         ),

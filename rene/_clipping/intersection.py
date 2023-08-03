@@ -6,7 +6,6 @@ from rene import (Orientation,
 from rene._utils import (do_boxes_have_common_continuum,
                          do_boxes_have_no_common_area,
                          do_boxes_have_no_common_continuum,
-                         merge_boxes,
                          orient,
                          polygon_to_correctly_oriented_segments,
                          to_boxes_ids_with_common_area,
@@ -74,26 +73,27 @@ def intersect_polygon_with_polygon(
     return operation.reduce_events(events, contour_cls, polygon_cls)
 
 
-def intersect_polygon_with_polygons(
+def intersect_polygon_with_multipolygon(
         first: hints.Polygon[hints.Scalar],
-        second: t.Sequence[hints.Polygon[hints.Scalar]],
+        second: hints.Multipolygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.List[hints.Polygon[hints.Scalar]]:
-    second_boxes = [polygon.bounding_box for polygon in second]
     first_bounding_box, second_bounding_box = (first.bounding_box,
-                                               merge_boxes(second_boxes))
+                                               second.bounding_box)
     if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):
         return []
+    second_polygons = second.polygons
+    second_boxes = [polygon.bounding_box for polygon in second_polygons]
     second_common_area_polygons_ids = to_boxes_ids_with_common_area(
             second_boxes, first_bounding_box
     )
     if not second_common_area_polygons_ids:
         return []
     second_common_area_polygons = [
-        second[polygon_id]
+        second_polygons[polygon_id]
         for polygon_id in second_common_area_polygons_ids
     ]
     max_min_x = max(first_bounding_box.min_x,
@@ -123,26 +123,27 @@ def intersect_polygon_with_polygons(
     return operation.reduce_events(events, contour_cls, polygon_cls)
 
 
-def intersect_polygons_with_polygon(
-        first: t.Sequence[hints.Polygon[hints.Scalar]],
+def intersect_multipolygon_with_polygon(
+        first: hints.Multipolygon[hints.Scalar],
         second: hints.Polygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.List[hints.Polygon[hints.Scalar]]:
-    first_boxes = [polygon.bounding_box for polygon in first]
-    first_bounding_box, second_bounding_box = (merge_boxes(first_boxes),
+    first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)
     if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):
         return []
+    first_polygons = first.polygons
+    first_boxes = [polygon.bounding_box for polygon in first_polygons]
     first_common_area_polygons_ids = to_boxes_ids_with_common_area(
             first_boxes, second_bounding_box
     )
     if not first_common_area_polygons_ids:
         return []
     first_common_area_polygons = [
-        first[polygon_id]
+        first_polygons[polygon_id]
         for polygon_id in first_common_area_polygons_ids
     ]
     max_min_x = max(min(first_boxes[polygon_id].min_x
@@ -172,36 +173,38 @@ def intersect_polygons_with_polygon(
     return operation.reduce_events(events, contour_cls, polygon_cls)
 
 
-def intersect_polygons_with_polygons(
-        first: t.Sequence[hints.Polygon[hints.Scalar]],
-        second: t.Sequence[hints.Polygon[hints.Scalar]],
+def intersect_multipolygon_with_multipolygon(
+        first: hints.Multipolygon[hints.Scalar],
+        second: hints.Multipolygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.List[hints.Polygon[hints.Scalar]]:
-    first_boxes = [polygon.bounding_box for polygon in first]
-    second_boxes = [polygon.bounding_box for polygon in second]
-    first_bounding_box, second_bounding_box = (merge_boxes(first_boxes),
-                                               merge_boxes(second_boxes))
+    first_bounding_box, second_bounding_box = (first.bounding_box,
+                                               second.bounding_box)
     if do_boxes_have_no_common_area(first_bounding_box, second_bounding_box):
         return []
+    first_polygons = first.polygons
+    first_boxes = [polygon.bounding_box for polygon in first_polygons]
     first_common_area_polygons_ids = to_boxes_ids_with_common_area(
             first_boxes, second_bounding_box
     )
     if not first_common_area_polygons_ids:
         return []
+    second_polygons = second.polygons
+    second_boxes = [polygon.bounding_box for polygon in second_polygons]
     second_common_area_polygons_ids = to_boxes_ids_with_common_area(
             second_boxes, first_bounding_box
     )
     if not second_common_area_polygons_ids:
         return []
     first_common_area_polygons = [
-        first[polygon_id]
+        first_polygons[polygon_id]
         for polygon_id in first_common_area_polygons_ids
     ]
     second_common_area_polygons = [
-        second[polygon_id]
+        second_polygons[polygon_id]
         for polygon_id in second_common_area_polygons_ids
     ]
     max_min_x = max(min(first_boxes[polygon_id].min_x
@@ -269,9 +272,14 @@ def intersect_segments_with_common_continuum_bounding_boxes(
             else None)
 
 
-def intersect_segment_with_segments(
+_Multisegmental = t.Union[
+    hints.Contour[hints.Scalar], hints.Multisegment[hints.Scalar]
+]
+
+
+def intersect_segment_with_multisegmental(
         first: hints.Segment[hints.Scalar],
-        second: t.Iterable[hints.Segment[hints.Scalar]],
+        second: _Multisegmental[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.List[hints.Segment[hints.Scalar]]:
@@ -284,7 +292,7 @@ def intersect_segment_with_segments(
                     first_start, first_end, second_segment.start,
                     second_segment.end, segment_cls
             )
-            for second_segment in second
+            for second_segment in second.segments
             if do_boxes_have_common_continuum(second_segment.bounding_box,
                                               first_bounding_box)
         ]
@@ -292,8 +300,8 @@ def intersect_segment_with_segments(
     ]
 
 
-def intersect_segments_with_segment(
-        first: t.Iterable[hints.Segment[hints.Scalar]],
+def intersect_multisegmental_with_segment(
+        first: _Multisegmental[hints.Scalar],
         second: hints.Segment[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
@@ -307,7 +315,7 @@ def intersect_segments_with_segment(
                     first_segment.start, first_segment.end, second_start,
                     second_end, segment_cls
             )
-            for first_segment in first
+            for first_segment in first.segments
             if do_boxes_have_common_continuum(first_segment.bounding_box,
                                               second_bounding_box)
         ]
@@ -315,34 +323,37 @@ def intersect_segments_with_segment(
     ]
 
 
-def intersect_segments_with_segments(
-        first: t.Sequence[hints.Segment[hints.Scalar]],
-        second: t.Sequence[hints.Segment[hints.Scalar]],
+def intersect_multisegmental_with_multisegmental(
+        first: _Multisegmental[hints.Scalar],
+        second: _Multisegmental[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.List[hints.Segment[hints.Scalar]]:
-    first_boxes = [segment.bounding_box for segment in first]
-    second_boxes = [segment.bounding_box for segment in second]
-    first_bounding_box, second_bounding_box = (merge_boxes(first_boxes),
-                                               merge_boxes(second_boxes))
+    first_bounding_box, second_bounding_box = (first.bounding_box,
+                                               second.bounding_box)
     if do_boxes_have_no_common_continuum(first_bounding_box,
                                          second_bounding_box):
         return []
+    first_segments = first.segments
+    first_boxes = [segment.bounding_box for segment in first_segments]
     first_common_continuum_segments_ids = to_boxes_ids_with_common_continuum(
             first_boxes, second_bounding_box
     )
     if not first_common_continuum_segments_ids:
         return []
+    second_segments = second.segments
+    second_boxes = [segment.bounding_box for segment in second_segments]
     second_common_continuum_segments_ids = to_boxes_ids_with_common_continuum(
             second_boxes, first_bounding_box
     )
     if not second_common_continuum_segments_ids:
         return []
     first_common_continuum_segments = [
-        first[segment_id] for segment_id in first_common_continuum_segments_ids
+        first_segments[segment_id]
+        for segment_id in first_common_continuum_segments_ids
     ]
     second_common_continuum_segments = [
-        second[segment_id]
+        second_segments[segment_id]
         for segment_id in second_common_continuum_segments_ids
     ]
     max_min_x = max(
