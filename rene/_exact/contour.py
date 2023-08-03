@@ -15,8 +15,8 @@ from rene._bentley_ottmann.base import (Intersection,
                                         sweep)
 from rene._clipping import (intersect_multisegmental_with_multisegmental,
                             intersect_multisegmental_with_segment,
-                            symmetric_subtract_segment_from_segments,
-                            symmetric_subtract_segments_from_segments)
+                            symmetric_subtract_multisegmental_from_multisegmental,
+                            symmetric_subtract_segment_from_multisegmental)
 from rene._context import Context
 from rene._utils import (are_contour_vertices_non_degenerate,
                          collect_maybe_empty_segments,
@@ -189,17 +189,16 @@ class Contour:
     def __xor__(self, other: t.Any, /) -> t.Any:
         return (
             collect_maybe_empty_segments(
-                    symmetric_subtract_segments_from_segments(
-                            self._segments, other.segments,
-                            self._context.segment_cls
+                    symmetric_subtract_multisegmental_from_multisegmental(
+                            self, other, self._context.segment_cls
                     ),
                     self._context.empty_cls, self._context.multisegment_cls
             )
             if isinstance(other, (self._context.contour_cls,
                                   self._context.multisegment_cls))
             else (
-                symmetric_subtract_segment_from_segments(
-                        self._segments, other, self._context.segment_cls
+                symmetric_subtract_segment_from_multisegmental(
+                        self, other, self._context.segment_cls
                 )
                 if isinstance(other, self._context.segment_cls)
                 else NotImplemented

@@ -38,26 +38,26 @@ subtract_multipolygon_from_multipolygon = (
 symmetric_subtract_polygon_from_polygon = (
     symmetric_difference.symmetric_subtract_polygon_from_polygon
 )
-symmetric_subtract_polygon_from_polygons = (
-    symmetric_difference.symmetric_subtract_polygon_from_polygons
+symmetric_subtract_polygon_from_multipolygon = (
+    symmetric_difference.symmetric_subtract_polygon_from_multipolygon
 )
-symmetric_subtract_polygons_from_polygon = (
-    symmetric_difference.symmetric_subtract_polygons_from_polygon
+symmetric_subtract_multipolygon_from_polygon = (
+    symmetric_difference.symmetric_subtract_multipolygon_from_polygon
 )
-symmetric_subtract_polygons_from_polygons = (
-    symmetric_difference.symmetric_subtract_polygons_from_polygons
+symmetric_subtract_multipolygon_from_multipolygon = (
+    symmetric_difference.symmetric_subtract_multipolygon_from_multipolygon
 )
 symmetric_subtract_segment_from_segment = (
     symmetric_difference.symmetric_subtract_segment_from_segment
 )
-symmetric_subtract_segment_from_segments = (
-    symmetric_difference.symmetric_subtract_segment_from_segments
+symmetric_subtract_segment_from_multisegmental = (
+    symmetric_difference.symmetric_subtract_segment_from_multisegmental
 )
-symmetric_subtract_segments_from_segment = (
-    symmetric_difference.symmetric_subtract_segments_from_segment
+symmetric_subtract_multisegmental_from_segment = (
+    symmetric_difference.symmetric_subtract_multisegmental_from_segment
 )
-symmetric_subtract_segments_from_segments = (
-    symmetric_difference.symmetric_subtract_segments_from_segments
+symmetric_subtract_multisegmental_from_multisegmental = (
+    symmetric_difference.symmetric_subtract_multisegmental_from_multisegmental
 )
 
 unite_polygon_with_polygon = union.unite_polygon_with_polygon

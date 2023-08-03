@@ -10,8 +10,8 @@ from rene import (Location,
                   hints)
 from rene._clipping import (intersect_segment_with_multisegmental,
                             intersect_segment_with_segment,
-                            symmetric_subtract_segment_from_segment,
-                            symmetric_subtract_segments_from_segment)
+                            symmetric_subtract_multisegmental_from_segment,
+                            symmetric_subtract_segment_from_segment)
 from rene._context import Context
 from rene._relating import segment
 from rene._utils import (collect_maybe_empty_segments,
@@ -145,8 +145,8 @@ class Segment:
     def __xor__(self, other: t.Any, /) -> t.Any:
         return (
             collect_maybe_empty_segments(
-                    symmetric_subtract_segments_from_segment(
-                            self, other.segments, self._context.segment_cls
+                    symmetric_subtract_multisegmental_from_segment(
+                            self, other, self._context.segment_cls
                     ),
                     self._context.empty_cls, self._context.multisegment_cls
             )

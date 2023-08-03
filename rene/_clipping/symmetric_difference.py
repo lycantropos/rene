@@ -8,7 +8,6 @@ from rene._utils import (all_equal,
                          do_boxes_have_no_common_continuum,
                          flags_to_false_indices,
                          flags_to_true_indices,
-                         merge_boxes,
                          orient,
                          polygon_to_correctly_oriented_segments,
                          to_boxes_have_common_continuum,
@@ -60,21 +59,21 @@ def symmetric_subtract_polygon_from_polygon(
     return operation.reduce_events(list(operation), contour_cls, polygon_cls)
 
 
-def symmetric_subtract_polygon_from_polygons(
-        minuend: t.Sequence[hints.Polygon[hints.Scalar]],
+def symmetric_subtract_polygon_from_multipolygon(
+        minuend: hints.Multipolygon[hints.Scalar],
         subtrahend: hints.Polygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.List[hints.Polygon[hints.Scalar]]:
-    minuend_boxes = [polygon.bounding_box for polygon in minuend]
-    minuend_bounding_box, subtrahend_bounding_box = (
-        merge_boxes(minuend_boxes), subtrahend.bounding_box
-    )
+    minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
+                                                     subtrahend.bounding_box)
+    minuend_polygons = minuend.polygons
     if do_boxes_have_no_common_continuum(minuend_bounding_box,
                                          subtrahend_bounding_box):
-        return [*minuend, subtrahend]
+        return [*minuend_polygons, subtrahend]
+    minuend_boxes = [polygon.bounding_box for polygon in minuend_polygons]
     minuend_boxes_have_common_continuum = to_boxes_have_common_continuum(
             minuend_boxes, subtrahend_bounding_box
     )
@@ -82,9 +81,9 @@ def symmetric_subtract_polygon_from_polygons(
             minuend_boxes_have_common_continuum
     )
     if not minuend_common_continuum_polygons_ids:
-        return [*minuend, subtrahend]
+        return [*minuend_polygons, subtrahend]
     minuend_common_continuum_polygons = [
-        minuend[index]
+        minuend_polygons[index]
         for index in minuend_common_continuum_polygons_ids
     ]
     operation = ShapedSymmetricDifference.from_segments_iterables(
@@ -97,7 +96,7 @@ def symmetric_subtract_polygon_from_polygons(
     )
     result = operation.reduce_events(list(operation), contour_cls, polygon_cls)
     result.extend(
-            minuend[index]
+            minuend_polygons[index]
             for index in flags_to_false_indices(
                     minuend_boxes_have_common_continuum
             )
@@ -105,20 +104,21 @@ def symmetric_subtract_polygon_from_polygons(
     return result
 
 
-def symmetric_subtract_polygons_from_polygon(
+def symmetric_subtract_multipolygon_from_polygon(
         minuend: hints.Polygon[hints.Scalar],
-        subtrahend: t.Sequence[hints.Polygon[hints.Scalar]],
+        subtrahend: hints.Multipolygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]]
 ) -> t.List[hints.Polygon[hints.Scalar]]:
-    subtrahend_boxes = [polygon.bounding_box for polygon in subtrahend]
-    minuend_bounding_box, subtrahend_bounding_box = (
-        minuend.bounding_box, merge_boxes(subtrahend_boxes)
-    )
+    minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
+                                                     subtrahend.bounding_box)
+    subtrahend_polygons = subtrahend.polygons
     if do_boxes_have_no_common_continuum(minuend_bounding_box,
                                          subtrahend_bounding_box):
-        return [minuend, *subtrahend]
+        return [minuend, *subtrahend_polygons]
+    subtrahend_boxes = [polygon.bounding_box
+                        for polygon in subtrahend_polygons]
     subtrahend_boxes_have_common_continuum = to_boxes_have_common_continuum(
             subtrahend_boxes, minuend_bounding_box
     )
@@ -126,9 +126,9 @@ def symmetric_subtract_polygons_from_polygon(
             subtrahend_boxes_have_common_continuum
     )
     if not subtrahend_common_continuum_polygons_ids:
-        return [minuend, *subtrahend]
+        return [minuend, *subtrahend_polygons]
     subtrahend_common_continuum_polygons = [
-        subtrahend[index]
+        subtrahend_polygons[index]
         for index in subtrahend_common_continuum_polygons_ids
     ]
     operation = ShapedSymmetricDifference.from_segments_iterables(
@@ -141,7 +141,7 @@ def symmetric_subtract_polygons_from_polygon(
     )
     result = operation.reduce_events(list(operation), contour_cls, polygon_cls)
     result.extend(
-            subtrahend[index]
+            subtrahend_polygons[index]
             for index in flags_to_false_indices(
                     subtrahend_boxes_have_common_continuum
             )
@@ -149,22 +149,22 @@ def symmetric_subtract_polygons_from_polygon(
     return result
 
 
-def symmetric_subtract_polygons_from_polygons(
-        minuend: t.Sequence[hints.Polygon[hints.Scalar]],
-        subtrahend: t.Sequence[hints.Polygon[hints.Scalar]],
+def symmetric_subtract_multipolygon_from_multipolygon(
+        minuend: hints.Multipolygon[hints.Scalar],
+        subtrahend: hints.Multipolygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.List[hints.Polygon[hints.Scalar]]:
-    minuend_boxes = [polygon.bounding_box for polygon in minuend]
-    subtrahend_boxes = [polygon.bounding_box for polygon in subtrahend]
-    minuend_bounding_box, subtrahend_bounding_box = (
-        merge_boxes(minuend_boxes), merge_boxes(subtrahend_boxes)
-    )
+    minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
+                                                     subtrahend.bounding_box)
+    minuend_polygons, subtrahend_polygons = (minuend.polygons,
+                                             subtrahend.polygons)
     if do_boxes_have_no_common_continuum(minuend_bounding_box,
                                          subtrahend_bounding_box):
-        return [*minuend, *subtrahend]
+        return [*minuend_polygons, *subtrahend_polygons]
+    minuend_boxes = [polygon.bounding_box for polygon in minuend_polygons]
     minuend_boxes_have_common_continuum = to_boxes_have_common_continuum(
             minuend_boxes, subtrahend_bounding_box
     )
@@ -172,7 +172,9 @@ def symmetric_subtract_polygons_from_polygons(
             minuend_boxes_have_common_continuum
     )
     if not minuend_common_continuum_polygons_ids:
-        return [*minuend, *subtrahend]
+        return [*minuend_polygons, *subtrahend_polygons]
+    subtrahend_boxes = [polygon.bounding_box for polygon in
+                        subtrahend_polygons]
     subtrahend_boxes_have_common_continuum = to_boxes_have_common_continuum(
             subtrahend_boxes, minuend_bounding_box
     )
@@ -180,13 +182,13 @@ def symmetric_subtract_polygons_from_polygons(
             subtrahend_boxes_have_common_continuum
     )
     if not subtrahend_common_continuum_polygons_ids:
-        return [*minuend, *subtrahend]
+        return [*minuend_polygons, *subtrahend_polygons]
     minuend_common_continuum_polygons = [
-        minuend[index]
+        minuend_polygons[index]
         for index in minuend_common_continuum_polygons_ids
     ]
     subtrahend_common_continuum_polygons = [
-        subtrahend[index]
+        subtrahend_polygons[index]
         for index in subtrahend_common_continuum_polygons_ids
     ]
     operation = ShapedSymmetricDifference.from_segments_iterables(
@@ -203,13 +205,13 @@ def symmetric_subtract_polygons_from_polygons(
     )
     result = operation.reduce_events(list(operation), contour_cls, polygon_cls)
     result.extend(
-            minuend[index]
+            minuend_polygons[index]
             for index in flags_to_false_indices(
                     minuend_boxes_have_common_continuum
             )
     )
     result.extend(
-            subtrahend[index]
+            subtrahend_polygons[index]
             for index in flags_to_false_indices(
                     subtrahend_boxes_have_common_continuum
             )
@@ -324,19 +326,25 @@ def symmetric_subtract_segment_from_segment(
         return multisegment_cls([minuend, subtrahend])
 
 
-def symmetric_subtract_segments_from_segment(
+_Multisegmental = t.Union[
+    hints.Contour[hints.Scalar], hints.Multisegment[hints.Scalar]
+]
+
+
+def symmetric_subtract_multisegmental_from_segment(
         minuend: hints.Segment[hints.Scalar],
-        subtrahend: t.Sequence[hints.Segment[hints.Scalar]],
+        subtrahend: _Multisegmental[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.List[hints.Segment[hints.Scalar]]:
-    subtrahend_boxes = [segment.bounding_box for segment in subtrahend]
-    minuend_bounding_box, subtrahend_bounding_box = (
-        minuend.bounding_box, merge_boxes(subtrahend_boxes)
-    )
+    minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
+                                                     subtrahend.bounding_box)
+    subtrahend_segments = subtrahend.segments
     if do_boxes_have_no_common_continuum(minuend_bounding_box,
                                          subtrahend_bounding_box):
-        return [minuend, *subtrahend]
+        return [minuend, *subtrahend_segments]
+    subtrahend_boxes = [segment.bounding_box
+                        for segment in subtrahend_segments]
     subtrahend_boxes_have_common_continuum = to_boxes_have_common_continuum(
             subtrahend_boxes, minuend_bounding_box
     )
@@ -344,9 +352,9 @@ def symmetric_subtract_segments_from_segment(
             subtrahend_boxes_have_common_continuum
     )
     if not subtrahend_common_continuum_segments_ids:
-        return [minuend, *subtrahend]
+        return [minuend, *subtrahend_segments]
     subtrahend_common_continuum_segments = [
-        subtrahend[index]
+        subtrahend_segments[index]
         for index in subtrahend_common_continuum_segments_ids
     ]
     operation = LinearSymmetricDifference.from_segments_iterables(
@@ -354,7 +362,7 @@ def symmetric_subtract_segments_from_segment(
     )
     result = operation.reduce_events(list(operation), segment_cls)
     result.extend(
-            subtrahend[index]
+            subtrahend_segments[index]
             for index in flags_to_false_indices(
                     subtrahend_boxes_have_common_continuum
             )
@@ -362,19 +370,19 @@ def symmetric_subtract_segments_from_segment(
     return result
 
 
-def symmetric_subtract_segment_from_segments(
-        minuend: t.Sequence[hints.Segment[hints.Scalar]],
+def symmetric_subtract_segment_from_multisegmental(
+        minuend: _Multisegmental[hints.Scalar],
         subtrahend: hints.Segment[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.List[hints.Segment[hints.Scalar]]:
-    minuend_boxes = [segment.bounding_box for segment in minuend]
-    minuend_bounding_box, subtrahend_bounding_box = (
-        merge_boxes(minuend_boxes), subtrahend.bounding_box
-    )
+    minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
+                                                     subtrahend.bounding_box)
+    minuend_segments = minuend.segments
     if do_boxes_have_no_common_continuum(minuend_bounding_box,
                                          subtrahend_bounding_box):
-        return [*minuend, subtrahend]
+        return [*minuend_segments, subtrahend]
+    minuend_boxes = [segment.bounding_box for segment in minuend_segments]
     minuend_boxes_have_common_continuum = to_boxes_have_common_continuum(
             minuend_boxes, subtrahend_bounding_box
     )
@@ -382,9 +390,9 @@ def symmetric_subtract_segment_from_segments(
             minuend_boxes_have_common_continuum
     )
     if not minuend_common_continuum_segments_ids:
-        return [*minuend, subtrahend]
+        return [*minuend_segments, subtrahend]
     minuend_common_continuum_segments = [
-        minuend[index]
+        minuend_segments[index]
         for index in minuend_common_continuum_segments_ids
     ]
     operation = LinearSymmetricDifference.from_segments_iterables(
@@ -392,7 +400,7 @@ def symmetric_subtract_segment_from_segments(
     )
     result = operation.reduce_events(list(operation), segment_cls)
     result.extend(
-            minuend[index]
+            minuend_segments[index]
             for index in flags_to_false_indices(
                     minuend_boxes_have_common_continuum
             )
@@ -400,20 +408,20 @@ def symmetric_subtract_segment_from_segments(
     return result
 
 
-def symmetric_subtract_segments_from_segments(
-        minuend: t.Sequence[hints.Segment[hints.Scalar]],
-        subtrahend: t.Sequence[hints.Segment[hints.Scalar]],
+def symmetric_subtract_multisegmental_from_multisegmental(
+        minuend: _Multisegmental[hints.Scalar],
+        subtrahend: _Multisegmental[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.List[hints.Segment[hints.Scalar]]:
-    minuend_boxes = [segment.bounding_box for segment in minuend]
-    subtrahend_boxes = [segment.bounding_box for segment in subtrahend]
-    minuend_bounding_box, subtrahend_bounding_box = (
-        merge_boxes(minuend_boxes), merge_boxes(subtrahend_boxes)
-    )
+    minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
+                                                     subtrahend.bounding_box)
+    minuend_segments, subtrahend_segments = (minuend.segments,
+                                             subtrahend.segments)
     if do_boxes_have_no_common_continuum(minuend_bounding_box,
                                          subtrahend_bounding_box):
-        return [*minuend, *subtrahend]
+        return [*minuend_segments, *subtrahend_segments]
+    minuend_boxes = [segment.bounding_box for segment in minuend_segments]
     minuend_boxes_have_common_continuum = to_boxes_have_common_continuum(
             minuend_boxes, subtrahend_bounding_box
     )
@@ -421,7 +429,9 @@ def symmetric_subtract_segments_from_segments(
             minuend_boxes_have_common_continuum
     )
     if not minuend_common_continuum_segments_ids:
-        return [*minuend, *subtrahend]
+        return [*minuend_segments, *subtrahend_segments]
+    subtrahend_boxes = [segment.bounding_box
+                        for segment in subtrahend_segments]
     subtrahend_boxes_have_common_continuum = to_boxes_have_common_continuum(
             subtrahend_boxes, minuend_bounding_box
     )
@@ -429,13 +439,13 @@ def symmetric_subtract_segments_from_segments(
             subtrahend_boxes_have_common_continuum
     )
     if not subtrahend_common_continuum_segments_ids:
-        return [*minuend, *subtrahend]
+        return [*minuend_segments, *subtrahend_segments]
     minuend_common_continuum_segments = [
-        minuend[index]
+        minuend_segments[index]
         for index in minuend_common_continuum_segments_ids
     ]
     subtrahend_common_continuum_segments = [
-        subtrahend[index]
+        subtrahend_segments[index]
         for index in subtrahend_common_continuum_segments_ids
     ]
     operation = LinearSymmetricDifference.from_segments_iterables(
@@ -444,13 +454,13 @@ def symmetric_subtract_segments_from_segments(
     )
     result = operation.reduce_events(list(operation), segment_cls)
     result.extend(
-            minuend[index]
+            minuend_segments[index]
             for index in flags_to_false_indices(
                     minuend_boxes_have_common_continuum
             )
     )
     result.extend(
-            subtrahend[index]
+            subtrahend_segments[index]
             for index in flags_to_false_indices(
                     subtrahend_boxes_have_common_continuum
             )
