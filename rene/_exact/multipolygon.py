@@ -11,8 +11,8 @@ from rene import (MIN_MULTIPOLYGON_POLYGONS_COUNT,
                   hints)
 from rene._clipping import (intersect_multipolygon_with_multipolygon,
                             intersect_multipolygon_with_polygon,
-                            subtract_polygon_from_polygons,
-                            subtract_polygons_from_polygons,
+                            subtract_multipolygon_from_multipolygon,
+                            subtract_polygon_from_multipolygon,
                             symmetric_subtract_polygon_from_polygons,
                             symmetric_subtract_polygons_from_polygons,
                             unite_polygons_with_polygon,
@@ -233,9 +233,8 @@ class Multipolygon:
             if isinstance(other, self._context.empty_cls)
             else (
                 collect_maybe_empty_polygons(
-                        subtract_polygons_from_polygons(
-                                self._polygons, other.polygons,
-                                self._context.contour_cls,
+                        subtract_multipolygon_from_multipolygon(
+                                self, other, self._context.contour_cls,
                                 self._context.polygon_cls,
                                 self._context.segment_cls
                         ),
@@ -244,9 +243,8 @@ class Multipolygon:
                 if isinstance(other, self._context.multipolygon_cls)
                 else (
                     collect_maybe_empty_polygons(
-                            subtract_polygon_from_polygons(
-                                    self._polygons, other,
-                                    self._context.contour_cls,
+                            subtract_polygon_from_multipolygon(
+                                    self, other, self._context.contour_cls,
                                     self._context.polygon_cls,
                                     self._context.segment_cls
                             ),

@@ -25,9 +25,15 @@ intersect_multisegmental_with_multisegmental = (
 )
 
 subtract_polygon_from_polygon = difference.subtract_polygon_from_polygon
-subtract_polygon_from_polygons = difference.subtract_polygon_from_polygons
-subtract_polygons_from_polygon = difference.subtract_polygons_from_polygon
-subtract_polygons_from_polygons = difference.subtract_polygons_from_polygons
+subtract_polygon_from_multipolygon = (
+    difference.subtract_polygon_from_multipolygon
+)
+subtract_multipolygon_from_polygon = (
+    difference.subtract_multipolygon_from_polygon
+)
+subtract_multipolygon_from_multipolygon = (
+    difference.subtract_multipolygon_from_multipolygon
+)
 
 symmetric_subtract_polygon_from_polygon = (
     symmetric_difference.symmetric_subtract_polygon_from_polygon
