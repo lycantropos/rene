@@ -3,26 +3,46 @@ from . import (difference,
                symmetric_difference,
                union)
 
-intersect_polygon_with_polygon = intersection.intersect_polygon_with_polygon
-intersect_polygon_with_multipolygon = (
-    intersection.intersect_polygon_with_multipolygon
+intersect_multipolygon_with_multipolygon = (
+    intersection.intersect_multipolygon_with_multipolygon
+)
+intersect_multipolygon_with_multisegmental = (
+    intersection.intersect_multipolygon_with_multisegmental
 )
 intersect_multipolygon_with_polygon = (
     intersection.intersect_multipolygon_with_polygon
 )
-intersect_multipolygon_with_multipolygon = (
-    intersection.intersect_multipolygon_with_multipolygon
+intersect_multipolygon_with_segment = (
+    intersection.intersect_multipolygon_with_segment
 )
-intersect_segment_with_segment = intersection.intersect_segment_with_segment
-intersect_segment_with_multisegmental = (
-    intersection.intersect_segment_with_multisegmental
-)
-intersect_multisegmental_with_segment = (
-    intersection.intersect_multisegmental_with_segment
+intersect_multisegmental_with_multipolygon = (
+    intersection.intersect_multisegmental_with_multipolygon
 )
 intersect_multisegmental_with_multisegmental = (
     intersection.intersect_multisegmental_with_multisegmental
 )
+intersect_multisegmental_with_polygon = (
+    intersection.intersect_multisegmental_with_polygon
+)
+intersect_multisegmental_with_segment = (
+    intersection.intersect_multisegmental_with_segment
+)
+intersect_polygon_with_multipolygon = (
+    intersection.intersect_polygon_with_multipolygon
+)
+intersect_polygon_with_multisegmental = (
+    intersection.intersect_polygon_with_multisegmental
+)
+intersect_polygon_with_polygon = intersection.intersect_polygon_with_polygon
+intersect_polygon_with_segment = intersection.intersect_polygon_with_segment
+intersect_segment_with_multipolygon = (
+    intersection.intersect_segment_with_multipolygon
+)
+intersect_segment_with_multisegmental = (
+    intersection.intersect_segment_with_multisegmental
+)
+intersect_segment_with_polygon = intersection.intersect_segment_with_polygon
+intersect_segment_with_segment = intersection.intersect_segment_with_segment
 
 subtract_polygon_from_polygon = difference.subtract_polygon_from_polygon
 subtract_polygon_from_multipolygon = (
