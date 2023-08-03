@@ -5,7 +5,6 @@ from rene import hints
 from rene._utils import (do_boxes_have_no_common_continuum,
                          flags_to_false_indices,
                          flags_to_true_indices,
-                         merge_boxes,
                          polygon_to_correctly_oriented_segments,
                          to_boxes_have_common_continuum)
 from . import shaped
@@ -39,21 +38,21 @@ def unite_polygon_with_polygon(
     return operation.reduce_events(list(operation), contour_cls, polygon_cls)
 
 
-def unite_polygon_with_polygons(
+def unite_polygon_with_multipolygon(
         first: hints.Polygon[hints.Scalar],
-        second: t.Sequence[hints.Polygon[hints.Scalar]],
+        second: hints.Multipolygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.List[hints.Polygon[hints.Scalar]]:
-    second_boxes = [polygon.bounding_box for polygon in second]
-    first_bounding_box, second_bounding_box = (
-        first.bounding_box, merge_boxes(second_boxes)
-    )
+    first_bounding_box, second_bounding_box = (first.bounding_box,
+                                               second.bounding_box)
+    second_polygons = second.polygons
     if do_boxes_have_no_common_continuum(first_bounding_box,
                                          second_bounding_box):
-        return [first, *second]
+        return [first, *second_polygons]
+    second_boxes = [polygon.bounding_box for polygon in second_polygons]
     do_second_boxes_have_common_continuum = to_boxes_have_common_continuum(
             second_boxes, first_bounding_box
     )
@@ -61,9 +60,9 @@ def unite_polygon_with_polygons(
             do_second_boxes_have_common_continuum
     )
     if not second_common_continuum_polygons_ids:
-        return [first, *second]
+        return [first, *second_polygons]
     second_common_continuum_polygons = [
-        second[index]
+        second_polygons[index]
         for index in second_common_continuum_polygons_ids
     ]
     operation = ShapedUnion.from_segments_iterables(
@@ -76,7 +75,7 @@ def unite_polygon_with_polygons(
     )
     result = operation.reduce_events(list(operation), contour_cls, polygon_cls)
     result.extend(
-            second[index]
+            second_polygons[index]
             for index in flags_to_false_indices(
                     do_second_boxes_have_common_continuum
             )
@@ -84,20 +83,21 @@ def unite_polygon_with_polygons(
     return result
 
 
-def unite_polygons_with_polygon(
-        first: t.Sequence[hints.Polygon[hints.Scalar]],
+def unite_multipolygon_with_polygon(
+        first: hints.Multipolygon[hints.Scalar],
         second: hints.Polygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.List[hints.Polygon[hints.Scalar]]:
-    first_boxes = [polygon.bounding_box for polygon in first]
-    first_bounding_box, second_bounding_box = (merge_boxes(first_boxes),
+    first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)
+    first_polygons = first.polygons
     if do_boxes_have_no_common_continuum(first_bounding_box,
                                          second_bounding_box):
-        return [*first, second]
+        return [*first_polygons, second]
+    first_boxes = [polygon.bounding_box for polygon in first_polygons]
     first_boxes_have_common_continuum = to_boxes_have_common_continuum(
             first_boxes, second_bounding_box
     )
@@ -105,9 +105,9 @@ def unite_polygons_with_polygon(
             first_boxes_have_common_continuum
     )
     if not first_common_continuum_polygons_ids:
-        return [*first, second]
+        return [*first_polygons, second]
     first_common_continuum_polygons = [
-        first[index]
+        first_polygons[index]
         for index in first_common_continuum_polygons_ids
     ]
     operation = ShapedUnion.from_segments_iterables(
@@ -120,7 +120,7 @@ def unite_polygons_with_polygon(
     )
     result = operation.reduce_events(list(operation), contour_cls, polygon_cls)
     result.extend(
-            first[index]
+            first_polygons[index]
             for index in flags_to_false_indices(
                     first_boxes_have_common_continuum
             )
@@ -128,21 +128,22 @@ def unite_polygons_with_polygon(
     return result
 
 
-def unite_polygons_with_polygons(
-        first: t.Sequence[hints.Polygon[hints.Scalar]],
-        second: t.Sequence[hints.Polygon[hints.Scalar]],
+def unite_multipolygon_with_multipolygon(
+        first: hints.Multipolygon[hints.Scalar],
+        second: hints.Multipolygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.List[hints.Polygon[hints.Scalar]]:
-    first_boxes = [polygon.bounding_box for polygon in first]
-    second_boxes = [polygon.bounding_box for polygon in second]
-    first_bounding_box, second_bounding_box = (merge_boxes(first_boxes),
-                                               merge_boxes(second_boxes))
+    first_bounding_box, second_bounding_box = (first.bounding_box,
+                                               second.bounding_box)
+    first_polygons, second_polygons = first.polygons, second.polygons
     if do_boxes_have_no_common_continuum(first_bounding_box,
                                          second_bounding_box):
-        return [*first, *second]
+        return [*first_polygons, *second_polygons]
+    first_boxes = [polygon.bounding_box for polygon in first_polygons]
+    second_boxes = [polygon.bounding_box for polygon in second_polygons]
     do_first_boxes_have_common_continuum = to_boxes_have_common_continuum(
             first_boxes, second_bounding_box
     )
@@ -150,7 +151,7 @@ def unite_polygons_with_polygons(
             do_first_boxes_have_common_continuum
     )
     if not first_common_continuum_polygons_ids:
-        return [*first, *second]
+        return [*first_polygons, *second_polygons]
     do_second_boxes_have_common_continuum = to_boxes_have_common_continuum(
             second_boxes, first_bounding_box
     )
@@ -158,13 +159,13 @@ def unite_polygons_with_polygons(
             do_second_boxes_have_common_continuum
     )
     if not second_common_continuum_polygons_ids:
-        return [*first, *second]
+        return [*first_polygons, *second_polygons]
     first_common_continuum_polygons = [
-        first[index]
+        first_polygons[index]
         for index in first_common_continuum_polygons_ids
     ]
     second_common_continuum_polygons = [
-        second[index]
+        second_polygons[index]
         for index in second_common_continuum_polygons_ids
     ]
     operation = ShapedUnion.from_segments_iterables(
@@ -181,13 +182,13 @@ def unite_polygons_with_polygons(
     )
     result = operation.reduce_events(list(operation), contour_cls, polygon_cls)
     result.extend(
-            first[index]
+            first_polygons[index]
             for index in flags_to_false_indices(
                     do_first_boxes_have_common_continuum
             )
     )
     result.extend(
-            second[index]
+            second_polygons[index]
             for index in flags_to_false_indices(
                     do_second_boxes_have_common_continuum
             )

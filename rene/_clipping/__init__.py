@@ -61,6 +61,8 @@ symmetric_subtract_multisegmental_from_multisegmental = (
 )
 
 unite_polygon_with_polygon = union.unite_polygon_with_polygon
-unite_polygon_with_polygons = union.unite_polygon_with_polygons
-unite_polygons_with_polygon = union.unite_polygons_with_polygon
-unite_polygons_with_polygons = union.unite_polygons_with_polygons
+unite_polygon_with_multipolygon = union.unite_polygon_with_multipolygon
+unite_multipolygon_with_polygon = union.unite_multipolygon_with_polygon
+unite_multipolygon_with_multipolygon = (
+    union.unite_multipolygon_with_multipolygon
+)

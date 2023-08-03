@@ -14,8 +14,8 @@ from rene._clipping import (intersect_polygon_with_multipolygon,
                             subtract_polygon_from_polygon,
                             symmetric_subtract_multipolygon_from_polygon,
                             symmetric_subtract_polygon_from_polygon,
-                            unite_polygon_with_polygon,
-                            unite_polygon_with_polygons)
+                            unite_polygon_with_multipolygon,
+                            unite_polygon_with_polygon)
 from rene._context import Context
 from rene._utils import (collect_maybe_empty_polygons,
                          collect_non_empty_polygons,
@@ -164,9 +164,8 @@ class Polygon:
             if isinstance(other, self._context.empty_cls)
             else (
                 collect_non_empty_polygons(
-                        unite_polygon_with_polygons(
-                                self, other.polygons,
-                                self._context.contour_cls,
+                        unite_polygon_with_multipolygon(
+                                self, other, self._context.contour_cls,
                                 self._context.polygon_cls,
                                 self._context.segment_cls
                         ),
