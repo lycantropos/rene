@@ -9,5 +9,6 @@ mod intersection;
 mod locatable;
 mod multisegmental;
 mod partial_eq;
+mod symmetric_difference;
 mod types;
 mod union;
