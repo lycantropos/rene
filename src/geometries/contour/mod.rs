@@ -12,6 +12,7 @@ mod multisegmental;
 mod multivertexal;
 mod oriented;
 mod partial_eq;
+mod symmetric_difference;
 mod to_reversed_segments;
 mod types;
 mod union;
