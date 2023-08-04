@@ -4,7 +4,8 @@ use std::ops::Div;
 
 use crate::operations::{
     is_point_in_segment, point_vertex_line_divides_angle,
-    to_segments_intersection_scale, to_sorted_pair, CrossMultiply, Orient,
+    subtract_segments_overlap, to_segments_intersection_scale, to_sorted_pair,
+    CrossMultiply, Orient,
 };
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
@@ -425,22 +426,5 @@ where
         }
     } else {
         Relation::Disjoint
-    }
-}
-
-fn subtract_segments_overlap<'a, Point: PartialOrd>(
-    minuend_start: &'a Point,
-    minuend_end: &'a Point,
-    subtrahend_start: &'a Point,
-    subtrahend_end: &'a Point,
-) -> (&'a Point, &'a Point) {
-    let (minuend_start, minuend_end) =
-        to_sorted_pair((minuend_start, minuend_end));
-    let (subtrahend_start, subtrahend_end) =
-        to_sorted_pair((subtrahend_start, subtrahend_end));
-    if subtrahend_start < minuend_start && minuend_start < subtrahend_end {
-        (subtrahend_end, minuend_end)
-    } else {
-        (minuend_start, subtrahend_start)
     }
 }

@@ -64,28 +64,17 @@ pub(crate) trait IntersectCrossingSegments {
     ) -> Self::Output;
 }
 
-impl<
-        Digit,
-        const SHIFT: usize,
-        Point: From<(
-            Fraction<BigInt<Digit, SHIFT>>,
-            Fraction<BigInt<Digit, SHIFT>>,
-        )>,
-    > IntersectCrossingSegments for &Point
+impl<Scalar, Point: From<(Scalar, Scalar)>> IntersectCrossingSegments
+    for &Point
 where
-    Fraction<BigInt<Digit, SHIFT>>: Add<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + Div<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + for<'a> Mul<
-            &'a Fraction<BigInt<Digit, SHIFT>>,
-            Output = Fraction<BigInt<Digit, SHIFT>>,
-        > + Mul<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Fraction<BigInt<Digit, SHIFT>>: Add<
-            Fraction<BigInt<Digit, SHIFT>>,
-            Output = Fraction<BigInt<Digit, SHIFT>>,
-        > + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Point: CrossMultiply<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
+    Scalar: Add<Output = Scalar>
+        + Div<Output = Scalar>
+        + Mul<Output = Scalar>
+        + Sub<Output = Scalar>
+        + for<'a> Mul<&'a Scalar, Output = Scalar>,
+    for<'a> &'a Scalar: Add<Scalar, Output = Scalar> + Sub<Output = Scalar>,
+    for<'a> &'a Point:
+        CrossMultiply<Output = Scalar> + Elemental<Coordinate = &'a Scalar>,
 {
     type Output = Point;
 
@@ -472,6 +461,23 @@ where
         result.push(vertices[vertices.len() - 1]);
     }
     result
+}
+
+pub(crate) fn subtract_segments_overlap<'a, Point: PartialOrd>(
+    minuend_start: &'a Point,
+    minuend_end: &'a Point,
+    subtrahend_start: &'a Point,
+    subtrahend_end: &'a Point,
+) -> (&'a Point, &'a Point) {
+    let (minuend_start, minuend_end) =
+        to_sorted_pair((minuend_start, minuend_end));
+    let (subtrahend_start, subtrahend_end) =
+        to_sorted_pair((subtrahend_start, subtrahend_end));
+    if subtrahend_start < minuend_start && minuend_start < subtrahend_end {
+        (subtrahend_end, minuend_end)
+    } else {
+        (minuend_start, subtrahend_start)
+    }
 }
 
 pub(crate) fn to_boxes_have_common_area<Scalar>(
