@@ -10,3 +10,4 @@ mod locatable;
 mod multisegmental;
 mod partial_eq;
 mod types;
+mod union;
