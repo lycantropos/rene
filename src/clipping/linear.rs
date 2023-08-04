@@ -54,6 +54,38 @@ where
     }
 }
 
+impl<First: Clone, Point: Ord, Second: Clone, const KIND: u8>
+    From<(&First, &[&Second])> for Operation<Point, KIND>
+where
+    First: Segmental<Endpoint = Point>,
+    Second: Segmental<Endpoint = Point>,
+    for<'a> &'a Point: Orient,
+{
+    fn from((first, second): (&First, &[&Second])) -> Self {
+        let second_segments_count = second.len();
+        let mut result = Self::with_capacity(1, second_segments_count);
+        result.extend(std::iter::once(first.clone()));
+        result.extend(second.iter().copied().cloned());
+        result
+    }
+}
+
+impl<First: Clone, Point: Ord, Second: Clone, const KIND: u8>
+    From<(&[&First], &Second)> for Operation<Point, KIND>
+where
+    First: Segmental<Endpoint = Point>,
+    Second: Segmental<Endpoint = Point>,
+    for<'a> &'a Point: Orient,
+{
+    fn from((first, second): (&[&First], &Second)) -> Self {
+        let first_segments_count = first.len();
+        let mut result = Self::with_capacity(first_segments_count, 1);
+        result.extend(first.iter().copied().cloned());
+        result.extend(std::iter::once(second.clone()));
+        result
+    }
+}
+
 impl<Point: Clone + PartialOrd, const KIND: u8> Iterator
     for Operation<Point, KIND>
 where
