@@ -1,3 +1,5 @@
+use std::ops::{Add, Div, Mul, Sub};
+
 use crate::bounded::{Bounded, Box};
 use crate::clipping::linear::Operation;
 use crate::clipping::traits::ReduceEvents;
@@ -6,16 +8,14 @@ use crate::geometries::{Contour, Empty, Point, Segment};
 use crate::operations::{
     do_boxes_have_no_common_area, do_boxes_have_no_common_continuum,
     flags_to_false_indices, flags_to_true_indices, subtract_segments_overlap,
-    to_boxes_have_common_area, to_boxes_ids_with_common_area,
-    to_segments_intersection_scale, CrossMultiply, IntersectCrossingSegments,
-    Orient,
+    to_boxes_have_common_area, to_boxes_ids_with_common_area, CrossMultiply,
+    IntersectCrossingSegments, Orient,
 };
 use crate::relatable::{Relatable, Relation};
 use crate::sweeping::traits::EventsContainer;
 use crate::traits::{
     Difference, Elemental, Iterable, Multisegmental, Segmental,
 };
-use std::ops::{Add, Div, Mul, Sub};
 
 use super::types::Multisegment;
 
