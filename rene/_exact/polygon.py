@@ -9,7 +9,9 @@ from rithm.fraction import Fraction
 from rene import (Location,
                   hints)
 from rene._clipping import (intersect_polygon_with_multipolygon,
+                            intersect_polygon_with_multisegmental,
                             intersect_polygon_with_polygon,
+                            intersect_polygon_with_segment,
                             subtract_multipolygon_from_polygon,
                             subtract_polygon_from_polygon,
                             symmetric_subtract_multipolygon_from_polygon,
@@ -18,6 +20,7 @@ from rene._clipping import (intersect_polygon_with_multipolygon,
                             unite_polygon_with_polygon)
 from rene._context import Context
 from rene._utils import (collect_maybe_empty_polygons,
+                         collect_maybe_empty_segments,
                          collect_non_empty_polygons,
                          locate_point_in_region)
 
@@ -114,7 +117,29 @@ class Polygon:
                             self._context.multipolygon_cls
                     )
                     if isinstance(other, self._context.polygon_cls)
-                    else NotImplemented
+                    else (
+                        collect_maybe_empty_segments(
+                                intersect_polygon_with_multisegmental(
+                                        self, other, self._context.segment_cls
+                                ),
+                                self._context.empty_cls,
+                                self._context.multisegment_cls
+                        )
+                        if isinstance(other, (self._context.contour_cls,
+                                              self._context.multisegment_cls))
+                        else (
+                            collect_maybe_empty_segments(
+                                    intersect_polygon_with_segment(
+                                            self, other,
+                                            self._context.segment_cls
+                                    ),
+                                    self._context.empty_cls,
+                                    self._context.multisegment_cls
+                            )
+                            if isinstance(other, self._context.segment_cls)
+                            else NotImplemented
+                        )
+                    )
                 )
             )
         )

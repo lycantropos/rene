@@ -13,10 +13,14 @@ from rene import (MIN_CONTOUR_VERTICES_COUNT,
                   hints)
 from rene._bentley_ottmann.base import (Intersection,
                                         sweep)
-from rene._clipping import (intersect_multisegmental_with_multisegmental,
-                            intersect_multisegmental_with_segment,
-                            symmetric_subtract_multisegmental_from_multisegmental,
-                            symmetric_subtract_segment_from_multisegmental)
+from rene._clipping import (
+    intersect_multisegmental_with_multipolygon,
+    intersect_multisegmental_with_multisegmental,
+    intersect_multisegmental_with_polygon,
+    intersect_multisegmental_with_segment,
+    symmetric_subtract_multisegmental_from_multisegmental,
+    symmetric_subtract_segment_from_multisegmental
+)
 from rene._context import Context
 from rene._utils import (are_contour_vertices_non_degenerate,
                          collect_maybe_empty_segments,
@@ -111,7 +115,8 @@ class Contour:
     def __and__(
             self,
             other: t.Union[
-                hints.Contour[hints.Scalar], hints.Multisegment[Fraction],
+                hints.Contour[hints.Scalar], hints.Multipolygon[Fraction],
+                hints.Multisegment[Fraction], hints.Polygon[Fraction],
                 hints.Segment[Fraction]
             ],
             /
@@ -127,23 +132,51 @@ class Contour:
 
     def __and__(self, other: t.Any, /) -> t.Any:
         return (
-            collect_maybe_empty_segments(
-                    intersect_multisegmental_with_multisegmental(
-                            self, other, self._context.segment_cls
-                    ),
-                    self._context.empty_cls, self._context.multisegment_cls
-            )
-            if isinstance(other, (self._context.contour_cls,
-                                  self._context.multisegment_cls))
+            self._context.empty_cls()
+            if isinstance(other, self._context.empty_cls)
             else (
                 collect_maybe_empty_segments(
-                        intersect_multisegmental_with_segment(
+                        intersect_multisegmental_with_multisegmental(
                                 self, other, self._context.segment_cls
                         ),
                         self._context.empty_cls, self._context.multisegment_cls
                 )
-                if isinstance(other, self._context.segment_cls)
-                else NotImplemented)
+                if isinstance(other, (self._context.contour_cls,
+                                      self._context.multisegment_cls))
+                else (
+                    collect_maybe_empty_segments(
+                            intersect_multisegmental_with_segment(
+                                    self, other, self._context.segment_cls
+                            ),
+                            self._context.empty_cls,
+                            self._context.multisegment_cls
+                    )
+                    if isinstance(other, self._context.segment_cls)
+                    else (
+                        collect_maybe_empty_segments(
+                                intersect_multisegmental_with_polygon(
+                                        self, other, self._context.segment_cls
+                                ),
+                                self._context.empty_cls,
+                                self._context.multisegment_cls
+                        )
+                        if isinstance(other, self._context.polygon_cls)
+                        else (
+                            collect_maybe_empty_segments(
+                                    intersect_multisegmental_with_multipolygon(
+                                            self, other,
+                                            self._context.segment_cls
+                                    ),
+                                    self._context.empty_cls,
+                                    self._context.multisegment_cls
+                            )
+                            if isinstance(other,
+                                          self._context.multipolygon_cls)
+                            else NotImplemented
+                        )
+                    )
+                )
+            )
         )
 
     def __contains__(self, point: hints.Point[Fraction], /) -> bool:

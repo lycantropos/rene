@@ -8,7 +8,9 @@ from rithm.fraction import Fraction
 from rene import (Location,
                   Relation,
                   hints)
-from rene._clipping import (intersect_segment_with_multisegmental,
+from rene._clipping import (intersect_segment_with_multipolygon,
+                            intersect_segment_with_multisegmental,
+                            intersect_segment_with_polygon,
                             intersect_segment_with_segment,
                             symmetric_subtract_multisegmental_from_segment,
                             symmetric_subtract_segment_from_segment)
@@ -80,14 +82,20 @@ class Segment:
     def __and__(
             self,
             other: t.Union[
-                hints.Contour[Fraction], hints.Multisegment[Fraction],
-                hints.Segment[Fraction]
+                hints.Contour[Fraction], hints.Multipolygon[Fraction],
+                hints.Multisegment[Fraction], hints.Polygon[Fraction]
             ],
             /
     ) -> t.Union[
         hints.Empty[Fraction], hints.Multisegment[Fraction],
         hints.Segment[Fraction]
     ]:
+        ...
+
+    @t.overload
+    def __and__(
+            self, other: hints.Segment[Fraction], /
+    ) -> t.Union[hints.Empty[Fraction], hints.Segment[Fraction]]:
         ...
 
     @t.overload
@@ -112,7 +120,29 @@ class Segment:
                         self._context.empty_cls
                 )
                 if isinstance(other, self._context.segment_cls)
-                else NotImplemented
+                else (
+                    collect_maybe_empty_segments(
+                            intersect_segment_with_polygon(
+                                    self, other, self._context.segment_cls
+                            ),
+                            self._context.empty_cls,
+                            self._context.multisegment_cls
+                    )
+                    if isinstance(other, self._context.polygon_cls)
+                    else (
+                        collect_maybe_empty_segments(
+                                intersect_segment_with_multipolygon(
+                                        self, other, self._context.segment_cls
+                                ),
+                                self._context.empty_cls,
+                                self._context.multisegment_cls
+                        )
+                        if isinstance(other, self._context.multipolygon_cls)
+                        else (self._context.empty_cls()
+                              if isinstance(other, self._context.empty_cls)
+                              else NotImplemented)
+                    )
+                )
             )
         )
 
