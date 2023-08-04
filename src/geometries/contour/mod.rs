@@ -2,6 +2,7 @@ pub use self::types::Contour;
 
 mod bounded;
 mod contoural;
+mod difference;
 mod eq;
 mod from;
 mod hash;
