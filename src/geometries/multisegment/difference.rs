@@ -266,12 +266,12 @@ where
                 result.push(segment.clone());
                 continue;
             }
-            match other.relate_to(segment) {
+            match segment.relate_to(other) {
                 Relation::Equal => {
                     result.extend(self.segments[index + 1..].iter().cloned());
                     break;
                 }
-                Relation::Component => {
+                Relation::Composite => {
                     let [left_start, left_end, right_start, right_end] = {
                         let mut endpoints = [
                             segment.start(),
@@ -308,10 +308,10 @@ where
                 Relation::Cross => {
                     let cross_point =
                         IntersectCrossingSegments::intersect_crossing_segments(
-                            other.start(),
-                            other.end(),
                             segment.start(),
                             segment.end(),
+                            other.start(),
+                            other.end(),
                         );
                     result.push(Segment::new(
                         segment.start().clone(),
@@ -331,7 +331,7 @@ where
                     );
                     result.push(Segment::new(start.clone(), end.clone()));
                 }
-                Relation::Composite => continue,
+                Relation::Component => continue,
                 _ => result.push(segment.clone()),
             }
         }
