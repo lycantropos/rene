@@ -282,7 +282,6 @@ where
         None
     }
 
-    #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {
         (0, Some(2 * self.events_queue_data.len()))
     }
@@ -1114,7 +1113,6 @@ where
     }
 }
 
-#[inline]
 fn collect_references<T: Clone>(vertices: &[&T]) -> Vec<T> {
     vertices.iter().copied().cloned().collect()
 }

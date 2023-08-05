@@ -591,7 +591,6 @@ where
     )
 }
 
-#[inline]
 pub(crate) fn to_sorted_pair<Value: PartialOrd>(
     (left, right): (Value, Value),
 ) -> (Value, Value) {

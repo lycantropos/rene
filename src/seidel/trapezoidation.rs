@@ -864,7 +864,6 @@ where
         );
     }
 
-    #[inline]
     fn maybe_set_as_lower_left(
         leaf_index: usize,
         lower_left_leaf_index: Option<usize>,
@@ -882,7 +881,6 @@ where
         }
     }
 
-    #[inline]
     fn maybe_set_as_lower_right(
         leaf_index: usize,
         lower_right_leaf_index: Option<usize>,
@@ -900,7 +898,6 @@ where
         }
     }
 
-    #[inline]
     fn maybe_set_as_upper_left(
         leaf_index: usize,
         upper_left_leaf_index: Option<usize>,
@@ -918,7 +915,6 @@ where
         }
     }
 
-    #[inline]
     fn maybe_set_as_upper_right(
         leaf_index: usize,
         upper_right_leaf_index: Option<usize>,
@@ -936,7 +932,6 @@ where
         }
     }
 
-    #[inline]
     fn set_as_lower_left(
         leaf_index: usize,
         lower_left_leaf_index: usize,
@@ -952,7 +947,6 @@ where
         ));
     }
 
-    #[inline]
     fn set_as_lower_right(
         leaf_index: usize,
         lower_right_index: usize,
@@ -965,7 +959,6 @@ where
         .set_as_lower_right(Self::get_trapezoid_mut(lower_right_index, nodes));
     }
 
-    #[inline]
     fn set_as_upper_left(
         leaf_index: usize,
         upper_left_leaf_index: usize,
@@ -981,7 +974,6 @@ where
         ));
     }
 
-    #[inline]
     fn set_as_upper_right(
         leaf_index: usize,
         upper_right_index: usize,
@@ -994,12 +986,10 @@ where
         .set_as_upper_right(Self::get_trapezoid_mut(upper_right_index, nodes));
     }
 
-    #[inline]
     fn get_trapezoid(leaf_index: usize, nodes: &[Node]) -> &Trapezoid {
         nodes[leaf_index].get_trapezoid()
     }
 
-    #[inline]
     fn get_trapezoid_mut(
         leaf_index: usize,
         nodes: &mut [Node],
@@ -1049,7 +1039,6 @@ where
         result
     }
 
-    #[inline]
     fn replace_node(
         original_index: usize,
         replacement_index: usize,

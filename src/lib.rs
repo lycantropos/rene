@@ -2276,7 +2276,6 @@ fn try_relation_to_py_relation<'a>(value: Relation) -> PyResult<&'a PyAny> {
     })
 }
 
-#[inline]
 fn big_int_to_py_long(value: &BigInt) -> PyObject {
     let buffer = value.to_bytes(Endianness::Little);
     Python::with_gil(|py| unsafe {
@@ -2287,7 +2286,6 @@ fn big_int_to_py_long(value: &BigInt) -> PyObject {
     })
 }
 
-#[inline]
 fn try_py_integral_to_big_int(value: &PyAny) -> PyResult<BigInt> {
     let ptr = value.as_ptr();
     let py = value.py();
