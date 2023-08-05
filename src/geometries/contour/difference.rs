@@ -282,45 +282,25 @@ where
                         endpoints.sort();
                         endpoints
                     };
-                    if left_start == other.start() || left_start == other.end()
-                    {
+                    if left_start == left_end {
                         result.push(Segment::new(
                             right_start.clone(),
                             right_end.clone(),
                         ));
+                    } else if right_start == right_end {
+                        result.push(Segment::new(
+                            left_start.clone(),
+                            left_end.clone(),
+                        ));
                     } else {
-                        if left_end == other.start() || left_end == other.end()
-                        {
-                            if right_start == other.start()
-                                || right_start == other.end()
-                            {
-                                if right_start == right_end {
-                                    result.push(Segment::new(
-                                        left_start.clone(),
-                                        left_end.clone(),
-                                    ));
-                                } else {
-                                    result.push(Segment::new(
-                                        left_start.clone(),
-                                        left_end.clone(),
-                                    ));
-                                    result.push(Segment::new(
-                                        right_start.clone(),
-                                        right_end.clone(),
-                                    ));
-                                }
-                            } else {
-                                result.push(Segment::new(
-                                    left_start.clone(),
-                                    left_end.clone(),
-                                ));
-                            }
-                        } else {
-                            result.push(Segment::new(
-                                left_start.clone(),
-                                right_start.clone(),
-                            ));
-                        }
+                        result.push(Segment::new(
+                            left_start.clone(),
+                            left_end.clone(),
+                        ));
+                        result.push(Segment::new(
+                            right_start.clone(),
+                            right_end.clone(),
+                        ));
                     }
                     result.extend(self.segments[index + 1..].iter().cloned());
                     break;
