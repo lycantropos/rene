@@ -208,73 +208,74 @@ def relate_to_multisegment(
 
 
 def relate_to_segment(
-        goal_start: hints.Point[hints.Scalar],
-        goal_end: hints.Point[hints.Scalar],
-        test_start: hints.Point[hints.Scalar],
-        test_end: hints.Point[hints.Scalar],
+        first_start: hints.Point[hints.Scalar],
+        first_end: hints.Point[hints.Scalar],
+        second_start: hints.Point[hints.Scalar],
+        second_end: hints.Point[hints.Scalar],
         /
 ) -> Relation:
-    assert goal_start != goal_end
-    assert goal_start != goal_end
-    goal_start, goal_end = to_sorted_pair(goal_start, goal_end)
-    test_start, test_end = to_sorted_pair(test_start, test_end)
-    starts_equal = test_start == goal_start
-    ends_equal = test_end == goal_end
+    assert first_start != first_end
+    assert first_start != first_end
+    first_start, first_end = to_sorted_pair(first_start, first_end)
+    second_start, second_end = to_sorted_pair(second_start, second_end)
+    starts_equal = second_start == first_start
+    ends_equal = second_end == first_end
     if starts_equal and ends_equal:
         return Relation.EQUAL
-    test_start_orientation = orient(goal_end, goal_start, test_start)
-    test_end_orientation = orient(goal_end, goal_start, test_end)
-    if (test_start_orientation is not Orientation.COLLINEAR
-            and test_end_orientation is not Orientation.COLLINEAR):
-        if test_start_orientation == test_end_orientation:
+    second_start_orientation = orient(first_end, first_start, second_start)
+    second_end_orientation = orient(first_end, first_start, second_end)
+    if (second_start_orientation is not Orientation.COLLINEAR
+            and second_end_orientation is not Orientation.COLLINEAR):
+        if second_start_orientation is second_end_orientation:
             return Relation.DISJOINT
         else:
-            goal_start_orientation = orient(test_start, test_end, goal_start)
-            goal_end_orientation = orient(test_start, test_end, goal_end)
-            if (goal_start_orientation is not Orientation.COLLINEAR
-                    and goal_end_orientation is not Orientation.COLLINEAR):
-                if goal_start_orientation == goal_end_orientation:
+            first_start_orientation = orient(second_start, second_end,
+                                             first_start)
+            first_end_orientation = orient(second_start, second_end, first_end)
+            if (first_start_orientation is not Orientation.COLLINEAR
+                    and first_end_orientation is not Orientation.COLLINEAR):
+                if first_start_orientation is first_end_orientation:
                     return Relation.DISJOINT
                 else:
                     return Relation.CROSS
-            elif goal_start_orientation is not Orientation.COLLINEAR:
-                if test_start < goal_end < test_end:
+            elif first_start_orientation is not Orientation.COLLINEAR:
+                if second_start < first_end < second_end:
                     return Relation.TOUCH
                 else:
                     return Relation.DISJOINT
-            elif test_start < goal_start < test_end:
+            elif second_start < first_start < second_end:
                 return Relation.TOUCH
             else:
                 return Relation.DISJOINT
-    elif test_start_orientation is not Orientation.COLLINEAR:
-        if goal_start <= test_end <= goal_end:
+    elif second_start_orientation is not Orientation.COLLINEAR:
+        if first_start <= second_end <= first_end:
             return Relation.TOUCH
         else:
             return Relation.DISJOINT
-    elif test_end_orientation is not Orientation.COLLINEAR:
-        if goal_start <= test_start <= goal_end:
+    elif second_end_orientation is not Orientation.COLLINEAR:
+        if first_start <= second_start <= first_end:
             return Relation.TOUCH
         else:
             return Relation.DISJOINT
     elif starts_equal:
-        if test_end < goal_end:
+        if second_end < first_end:
             return Relation.COMPOSITE
         else:
             return Relation.COMPONENT
     elif ends_equal:
-        if test_start < goal_start:
+        if second_start < first_start:
             return Relation.COMPONENT
         else:
             return Relation.COMPOSITE
-    elif test_start == goal_end or test_end == goal_start:
+    elif second_start == first_end or second_end == first_start:
         return Relation.TOUCH
-    elif goal_start < test_start < goal_end:
-        if test_end < goal_end:
+    elif first_start < second_start < first_end:
+        if second_end < first_end:
             return Relation.COMPOSITE
         else:
             return Relation.OVERLAP
-    elif test_start < goal_start < test_end:
-        if goal_end < test_end:
+    elif second_start < first_start < second_end:
+        if first_end < second_end:
             return Relation.COMPONENT
         else:
             return Relation.OVERLAP
