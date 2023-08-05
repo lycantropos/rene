@@ -302,12 +302,14 @@ class Segment(_SelfComparable, _te.Protocol[Scalar]):
 
     @_t.overload
     def __and__(
-            self,
-            other: _t.Union[
-                Contour[Scalar], Multisegment[Scalar], Segment[Scalar]
-            ],
-            /
+            self, other: _t.Union[Contour[Scalar], Multisegment[Scalar]], /
     ) -> _t.Union[Empty[Scalar], Multisegment[Scalar], Segment[Scalar]]:
+        ...
+
+    @_t.overload
+    def __and__(
+            self, other: Segment[Scalar], /
+    ) -> _t.Union[Empty[Scalar], Segment[Scalar]]:
         ...
 
     def __contains__(self, point: Point[Scalar], /) -> bool:
