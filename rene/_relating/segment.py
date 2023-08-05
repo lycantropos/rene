@@ -9,6 +9,7 @@ from rene import (Location,
 from rene._utils import (locate_point_in_segment,
                          orient,
                          point_vertex_line_divides_angle,
+                         subtract_segments_overlap,
                          to_segments_intersection_scale,
                          to_sorted_pair)
 
@@ -118,9 +119,9 @@ def relate_to_multisegment(
                 is_segment_superset = False
             if has_no_overlap:
                 has_no_overlap = False
-            start, end = _subtract_segments_overlap(start, end,
-                                                    multisegment_segment_start,
-                                                    multisegment_segment_end)
+            start, end = subtract_segments_overlap(start, end,
+                                                   multisegment_segment_start,
+                                                   multisegment_segment_end)
         else:
             if is_segment_superset:
                 is_segment_superset = False
@@ -281,18 +282,3 @@ def relate_to_segment(
             return Relation.OVERLAP
     else:
         return Relation.DISJOINT
-
-
-def _subtract_segments_overlap(
-        minuend_start: hints.Point[hints.Scalar],
-        minuend_end: hints.Point[hints.Scalar],
-        subtrahend_start: hints.Point[hints.Scalar],
-        subtrahend_end: hints.Point[hints.Scalar],
-        /
-) -> t.Tuple[hints.Point[hints.Scalar], hints.Point[hints.Scalar]]:
-    minuend_start, minuend_end = to_sorted_pair(minuend_start, minuend_end)
-    subtrahend_start, subtrahend_end = to_sorted_pair(subtrahend_start,
-                                                      subtrahend_end)
-    return ((subtrahend_end, minuend_end)
-            if subtrahend_start < minuend_start < subtrahend_end
-            else (minuend_start, subtrahend_start))
