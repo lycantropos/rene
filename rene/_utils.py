@@ -438,3 +438,18 @@ def validate_seed(
         return
     raise error_type('Seed should be an integer '
                      f'from range({0}, {_max_usize_value}), but got "{seed}".')
+
+
+def subtract_segments_overlap(
+        minuend_start: hints.Point[hints.Scalar],
+        minuend_end: hints.Point[hints.Scalar],
+        subtrahend_start: hints.Point[hints.Scalar],
+        subtrahend_end: hints.Point[hints.Scalar],
+        /
+) -> t.Tuple[hints.Point[hints.Scalar], hints.Point[hints.Scalar]]:
+    minuend_start, minuend_end = to_sorted_pair(minuend_start, minuend_end)
+    subtrahend_start, subtrahend_end = to_sorted_pair(subtrahend_start,
+                                                      subtrahend_end)
+    return ((subtrahend_end, minuend_end)
+            if subtrahend_start < minuend_start < subtrahend_end
+            else (minuend_start, subtrahend_start))
