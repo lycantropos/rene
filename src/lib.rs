@@ -1084,39 +1084,15 @@ impl PyExactContour {
         } else if other.is_instance(PyExactContour::type_object(py))? {
             let other = other.extract::<PyRef<PyExactContour>>()?;
             let segments = (&self.0).intersection(&other.0);
-            match segments.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    segments.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultisegment(ExactMultisegment::new(segments))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_segments(segments, py))
         } else if other.is_instance(PyExactMultisegment::type_object(py))? {
             let other = other.extract::<PyRef<PyExactMultisegment>>()?;
             let segments = (&self.0).intersection(&other.0);
-            match segments.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    segments.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultisegment(ExactMultisegment::new(segments))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_segments(segments, py))
         } else if other.is_instance(PyExactSegment::type_object(py))? {
             let other = other.extract::<PyRef<PyExactSegment>>()?;
             let segments = (&self.0).intersection(&other.0);
-            match segments.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    segments.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultisegment(ExactMultisegment::new(segments))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_segments(segments, py))
         } else {
             Ok(py.NotImplemented())
         }
@@ -1136,6 +1112,27 @@ impl PyExactContour {
             vertices[1..].reverse();
         }
         PyTuple::new(py, &vertices).hash()
+    }
+
+    fn __or__(&self, other: &PyAny, py: Python) -> PyResult<PyObject> {
+        if other.is_instance(PyExactEmpty::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactEmpty>>()?;
+            Ok(Self((&self.0).union(&other.0)).into_py(py))
+        } else if other.is_instance(Self::type_object(py))? {
+            let other = other.extract::<PyRef<Self>>()?;
+            let segments = (&self.0).union(&other.0);
+            Ok(unpack_non_empty_segments(segments, py))
+        } else if other.is_instance(PyExactMultisegment::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactMultisegment>>()?;
+            let segments = (&self.0).union(&other.0);
+            Ok(unpack_non_empty_segments(segments, py))
+        } else if other.is_instance(PyExactSegment::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactSegment>>()?;
+            let segments = (&self.0).union(&other.0);
+            Ok(unpack_non_empty_segments(segments, py))
+        } else {
+            Ok(py.NotImplemented())
+        }
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
@@ -1177,6 +1174,27 @@ impl PyExactContour {
                 .collect::<PyResult<Vec<String>>>()?
                 .join(", ")
         ))
+    }
+
+    fn __sub__(&self, other: &PyAny, py: Python) -> PyResult<PyObject> {
+        if other.is_instance(PyExactEmpty::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactEmpty>>()?;
+            Ok(Self((&self.0).difference(&other.0)).into_py(py))
+        } else if other.is_instance(Self::type_object(py))? {
+            let other = other.extract::<PyRef<Self>>()?;
+            let segments = (&self.0).difference(&other.0);
+            Ok(unpack_maybe_empty_segments(segments, py))
+        } else if other.is_instance(PyExactMultisegment::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactMultisegment>>()?;
+            let segments = (&self.0).difference(&other.0);
+            Ok(unpack_maybe_empty_segments(segments, py))
+        } else if other.is_instance(PyExactSegment::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactSegment>>()?;
+            let segments = (&self.0).difference(&other.0);
+            Ok(unpack_maybe_empty_segments(segments, py))
+        } else {
+            Ok(py.NotImplemented())
+        }
     }
 }
 
@@ -1675,39 +1693,15 @@ impl PyExactMultisegment {
         } else if other.is_instance(PyExactMultisegment::type_object(py))? {
             let other = other.extract::<PyRef<PyExactMultisegment>>()?;
             let segments = (&self.0).intersection(&other.0);
-            match segments.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    segments.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultisegment(ExactMultisegment::new(segments))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_segments(segments, py))
         } else if other.is_instance(PyExactContour::type_object(py))? {
             let other = other.extract::<PyRef<PyExactContour>>()?;
             let segments = (&self.0).intersection(&other.0);
-            match segments.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    segments.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultisegment(ExactMultisegment::new(segments))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_segments(segments, py))
         } else if other.is_instance(PyExactSegment::type_object(py))? {
             let other = other.extract::<PyRef<PyExactSegment>>()?;
             let segments = (&self.0).intersection(&other.0);
-            match segments.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    segments.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultisegment(ExactMultisegment::new(segments))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_segments(segments, py))
         } else {
             Ok(py.NotImplemented())
         }
@@ -1719,6 +1713,27 @@ impl PyExactMultisegment {
 
     fn __hash__(&self, py: Python) -> PyResult<ffi::Py_hash_t> {
         PyFrozenSet::new(py, (&self.0).segments())?.hash()
+    }
+
+    fn __or__(&self, other: &PyAny, py: Python) -> PyResult<PyObject> {
+        if other.is_instance(PyExactEmpty::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactEmpty>>()?;
+            Ok(Self((&self.0).union(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactContour::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactContour>>()?;
+            let segments = (&self.0).union(&other.0);
+            Ok(unpack_non_empty_segments(segments, py))
+        } else if other.is_instance(Self::type_object(py))? {
+            let other = other.extract::<PyRef<Self>>()?;
+            let segments = (&self.0).union(&other.0);
+            Ok(unpack_non_empty_segments(segments, py))
+        } else if other.is_instance(PyExactSegment::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactSegment>>()?;
+            let segments = (&self.0).union(&other.0);
+            Ok(unpack_non_empty_segments(segments, py))
+        } else {
+            Ok(py.NotImplemented())
+        }
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
@@ -1763,6 +1778,27 @@ impl PyExactMultisegment {
                 .collect::<PyResult<Vec<String>>>()?
                 .join(", ")
         ))
+    }
+
+    fn __sub__(&self, other: &PyAny, py: Python) -> PyResult<PyObject> {
+        if other.is_instance(PyExactEmpty::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactEmpty>>()?;
+            Ok(Self((&self.0).difference(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactContour::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactContour>>()?;
+            let segments = (&self.0).difference(&other.0);
+            Ok(unpack_maybe_empty_segments(segments, py))
+        } else if other.is_instance(Self::type_object(py))? {
+            let other = other.extract::<PyRef<Self>>()?;
+            let segments = (&self.0).difference(&other.0);
+            Ok(unpack_maybe_empty_segments(segments, py))
+        } else if other.is_instance(PyExactSegment::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactSegment>>()?;
+            let segments = (&self.0).difference(&other.0);
+            Ok(unpack_maybe_empty_segments(segments, py))
+        } else {
+            Ok(py.NotImplemented())
+        }
     }
 }
 
@@ -2127,27 +2163,11 @@ impl PyExactSegment {
         } else if other.is_instance(PyExactContour::type_object(py))? {
             let other = other.extract::<PyRef<PyExactContour>>()?;
             let segments = (&self.0).intersection(&other.0);
-            match segments.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    segments.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultisegment(ExactMultisegment::new(segments))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_segments(segments, py))
         } else if other.is_instance(PyExactMultisegment::type_object(py))? {
             let other = other.extract::<PyRef<PyExactMultisegment>>()?;
             let segments = (&self.0).intersection(&other.0);
-            match segments.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    segments.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultisegment(ExactMultisegment::new(segments))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_segments(segments, py))
         } else if other.is_instance(PyExactSegment::type_object(py))? {
             let other = other.extract::<PyRef<PyExactSegment>>()?;
             match (&self.0).intersection(&other.0) {
@@ -2171,6 +2191,27 @@ impl PyExactSegment {
         .hash()
     }
 
+    fn __or__(&self, other: &PyAny, py: Python) -> PyResult<PyObject> {
+        if other.is_instance(PyExactEmpty::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactEmpty>>()?;
+            Ok(Self((&self.0).union(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactContour::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactContour>>()?;
+            let segments = (&self.0).union(&other.0);
+            Ok(unpack_non_empty_segments(segments, py))
+        } else if other.is_instance(PyExactMultisegment::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactMultisegment>>()?;
+            let segments = (&self.0).union(&other.0);
+            Ok(unpack_non_empty_segments(segments, py))
+        } else if other.is_instance(Self::type_object(py))? {
+            let other = other.extract::<PyRef<Self>>()?;
+            let segments = (&self.0).union(&other.0);
+            Ok(unpack_non_empty_segments(segments, py))
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
+
     fn __repr__(&self, py: Python) -> PyResult<String> {
         Ok(format!(
             "{}({}, {})",
@@ -2189,6 +2230,27 @@ impl PyExactSegment {
                 CompareOp::Ne => Ok((self.0 != other.0).into_py(py)),
                 _ => Ok(py.NotImplemented()),
             }
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
+
+    fn __sub__(&self, other: &PyAny, py: Python) -> PyResult<PyObject> {
+        if other.is_instance(PyExactEmpty::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactEmpty>>()?;
+            Ok(Self((&self.0).difference(&other.0)).into_py(py))
+        } else if other.is_instance(PyExactContour::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactContour>>()?;
+            let segments = (&self.0).difference(&other.0);
+            Ok(unpack_maybe_empty_segments(segments, py))
+        } else if other.is_instance(PyExactMultisegment::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactMultisegment>>()?;
+            let segments = (&self.0).difference(&other.0);
+            Ok(unpack_maybe_empty_segments(segments, py))
+        } else if other.is_instance(Self::type_object(py))? {
+            let other = other.extract::<PyRef<Self>>()?;
+            let segments = (&self.0).difference(&other.0);
+            Ok(unpack_maybe_empty_segments(segments, py))
         } else {
             Ok(py.NotImplemented())
         }
@@ -2536,4 +2598,28 @@ fn to_next_slice_indices(
     let result_stop =
         try_sum_isizes(start, try_multiply_isizes(step, indices.stop)?)?;
     Ok((result_start, result_stop, result_step))
+}
+
+fn unpack_maybe_empty_segments(
+    segments: Vec<ExactSegment>,
+    py: Python,
+) -> PyObject {
+    match segments.len() {
+        0 => PyExactEmpty::new().into_py(py),
+        1 => unsafe { segments.into_iter().next().unwrap_unchecked() }
+            .into_py(py),
+        _ => PyExactMultisegment(ExactMultisegment::new(segments)).into_py(py),
+    }
+}
+
+fn unpack_non_empty_segments(
+    segments: Vec<ExactSegment>,
+    py: Python,
+) -> PyObject {
+    match segments.len() {
+        0 => unreachable!("Expected to be non-empty."),
+        1 => unsafe { segments.into_iter().next().unwrap_unchecked() }
+            .into_py(py),
+        _ => PyExactMultisegment(ExactMultisegment::new(segments)).into_py(py),
+    }
 }
