@@ -4,7 +4,9 @@ from itertools import (chain,
 
 from rene import (Orientation,
                   hints)
-from rene._utils import (do_boxes_have_no_common_continuum,
+from rene._utils import (collect_non_empty_polygons,
+                         collect_non_empty_segments,
+                         do_boxes_have_no_common_continuum,
                          flags_to_false_indices,
                          flags_to_true_indices,
                          orient,
@@ -14,7 +16,7 @@ from rene._utils import (do_boxes_have_no_common_continuum,
                          to_sorted_pair)
 from . import (linear,
                shaped)
-from .difference import subtract_segment_from_multisegmental
+from .difference import raw_subtract_segment_from_multisegmental
 from .event import Event
 
 
@@ -48,16 +50,17 @@ def unite_multipolygon_with_multipolygon(
         first: hints.Multipolygon[hints.Scalar],
         second: hints.Multipolygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
+        multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> t.List[hints.Polygon[hints.Scalar]]:
+) -> t.Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
     first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)
     first_polygons, second_polygons = first.polygons, second.polygons
     if do_boxes_have_no_common_continuum(first_bounding_box,
                                          second_bounding_box):
-        return [*first_polygons, *second_polygons]
+        return multipolygon_cls([*first_polygons, *second_polygons])
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
     second_boxes = [polygon.bounding_box for polygon in second_polygons]
     do_first_boxes_have_common_continuum = to_boxes_have_common_continuum(
@@ -67,7 +70,7 @@ def unite_multipolygon_with_multipolygon(
             do_first_boxes_have_common_continuum
     )
     if not first_common_continuum_polygons_ids:
-        return [*first_polygons, *second_polygons]
+        return multipolygon_cls([*first_polygons, *second_polygons])
     do_second_boxes_have_common_continuum = to_boxes_have_common_continuum(
             second_boxes, first_bounding_box
     )
@@ -75,7 +78,7 @@ def unite_multipolygon_with_multipolygon(
             do_second_boxes_have_common_continuum
     )
     if not second_common_continuum_polygons_ids:
-        return [*first_polygons, *second_polygons]
+        return multipolygon_cls([*first_polygons, *second_polygons])
     first_common_continuum_polygons = [
         first_polygons[index]
         for index in first_common_continuum_polygons_ids
@@ -96,36 +99,38 @@ def unite_multipolygon_with_multipolygon(
                     for polygon in second_common_continuum_polygons
             )
     )
-    result = operation.reduce_events(list(operation), contour_cls, polygon_cls)
-    result.extend(
+    polygons = operation.reduce_events(list(operation), contour_cls,
+                                       polygon_cls)
+    polygons.extend(
             first_polygons[index]
             for index in flags_to_false_indices(
                     do_first_boxes_have_common_continuum
             )
     )
-    result.extend(
+    polygons.extend(
             second_polygons[index]
             for index in flags_to_false_indices(
                     do_second_boxes_have_common_continuum
             )
     )
-    return result
+    return collect_non_empty_polygons(polygons, multipolygon_cls)
 
 
 def unite_multipolygon_with_polygon(
         first: hints.Multipolygon[hints.Scalar],
         second: hints.Polygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
+        multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> t.List[hints.Polygon[hints.Scalar]]:
+) -> t.Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
     first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)
     first_polygons = first.polygons
     if do_boxes_have_no_common_continuum(first_bounding_box,
                                          second_bounding_box):
-        return [*first_polygons, second]
+        return multipolygon_cls([*first_polygons, second])
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
     first_boxes_have_common_continuum = to_boxes_have_common_continuum(
             first_boxes, second_bounding_box
@@ -134,7 +139,7 @@ def unite_multipolygon_with_polygon(
             first_boxes_have_common_continuum
     )
     if not first_common_continuum_polygons_ids:
-        return [*first_polygons, second]
+        return multipolygon_cls([*first_polygons, second])
     first_common_continuum_polygons = [
         first_polygons[index]
         for index in first_common_continuum_polygons_ids
@@ -147,28 +152,30 @@ def unite_multipolygon_with_polygon(
             ),
             polygon_to_correctly_oriented_segments(second, segment_cls)
     )
-    result = operation.reduce_events(list(operation), contour_cls, polygon_cls)
-    result.extend(
+    polygons = operation.reduce_events(list(operation), contour_cls,
+                                       polygon_cls)
+    polygons.extend(
             first_polygons[index]
             for index in flags_to_false_indices(
                     first_boxes_have_common_continuum
             )
     )
-    return result
+    return collect_non_empty_polygons(polygons, multipolygon_cls)
 
 
 def unite_multisegmental_with_multisegmental(
         first: _Multisegmental[hints.Scalar],
         second: _Multisegmental[hints.Scalar],
+        multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> t.List[hints.Segment[hints.Scalar]]:
+) -> t.Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
     first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)
     first_segments, second_segments = first.segments, second.segments
     if do_boxes_have_no_common_continuum(first_bounding_box,
                                          second_bounding_box):
-        return [*first_segments, *second_segments]
+        return multisegment_cls([*first_segments, *second_segments])
     first_boxes = [segment.bounding_box for segment in first_segments]
     second_boxes = [segment.bounding_box for segment in second_segments]
     do_first_boxes_have_common_continuum = to_boxes_have_common_continuum(
@@ -178,7 +185,7 @@ def unite_multisegmental_with_multisegmental(
             do_first_boxes_have_common_continuum
     )
     if not first_common_continuum_segments_ids:
-        return [*first_segments, *second_segments]
+        return multisegment_cls([*first_segments, *second_segments])
     do_second_boxes_have_common_continuum = to_boxes_have_common_continuum(
             second_boxes, first_bounding_box
     )
@@ -186,7 +193,7 @@ def unite_multisegmental_with_multisegmental(
             do_second_boxes_have_common_continuum
     )
     if not second_common_continuum_segments_ids:
-        return [*first_segments, *second_segments]
+        return multisegment_cls([*first_segments, *second_segments])
     first_common_continuum_segments = [
         first_segments[index]
         for index in first_common_continuum_segments_ids
@@ -198,47 +205,50 @@ def unite_multisegmental_with_multisegmental(
     operation = LinearUnion.from_segments_iterables(
             first_common_continuum_segments, second_common_continuum_segments
     )
-    result = operation.reduce_events(list(operation), segment_cls)
-    result.extend(
+    segments = operation.reduce_events(list(operation), segment_cls)
+    segments.extend(
             first_segments[index]
             for index in flags_to_false_indices(
                     do_first_boxes_have_common_continuum
             )
     )
-    result.extend(
+    segments.extend(
             second_segments[index]
             for index in flags_to_false_indices(
                     do_second_boxes_have_common_continuum
             )
     )
-    return result
+    return collect_non_empty_segments(segments, multisegment_cls)
 
 
 def unite_multisegmental_with_segment(
         first: _Multisegmental[hints.Scalar],
         second: hints.Segment[hints.Scalar],
+        multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> t.List[hints.Segment[hints.Scalar]]:
-    result = subtract_segment_from_multisegmental(first, second, segment_cls)
-    result.append(second)
-    return result
+) -> t.Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
+    segments = raw_subtract_segment_from_multisegmental(first, second,
+                                                        segment_cls)
+    segments.append(second)
+    return collect_non_empty_segments(segments, multisegment_cls)
 
 
 def unite_polygon_with_multipolygon(
         first: hints.Polygon[hints.Scalar],
         second: hints.Multipolygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
+        multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> t.List[hints.Polygon[hints.Scalar]]:
+) -> t.Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
     first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)
     second_polygons = second.polygons
     if do_boxes_have_no_common_continuum(first_bounding_box,
                                          second_bounding_box):
-        return [first, *second_polygons]
+        return multipolygon_cls([first, *second_polygons])
     second_boxes = [polygon.bounding_box for polygon in second_polygons]
     do_second_boxes_have_common_continuum = to_boxes_have_common_continuum(
             second_boxes, first_bounding_box
@@ -247,7 +257,7 @@ def unite_polygon_with_multipolygon(
             do_second_boxes_have_common_continuum
     )
     if not second_common_continuum_polygons_ids:
-        return [first, *second_polygons]
+        return multipolygon_cls([first, *second_polygons])
     second_common_continuum_polygons = [
         second_polygons[index]
         for index in second_common_continuum_polygons_ids
@@ -260,57 +270,65 @@ def unite_polygon_with_multipolygon(
                     for polygon in second_common_continuum_polygons
             )
     )
-    result = operation.reduce_events(list(operation), contour_cls, polygon_cls)
-    result.extend(
+    polygons = operation.reduce_events(list(operation), contour_cls,
+                                       polygon_cls)
+    polygons.extend(
             second_polygons[index]
             for index in flags_to_false_indices(
                     do_second_boxes_have_common_continuum
             )
     )
-    return result
+    return collect_non_empty_polygons(polygons, multipolygon_cls)
 
 
 def unite_polygon_with_polygon(
         first: hints.Polygon[hints.Scalar],
         second: hints.Polygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
+        multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> t.List[hints.Polygon[hints.Scalar]]:
+) -> t.Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
     first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)
     if do_boxes_have_no_common_continuum(first_bounding_box,
                                          second_bounding_box):
-        return [first, second]
+        return multipolygon_cls([first, second])
     operation = ShapedUnion.from_segments_iterables(
             polygon_to_correctly_oriented_segments(first, segment_cls),
             polygon_to_correctly_oriented_segments(second, segment_cls)
     )
-    return operation.reduce_events(list(operation), contour_cls, polygon_cls)
+    return collect_non_empty_polygons(
+            operation.reduce_events(list(operation), contour_cls, polygon_cls),
+            multipolygon_cls
+    )
 
 
 def unite_segment_with_multisegmental(
         first: hints.Segment[hints.Scalar],
         second: _Multisegmental[hints.Scalar],
+        multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> t.List[hints.Segment[hints.Scalar]]:
-    result = subtract_segment_from_multisegmental(second, first, segment_cls)
-    result.append(first)
-    return result
+) -> t.Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
+    segments = raw_subtract_segment_from_multisegmental(second, first,
+                                                        segment_cls)
+    segments.append(first)
+    return collect_non_empty_segments(segments, multisegment_cls)
 
 
 def unite_segment_with_segment(
         first: hints.Segment[hints.Scalar],
         second: hints.Segment[hints.Scalar],
+        multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> t.List[hints.Segment[hints.Scalar]]:
+) -> t.Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
     first_start, first_end = to_sorted_pair(first.start, first.end)
     second_start, second_end = to_sorted_pair(second.start, second.end)
     if first_start == second_start and first_end == second_end:
-        return [first]
+        return first
     second_start_orientation = orient(first_end, first_start, second_start)
     second_end_orientation = orient(first_end, first_start, second_end)
     if (second_start_orientation is not Orientation.COLLINEAR
@@ -324,13 +342,13 @@ def unite_segment_with_segment(
             cross_point = to_segments_intersection_point(
                     first_start, first_end, second_start, second_end
             )
-            return [segment_cls(first_start, cross_point),
-                    segment_cls(cross_point, first_end),
-                    segment_cls(second_start, cross_point),
-                    segment_cls(cross_point, second_end)]
+            return multisegment_cls([segment_cls(first_start, cross_point),
+                                     segment_cls(cross_point, first_end),
+                                     segment_cls(second_start, cross_point),
+                                     segment_cls(cross_point, second_end)])
     elif (second_start_orientation is Orientation.COLLINEAR
           and second_end_orientation is Orientation.COLLINEAR
           and second_start <= first_end and first_start <= second_end):
-        return [segment_cls(min(first_start, second_start),
-                            max(first_end, second_end))]
-    return [first, second]
+        return segment_cls(min(first_start, second_start),
+                           max(first_end, second_end))
+    return multisegment_cls([first, second])

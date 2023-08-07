@@ -400,30 +400,6 @@ def to_sorted_pair(
     return (first, second) if first < second else (second, first)
 
 
-_T1 = t.TypeVar('_T1')
-_T2 = t.TypeVar('_T2')
-
-
-@t.overload
-def unwrap_or_else(
-        value: None, function: t.Callable[[], _T2], /
-) -> _T2:
-    ...
-
-
-@t.overload
-def unwrap_or_else(
-        value: _T1, function: t.Callable[[], _T2], /
-) -> _T1:
-    ...
-
-
-def unwrap_or_else(
-        value: t.Optional[_T1], function: t.Callable[[], _T2], /
-) -> t.Union[_T1, _T2]:
-    return function() if value is None else value
-
-
 def validate_seed(
         seed: t.Any, _max_usize_value: int = (sys.maxsize << 1) + 1, /
 ) -> None:

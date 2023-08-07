@@ -19,10 +19,7 @@ from rene._clipping import (intersect_polygon_with_multipolygon,
                             unite_polygon_with_multipolygon,
                             unite_polygon_with_polygon)
 from rene._context import Context
-from rene._utils import (collect_maybe_empty_polygons,
-                         collect_maybe_empty_segments,
-                         collect_non_empty_polygons,
-                         locate_point_in_region)
+from rene._utils import locate_point_in_region
 
 
 @te.final
@@ -94,51 +91,38 @@ class Polygon:
 
     def __and__(self, other: t.Any, /) -> t.Any:
         return (
-            other
-            if isinstance(other, self._context.empty_cls)
+            intersect_polygon_with_multipolygon(
+                    self, other, self._context.contour_cls,
+                    self._context.empty_cls, self._context.multipolygon_cls,
+                    self._context.polygon_cls, self._context.segment_cls
+            )
+            if isinstance(other, self._context.multipolygon_cls)
             else (
-                collect_maybe_empty_polygons(
-                        intersect_polygon_with_multipolygon(
-                                self, other, self._context.contour_cls,
-                                self._context.polygon_cls,
-                                self._context.segment_cls
-                        ),
-                        self._context.empty_cls, self._context.multipolygon_cls
+                intersect_polygon_with_polygon(
+                        self, other, self._context.contour_cls,
+                        self._context.empty_cls,
+                        self._context.multipolygon_cls,
+                        self._context.polygon_cls, self._context.segment_cls
                 )
-                if isinstance(other, self._context.multipolygon_cls)
+                if isinstance(other, self._context.polygon_cls)
                 else (
-                    collect_maybe_empty_polygons(
-                            intersect_polygon_with_polygon(
-                                    self, other, self._context.contour_cls,
-                                    self._context.polygon_cls,
-                                    self._context.segment_cls
-                            ),
-                            self._context.empty_cls,
-                            self._context.multipolygon_cls
+                    intersect_polygon_with_multisegmental(
+                            self, other, self._context.empty_cls,
+                            self._context.multisegment_cls,
+                            self._context.segment_cls
                     )
-                    if isinstance(other, self._context.polygon_cls)
+                    if isinstance(other, (self._context.contour_cls,
+                                          self._context.multisegment_cls))
                     else (
-                        collect_maybe_empty_segments(
-                                intersect_polygon_with_multisegmental(
-                                        self, other, self._context.segment_cls
-                                ),
-                                self._context.empty_cls,
-                                self._context.multisegment_cls
+                        intersect_polygon_with_segment(
+                                self, other, self._context.empty_cls,
+                                self._context.multisegment_cls,
+                                self._context.segment_cls
                         )
-                        if isinstance(other, (self._context.contour_cls,
-                                              self._context.multisegment_cls))
-                        else (
-                            collect_maybe_empty_segments(
-                                    intersect_polygon_with_segment(
-                                            self, other,
-                                            self._context.segment_cls
-                                    ),
-                                    self._context.empty_cls,
-                                    self._context.multisegment_cls
-                            )
-                            if isinstance(other, self._context.segment_cls)
-                            else NotImplemented
-                        )
+                        if isinstance(other, self._context.segment_cls)
+                        else (other
+                              if isinstance(other, self._context.empty_cls)
+                              else NotImplemented)
                     )
                 )
             )
@@ -188,24 +172,19 @@ class Polygon:
             self
             if isinstance(other, self._context.empty_cls)
             else (
-                collect_non_empty_polygons(
-                        unite_polygon_with_multipolygon(
-                                self, other, self._context.contour_cls,
-                                self._context.polygon_cls,
-                                self._context.segment_cls
-                        ),
-                        self._context.multipolygon_cls
+                unite_polygon_with_multipolygon(
+                        self, other, self._context.contour_cls,
+                        self._context.multipolygon_cls,
+                        self._context.polygon_cls, self._context.segment_cls
                 )
                 if isinstance(other, self._context.multipolygon_cls)
                 else
                 (
-                    collect_non_empty_polygons(
-                            unite_polygon_with_polygon(
-                                    self, other, self._context.contour_cls,
-                                    self._context.polygon_cls,
-                                    self._context.segment_cls
-                            ),
-                            self._context.multipolygon_cls
+                    unite_polygon_with_polygon(
+                            self, other, self._context.contour_cls,
+                            self._context.multipolygon_cls,
+                            self._context.polygon_cls,
+                            self._context.segment_cls
                     )
                     if isinstance(other, Polygon)
                     else NotImplemented
@@ -247,24 +226,20 @@ class Polygon:
             self
             if isinstance(other, self._context.empty_cls)
             else (
-                collect_maybe_empty_polygons(
-                        subtract_multipolygon_from_polygon(
-                                self, other, self._context.contour_cls,
-                                self._context.polygon_cls,
-                                self._context.segment_cls
-                        ),
-                        self._context.empty_cls, self._context.multipolygon_cls
+                subtract_multipolygon_from_polygon(
+                        self, other, self._context.contour_cls,
+                        self._context.empty_cls,
+                        self._context.multipolygon_cls,
+                        self._context.polygon_cls, self._context.segment_cls
                 )
                 if isinstance(other, self._context.multipolygon_cls)
                 else (
-                    collect_maybe_empty_polygons(
-                            subtract_polygon_from_polygon(
-                                    self, other, self._context.contour_cls,
-                                    self._context.polygon_cls,
-                                    self._context.segment_cls
-                            ),
+                    subtract_polygon_from_polygon(
+                            self, other, self._context.contour_cls,
                             self._context.empty_cls,
-                            self._context.multipolygon_cls
+                            self._context.multipolygon_cls,
+                            self._context.polygon_cls,
+                            self._context.segment_cls
                     )
                     if isinstance(other, self._context.polygon_cls)
                     else NotImplemented
@@ -298,24 +273,21 @@ class Polygon:
             self
             if isinstance(other, self._context.empty_cls)
             else (
-                collect_maybe_empty_polygons(
-                        symmetric_subtract_multipolygon_from_polygon(
-                                self, other, self._context.contour_cls,
-                                self._context.polygon_cls,
-                                self._context.segment_cls
-                        ),
-                        self._context.empty_cls, self._context.multipolygon_cls
+                symmetric_subtract_multipolygon_from_polygon(
+                        self, other, self._context.contour_cls,
+                        self._context.empty_cls,
+                        self._context.multipolygon_cls,
+                        self._context.polygon_cls, self._context.segment_cls
                 )
+
                 if isinstance(other, self._context.multipolygon_cls)
                 else (
-                    collect_maybe_empty_polygons(
-                            symmetric_subtract_polygon_from_polygon(
-                                    self, other, self._context.contour_cls,
-                                    self._context.polygon_cls,
-                                    self._context.segment_cls
-                            ),
+                    symmetric_subtract_polygon_from_polygon(
+                            self, other, self._context.contour_cls,
                             self._context.empty_cls,
-                            self._context.multipolygon_cls
+                            self._context.multipolygon_cls,
+                            self._context.polygon_cls,
+                            self._context.segment_cls
                     )
                     if isinstance(other, self._context.polygon_cls)
                     else NotImplemented

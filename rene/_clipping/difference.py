@@ -5,7 +5,9 @@ from itertools import (chain,
 from rene import (Orientation,
                   Relation,
                   hints)
-from rene._utils import (do_boxes_have_no_common_area,
+from rene._utils import (collect_maybe_empty_polygons,
+                         collect_maybe_empty_segments,
+                         do_boxes_have_no_common_area,
                          do_boxes_have_no_common_continuum,
                          flags_to_false_indices,
                          flags_to_true_indices,
@@ -55,16 +57,21 @@ def subtract_multipolygon_from_multipolygon(
         minuend: hints.Multipolygon[hints.Scalar],
         subtrahend: hints.Multipolygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
+        empty_cls: t.Type[hints.Empty[hints.Scalar]],
+        multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> t.List[hints.Polygon[hints.Scalar]]:
+) -> t.Union[
+    hints.Empty[hints.Scalar], hints.Multipolygon[hints.Scalar],
+    hints.Polygon[hints.Scalar]
+]:
     minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
                                                      subtrahend.bounding_box)
-    minuend_polygons = minuend.polygons
     if do_boxes_have_no_common_area(minuend_bounding_box,
                                     subtrahend_bounding_box):
-        return [*minuend_polygons]
+        return minuend
+    minuend_polygons = minuend.polygons
     minuend_boxes = [polygon.bounding_box for polygon in minuend_polygons]
     minuend_boxes_have_common_area = to_boxes_have_common_area(
             minuend_boxes, subtrahend_bounding_box
@@ -73,7 +80,7 @@ def subtract_multipolygon_from_multipolygon(
             minuend_boxes_have_common_area
     )
     if not minuend_common_area_polygons_ids:
-        return [*minuend_polygons]
+        return minuend
     subtrahend_polygons = subtrahend.polygons
     subtrahend_boxes = [polygon.bounding_box
                         for polygon in subtrahend_polygons]
@@ -81,7 +88,7 @@ def subtract_multipolygon_from_multipolygon(
             subtrahend_boxes, minuend_bounding_box
     )
     if not subtrahend_common_area_polygons_ids:
-        return [*minuend_polygons]
+        return minuend
     minuend_common_area_polygons = [
         minuend_polygons[polygon_id]
         for polygon_id in minuend_common_area_polygons_ids
@@ -112,27 +119,32 @@ def subtract_multipolygon_from_multipolygon(
         if operation.to_event_start(event).x > minuend_max_x:
             break
         events.append(event)
-    result = operation.reduce_events(events, contour_cls, polygon_cls)
-    result.extend(
+    polygons = operation.reduce_events(events, contour_cls, polygon_cls)
+    polygons.extend(
             minuend_polygons[index]
             for index in flags_to_false_indices(minuend_boxes_have_common_area)
     )
-    return result
+    return collect_maybe_empty_polygons(polygons, empty_cls, multipolygon_cls)
 
 
 def subtract_multipolygon_from_polygon(
         minuend: hints.Polygon[hints.Scalar],
         subtrahend: hints.Multipolygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
+        empty_cls: t.Type[hints.Empty[hints.Scalar]],
+        multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> t.List[hints.Polygon[hints.Scalar]]:
+) -> t.Union[
+    hints.Empty[hints.Scalar], hints.Multipolygon[hints.Scalar],
+    hints.Polygon[hints.Scalar]
+]:
     minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
                                                      subtrahend.bounding_box)
     if do_boxes_have_no_common_area(minuend_bounding_box,
                                     subtrahend_bounding_box):
-        return [minuend]
+        return minuend
     subtrahend_polygons = subtrahend.polygons
     subtrahend_boxes = [polygon.bounding_box
                         for polygon in subtrahend_polygons]
@@ -140,7 +152,7 @@ def subtract_multipolygon_from_polygon(
             subtrahend_boxes, minuend_bounding_box
     )
     if not subtrahend_common_area_polygons_ids:
-        return [minuend]
+        return minuend
     subtrahend_common_area_polygons = [
         subtrahend_polygons[polygon_id]
         for polygon_id in subtrahend_common_area_polygons_ids
@@ -161,21 +173,29 @@ def subtract_multipolygon_from_polygon(
         if operation.to_event_start(event).x > minuend_max_x:
             break
         events.append(event)
-    return operation.reduce_events(events, contour_cls, polygon_cls)
+    return collect_maybe_empty_polygons(
+            operation.reduce_events(events, contour_cls, polygon_cls),
+            empty_cls, multipolygon_cls
+    )
 
 
 def subtract_multisegmental_from_multisegmental(
         minuend: _Multisegmental[hints.Scalar],
         subtrahend: _Multisegmental[hints.Scalar],
+        empty_cls: t.Type[hints.Empty[hints.Scalar]],
+        multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> t.List[hints.Segment[hints.Scalar]]:
+) -> t.Union[
+    hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
+    hints.Segment[hints.Scalar]
+]:
     minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
                                                      subtrahend.bounding_box)
-    minuend_segments = minuend.segments
     if do_boxes_have_no_common_continuum(minuend_bounding_box,
                                          subtrahend_bounding_box):
-        return [*minuend_segments]
+        return minuend
+    minuend_segments = minuend.segments
     minuend_boxes = [segment.bounding_box for segment in minuend_segments]
     minuend_boxes_have_common_continuum = to_boxes_have_common_continuum(
             minuend_boxes, subtrahend_bounding_box
@@ -184,7 +204,7 @@ def subtract_multisegmental_from_multisegmental(
             minuend_boxes_have_common_continuum
     )
     if not minuend_common_continuum_segments_ids:
-        return [*minuend_segments]
+        return minuend
     subtrahend_segments = subtrahend.segments
     subtrahend_boxes = [segment.bounding_box
                         for segment in subtrahend_segments]
@@ -193,7 +213,7 @@ def subtract_multisegmental_from_multisegmental(
                                            minuend_bounding_box)
     )
     if not subtrahend_common_continuum_segments_ids:
-        return [*minuend_segments]
+        return minuend
     minuend_common_continuum_segments = [
         minuend_segments[segment_id]
         for segment_id in minuend_common_continuum_segments_ids
@@ -222,27 +242,32 @@ def subtract_multisegmental_from_multisegmental(
         if operation.to_event_start(event).x > minuend_max_x:
             break
         events.append(event)
-    result = operation.reduce_events(events, segment_cls)
-    result.extend(
+    segments = operation.reduce_events(events, segment_cls)
+    segments.extend(
             minuend_segments[index]
             for index in flags_to_false_indices(
                     minuend_boxes_have_common_continuum
             )
     )
-    return result
+    return collect_maybe_empty_segments(segments, empty_cls, multisegment_cls)
 
 
 def subtract_multisegmental_from_segment(
         minuend: hints.Segment[hints.Scalar],
         subtrahend: _Multisegmental[hints.Scalar],
+        empty_cls: t.Type[hints.Empty[hints.Scalar]],
+        multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> t.List[hints.Segment[hints.Scalar]]:
+) -> t.Union[
+    hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
+    hints.Segment[hints.Scalar]
+]:
     minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
                                                      subtrahend.bounding_box)
     if do_boxes_have_no_common_continuum(minuend_bounding_box,
                                          subtrahend_bounding_box):
-        return [minuend]
+        return minuend
     subtrahend_segments = subtrahend.segments
     subtrahend_boxes = [segment.bounding_box
                         for segment in subtrahend_segments]
@@ -251,7 +276,7 @@ def subtract_multisegmental_from_segment(
                                            minuend_bounding_box)
     )
     if not subtrahend_common_continuum_segments_ids:
-        return [minuend]
+        return minuend
     subtrahend_common_continuum_segments = [
         subtrahend_segments[segment_id]
         for segment_id in subtrahend_common_continuum_segments_ids
@@ -270,23 +295,31 @@ def subtract_multisegmental_from_segment(
         if operation.to_event_start(event).x > minuend_max_x:
             break
         events.append(event)
-    return operation.reduce_events(events, segment_cls)
+    return collect_maybe_empty_segments(
+            operation.reduce_events(events, segment_cls), empty_cls,
+            multisegment_cls
+    )
 
 
 def subtract_polygon_from_multipolygon(
         minuend: hints.Multipolygon[hints.Scalar],
         subtrahend: hints.Polygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
+        empty_cls: t.Type[hints.Empty[hints.Scalar]],
+        multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> t.List[hints.Polygon[hints.Scalar]]:
+) -> t.Union[
+    hints.Empty[hints.Scalar], hints.Multipolygon[hints.Scalar],
+    hints.Polygon[hints.Scalar]
+]:
     minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
                                                      subtrahend.bounding_box)
-    minuend_polygons = minuend.polygons
     if do_boxes_have_no_common_area(minuend_bounding_box,
                                     subtrahend_bounding_box):
-        return [*minuend_polygons]
+        return minuend
+    minuend_polygons = minuend.polygons
     minuend_boxes = [polygon.bounding_box for polygon in minuend_polygons]
     minuend_boxes_have_common_area = to_boxes_have_common_area(
             minuend_boxes, subtrahend_bounding_box
@@ -295,7 +328,7 @@ def subtract_polygon_from_multipolygon(
             minuend_boxes_have_common_area
     )
     if not minuend_common_area_polygons_ids:
-        return [*minuend_polygons]
+        return minuend
     minuend_common_area_polygons = [
         minuend_polygons[polygon_id]
         for polygon_id in minuend_common_area_polygons_ids
@@ -321,27 +354,32 @@ def subtract_polygon_from_multipolygon(
         if operation.to_event_start(event).x > minuend_max_x:
             break
         events.append(event)
-    result = operation.reduce_events(events, contour_cls, polygon_cls)
-    result.extend(
+    polygons = operation.reduce_events(events, contour_cls, polygon_cls)
+    polygons.extend(
             minuend_polygons[index]
             for index in flags_to_false_indices(minuend_boxes_have_common_area)
     )
-    return result
+    return collect_maybe_empty_polygons(polygons, empty_cls, multipolygon_cls)
 
 
 def subtract_polygon_from_polygon(
         minuend: hints.Polygon[hints.Scalar],
         subtrahend: hints.Polygon[hints.Scalar],
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
+        empty_cls: t.Type[hints.Empty[hints.Scalar]],
+        multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> t.List[hints.Polygon[hints.Scalar]]:
+) -> t.Union[
+    hints.Empty[hints.Scalar], hints.Multipolygon[hints.Scalar],
+    hints.Polygon[hints.Scalar]
+]:
     minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
                                                      subtrahend.bounding_box)
     if do_boxes_have_no_common_area(minuend_bounding_box,
                                     subtrahend_bounding_box):
-        return [minuend]
+        return minuend
     minuend_max_x, minuend_min_x = (minuend_bounding_box.max_x,
                                     minuend_bounding_box.min_x)
     operation = ShapedDifference.from_segments_iterables(
@@ -358,10 +396,31 @@ def subtract_polygon_from_polygon(
         if operation.to_event_start(event).x > minuend_max_x:
             break
         events.append(event)
-    return operation.reduce_events(events, contour_cls, polygon_cls)
+    return collect_maybe_empty_polygons(
+            operation.reduce_events(events, contour_cls, polygon_cls),
+            empty_cls, multipolygon_cls
+    )
 
 
 def subtract_segment_from_multisegmental(
+        minuend: _Multisegmental[hints.Scalar],
+        subtrahend: hints.Segment[hints.Scalar],
+        empty_cls: t.Type[hints.Empty[hints.Scalar]],
+        multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        /
+) -> t.Union[
+    hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
+    hints.Segment[hints.Scalar]
+]:
+    return collect_maybe_empty_segments(
+            raw_subtract_segment_from_multisegmental(minuend, subtrahend,
+                                                     segment_cls),
+            empty_cls, multisegment_cls
+    )
+
+
+def raw_subtract_segment_from_multisegmental(
         minuend: _Multisegmental[hints.Scalar],
         subtrahend: hints.Segment[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
@@ -415,16 +474,21 @@ def subtract_segment_from_multisegmental(
 def subtract_segment_from_segment(
         minuend: hints.Segment[hints.Scalar],
         subtrahend: hints.Segment[hints.Scalar],
+        empty_cls: t.Type[hints.Empty[hints.Scalar]],
+        multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
-) -> t.List[hints.Segment[hints.Scalar]]:
+) -> t.Union[
+    hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
+    hints.Segment[hints.Scalar]
+]:
     minuend_start, minuend_end = to_sorted_pair(minuend.start, minuend.end)
     subtrahend_start, subtrahend_end = to_sorted_pair(subtrahend.start,
                                                       subtrahend.end)
     starts_equal = subtrahend_start == minuend_start
     ends_equal = subtrahend_end == minuend_end
     if starts_equal and ends_equal:
-        return []
+        return empty_cls()
     subtrahend_start_orientation = orient(minuend_end, minuend_start,
                                           subtrahend_start)
     subtrahend_end_orientation = orient(minuend_end, minuend_start,
@@ -444,31 +508,33 @@ def subtract_segment_from_segment(
                     minuend_start, minuend_end, subtrahend_start,
                     subtrahend_end
             )
-            return [segment_cls(minuend_start, cross_point),
-                    segment_cls(cross_point, minuend_end)]
+            return multisegment_cls([segment_cls(minuend_start, cross_point),
+                                     segment_cls(cross_point, minuend_end)])
     elif (subtrahend_start_orientation is Orientation.COLLINEAR
           and subtrahend_end_orientation is Orientation.COLLINEAR
           and subtrahend_start < minuend_end
           and minuend_start < subtrahend_end):
         if starts_equal:
             if subtrahend_end < minuend_end:
-                return [segment_cls(subtrahend_end, minuend_end)]
+                return segment_cls(subtrahend_end, minuend_end)
             else:
-                return []
+                return empty_cls()
         elif ends_equal:
             if subtrahend_start < minuend_start:
-                return []
+                return empty_cls()
             else:
-                return [segment_cls(subtrahend_start, minuend_start)]
+                return segment_cls(subtrahend_start, minuend_start)
         elif minuend_start < subtrahend_start:
             if subtrahend_end < minuend_end:
-                return [segment_cls(minuend_start, subtrahend_start),
-                        segment_cls(subtrahend_end, minuend_end)]
+                return multisegment_cls(
+                        [segment_cls(minuend_start, subtrahend_start),
+                         segment_cls(subtrahend_end, minuend_end)]
+                )
             else:
-                return [segment_cls(minuend_start, subtrahend_start)]
+                return segment_cls(minuend_start, subtrahend_start)
         elif subtrahend_start < minuend_start:
             if minuend_end < subtrahend_end:
-                return []
+                return empty_cls()
             else:
-                return [segment_cls(subtrahend_end, minuend_end)]
-    return [minuend]
+                return segment_cls(subtrahend_end, minuend_end)
+    return minuend
