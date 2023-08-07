@@ -11,3 +11,4 @@ mod partial_eq;
 mod relatable;
 mod segmental;
 mod types;
+mod union;
