@@ -2,7 +2,9 @@ use crate::bounded::{Bounded, Box};
 use crate::clipping::shaped::Operation;
 use crate::clipping::traits::ReduceEvents;
 use crate::clipping::{Event, DIFFERENCE};
-use crate::geometries::{Empty, Point, Polygon};
+use crate::geometries::{
+    Contour, Empty, Multisegment, Point, Polygon, Segment,
+};
 use crate::operations::{
     do_boxes_have_no_common_area, flags_to_false_indices,
     flags_to_true_indices, to_boxes_have_common_area,
@@ -22,10 +24,58 @@ impl<Scalar> Difference<Empty> for Multipolygon<Scalar> {
     }
 }
 
+impl<Scalar> Difference<Contour<Scalar>> for Multipolygon<Scalar> {
+    type Output = Self;
+
+    fn difference(self, _other: Contour<Scalar>) -> Self::Output {
+        self
+    }
+}
+
+impl<Scalar> Difference<Multisegment<Scalar>> for Multipolygon<Scalar> {
+    type Output = Self;
+
+    fn difference(self, _other: Multisegment<Scalar>) -> Self::Output {
+        self
+    }
+}
+
+impl<Scalar> Difference<Segment<Scalar>> for Multipolygon<Scalar> {
+    type Output = Self;
+
+    fn difference(self, _other: Segment<Scalar>) -> Self::Output {
+        self
+    }
+}
+
 impl<Scalar> Difference<&Empty> for Multipolygon<Scalar> {
     type Output = Self;
 
     fn difference(self, _other: &Empty) -> Self::Output {
+        self
+    }
+}
+
+impl<Scalar> Difference<&Contour<Scalar>> for Multipolygon<Scalar> {
+    type Output = Self;
+
+    fn difference(self, _other: &Contour<Scalar>) -> Self::Output {
+        self
+    }
+}
+
+impl<Scalar> Difference<&Multisegment<Scalar>> for Multipolygon<Scalar> {
+    type Output = Self;
+
+    fn difference(self, _other: &Multisegment<Scalar>) -> Self::Output {
+        self
+    }
+}
+
+impl<Scalar> Difference<&Segment<Scalar>> for Multipolygon<Scalar> {
+    type Output = Self;
+
+    fn difference(self, _other: &Segment<Scalar>) -> Self::Output {
         self
     }
 }
@@ -41,6 +91,39 @@ where
     }
 }
 
+impl<Scalar> Difference<Contour<Scalar>> for &Multipolygon<Scalar>
+where
+    Multipolygon<Scalar>: Clone,
+{
+    type Output = Multipolygon<Scalar>;
+
+    fn difference(self, _other: Contour<Scalar>) -> Self::Output {
+        self.clone()
+    }
+}
+
+impl<Scalar> Difference<Multisegment<Scalar>> for &Multipolygon<Scalar>
+where
+    Multipolygon<Scalar>: Clone,
+{
+    type Output = Multipolygon<Scalar>;
+
+    fn difference(self, _other: Multisegment<Scalar>) -> Self::Output {
+        self.clone()
+    }
+}
+
+impl<Scalar> Difference<Segment<Scalar>> for &Multipolygon<Scalar>
+where
+    Multipolygon<Scalar>: Clone,
+{
+    type Output = Multipolygon<Scalar>;
+
+    fn difference(self, _other: Segment<Scalar>) -> Self::Output {
+        self.clone()
+    }
+}
+
 impl<Scalar> Difference<&Empty> for &Multipolygon<Scalar>
 where
     Multipolygon<Scalar>: Clone,
@@ -48,6 +131,39 @@ where
     type Output = Multipolygon<Scalar>;
 
     fn difference(self, _other: &Empty) -> Self::Output {
+        self.clone()
+    }
+}
+
+impl<Scalar> Difference<&Contour<Scalar>> for &Multipolygon<Scalar>
+where
+    Multipolygon<Scalar>: Clone,
+{
+    type Output = Multipolygon<Scalar>;
+
+    fn difference(self, _other: &Contour<Scalar>) -> Self::Output {
+        self.clone()
+    }
+}
+
+impl<Scalar> Difference<&Multisegment<Scalar>> for &Multipolygon<Scalar>
+where
+    Multipolygon<Scalar>: Clone,
+{
+    type Output = Multipolygon<Scalar>;
+
+    fn difference(self, _other: &Multisegment<Scalar>) -> Self::Output {
+        self.clone()
+    }
+}
+
+impl<Scalar> Difference<&Segment<Scalar>> for &Multipolygon<Scalar>
+where
+    Multipolygon<Scalar>: Clone,
+{
+    type Output = Multipolygon<Scalar>;
+
+    fn difference(self, _other: &Segment<Scalar>) -> Self::Output {
         self.clone()
     }
 }
