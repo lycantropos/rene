@@ -212,7 +212,14 @@ class Multipolygon:
                 .format(', '.join(map(str, self._polygons))))
 
     @t.overload
-    def __sub__(self, other: hints.Empty[Fraction], /) -> te.Self:
+    def __sub__(
+            self,
+            other: t.Union[
+                hints.Contour[Fraction], hints.Empty[Fraction],
+                hints.Multisegment[Fraction], hints.Segment[Fraction]
+            ],
+            /
+    ) -> te.Self:
         ...
 
     @t.overload
@@ -249,7 +256,10 @@ class Multipolygon:
                 )
                 if isinstance(other, self._context.polygon_cls)
                 else (self
-                      if isinstance(other, self._context.empty_cls)
+                      if isinstance(other, (self._context.contour_cls,
+                                            self._context.empty_cls,
+                                            self._context.multisegment_cls,
+                                            self._context.segment_cls))
                       else NotImplemented)
             )
         )

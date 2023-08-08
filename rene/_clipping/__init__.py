@@ -47,8 +47,14 @@ intersect_segment_with_segment = intersection.intersect_segment_with_segment
 subtract_multipolygon_from_multipolygon = (
     difference.subtract_multipolygon_from_multipolygon
 )
+subtract_multipolygon_from_multisegmental = (
+    difference.subtract_multipolygon_from_multisegmental
+)
 subtract_multipolygon_from_polygon = (
     difference.subtract_multipolygon_from_polygon
+)
+subtract_multipolygon_from_segment = (
+    difference.subtract_multipolygon_from_segment
 )
 subtract_multisegmental_from_multisegmental = (
     difference.subtract_multisegmental_from_multisegmental
@@ -59,7 +65,11 @@ subtract_multisegmental_from_segment = (
 subtract_polygon_from_multipolygon = (
     difference.subtract_polygon_from_multipolygon
 )
+subtract_polygon_from_multisegmental = (
+    difference.subtract_polygon_from_multisegmental
+)
 subtract_polygon_from_polygon = difference.subtract_polygon_from_polygon
+subtract_polygon_from_segment = difference.subtract_polygon_from_segment
 subtract_segment_from_multisegmental = (
     difference.subtract_segment_from_multisegmental
 )

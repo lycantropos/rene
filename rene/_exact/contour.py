@@ -18,7 +18,9 @@ from rene._clipping import (
     intersect_multisegmental_with_multisegmental,
     intersect_multisegmental_with_polygon,
     intersect_multisegmental_with_segment,
+    subtract_multipolygon_from_multisegmental,
     subtract_multisegmental_from_multisegmental,
+    subtract_polygon_from_multisegmental,
     subtract_segment_from_multisegmental,
     symmetric_subtract_multisegmental_from_multisegmental,
     symmetric_subtract_segment_from_multisegmental,
@@ -260,7 +262,8 @@ class Contour:
     def __sub__(
             self,
             other: t.Union[
-                hints.Contour[hints.Scalar], hints.Multisegment[Fraction],
+                hints.Contour[hints.Scalar], hints.Multipolygon[Fraction],
+                hints.Multisegment[Fraction], hints.Polygon[Fraction],
                 hints.Segment[Fraction]
             ],
             /
@@ -289,9 +292,25 @@ class Contour:
                         self._context.segment_cls
                 )
                 if isinstance(other, self._context.segment_cls)
-                else (self._context.empty_cls()
-                      if isinstance(other, self._context.empty_cls)
-                      else NotImplemented)
+                else (
+                    subtract_multipolygon_from_multisegmental(
+                            self, other, self._context.empty_cls,
+                            self._context.multisegment_cls,
+                            self._context.segment_cls
+                    )
+                    if isinstance(other, self._context.multipolygon_cls)
+                    else (
+                        subtract_polygon_from_multisegmental(
+                                self, other, self._context.empty_cls,
+                                self._context.multisegment_cls,
+                                self._context.segment_cls
+                        )
+                        if isinstance(other, self._context.polygon_cls)
+                        else (self._context.empty_cls()
+                              if isinstance(other, self._context.empty_cls)
+                              else NotImplemented)
+                    )
+                )
             )
         )
 
