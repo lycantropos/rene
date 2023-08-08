@@ -7,6 +7,7 @@ mod constants;
 mod event;
 mod events_queue_key;
 pub(crate) mod linear;
+pub(crate) mod mixed;
 mod operation_kind;
 pub(crate) mod shaped;
 mod sweep_line_key;
