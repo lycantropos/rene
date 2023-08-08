@@ -2285,6 +2285,14 @@ impl PyExactSegment {
             let other = other.extract::<PyRef<Self>>()?;
             let segments = (&self.0).difference(&other.0);
             Ok(unpack_maybe_empty_segments(segments, py))
+        } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
+            let segments = (&self.0).difference(&other.0);
+            Ok(unpack_maybe_empty_segments(segments, py))
+        } else if other.is_instance(PyExactPolygon::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactPolygon>>()?;
+            let segments = (&self.0).difference(&other.0);
+            Ok(unpack_maybe_empty_segments(segments, py))
         } else {
             Ok(py.NotImplemented())
         }
