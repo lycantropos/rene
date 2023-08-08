@@ -10,14 +10,22 @@ from rene._utils import (deduplicate,
                          locate_point_in_point_point_point_circle,
                          orient)
 
-_BoxT = t.TypeVar('_BoxT', bound=exact.Box)
-_ContourT = t.TypeVar('_ContourT', bound=exact.Contour)
-_EmptyT = t.TypeVar('_EmptyT', bound=exact.Empty)
-_MultipolygonT = t.TypeVar('_MultipolygonT', bound=exact.Multipolygon)
-_MultisegmentT = t.TypeVar('_MultisegmentT', bound=exact.Multisegment)
-_PointT = t.TypeVar('_PointT', bound=exact.Point)
-_PolygonT = t.TypeVar('_PolygonT', bound=exact.Polygon)
-_SegmentT = t.TypeVar('_SegmentT', bound=exact.Segment)
+_BoxT = t.TypeVar('_BoxT',
+                  bound=exact.Box)
+_ContourT = t.TypeVar('_ContourT',
+                      bound=exact.Contour)
+_EmptyT = t.TypeVar('_EmptyT',
+                    bound=exact.Empty)
+_MultipolygonT = t.TypeVar('_MultipolygonT',
+                           bound=exact.Multipolygon)
+_MultisegmentT = t.TypeVar('_MultisegmentT',
+                           bound=exact.Multisegment)
+_PointT = t.TypeVar('_PointT',
+                    bound=exact.Point)
+_PolygonT = t.TypeVar('_PolygonT',
+                      bound=exact.Polygon)
+_SegmentT = t.TypeVar('_SegmentT',
+                      bound=exact.Segment)
 _T1 = t.TypeVar('_T1')
 _T2 = t.TypeVar('_T2')
 
