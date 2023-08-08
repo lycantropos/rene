@@ -2216,6 +2216,14 @@ impl PyExactSegment {
                 None => Ok(PyExactEmpty::new().into_py(py)),
                 Some(segment) => Ok(segment.into_py(py)),
             }
+        } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
+            let segments = (&self.0).intersection(&other.0);
+            Ok(unpack_maybe_empty_segments(segments, py))
+        } else if other.is_instance(PyExactPolygon::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactPolygon>>()?;
+            let segments = (&self.0).intersection(&other.0);
+            Ok(unpack_maybe_empty_segments(segments, py))
         } else {
             Ok(py.NotImplemented())
         }
