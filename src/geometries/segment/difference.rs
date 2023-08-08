@@ -1,17 +1,21 @@
 use crate::bounded::{Bounded, Box};
-use crate::clipping::linear::Operation;
 use crate::clipping::traits::ReduceEvents;
+use crate::clipping::{linear, mixed};
 use crate::clipping::{Event, DIFFERENCE};
-use crate::geometries::{Contour, Empty, Multisegment, Point};
+use crate::geometries::{
+    Contour, Empty, Multipolygon, Multisegment, Point, Polygon,
+};
 use crate::operations::{
     do_boxes_have_no_common_continuum, flags_to_true_indices,
-    to_boxes_have_common_continuum, to_sorted_pair, IntersectCrossingSegments,
-    Orient,
+    to_boxes_have_common_continuum, to_boxes_ids_with_common_continuum,
+    to_sorted_pair, IntersectCrossingSegments, Orient,
 };
 use crate::oriented::Orientation;
 use crate::relatable::Relatable;
 use crate::sweeping::traits::EventsContainer;
-use crate::traits::{Difference, Elemental, Iterable, Multisegmental};
+use crate::traits::{
+    Difference, Elemental, Iterable, Multipolygonal, Multisegmental,
+};
 
 use super::types::Segment;
 
@@ -146,7 +150,7 @@ where
 
 impl<Scalar: Ord> Difference<&Contour<Scalar>> for &Segment<Scalar>
 where
-    Operation<Point<Scalar>, DIFFERENCE>: Iterator<Item = Event>
+    linear::Operation<Point<Scalar>, DIFFERENCE>: Iterator<Item = Event>
         + ReduceEvents<Output = Vec<Segment<Scalar>>>
         + for<'a> From<(&'a Segment<Scalar>, &'a [&'a Segment<Scalar>])>,
     Segment<Scalar>: Clone,
@@ -178,7 +182,7 @@ where
         if other_common_continuum_segments_ids.is_empty() {
             return vec![self.clone()];
         }
-        let mut operation = Operation::<Point<_>, DIFFERENCE>::from((
+        let mut operation = linear::Operation::<Point<_>, DIFFERENCE>::from((
             self,
             &other_common_continuum_segments_ids
                 .into_iter()
@@ -203,9 +207,73 @@ where
     }
 }
 
+impl<Scalar: Ord> Difference<&Multipolygon<Scalar>> for &Segment<Scalar>
+where
+    mixed::Operation<Point<Scalar>, true, DIFFERENCE>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Segment<Scalar>>>
+        + for<'a> From<(&'a Segment<Scalar>, &'a [&'a Polygon<Scalar>])>,
+    Point<Scalar>: Elemental<Coordinate = Scalar>,
+    Segment<Scalar>: Clone,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>,
+    for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
+    for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
+{
+    type Output = Vec<Segment<Scalar>>;
+
+    fn difference(self, other: &Multipolygon<Scalar>) -> Self::Output {
+        let bounding_box = self.to_bounding_box();
+        let other_bounding_box = other.to_bounding_box();
+        if do_boxes_have_no_common_continuum(
+            &bounding_box,
+            &other_bounding_box,
+        ) {
+            return vec![self.clone()];
+        }
+        let other_polygons = other.polygons();
+        let other_bounding_boxes = other_polygons
+            .iter()
+            .map(Bounded::to_bounding_box)
+            .collect::<Vec<_>>();
+        let other_common_continuum_polygons_ids =
+            to_boxes_ids_with_common_continuum(
+                &other_bounding_boxes,
+                &bounding_box,
+            );
+        if other_common_continuum_polygons_ids.is_empty() {
+            return vec![self.clone()];
+        }
+        let max_x = *bounding_box.get_max_x();
+        let other_common_continuum_polygons =
+            other_common_continuum_polygons_ids
+                .into_iter()
+                .map(|index| &other_polygons[index])
+                .collect::<Vec<_>>();
+        let mut operation =
+            mixed::Operation::<Point<_>, true, DIFFERENCE>::from((
+                self,
+                &other_common_continuum_polygons,
+            ));
+        let mut events = {
+            let (_, maybe_events_count) = operation.size_hint();
+            debug_assert!(maybe_events_count.is_some());
+            Vec::with_capacity(unsafe {
+                maybe_events_count.unwrap_unchecked()
+            })
+        };
+        while let Some(event) = operation.next() {
+            if operation.get_event_start(event).x().gt(max_x) {
+                break;
+            }
+            events.push(event);
+        }
+        operation.reduce_events(events)
+    }
+}
+
 impl<Scalar: Ord> Difference<&Multisegment<Scalar>> for &Segment<Scalar>
 where
-    Operation<Point<Scalar>, DIFFERENCE>: Iterator<Item = Event>
+    linear::Operation<Point<Scalar>, DIFFERENCE>: Iterator<Item = Event>
         + ReduceEvents<Output = Vec<Segment<Scalar>>>
         + for<'a> From<(&'a Segment<Scalar>, &'a [&'a Segment<Scalar>])>,
     Segment<Scalar>: Clone,
@@ -237,7 +305,7 @@ where
         if other_common_continuum_segments_ids.is_empty() {
             return vec![self.clone()];
         }
-        let mut operation = Operation::<Point<_>, DIFFERENCE>::from((
+        let mut operation = linear::Operation::<Point<_>, DIFFERENCE>::from((
             self,
             &other_common_continuum_segments_ids
                 .into_iter()
@@ -252,6 +320,50 @@ where
             })
         };
         let max_x = *bounding_box.get_max_x();
+        while let Some(event) = operation.next() {
+            if operation.get_event_start(event).x().gt(max_x) {
+                break;
+            }
+            events.push(event);
+        }
+        operation.reduce_events(events)
+    }
+}
+
+impl<Scalar: Ord> Difference<&Polygon<Scalar>> for &Segment<Scalar>
+where
+    mixed::Operation<Point<Scalar>, true, DIFFERENCE>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Segment<Scalar>>>
+        + for<'a> From<(&'a Segment<Scalar>, &'a Polygon<Scalar>)>,
+    Point<Scalar>: Elemental<Coordinate = Scalar>,
+    Segment<Scalar>: Clone,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
+    for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
+{
+    type Output = Vec<Segment<Scalar>>;
+
+    fn difference(self, other: &Polygon<Scalar>) -> Self::Output {
+        let bounding_box = self.to_bounding_box();
+        let other_bounding_box = other.to_bounding_box();
+        if do_boxes_have_no_common_continuum(
+            &bounding_box,
+            &other_bounding_box,
+        ) {
+            return vec![self.clone()];
+        }
+        let max_x = *bounding_box.get_max_x();
+        let mut operation =
+            mixed::Operation::<Point<_>, true, DIFFERENCE>::from((
+                self, other,
+            ));
+        let mut events = {
+            let (_, maybe_events_count) = operation.size_hint();
+            debug_assert!(maybe_events_count.is_some());
+            Vec::with_capacity(unsafe {
+                maybe_events_count.unwrap_unchecked()
+            })
+        };
         while let Some(event) = operation.next() {
             if operation.get_event_start(event).x().gt(max_x) {
                 break;
