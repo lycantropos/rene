@@ -370,6 +370,10 @@ impl<Point, const IS_FIRST_LINEAR: bool, const KIND: u8> EventsContainer
 impl<Point, const IS_FIRST_LINEAR: bool, const KIND: u8>
     Operation<Point, IS_FIRST_LINEAR, KIND>
 {
+    pub(crate) fn to_opposite_event(&self, event: Event) -> Event {
+        self.opposites[event]
+    }
+
     fn compute_left_event_fields(
         &mut self,
         event: Event,
@@ -448,10 +452,6 @@ impl<Point, const IS_FIRST_LINEAR: bool, const KIND: u8>
         } else {
             self.to_opposite_event(event)
         }
-    }
-
-    fn to_opposite_event(&self, event: Event) -> Event {
-        self.opposites[event]
     }
 
     fn to_sweep_line_key(&self, event: Event) -> SweepLineKey<Point> {

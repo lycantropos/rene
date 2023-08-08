@@ -3,7 +3,7 @@ use traiter::numbers::Parity;
 pub(crate) type Event = usize;
 pub(super) const UNDEFINED_EVENT: Event = usize::MAX;
 
-pub(super) fn is_left_event(event: Event) -> bool {
+pub(crate) fn is_left_event(event: Event) -> bool {
     event.is_even()
 }
 
