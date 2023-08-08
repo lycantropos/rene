@@ -4,7 +4,7 @@ use crate::clipping::linear::{
     Operation,
 };
 use crate::clipping::traits::ReduceEvents;
-use crate::clipping::{mixed, Event, INTERSECTION};
+use crate::clipping::{is_left_event, mixed, Event, INTERSECTION};
 use crate::geometries::{
     Empty, Multipolygon, Multisegment, Point, Polygon, Segment,
 };
@@ -170,9 +170,41 @@ where
             if operation.get_event_start(event).x().gt(min_max_x) {
                 break;
             }
-            events.push(event);
+            if is_left_event(event) {
+                events.push(event);
+            }
         }
         operation.reduce_events(events)
+    }
+}
+
+impl<Scalar: Ord> Intersection<&Multisegment<Scalar>> for &Contour<Scalar>
+where
+    Operation<Point<Scalar>, INTERSECTION>: Iterator<Item = Event>
+        + ReduceEvents<Output = Vec<Segment<Scalar>>>
+        + for<'a> From<(&'a [&'a Segment<Scalar>], &'a [&'a Segment<Scalar>])>,
+    Point<Scalar>: Clone,
+    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a> &'a Point<Scalar>: Orient,
+    for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
+{
+    type Output = Vec<Segment<Scalar>>;
+
+    fn intersection(self, other: &Multisegment<Scalar>) -> Self::Output {
+        let bounding_box = self.to_bounding_box();
+        let other_bounding_box = other.to_bounding_box();
+        if do_boxes_have_no_common_continuum(
+            &bounding_box,
+            &other_bounding_box,
+        ) {
+            return vec![];
+        }
+        intersect_segments_with_segments(
+            self.segments(),
+            other.segments(),
+            bounding_box,
+            other_bounding_box,
+        )
     }
 }
 
@@ -239,7 +271,9 @@ where
             if operation.get_event_start(event).x().gt(min_max_x) {
                 break;
             }
-            events.push(event);
+            if is_left_event(event) {
+                events.push(event);
+            }
         }
         operation.reduce_events(events)
     }
@@ -257,35 +291,5 @@ where
 
     fn intersection(self, other: &Segment<Scalar>) -> Self::Output {
         intersect_segment_with_segments(other, self.segments.iter())
-    }
-}
-
-impl<Scalar: Ord> Intersection<&Multisegment<Scalar>> for &Contour<Scalar>
-where
-    Operation<Point<Scalar>, INTERSECTION>: Iterator<Item = Event>
-        + ReduceEvents<Output = Vec<Segment<Scalar>>>
-        + for<'a> From<(&'a [&'a Segment<Scalar>], &'a [&'a Segment<Scalar>])>,
-    Point<Scalar>: Clone,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
-    for<'a> &'a Point<Scalar>: Orient,
-    for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
-{
-    type Output = Vec<Segment<Scalar>>;
-
-    fn intersection(self, other: &Multisegment<Scalar>) -> Self::Output {
-        let bounding_box = self.to_bounding_box();
-        let other_bounding_box = other.to_bounding_box();
-        if do_boxes_have_no_common_continuum(
-            &bounding_box,
-            &other_bounding_box,
-        ) {
-            return vec![];
-        }
-        intersect_segments_with_segments(
-            self.segments(),
-            other.segments(),
-            bounding_box,
-            other_bounding_box,
-        )
     }
 }

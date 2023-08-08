@@ -2,7 +2,7 @@ use std::ops::{Add, Div, Mul, Sub};
 
 use crate::bounded::{Bounded, Box};
 use crate::clipping::traits::ReduceEvents;
-use crate::clipping::{linear, mixed};
+use crate::clipping::{is_right_event, linear, mixed};
 use crate::clipping::{Event, DIFFERENCE};
 use crate::geometries::{
     Empty, Multipolygon, Multisegment, Point, Polygon, Segment,
@@ -133,7 +133,9 @@ where
             if operation.get_event_start(event).x().gt(max_x) {
                 break;
             }
-            events.push(event);
+            if is_right_event(event) {
+                events.push(operation.to_opposite_event(event));
+            }
         }
         let mut result = operation.reduce_events(events);
         result.reserve(self.segments.len() - common_area_segments.len());
@@ -229,7 +231,9 @@ where
             if operation.get_event_start(event).x().gt(max_x) {
                 break;
             }
-            events.push(event);
+            if is_right_event(event) {
+                events.push(operation.to_opposite_event(event));
+            }
         }
         let mut result = operation.reduce_events(events);
         result.reserve(self.segments.len() - common_continuum_segments.len());
@@ -315,7 +319,9 @@ where
             if operation.get_event_start(event).x().gt(max_x) {
                 break;
             }
-            events.push(event);
+            if is_right_event(event) {
+                events.push(operation.to_opposite_event(event));
+            }
         }
         let mut result = operation.reduce_events(events);
         result.reserve(self.segments.len() - common_area_segments.len());
@@ -392,7 +398,9 @@ where
             if operation.get_event_start(event).x().gt(max_x) {
                 break;
             }
-            events.push(event);
+            if is_right_event(event) {
+                events.push(operation.to_opposite_event(event));
+            }
         }
         let mut result = operation.reduce_events(events);
         result.reserve(self.segments.len() - common_continuum_segments.len());
