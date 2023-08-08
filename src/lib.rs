@@ -1618,6 +1618,15 @@ impl PyExactMultipolygon {
                 _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
                     .into_py(py)),
             }
+        } else if other.is_instance(PyExactContour::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactContour>>()?;
+            Ok((&self.0).difference(&other.0).into_py(py))
+        } else if other.is_instance(PyExactMultisegment::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactMultisegment>>()?;
+            Ok((&self.0).difference(&other.0).into_py(py))
+        } else if other.is_instance(PyExactSegment::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactSegment>>()?;
+            Ok((&self.0).difference(&other.0).into_py(py))
         } else {
             Ok(py.NotImplemented())
         }
