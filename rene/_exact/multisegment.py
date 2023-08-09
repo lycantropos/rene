@@ -21,7 +21,9 @@ from rene._clipping import (
     subtract_polygon_from_multisegmental,
     subtract_segment_from_multisegmental,
     symmetric_subtract_multisegmental_from_multisegmental,
-    symmetric_subtract_segment_from_multisegmental
+    symmetric_subtract_segment_from_multisegmental,
+    unite_multisegmental_with_multisegmental,
+    unite_multisegmental_with_segment
 )
 from rene._context import Context
 
@@ -168,6 +170,47 @@ class Multisegment:
 
     def __hash__(self) -> int:
         return hash(frozenset(self._segments))
+
+    @t.overload
+    def __or__(self, other: hints.Empty[Fraction], /) -> te.Self:
+        ...
+
+    @t.overload
+    def __or__(
+            self,
+            other: t.Union[
+                hints.Contour[hints.Scalar], hints.Multisegment[Fraction],
+                hints.Segment[Fraction]
+            ],
+            /
+    ) -> t.Union[hints.Multisegment[Fraction], hints.Segment[Fraction]]:
+        ...
+
+    @t.overload
+    def __or__(self, other: t.Any, /) -> t.Any:
+        ...
+
+    def __or__(self, other: t.Any, /) -> t.Any:
+        return (
+            self
+            if isinstance(other, self._context.empty_cls)
+            else (
+                unite_multisegmental_with_multisegmental(
+                        self, other, self._context.multisegment_cls,
+                        self._context.segment_cls
+                )
+                if isinstance(other, (self._context.contour_cls,
+                                      self._context.multisegment_cls))
+                else (
+                    unite_multisegmental_with_segment(
+                            self, other, self._context.multisegment_cls,
+                            self._context.segment_cls
+                    )
+                    if isinstance(other, self._context.segment_cls)
+                    else NotImplemented
+                )
+            )
+        )
 
     def __repr__(self) -> str:
         return (f'{type(self).__qualname__}([{{}}])'
