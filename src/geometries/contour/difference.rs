@@ -8,10 +8,9 @@ use crate::geometries::{
     Empty, Multipolygon, Multisegment, Point, Polygon, Segment,
 };
 use crate::operations::{
-    do_boxes_have_no_common_area, do_boxes_have_no_common_continuum,
-    flags_to_false_indices, flags_to_true_indices, subtract_segments_overlap,
-    to_boxes_have_common_area, to_boxes_have_common_continuum,
-    to_boxes_ids_with_common_area, to_boxes_ids_with_common_continuum,
+    do_boxes_have_no_common_continuum, flags_to_false_indices,
+    flags_to_true_indices, subtract_segments_overlap,
+    to_boxes_have_common_continuum, to_boxes_ids_with_common_continuum,
     CrossMultiply, IntersectCrossingSegments, Orient,
 };
 use crate::relatable::{Relatable, Relation};
@@ -76,7 +75,10 @@ where
     fn difference(self, other: Self) -> Self::Output {
         let bounding_box = self.to_bounding_box();
         let other_bounding_box = other.to_bounding_box();
-        if do_boxes_have_no_common_area(&bounding_box, &other_bounding_box) {
+        if do_boxes_have_no_common_continuum(
+            &bounding_box,
+            &other_bounding_box,
+        ) {
             return self.segments.clone();
         }
         let bounding_boxes = self
@@ -84,11 +86,13 @@ where
             .iter()
             .map(Bounded::to_bounding_box)
             .collect::<Vec<_>>();
-        let boxes_have_common_area =
-            to_boxes_have_common_area(&bounding_boxes, &other_bounding_box);
-        let common_area_segments_ids =
-            flags_to_true_indices(&boxes_have_common_area);
-        if common_area_segments_ids.is_empty() {
+        let boxes_have_common_continuum = to_boxes_have_common_continuum(
+            &bounding_boxes,
+            &other_bounding_box,
+        );
+        let common_continuum_segments_ids =
+            flags_to_true_indices(&boxes_have_common_continuum);
+        if common_continuum_segments_ids.is_empty() {
             return self.segments.clone();
         }
         let other_bounding_boxes = other
@@ -96,31 +100,33 @@ where
             .iter()
             .map(Bounded::to_bounding_box)
             .collect::<Vec<_>>();
-        let other_common_area_segments_ids = to_boxes_ids_with_common_area(
-            &other_bounding_boxes,
-            &bounding_box,
-        );
-        if other_common_area_segments_ids.is_empty() {
+        let other_common_continuum_segments_ids =
+            to_boxes_ids_with_common_continuum(
+                &other_bounding_boxes,
+                &bounding_box,
+            );
+        if other_common_continuum_segments_ids.is_empty() {
             return self.segments.clone();
         }
         let max_x = unsafe {
-            common_area_segments_ids
+            common_continuum_segments_ids
                 .iter()
                 .map(|&index| bounding_boxes[index].get_max_x())
                 .max()
                 .unwrap_unchecked()
         };
-        let common_area_segments = common_area_segments_ids
+        let common_continuum_segments = common_continuum_segments_ids
             .into_iter()
             .map(|index| &self.segments[index])
             .collect::<Vec<_>>();
-        let other_common_area_segments = other_common_area_segments_ids
-            .into_iter()
-            .map(|index| &other.segments[index])
-            .collect::<Vec<_>>();
+        let other_common_continuum_segments =
+            other_common_continuum_segments_ids
+                .into_iter()
+                .map(|index| &other.segments[index])
+                .collect::<Vec<_>>();
         let mut operation = linear::Operation::<Point<_>, DIFFERENCE>::from((
-            &common_area_segments,
-            &other_common_area_segments,
+            &common_continuum_segments,
+            &other_common_continuum_segments,
         ));
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
@@ -138,9 +144,9 @@ where
             }
         }
         let mut result = operation.reduce_events(events);
-        result.reserve(self.segments.len() - common_area_segments.len());
+        result.reserve(self.segments.len() - common_continuum_segments.len());
         result.extend(
-            flags_to_false_indices(&boxes_have_common_area)
+            flags_to_false_indices(&boxes_have_common_continuum)
                 .into_iter()
                 .map(|index| self.segments[index].clone()),
         );
@@ -262,7 +268,10 @@ where
     fn difference(self, other: &Multisegment<Scalar>) -> Self::Output {
         let bounding_box = self.to_bounding_box();
         let other_bounding_box = other.to_bounding_box();
-        if do_boxes_have_no_common_area(&bounding_box, &other_bounding_box) {
+        if do_boxes_have_no_common_continuum(
+            &bounding_box,
+            &other_bounding_box,
+        ) {
             return self.segments.clone();
         }
         let bounding_boxes = self
@@ -270,11 +279,13 @@ where
             .iter()
             .map(Bounded::to_bounding_box)
             .collect::<Vec<_>>();
-        let boxes_have_common_area =
-            to_boxes_have_common_area(&bounding_boxes, &other_bounding_box);
-        let common_area_segments_ids =
-            flags_to_true_indices(&boxes_have_common_area);
-        if common_area_segments_ids.is_empty() {
+        let boxes_have_common_continuum = to_boxes_have_common_continuum(
+            &bounding_boxes,
+            &other_bounding_box,
+        );
+        let common_continuum_segments_ids =
+            flags_to_true_indices(&boxes_have_common_continuum);
+        if common_continuum_segments_ids.is_empty() {
             return self.segments.clone();
         }
         let other_segments = other.segments();
@@ -282,31 +293,33 @@ where
             .iter()
             .map(Bounded::to_bounding_box)
             .collect::<Vec<_>>();
-        let other_common_area_segments_ids = to_boxes_ids_with_common_area(
-            &other_bounding_boxes,
-            &bounding_box,
-        );
-        if other_common_area_segments_ids.is_empty() {
+        let other_common_continuum_segments_ids =
+            to_boxes_ids_with_common_continuum(
+                &other_bounding_boxes,
+                &bounding_box,
+            );
+        if other_common_continuum_segments_ids.is_empty() {
             return self.segments.clone();
         }
         let max_x = unsafe {
-            common_area_segments_ids
+            common_continuum_segments_ids
                 .iter()
                 .map(|&index| bounding_boxes[index].get_max_x())
                 .max()
                 .unwrap_unchecked()
         };
-        let common_area_segments = common_area_segments_ids
+        let common_continuum_segments = common_continuum_segments_ids
             .into_iter()
             .map(|index| &self.segments[index])
             .collect::<Vec<_>>();
-        let other_common_area_segments = other_common_area_segments_ids
-            .into_iter()
-            .map(|index| &other_segments[index])
-            .collect::<Vec<_>>();
+        let other_common_continuum_segments =
+            other_common_continuum_segments_ids
+                .into_iter()
+                .map(|index| &other_segments[index])
+                .collect::<Vec<_>>();
         let mut operation = linear::Operation::<Point<_>, DIFFERENCE>::from((
-            &common_area_segments,
-            &other_common_area_segments,
+            &common_continuum_segments,
+            &other_common_continuum_segments,
         ));
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
@@ -324,9 +337,9 @@ where
             }
         }
         let mut result = operation.reduce_events(events);
-        result.reserve(self.segments.len() - common_area_segments.len());
+        result.reserve(self.segments.len() - common_continuum_segments.len());
         result.extend(
-            flags_to_false_indices(&boxes_have_common_area)
+            flags_to_false_indices(&boxes_have_common_continuum)
                 .into_iter()
                 .map(|index| self.segments[index].clone()),
         );
