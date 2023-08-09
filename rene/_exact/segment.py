@@ -168,10 +168,11 @@ class Segment:
     def __or__(
             self,
             other: t.Union[
-                hints.Contour[Fraction], hints.Multisegment[Fraction], te.Self
+                hints.Contour[Fraction], hints.Multisegment[Fraction],
+                hints.Segment[Fraction]
             ],
             /
-    ) -> t.Union[hints.Multisegment[Fraction], te.Self]:
+    ) -> t.Union[hints.Multisegment[Fraction], hints.Segment[Fraction]]:
         ...
 
     @t.overload
@@ -212,10 +213,14 @@ class Segment:
     def __sub__(
             self,
             other: t.Union[
-                hints.Contour[Fraction], hints.Multisegment[Fraction], te.Self
+                hints.Contour[Fraction], hints.Multisegment[Fraction],
+                hints.Segment[Fraction]
             ],
             /
-    ) -> t.Union[hints.Empty[Fraction], hints.Multisegment[Fraction], te.Self]:
+    ) -> t.Union[
+        hints.Empty[Fraction], hints.Multisegment[Fraction],
+        hints.Segment[Fraction]
+    ]:
         ...
 
     @t.overload
@@ -251,10 +256,14 @@ class Segment:
     def __xor__(
             self,
             other: t.Union[
-                hints.Contour[Fraction], hints.Multisegment[Fraction], te.Self
+                hints.Contour[Fraction], hints.Multisegment[Fraction],
+                hints.Segment[Fraction]
             ],
             /
-    ) -> t.Union[hints.Empty[Fraction], hints.Multisegment[Fraction], te.Self]:
+    ) -> t.Union[
+        hints.Empty[Fraction], hints.Multisegment[Fraction],
+        hints.Segment[Fraction]
+    ]:
         ...
 
     @t.overload
