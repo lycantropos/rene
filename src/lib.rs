@@ -1212,6 +1212,27 @@ impl PyExactContour {
             Ok(py.NotImplemented())
         }
     }
+
+    fn __xor__(&self, other: &PyAny, py: Python) -> PyResult<PyObject> {
+        if other.is_instance(PyExactEmpty::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactEmpty>>()?;
+            Ok(Self((&self.0).symmetric_difference(&other.0)).into_py(py))
+        } else if other.is_instance(Self::type_object(py))? {
+            let other = other.extract::<PyRef<Self>>()?;
+            let segments = (&self.0).symmetric_difference(&other.0);
+            Ok(unpack_maybe_empty_segments(segments, py))
+        } else if other.is_instance(PyExactMultisegment::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactMultisegment>>()?;
+            let segments = (&self.0).symmetric_difference(&other.0);
+            Ok(unpack_maybe_empty_segments(segments, py))
+        } else if other.is_instance(PyExactSegment::type_object(py))? {
+            let other = other.extract::<PyRef<PyExactSegment>>()?;
+            let segments = (&self.0).symmetric_difference(&other.0);
+            Ok(unpack_maybe_empty_segments(segments, py))
+        } else {
+            Ok(py.NotImplemented())
+        }
+    }
 }
 
 #[pymethods]
