@@ -16,8 +16,8 @@ from rene._utils import (collect_non_empty_polygons,
                          to_sorted_pair)
 from . import (linear,
                shaped)
-from .difference import raw_subtract_segment_from_multisegmental
-from .event import Event
+from .event import (Event,
+                    is_right_event)
 
 
 class LinearUnion(linear.Operation[hints.Scalar]):
@@ -205,7 +205,9 @@ def unite_multisegmental_with_multisegmental(
     operation = LinearUnion.from_segments_iterables(
             first_common_continuum_segments, second_common_continuum_segments
     )
-    segments = operation.reduce_events(list(operation), segment_cls)
+    segments = operation.reduce_events([operation.to_opposite_event(event)
+                                        for event in operation
+                                        if is_right_event(event)], segment_cls)
     segments.extend(
             first_segments[index]
             for index in flags_to_false_indices(
@@ -228,9 +230,83 @@ def unite_multisegmental_with_segment(
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
-    segments = raw_subtract_segment_from_multisegmental(first, second,
-                                                        segment_cls)
-    segments.append(second)
+    first_bounding_box, second_bounding_box = (first.bounding_box,
+                                               second.bounding_box)
+    first_segments = first.segments
+    if do_boxes_have_no_common_continuum(first_bounding_box,
+                                         second_bounding_box):
+        return multisegment_cls([*first_segments, second])
+    segments = []
+    second_break_points = []
+    second_start, second_end = to_sorted_pair(second.start, second.end)
+    for index, first_segment in enumerate(first_segments):
+        if first_segment.bounding_box.disjoint_with(second_bounding_box):
+            segments.append(first_segment)
+            continue
+        first_start, first_end = to_sorted_pair(first_segment.start,
+                                                first_segment.end)
+        if second_start == first_start and second_end == first_end:
+            segments.extend(first_segments[index + 1:])
+            break
+        first_start_orientation = orient(second_end, second_start, first_start)
+        first_end_orientation = orient(second_end, second_start, first_end)
+        if first_start_orientation is first_end_orientation:
+            if first_start_orientation is Orientation.COLLINEAR:
+                if second_start == first_start:
+                    if second_end < first_end:
+                        segments.append(segment_cls(second_end, first_end))
+                    continue
+                elif second_end == first_end:
+                    if first_start < second_start:
+                        segments.append(segment_cls(first_start, second_start))
+                    continue
+                elif second_start < first_start < second_end:
+                    if second_end < first_end:
+                        segments.append(segment_cls(second_end, first_end))
+                    continue
+                elif first_start < second_start < first_end:
+                    segments.append(segment_cls(first_start, second_start))
+                    if second_end < first_end:
+                        segments.append(segment_cls(second_end, first_end))
+                    continue
+        elif first_start_orientation is Orientation.COLLINEAR:
+            if second_start < first_start < second_end:
+                second_break_points.append(first_start)
+        elif first_end_orientation is Orientation.COLLINEAR:
+            if second_start < first_end < second_end:
+                second_break_points.append(first_end)
+        else:
+            second_start_orientation = orient(first_start, first_end,
+                                              second_start)
+            second_end_orientation = orient(first_start, first_end, second_end)
+            if second_start_orientation is Orientation.COLLINEAR:
+                if first_start < second_start < first_end:
+                    segments.append(segment_cls(first_start, second_start))
+                    segments.append(segment_cls(second_start, first_end))
+                    continue
+            elif second_end_orientation is Orientation.COLLINEAR:
+                if first_start < second_end < first_end:
+                    segments.append(segment_cls(first_start, second_end))
+                    segments.append(segment_cls(second_end, first_end))
+                    continue
+            elif second_start_orientation is not second_end_orientation:
+                cross_point = to_segments_intersection_point(
+                        first_start, first_end, second_start, second_end
+                )
+                second_break_points.append(cross_point)
+                segments.append(segment_cls(first_start, cross_point))
+                segments.append(segment_cls(cross_point, first_end))
+                continue
+        segments.append(first_segment)
+    if second_break_points:
+        second_break_points.sort()
+        start = end = second_start
+        for end, _ in groupby(second_break_points):
+            segments.append(segment_cls(start, end))
+            start = end
+        segments.append(segment_cls(end, second_end))
+    else:
+        segments.append(second)
     return collect_non_empty_segments(segments, multisegment_cls)
 
 
@@ -312,9 +388,83 @@ def unite_segment_with_multisegmental(
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
-    segments = raw_subtract_segment_from_multisegmental(second, first,
-                                                        segment_cls)
-    segments.append(first)
+    first_bounding_box, second_bounding_box = (first.bounding_box,
+                                               second.bounding_box)
+    second_segments = second.segments
+    if do_boxes_have_no_common_continuum(first_bounding_box,
+                                         second_bounding_box):
+        return multisegment_cls([first, *second_segments])
+    segments = []
+    first_break_points = []
+    first_start, first_end = to_sorted_pair(first.start, first.end)
+    for index, second_segment in enumerate(second_segments):
+        if second_segment.bounding_box.disjoint_with(first_bounding_box):
+            segments.append(second_segment)
+            continue
+        second_start, second_end = to_sorted_pair(second_segment.start,
+                                                  second_segment.end)
+        if first_start == second_start and first_end == second_end:
+            segments.extend(second_segments[index + 1:])
+            break
+        second_start_orientation = orient(first_end, first_start, second_start)
+        second_end_orientation = orient(first_end, first_start, second_end)
+        if second_start_orientation is second_end_orientation:
+            if second_start_orientation is Orientation.COLLINEAR:
+                if first_start == second_start:
+                    if first_end < second_end:
+                        segments.append(segment_cls(first_end, second_end))
+                    continue
+                elif first_end == second_end:
+                    if second_start < first_start:
+                        segments.append(segment_cls(second_start, first_start))
+                    continue
+                elif first_start < second_start < first_end:
+                    if first_end < second_end:
+                        segments.append(segment_cls(first_end, second_end))
+                    continue
+                elif second_start < first_start < second_end:
+                    segments.append(segment_cls(second_start, first_start))
+                    if first_end < second_end:
+                        segments.append(segment_cls(first_end, second_end))
+                    continue
+        elif second_start_orientation is Orientation.COLLINEAR:
+            if first_start < second_start < first_end:
+                first_break_points.append(second_start)
+        elif second_end_orientation is Orientation.COLLINEAR:
+            if first_start < second_end < first_end:
+                first_break_points.append(second_end)
+        else:
+            first_start_orientation = orient(second_start, second_end,
+                                             first_start)
+            first_end_orientation = orient(second_start, second_end, first_end)
+            if first_start_orientation is Orientation.COLLINEAR:
+                if second_start < first_start < second_end:
+                    segments.append(segment_cls(second_start, first_start))
+                    segments.append(segment_cls(first_start, second_end))
+                    continue
+            elif first_end_orientation is Orientation.COLLINEAR:
+                if second_start < first_end < second_end:
+                    segments.append(segment_cls(second_start, first_end))
+                    segments.append(segment_cls(first_end, second_end))
+                    continue
+            elif first_start_orientation is not first_end_orientation:
+                cross_point = to_segments_intersection_point(
+                        second_start, second_end, first_start, first_end
+                )
+                first_break_points.append(cross_point)
+                segments.append(segment_cls(second_start, cross_point))
+                segments.append(segment_cls(cross_point, second_end))
+                continue
+        segments.append(second_segment)
+    if first_break_points:
+        first_break_points.sort()
+        start = end = first_start
+        for end, _ in groupby(first_break_points):
+            segments.append(segment_cls(start, end))
+            start = end
+        segments.append(segment_cls(end, first_end))
+    else:
+        segments.append(first)
     return collect_non_empty_segments(segments, multisegment_cls)
 
 
