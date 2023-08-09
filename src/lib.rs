@@ -1477,27 +1477,11 @@ impl PyExactMultipolygon {
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
             let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             let polygons = (&self.0).intersection(&other.0);
-            match polygons.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    polygons.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_polygons(polygons, py))
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyRef<PyExactPolygon>>()?;
             let polygons = (&self.0).intersection(&other.0);
-            match polygons.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    polygons.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_polygons(polygons, py))
         } else if other.is_instance(PyExactContour::type_object(py))? {
             let other = other.extract::<PyRef<PyExactContour>>()?;
             let segments = (&self.0).intersection(&other.0);
@@ -1539,27 +1523,11 @@ impl PyExactMultipolygon {
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
             let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             let polygons = (&self.0).union(&other.0);
-            debug_assert!(!polygons.is_empty());
-            match polygons.len() {
-                1 => Ok(unsafe {
-                    polygons.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
-                    .into_py(py)),
-            }
+            Ok(unpack_non_empty_polygons(polygons, py))
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyRef<PyExactPolygon>>()?;
             let polygons = (&self.0).union(&other.0);
-            debug_assert!(!polygons.is_empty());
-            match polygons.len() {
-                1 => Ok(unsafe {
-                    polygons.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
-                    .into_py(py)),
-            }
+            Ok(unpack_non_empty_polygons(polygons, py))
         } else {
             Ok(py.NotImplemented())
         }
@@ -1617,27 +1585,11 @@ impl PyExactMultipolygon {
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
             let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             let polygons = (&self.0).difference(&other.0);
-            match polygons.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    polygons.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_polygons(polygons, py))
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyRef<PyExactPolygon>>()?;
             let polygons = (&self.0).difference(&other.0);
-            match polygons.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    polygons.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_polygons(polygons, py))
         } else {
             Ok(py.NotImplemented())
         }
@@ -1651,27 +1603,11 @@ impl PyExactMultipolygon {
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
             let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             let polygons = (&self.0).symmetric_difference(&other.0);
-            match polygons.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    polygons.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_polygons(polygons, py))
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyRef<PyExactPolygon>>()?;
             let polygons = (&self.0).symmetric_difference(&other.0);
-            match polygons.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    polygons.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_polygons(polygons, py))
         } else {
             Ok(py.NotImplemented())
         }
@@ -1952,27 +1888,11 @@ impl PyExactPolygon {
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
             let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             let polygons = (&self.0).intersection(&other.0);
-            match polygons.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    polygons.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_polygons(polygons, py))
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyRef<PyExactPolygon>>()?;
             let polygons = (&self.0).intersection(&other.0);
-            match polygons.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    polygons.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_polygons(polygons, py))
         } else if other.is_instance(PyExactContour::type_object(py))? {
             let other = other.extract::<PyRef<PyExactContour>>()?;
             let segments = (&self.0).intersection(&other.0);
@@ -2013,27 +1933,11 @@ impl PyExactPolygon {
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
             let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             let polygons = (&self.0).union(&other.0);
-            debug_assert!(!polygons.is_empty());
-            match polygons.len() {
-                1 => Ok(unsafe {
-                    polygons.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
-                    .into_py(py)),
-            }
+            Ok(unpack_non_empty_polygons(polygons, py))
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyRef<PyExactPolygon>>()?;
             let polygons = (&self.0).union(&other.0);
-            debug_assert!(!polygons.is_empty());
-            match polygons.len() {
-                1 => Ok(unsafe {
-                    polygons.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
-                    .into_py(py)),
-            }
+            Ok(unpack_non_empty_polygons(polygons, py))
         } else {
             Ok(py.NotImplemented())
         }
@@ -2093,27 +1997,11 @@ impl PyExactPolygon {
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
             let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             let polygons = (&self.0).difference(&other.0);
-            match polygons.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    polygons.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_polygons(polygons, py))
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyRef<PyExactPolygon>>()?;
             let polygons = (&self.0).difference(&other.0);
-            match polygons.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    polygons.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_polygons(polygons, py))
         } else {
             Ok(py.NotImplemented())
         }
@@ -2127,27 +2015,11 @@ impl PyExactPolygon {
         } else if other.is_instance(PyExactMultipolygon::type_object(py))? {
             let other = other.extract::<PyRef<PyExactMultipolygon>>()?;
             let polygons = (&self.0).symmetric_difference(&other.0);
-            match polygons.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    polygons.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_polygons(polygons, py))
         } else if other.is_instance(PyExactPolygon::type_object(py))? {
             let other = other.extract::<PyRef<PyExactPolygon>>()?;
             let polygons = (&self.0).symmetric_difference(&other.0);
-            match polygons.len() {
-                0 => Ok(PyExactEmpty::new().into_py(py)),
-                1 => Ok(unsafe {
-                    polygons.into_iter().next().unwrap_unchecked()
-                }
-                .into_py(py)),
-                _ => Ok(PyExactMultipolygon(ExactMultipolygon::new(polygons))
-                    .into_py(py)),
-            }
+            Ok(unpack_maybe_empty_polygons(polygons, py))
         } else {
             Ok(py.NotImplemented())
         }
@@ -2672,6 +2544,18 @@ fn to_next_slice_indices(
     Ok((result_start, result_stop, result_step))
 }
 
+fn unpack_maybe_empty_polygons(
+    polygons: Vec<ExactPolygon>,
+    py: Python,
+) -> PyObject {
+    match polygons.len() {
+        0 => PyExactEmpty::new().into_py(py),
+        1 => unsafe { polygons.into_iter().next().unwrap_unchecked() }
+            .into_py(py),
+        _ => PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py),
+    }
+}
+
 fn unpack_maybe_empty_segments(
     segments: Vec<ExactSegment>,
     py: Python,
@@ -2681,6 +2565,18 @@ fn unpack_maybe_empty_segments(
         1 => unsafe { segments.into_iter().next().unwrap_unchecked() }
             .into_py(py),
         _ => PyExactMultisegment(ExactMultisegment::new(segments)).into_py(py),
+    }
+}
+
+fn unpack_non_empty_polygons(
+    polygons: Vec<ExactPolygon>,
+    py: Python,
+) -> PyObject {
+    match polygons.len() {
+        0 => unreachable!("Expected to be non-empty."),
+        1 => unsafe { polygons.into_iter().next().unwrap_unchecked() }
+            .into_py(py),
+        _ => PyExactMultipolygon(ExactMultipolygon::new(polygons)).into_py(py),
     }
 }
 
