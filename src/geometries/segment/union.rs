@@ -57,7 +57,7 @@ where
         let (other_start, other_end) =
             to_sorted_pair((&other.start, &other.end));
         if start == other_start && end == other_end {
-            return vec![self.clone(), other.clone()];
+            return vec![self.clone()];
         }
         let other_start_orientation = end.orient(start, other_start);
         let other_end_orientation = end.orient(start, other_end);
