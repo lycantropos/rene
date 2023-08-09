@@ -3,7 +3,8 @@ from hypothesis import given
 from rene.exact import Empty
 from tests.exact_tests.hints import (ClosedCompoundsPair,
                                      ClosedCompoundsTriplet,
-                                     CompoundT)
+                                     CompoundT,
+                                     MaybeShapedCompound)
 from tests.utils import reverse_compound_coordinates
 from . import strategies
 
@@ -31,10 +32,11 @@ def test_associativity(triplet: ClosedCompoundsTriplet) -> None:
     assert (first ^ second) ^ third == first ^ (second ^ third)
 
 
-@given(strategies.closed_compounds_triplets)
-def test_repeated(triplet: ClosedCompoundsTriplet) -> None:
-    first, second, third = triplet
-
+@given(strategies.maybe_shaped_compounds, strategies.maybe_shaped_compounds,
+       strategies.maybe_shaped_compounds)
+def test_repeated(first: MaybeShapedCompound,
+                  second: MaybeShapedCompound,
+                  third: MaybeShapedCompound) -> None:
     assert (first ^ second) ^ (second ^ third) == first ^ third
 
 
