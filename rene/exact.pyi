@@ -119,7 +119,11 @@ class Contour:
 
     @_t.overload
     def __and__(
-            self, other: _t.Union[Multisegment, Segment, _te.Self], /
+            self,
+            other: _t.Union[
+                Multipolygon, Multisegment, Polygon, Segment, _te.Self
+            ],
+            /
     ) -> _t.Union[Empty, Multisegment, Segment]:
         ...
 
@@ -137,10 +141,40 @@ class Contour:
     def __hash__(self) -> int:
         ...
 
+    @_t.overload
+    def __or__(self, other: Empty, /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __or__(
+            self, other: _t.Union[Multisegment, Segment, _te.Self], /
+    ) -> _t.Union[Multisegment, Segment]:
+        ...
+
     def __repr__(self) -> str:
         ...
 
     def __str__(self) -> str:
+        ...
+
+    @_t.overload
+    def __sub__(self, other: Empty, /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __sub__(
+            self, other: _t.Union[Multisegment, Segment, _te.Self], /
+    ) -> _t.Union[Empty, Multisegment, Segment]:
+        ...
+
+    @_t.overload
+    def __xor__(self, other: Empty, /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __xor__(
+            self, other: _t.Union[Multisegment, Segment, _te.Self], /
+    ) -> _t.Union[Empty, Multisegment, Segment]:
         ...
 
 
@@ -155,7 +189,11 @@ class Empty:
         ...
 
     def __and__(
-            self, other: _t.Union[Multipolygon, Polygon, _te.Self], /
+            self,
+            other: _t.Union[
+                Contour, Multipolygon, Multisegment, Polygon, Segment, _te.Self
+            ],
+            /
     ) -> _te.Self:
         ...
 
@@ -178,11 +216,23 @@ class Empty:
         ...
 
     @_t.overload
+    def __or__(self, other: Contour, /) -> Contour:
+        ...
+
+    @_t.overload
     def __or__(self, other: Multipolygon, /) -> Multipolygon:
         ...
 
     @_t.overload
+    def __or__(self, other: Multisegment, /) -> Multisegment:
+        ...
+
+    @_t.overload
     def __or__(self, other: Polygon, /) -> Polygon:
+        ...
+
+    @_t.overload
+    def __or__(self, other: Segment, /) -> Segment:
         ...
 
     def __repr__(self) -> str:
@@ -192,7 +242,11 @@ class Empty:
         ...
 
     def __sub__(
-            self, other: _t.Union[Multipolygon, Polygon, _te.Self], /
+            self,
+            other: _t.Union[
+                Contour, Multipolygon, Multisegment, Polygon, Segment, _te.Self
+            ],
+            /
     ) -> _te.Self:
         ...
 
@@ -201,11 +255,23 @@ class Empty:
         ...
 
     @_t.overload
+    def __xor__(self, other: Contour, /) -> Contour:
+        ...
+
+    @_t.overload
     def __xor__(self, other: Multipolygon, /) -> Multipolygon:
         ...
 
     @_t.overload
+    def __xor__(self, other: Multisegment, /) -> Multisegment:
+        ...
+
+    @_t.overload
     def __xor__(self, other: Polygon, /) -> Polygon:
+        ...
+
+    @_t.overload
+    def __xor__(self, other: Segment, /) -> Segment:
         ...
 
 
@@ -232,6 +298,12 @@ class Multipolygon:
     def __and__(
             self, other: _t.Union[Polygon, _te.Self], /
     ) -> _t.Union[Empty, Polygon, _te.Self]:
+        ...
+
+    @_t.overload
+    def __and__(
+            self, other: _t.Union[Contour, Multisegment, Segment], /
+    ) -> _t.Union[Empty, Multisegment, Segment]:
         ...
 
     def __contains__(self, point: Point, /) -> bool:
@@ -309,7 +381,9 @@ class Multisegment:
 
     @_t.overload
     def __and__(
-            self, other: _t.Union[Contour, Segment, _te.Self], /
+            self,
+            other: _t.Union[Contour, Multipolygon, Polygon, Segment, _te.Self],
+            /
     ) -> _t.Union[Empty, Segment, _te.Self]:
         ...
 
@@ -327,10 +401,40 @@ class Multisegment:
     def __hash__(self) -> int:
         ...
 
+    @_t.overload
+    def __or__(self, other: Empty, /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __or__(
+            self, other: _t.Union[Contour, Segment, _te.Self], /
+    ) -> _t.Union[Segment, _te.Self]:
+        ...
+
     def __repr__(self) -> str:
         ...
 
     def __str__(self) -> str:
+        ...
+
+    @_t.overload
+    def __sub__(self, other: Empty, /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __sub__(
+            self, other: _t.Union[Contour, Segment, _te.Self], /
+    ) -> _t.Union[Empty, Segment, _te.Self]:
+        ...
+
+    @_t.overload
+    def __xor__(self, other: Empty, /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __xor__(
+            self, other: _t.Union[Contour, Segment, _te.Self], /
+    ) -> _t.Union[Empty, Segment, _te.Self]:
         ...
 
 
@@ -405,6 +509,12 @@ class Polygon:
     def __and__(
             self, other: _t.Union[Multipolygon, _te.Self], /
     ) -> _t.Union[Empty, Multipolygon, _te.Self]:
+        ...
+
+    @_t.overload
+    def __and__(
+            self, other: _t.Union[Contour, Multisegment, Segment], /
+    ) -> _t.Union[Empty, Multisegment, Segment]:
         ...
 
     def __contains__(self, point: Point, /) -> bool:
@@ -486,7 +596,9 @@ class Segment:
 
     @_t.overload
     def __and__(
-            self, other: _t.Union[Contour, Multisegment], /
+            self,
+            other: _t.Union[Contour, Multipolygon, Multisegment, Polygon],
+            /
     ) -> _t.Union[Empty, Multisegment, _te.Self]:
         ...
 
@@ -508,10 +620,40 @@ class Segment:
     def __hash__(self) -> int:
         ...
 
+    @_t.overload
+    def __or__(self, other: Empty, /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __or__(
+            self, other: _t.Union[Contour, Multisegment, _te.Self], /
+    ) -> _t.Union[Multisegment, _te.Self]:
+        ...
+
     def __repr__(self) -> str:
         ...
 
     def __str__(self) -> str:
+        ...
+
+    @_t.overload
+    def __sub__(self, other: Empty, /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __sub__(
+            self, other: _t.Union[Contour, Multisegment, _te.Self], /
+    ) -> _t.Union[Empty, Multisegment, _te.Self]:
+        ...
+
+    @_t.overload
+    def __xor__(self, other: Empty, /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __xor__(
+            self, other: _t.Union[Contour, Multisegment, _te.Self], /
+    ) -> _t.Union[Empty, Multisegment, _te.Self]:
         ...
 
 

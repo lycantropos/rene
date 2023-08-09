@@ -201,11 +201,23 @@ class Empty(_SelfComparable, _te.Protocol[Scalar]):
         ...
 
     @_t.overload
+    def __xor__(self, other: Contour[Scalar], /) -> Contour[Scalar]:
+        ...
+
+    @_t.overload
     def __xor__(self, other: Multipolygon[Scalar], /) -> Multipolygon[Scalar]:
         ...
 
     @_t.overload
+    def __xor__(self, other: Multisegment[Scalar], /) -> Multisegment[Scalar]:
+        ...
+
+    @_t.overload
     def __xor__(self, other: Polygon[Scalar], /) -> Polygon[Scalar]:
+        ...
+
+    @_t.overload
+    def __xor__(self, other: Segment[Scalar], /) -> Segment[Scalar]:
         ...
 
 
@@ -302,7 +314,12 @@ class Segment(_SelfComparable, _te.Protocol[Scalar]):
 
     @_t.overload
     def __and__(
-            self, other: _t.Union[Contour[Scalar], Multisegment[Scalar]], /
+            self,
+            other: _t.Union[
+                Contour[Scalar], Multipolygon[Scalar], Multisegment[Scalar],
+                Polygon[Scalar]
+            ],
+            /
     ) -> _t.Union[Empty[Scalar], Multisegment[Scalar], Segment[Scalar]]:
         ...
 
@@ -318,10 +335,52 @@ class Segment(_SelfComparable, _te.Protocol[Scalar]):
     def __hash__(self) -> int:
         ...
 
+    @_t.overload
+    def __or__(self, other: Empty[Scalar], /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __or__(
+            self,
+            other: _t.Union[
+                Contour[Scalar], Multisegment[Scalar], Segment[Scalar]
+            ],
+            /
+    ) -> _t.Union[Multisegment[Scalar], Segment[Scalar]]:
+        ...
+
     def __repr__(self) -> str:
         ...
 
     def __str__(self) -> str:
+        ...
+
+    @_t.overload
+    def __sub__(self, other: Empty[Scalar], /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __sub__(
+            self,
+            other: _t.Union[
+                Contour[Scalar], Multisegment[Scalar], Segment[Scalar]
+            ],
+            /
+    ) -> _t.Union[Empty[Scalar], Multisegment[Scalar], Segment[Scalar]]:
+        ...
+
+    @_t.overload
+    def __xor__(self, other: Empty[Scalar], /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __xor__(
+            self,
+            other: _t.Union[
+                Contour[Scalar], Multisegment[Scalar], Segment[Scalar]
+            ],
+            /
+    ) -> _t.Union[Empty[Scalar], Multisegment[Scalar], Segment[Scalar]]:
         ...
 
 
@@ -367,7 +426,8 @@ class Contour(_SelfComparable, Multisegmental[Segment[Scalar]],
     def __and__(
             self,
             other: _t.Union[
-                Contour[Scalar], Multisegment[Scalar], Segment[Scalar]
+                Contour[Scalar], Multipolygon[Scalar], Multisegment[Scalar],
+                Polygon[Scalar], Segment[Scalar]
             ],
             /
     ) -> _t.Union[Empty[Scalar], Multisegment[Scalar], Segment[Scalar]]:
@@ -379,10 +439,52 @@ class Contour(_SelfComparable, Multisegmental[Segment[Scalar]],
     def __hash__(self) -> int:
         ...
 
+    @_t.overload
+    def __or__(self, other: Empty[Scalar], /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __or__(
+            self,
+            other: _t.Union[
+                Contour[Scalar], Multisegment[Scalar], Segment[Scalar]
+            ],
+            /
+    ) -> _t.Union[Multisegment[Scalar], Segment[Scalar]]:
+        ...
+
     def __repr__(self) -> str:
         ...
 
     def __str__(self) -> str:
+        ...
+
+    @_t.overload
+    def __sub__(self, other: Empty[Scalar], /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __sub__(
+            self,
+            other: _t.Union[
+                Contour[Scalar], Multisegment[Scalar], Segment[Scalar]
+            ],
+            /
+    ) -> _t.Union[Empty[Scalar], Multisegment[Scalar], Segment[Scalar]]:
+        ...
+
+    @_t.overload
+    def __xor__(self, other: Empty[Scalar], /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __xor__(
+            self,
+            other: _t.Union[
+                Contour[Scalar], Multisegment[Scalar], Segment[Scalar]
+            ],
+            /
+    ) -> _t.Union[Empty[Scalar], Multisegment[Scalar], Segment[Scalar]]:
         ...
 
 
@@ -421,10 +523,52 @@ class Multisegment(_SelfComparable, Multisegmental[Segment[Scalar]],
     def __hash__(self) -> int:
         ...
 
+    @_t.overload
+    def __or__(self, other: Empty[Scalar], /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __or__(
+            self,
+            other: _t.Union[
+                Contour[Scalar], Multisegment[Scalar], Segment[Scalar]
+            ],
+            /
+    ) -> _t.Union[Multisegment[Scalar], Segment[Scalar]]:
+        ...
+
     def __repr__(self) -> str:
         ...
 
     def __str__(self) -> str:
+        ...
+
+    @_t.overload
+    def __sub__(self, other: Empty[Scalar], /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __sub__(
+            self,
+            other: _t.Union[
+                Contour[Scalar], Multisegment[Scalar], Segment[Scalar]
+            ],
+            /
+    ) -> _t.Union[Empty[Scalar], Multisegment[Scalar], Segment[Scalar]]:
+        ...
+
+    @_t.overload
+    def __xor__(self, other: Empty[Scalar], /) -> _te.Self:
+        ...
+
+    @_t.overload
+    def __xor__(
+            self,
+            other: _t.Union[
+                Contour[Scalar], Multisegment[Scalar], Segment[Scalar]
+            ],
+            /
+    ) -> _t.Union[Empty[Scalar], Multisegment[Scalar], Segment[Scalar]]:
         ...
 
 
@@ -457,6 +601,16 @@ class Polygon(_SelfComparable, _te.Protocol[Scalar]):
     def __and__(
             self, other: _t.Union[Multipolygon[Scalar], Polygon[Scalar]], /
     ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
+        ...
+
+    @_t.overload
+    def __and__(
+            self,
+            other: _t.Union[
+                Contour[Scalar], Multisegment[Scalar], Segment[Scalar]
+            ],
+            /
+    ) -> _t.Union[Empty[Scalar], Multisegment[Scalar], Segment[Scalar]]:
         ...
 
     def __contains__(self, point: Point[Scalar], /) -> bool:
@@ -527,6 +681,16 @@ class Multipolygon(_SelfComparable, _te.Protocol[Scalar]):
     def __and__(
             self, other: _t.Union[Multipolygon[Scalar], Polygon[Scalar]], /
     ) -> _t.Union[Empty[Scalar], Multipolygon[Scalar], Polygon[Scalar]]:
+        ...
+
+    @_t.overload
+    def __and__(
+            self,
+            other: _t.Union[
+                Contour[Scalar], Multisegment[Scalar], Segment[Scalar]
+            ],
+            /
+    ) -> _t.Union[Empty[Scalar], Multisegment[Scalar], Segment[Scalar]]:
         ...
 
     def __contains__(self, point: Point[Scalar], /) -> bool:
