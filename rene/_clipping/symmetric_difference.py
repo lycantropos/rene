@@ -267,97 +267,50 @@ def symmetric_subtract_segment_from_segment(
     minuend_start, minuend_end = to_sorted_pair(minuend.start, minuend.end)
     subtrahend_start, subtrahend_end = to_sorted_pair(subtrahend.start,
                                                       subtrahend.end)
-    starts_equal = subtrahend_start == minuend_start
-    ends_equal = subtrahend_end == minuend_end
-    if starts_equal and ends_equal:
+    if subtrahend_start == minuend_start and subtrahend_end == minuend_end:
         return empty_cls()
     subtrahend_start_orientation = orient(minuend_end, minuend_start,
                                           subtrahend_start)
     subtrahend_end_orientation = orient(minuend_end, minuend_start,
                                         subtrahend_end)
     if (subtrahend_start_orientation is not Orientation.COLLINEAR
-            and subtrahend_end_orientation is not Orientation.COLLINEAR):
-        if subtrahend_start_orientation == subtrahend_end_orientation:
-            return multisegment_cls([minuend, subtrahend])
-        else:
-            minuend_start_orientation = orient(subtrahend_start,
-                                               subtrahend_end, minuend_start)
-            minuend_end_orientation = orient(subtrahend_start, subtrahend_end,
-                                             minuend_end)
-            if (minuend_start_orientation is not Orientation.COLLINEAR
-                    and minuend_end_orientation is not Orientation.COLLINEAR):
-                if minuend_start_orientation == minuend_end_orientation:
-                    return multisegment_cls([minuend, subtrahend])
-                else:
-                    cross_point = to_segments_intersection_point(
-                            minuend_start, minuend_end, subtrahend_start,
-                            subtrahend_end
-                    )
-                    return multisegment_cls(
-                            [segment_cls(minuend_start, cross_point),
-                             segment_cls(cross_point, minuend_end),
-                             segment_cls(subtrahend_start, cross_point),
-                             segment_cls(cross_point, subtrahend_end)]
-                    )
-            elif minuend_start_orientation is not Orientation.COLLINEAR:
-                if subtrahend_start < minuend_end < subtrahend_end:
-                    return multisegment_cls(
-                            [minuend,
-                             segment_cls(subtrahend_start, minuend_end),
-                             segment_cls(minuend_end, subtrahend_end)]
-                    )
-                else:
-                    return multisegment_cls([minuend, subtrahend])
-            elif subtrahend_start < minuend_start < subtrahend_end:
-                return multisegment_cls(
-                        [minuend,
-                         segment_cls(subtrahend_start, minuend_start),
-                         segment_cls(minuend_start, subtrahend_end)]
-                )
-            else:
-                return multisegment_cls([minuend, subtrahend])
-    elif subtrahend_start_orientation is not Orientation.COLLINEAR:
-        if minuend_start < subtrahend_end < minuend_end:
-            return multisegment_cls(
-                    [minuend,
-                     segment_cls(minuend_start, subtrahend_end),
-                     segment_cls(subtrahend_end, minuend_end)]
+            and subtrahend_end_orientation is not Orientation.COLLINEAR
+            and (subtrahend_start_orientation
+                 is not subtrahend_end_orientation)):
+        minuend_start_orientation = orient(subtrahend_start, subtrahend_end,
+                                           minuend_start)
+        minuend_end_orientation = orient(subtrahend_start, subtrahend_end,
+                                         minuend_end)
+        if (minuend_start_orientation is not Orientation.COLLINEAR
+                and minuend_end_orientation is not Orientation.COLLINEAR
+                and minuend_start_orientation is not minuend_end_orientation):
+            cross_point = to_segments_intersection_point(
+                    minuend_start, minuend_end, subtrahend_start,
+                    subtrahend_end
             )
-        else:
-            return multisegment_cls([minuend, subtrahend])
-    elif subtrahend_end_orientation is not Orientation.COLLINEAR:
-        if minuend_start < subtrahend_start < minuend_end:
-            return multisegment_cls(
-                    [minuend,
-                     segment_cls(minuend_start, subtrahend_start),
-                     segment_cls(subtrahend_start, minuend_end)]
-            )
-        else:
-            return multisegment_cls([minuend, subtrahend])
-    elif starts_equal:
-        return segment_cls(minuend_end, subtrahend_end)
-    elif ends_equal:
-        return segment_cls(minuend_start, subtrahend_start)
-    elif subtrahend_start == minuend_end or subtrahend_end == minuend_start:
-        return multisegment_cls([minuend, subtrahend])
-    elif minuend_start < subtrahend_start < minuend_end:
-        if subtrahend_end < minuend_end:
-            return multisegment_cls(
-                    [segment_cls(minuend_start, subtrahend_start),
-                     segment_cls(subtrahend_end, minuend_end)]
-            )
-        else:
+            return multisegment_cls([
+                segment_cls(minuend_start, cross_point),
+                segment_cls(cross_point, minuend_end),
+                segment_cls(subtrahend_start, cross_point),
+                segment_cls(cross_point, subtrahend_end)
+            ])
+    elif (subtrahend_start_orientation is Orientation.COLLINEAR
+          and subtrahend_end_orientation is Orientation.COLLINEAR):
+        if minuend_start == subtrahend_start:
+            return segment_cls(minuend_end, subtrahend_end)
+        elif minuend_end == subtrahend_end:
             return segment_cls(minuend_start, subtrahend_start)
-    elif subtrahend_start < minuend_start < subtrahend_end:
-        if minuend_end < subtrahend_end:
-            return multisegment_cls(
-                    [segment_cls(subtrahend_start, minuend_start),
-                     segment_cls(minuend_end, subtrahend_end)]
-            )
-        else:
-            return segment_cls(subtrahend_start, minuend_start)
-    else:
-        return multisegment_cls([minuend, subtrahend])
+        elif minuend_start == subtrahend_end:
+            return segment_cls(subtrahend_start, minuend_end)
+        elif minuend_end == subtrahend_start:
+            return segment_cls(minuend_start, subtrahend_end)
+        elif (subtrahend_start < minuend_end
+              and minuend_start < subtrahend_end):
+            return multisegment_cls([
+                segment_cls(minuend_start, subtrahend_start),
+                segment_cls(subtrahend_end, minuend_end)
+            ])
+    return multisegment_cls([minuend, subtrahend])
 
 
 def symmetric_subtract_multisegmental_from_segment(
