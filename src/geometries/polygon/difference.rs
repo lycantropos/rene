@@ -2,9 +2,7 @@ use crate::bounded::{Bounded, Box};
 use crate::clipping::shaped::Operation;
 use crate::clipping::traits::ReduceEvents;
 use crate::clipping::{Event, DIFFERENCE};
-use crate::geometries::{
-    Contour, Empty, Multipolygon, Multisegment, Point, Segment,
-};
+use crate::geometries::{Empty, Multipolygon, Point};
 use crate::operations::{
     do_boxes_have_no_common_area, to_boxes_ids_with_common_area,
 };
