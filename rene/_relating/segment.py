@@ -219,9 +219,7 @@ def relate_to_segment(
     assert first_start != first_end
     first_start, first_end = to_sorted_pair(first_start, first_end)
     second_start, second_end = to_sorted_pair(second_start, second_end)
-    starts_equal = second_start == first_start
-    ends_equal = second_end == first_end
-    if starts_equal and ends_equal:
+    if first_start == second_start and first_end == second_end:
         return Relation.EQUAL
     second_start_orientation = orient(first_end, first_start, second_start)
     second_end_orientation = orient(first_end, first_start, second_end)
@@ -258,17 +256,17 @@ def relate_to_segment(
             return Relation.TOUCH
         else:
             return Relation.DISJOINT
-    elif starts_equal:
+    elif first_start == second_start:
         if second_end < first_end:
             return Relation.COMPOSITE
         else:
             return Relation.COMPONENT
-    elif ends_equal:
+    elif first_end == second_end:
         if second_start < first_start:
             return Relation.COMPONENT
         else:
             return Relation.COMPOSITE
-    elif second_start == first_end or second_end == first_start:
+    elif first_start == second_end or first_end == second_start:
         return Relation.TOUCH
     elif first_start < second_start < first_end:
         if second_end < first_end:
