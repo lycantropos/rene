@@ -101,14 +101,14 @@ where
 
 impl<Scalar> Union<&Contour<Scalar>> for &Segment<Scalar>
 where
-    Segment<Scalar>: Clone,
-    for<'a> &'a Segment<Scalar>:
-        Difference<&'a Contour<Scalar>, Output = Vec<Segment<Scalar>>>,
+    Segment<Scalar>: Clone + PartialEq,
+    for<'a> &'a Contour<Scalar>:
+        Difference<&'a Segment<Scalar>, Output = Vec<Segment<Scalar>>>,
 {
     type Output = Vec<Segment<Scalar>>;
 
     fn union(self, other: &Contour<Scalar>) -> Self::Output {
-        let mut result = self.difference(other);
+        let mut result = other.difference(self);
         result.push(self.clone());
         result
     }
@@ -117,13 +117,13 @@ where
 impl<Scalar> Union<&Multisegment<Scalar>> for &Segment<Scalar>
 where
     Segment<Scalar>: Clone,
-    for<'a> &'a Segment<Scalar>:
-        Difference<&'a Multisegment<Scalar>, Output = Vec<Segment<Scalar>>>,
+    for<'a> &'a Multisegment<Scalar>:
+        Difference<&'a Segment<Scalar>, Output = Vec<Segment<Scalar>>>,
 {
     type Output = Vec<Segment<Scalar>>;
 
     fn union(self, other: &Multisegment<Scalar>) -> Self::Output {
-        let mut result = self.difference(other);
+        let mut result = other.difference(self);
         result.push(self.clone());
         result
     }
