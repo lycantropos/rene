@@ -1,7 +1,7 @@
 use crate::bounded::{Bounded, Box};
 use crate::clipping::linear::Operation;
 use crate::clipping::traits::ReduceEvents;
-use crate::clipping::{Event, SYMMETRIC_DIFFERENCE};
+use crate::clipping::{is_right_event, Event, SYMMETRIC_DIFFERENCE};
 use crate::geometries::{Contour, Empty, Point, Segment};
 use crate::operations::{
     do_boxes_have_no_common_continuum, flags_to_false_indices,
@@ -129,8 +129,10 @@ where
                 maybe_events_count.unwrap_unchecked()
             })
         };
-        for event in operation.by_ref() {
-            events.push(event);
+        while let Some(event) = operation.next() {
+            if is_right_event(event) {
+                events.push(operation.to_opposite_event(event));
+            }
         }
         let mut result = operation.reduce_events(events);
         result.reserve(
@@ -231,8 +233,10 @@ where
                 maybe_events_count.unwrap_unchecked()
             })
         };
-        for event in operation.by_ref() {
-            events.push(event);
+        while let Some(event) = operation.next() {
+            if is_right_event(event) {
+                events.push(operation.to_opposite_event(event));
+            }
         }
         let mut result = operation.reduce_events(events);
         result.reserve(
@@ -309,8 +313,10 @@ where
                 maybe_events_count.unwrap_unchecked()
             })
         };
-        for event in operation.by_ref() {
-            events.push(event);
+        while let Some(event) = operation.next() {
+            if is_right_event(event) {
+                events.push(operation.to_opposite_event(event));
+            }
         }
         let mut result = operation.reduce_events(events);
         result.reserve(self.segments.len() - common_continuum_segments.len());
