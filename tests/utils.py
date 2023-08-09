@@ -2,6 +2,8 @@ import typing as t
 from functools import (partial,
                        singledispatch)
 
+from hypothesis import strategies as _st
+
 from rene import (MIN_CONTOUR_VERTICES_COUNT,
                   Location,
                   Orientation,
@@ -247,6 +249,19 @@ def _to_max_sub_hull(points: t.Iterable[_PointT]) -> t.List[_PointT]:
                 break
         result.append(point)
     return result
+
+_T0 = t.TypeVar('_T0')
+
+def to_pairs(
+        values: _st.SearchStrategy[_T0]
+) -> _st.SearchStrategy[t.Tuple[_T0, _T0]]:
+    return _st.tuples(values, values)
+
+
+def to_triplets(
+        values: _st.SearchStrategy[_T0]
+) -> _st.SearchStrategy[t.Tuple[_T0, _T0, _T0]]:
+    return _st.tuples(values, values, values)
 
 
 def _to_sub_hull(points: t.Iterable[_PointT]) -> t.List[_PointT]:

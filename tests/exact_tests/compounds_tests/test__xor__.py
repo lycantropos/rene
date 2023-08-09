@@ -1,49 +1,57 @@
 from hypothesis import given
 
 from rene.exact import Empty
-from tests.exact_tests.hints import Compound
+from tests.exact_tests.hints import (ClosedCompoundsPair,
+                                     ClosedCompoundsTriplet,
+                                     CompoundT)
 from tests.utils import reverse_compound_coordinates
 from . import strategies
 
 
 @given(strategies.compounds)
-def test_self_inverse(compound: Compound) -> None:
+def test_self_inverse(compound: CompoundT) -> None:
     result = compound ^ compound
 
     assert isinstance(result, Empty)
 
 
-@given(strategies.compounds, strategies.compounds)
-def test_commutativity(first: Compound, second: Compound) -> None:
+@given(strategies.closed_compounds_pairs)
+def test_commutativity(pair: ClosedCompoundsPair) -> None:
+    first, second = pair
+
     result = first ^ second
 
     assert result == second ^ first
 
 
-@given(strategies.compounds, strategies.compounds, strategies.compounds)
-def test_associativity(first: Compound,
-                       second: Compound,
-                       third: Compound) -> None:
+@given(strategies.closed_compounds_triplets)
+def test_associativity(triplet: ClosedCompoundsTriplet) -> None:
+    first, second, third = triplet
+
     assert (first ^ second) ^ third == first ^ (second ^ third)
 
 
-@given(strategies.compounds, strategies.compounds, strategies.compounds)
-def test_repeated(first: Compound,
-                  second: Compound,
-                  third: Compound) -> None:
+@given(strategies.closed_compounds_triplets)
+def test_repeated(triplet: ClosedCompoundsTriplet) -> None:
+    first, second, third = triplet
+
     assert (first ^ second) ^ (second ^ third) == first ^ third
 
 
-@given(strategies.compounds, strategies.compounds)
-def test_alternatives(first: Compound, second: Compound) -> None:
+@given(strategies.closed_compounds_pairs)
+def test_alternatives(pair: ClosedCompoundsPair) -> None:
+    first, second = pair
+
     result = first ^ second
 
     assert result == (first - second) | (second - first)
     assert result == (first | second) - (second & first)
 
 
-@given(strategies.compounds, strategies.compounds)
-def test_reversals(first: Compound, second: Compound) -> None:
+@given(strategies.closed_compounds_pairs)
+def test_reversals(pair: ClosedCompoundsPair) -> None:
+    first, second = pair
+
     result = first ^ second
 
     assert result == reverse_compound_coordinates(

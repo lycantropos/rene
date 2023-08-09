@@ -13,4 +13,10 @@ scalars = (integers | _st.fractions()
 points = _st.builds(_Point, scalars, scalars)
 polygons_components = _strategies.polygons_components
 polygons = _strategies.polygons
-compounds = _strategies.empty_geometries | _strategies.multipolygons | polygons
+compounds = (
+        _strategies.empty_geometries | _strategies.segments
+        | _strategies.multisegments | _strategies.contours
+        | _strategies.multipolygons | polygons
+)
+maybe_shaped_compounds = (_strategies.empty_geometries
+                          | _strategies.multipolygons | polygons)

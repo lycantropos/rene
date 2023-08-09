@@ -20,4 +20,10 @@ invalid_count_multipolygons_polygons = strategies.lists(
 multipolygons_like = strategies.builds(Multipolygon,
                                        multipolygons_like_polygons)
 multipolygons = _strategies.multipolygons
-compounds = _strategies.empty_geometries | multipolygons | _strategies.polygons
+compounds = (
+        _strategies.empty_geometries | _strategies.segments
+        | _strategies.multisegments | _strategies.contours | multipolygons
+        | _strategies.polygons
+)
+maybe_shaped_compounds = (_strategies.empty_geometries | multipolygons
+                          | _strategies.polygons)
