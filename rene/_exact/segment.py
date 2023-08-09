@@ -132,7 +132,7 @@ class Segment:
                                 self._context.segment_cls
                         )
                         if isinstance(other, self._context.multipolygon_cls)
-                        else (self._context.empty_cls()
+                        else (other
                               if isinstance(other, self._context.empty_cls)
                               else NotImplemented)
                     )
@@ -193,7 +193,7 @@ class Segment:
                         self._context.segment_cls
                 )
                 if isinstance(other, self._context.segment_cls)
-                else (self._context.empty_cls()
+                else (self
                       if isinstance(other, self._context.empty_cls)
                       else NotImplemented)
             )
@@ -242,7 +242,7 @@ class Segment:
                         self._context.segment_cls
                 )
                 if isinstance(other, self._context.segment_cls)
-                else (self._context.empty_cls()
+                else (self
                       if isinstance(other, self._context.empty_cls)
                       else NotImplemented)
             )
@@ -285,6 +285,8 @@ class Segment:
                         self._context.segment_cls
                 )
                 if isinstance(other, self._context.segment_cls)
-                else NotImplemented
+                else (self
+                      if isinstance(other, self._context.empty_cls)
+                      else NotImplemented)
             )
         )

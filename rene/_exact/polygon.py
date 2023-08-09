@@ -169,26 +169,24 @@ class Polygon:
 
     def __or__(self, other: t.Any, /) -> t.Any:
         return (
-            self
-            if isinstance(other, self._context.empty_cls)
-            else (
-                unite_polygon_with_multipolygon(
+            unite_polygon_with_multipolygon(
+                    self, other, self._context.contour_cls,
+                    self._context.multipolygon_cls,
+                    self._context.polygon_cls, self._context.segment_cls
+            )
+            if isinstance(other, self._context.multipolygon_cls)
+            else
+            (
+                unite_polygon_with_polygon(
                         self, other, self._context.contour_cls,
                         self._context.multipolygon_cls,
-                        self._context.polygon_cls, self._context.segment_cls
+                        self._context.polygon_cls,
+                        self._context.segment_cls
                 )
-                if isinstance(other, self._context.multipolygon_cls)
-                else
-                (
-                    unite_polygon_with_polygon(
-                            self, other, self._context.contour_cls,
-                            self._context.multipolygon_cls,
-                            self._context.polygon_cls,
-                            self._context.segment_cls
-                    )
-                    if isinstance(other, Polygon)
-                    else NotImplemented
-                )
+                if isinstance(other, Polygon)
+                else (self
+                      if isinstance(other, self._context.empty_cls)
+                      else NotImplemented)
             )
         )
 
@@ -266,28 +264,26 @@ class Polygon:
 
     def __xor__(self, other: t.Any, /) -> t.Any:
         return (
-            self
-            if isinstance(other, self._context.empty_cls)
+            symmetric_subtract_multipolygon_from_polygon(
+                    self, other, self._context.contour_cls,
+                    self._context.empty_cls,
+                    self._context.multipolygon_cls,
+                    self._context.polygon_cls, self._context.segment_cls
+            )
+
+            if isinstance(other, self._context.multipolygon_cls)
             else (
-                symmetric_subtract_multipolygon_from_polygon(
+                symmetric_subtract_polygon_from_polygon(
                         self, other, self._context.contour_cls,
                         self._context.empty_cls,
                         self._context.multipolygon_cls,
-                        self._context.polygon_cls, self._context.segment_cls
+                        self._context.polygon_cls,
+                        self._context.segment_cls
                 )
-
-                if isinstance(other, self._context.multipolygon_cls)
-                else (
-                    symmetric_subtract_polygon_from_polygon(
-                            self, other, self._context.contour_cls,
-                            self._context.empty_cls,
-                            self._context.multipolygon_cls,
-                            self._context.polygon_cls,
-                            self._context.segment_cls
-                    )
-                    if isinstance(other, self._context.polygon_cls)
-                    else NotImplemented
-                )
+                if isinstance(other, self._context.polygon_cls)
+                else (self
+                      if isinstance(other, self._context.empty_cls)
+                      else NotImplemented)
             )
         )
 

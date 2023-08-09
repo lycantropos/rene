@@ -101,42 +101,38 @@ class Multipolygon:
 
     def __and__(self, other: t.Any, /) -> t.Any:
         return (
-            self._context.empty_cls()
-            if isinstance(other, self._context.empty_cls)
+            intersect_multipolygon_with_multipolygon(
+                    self, other, self._context.contour_cls,
+                    self._context.empty_cls, self._context.multipolygon_cls,
+                    self._context.polygon_cls, self._context.segment_cls
+            )
+            if isinstance(other, self._context.multipolygon_cls)
             else (
-                intersect_multipolygon_with_multipolygon(
+                intersect_multipolygon_with_polygon(
                         self, other, self._context.contour_cls,
                         self._context.empty_cls,
                         self._context.multipolygon_cls,
                         self._context.polygon_cls, self._context.segment_cls
                 )
-                if isinstance(other, self._context.multipolygon_cls)
+                if isinstance(other, self._context.polygon_cls)
                 else (
-                    intersect_multipolygon_with_polygon(
-                            self, other, self._context.contour_cls,
-                            self._context.empty_cls,
-                            self._context.multipolygon_cls,
-                            self._context.polygon_cls,
+                    intersect_multipolygon_with_multisegmental(
+                            self, other, self._context.empty_cls,
+                            self._context.multisegment_cls,
                             self._context.segment_cls
                     )
-                    if isinstance(other, self._context.polygon_cls)
+                    if isinstance(other, (self._context.contour_cls,
+                                          self._context.multisegment_cls))
                     else (
-                        intersect_multipolygon_with_multisegmental(
+                        intersect_multipolygon_with_segment(
                                 self, other, self._context.empty_cls,
                                 self._context.multisegment_cls,
                                 self._context.segment_cls
                         )
-                        if isinstance(other, (self._context.contour_cls,
-                                              self._context.multisegment_cls))
-                        else (
-                            intersect_multipolygon_with_segment(
-                                    self, other, self._context.empty_cls,
-                                    self._context.multisegment_cls,
-                                    self._context.segment_cls
-                            )
-                            if isinstance(other, self._context.segment_cls)
-                            else NotImplemented
-                        )
+                        if isinstance(other, self._context.segment_cls)
+                        else (other
+                              if isinstance(other, self._context.empty_cls)
+                              else NotImplemented)
                     )
                 )
             )
@@ -181,25 +177,22 @@ class Multipolygon:
 
     def __or__(self, other: t.Any, /) -> t.Any:
         return (
-            self
-            if isinstance(other, self._context.empty_cls)
+            unite_multipolygon_with_multipolygon(
+                    self, other, self._context.contour_cls,
+                    self._context.multipolygon_cls, self._context.polygon_cls,
+                    self._context.segment_cls
+            )
+            if isinstance(other, self._context.multipolygon_cls)
             else (
-                unite_multipolygon_with_multipolygon(
+                unite_multipolygon_with_polygon(
                         self, other, self._context.contour_cls,
                         self._context.multipolygon_cls,
                         self._context.polygon_cls, self._context.segment_cls
                 )
-                if isinstance(other, self._context.multipolygon_cls)
-                else (
-                    unite_multipolygon_with_polygon(
-                            self, other, self._context.contour_cls,
-                            self._context.multipolygon_cls,
-                            self._context.polygon_cls,
-                            self._context.segment_cls
-                    )
-                    if isinstance(other, self._context.polygon_cls)
-                    else NotImplemented
-                )
+                if isinstance(other, self._context.polygon_cls)
+                else (self
+                      if isinstance(other, self._context.empty_cls)
+                      else NotImplemented)
             )
         )
 

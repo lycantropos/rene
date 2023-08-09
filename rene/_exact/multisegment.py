@@ -144,7 +144,7 @@ class Multisegment:
                         )
                         if isinstance(other,
                                       self._context.multipolygon_cls)
-                        else (self._context.empty_cls()
+                        else (other
                               if isinstance(other, self._context.empty_cls)
                               else NotImplemented)
                     )
@@ -192,23 +192,21 @@ class Multisegment:
 
     def __or__(self, other: t.Any, /) -> t.Any:
         return (
-            self
-            if isinstance(other, self._context.empty_cls)
+            unite_multisegmental_with_multisegmental(
+                    self, other, self._context.multisegment_cls,
+                    self._context.segment_cls
+            )
+            if isinstance(other, (self._context.contour_cls,
+                                  self._context.multisegment_cls))
             else (
-                unite_multisegmental_with_multisegmental(
+                unite_multisegmental_with_segment(
                         self, other, self._context.multisegment_cls,
                         self._context.segment_cls
                 )
-                if isinstance(other, (self._context.contour_cls,
-                                      self._context.multisegment_cls))
-                else (
-                    unite_multisegmental_with_segment(
-                            self, other, self._context.multisegment_cls,
-                            self._context.segment_cls
-                    )
-                    if isinstance(other, self._context.segment_cls)
-                    else NotImplemented
-                )
+                if isinstance(other, self._context.segment_cls)
+                else (self
+                      if isinstance(other, self._context.empty_cls)
+                      else NotImplemented)
             )
         )
 
@@ -271,7 +269,7 @@ class Multisegment:
                                 self._context.segment_cls
                         )
                         if isinstance(other, self._context.polygon_cls)
-                        else (self._context.empty_cls()
+                        else (self
                               if isinstance(other, self._context.empty_cls)
                               else NotImplemented)
                     )
@@ -316,7 +314,7 @@ class Multisegment:
                         self._context.segment_cls
                 )
                 if isinstance(other, self._context.segment_cls)
-                else (self._context.empty_cls()
+                else (self
                       if isinstance(other, self._context.empty_cls)
                       else NotImplemented)
             )
