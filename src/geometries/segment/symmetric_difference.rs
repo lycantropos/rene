@@ -1,7 +1,7 @@
 use crate::bounded::{Bounded, Box};
 use crate::clipping::linear::Operation;
 use crate::clipping::traits::ReduceEvents;
-use crate::clipping::{Event, SYMMETRIC_DIFFERENCE};
+use crate::clipping::{is_right_event, Event, SYMMETRIC_DIFFERENCE};
 use crate::geometries::{Contour, Empty, Multisegment, Point};
 use crate::operations::{
     do_boxes_have_no_common_continuum, flags_to_false_indices,
@@ -68,7 +68,7 @@ where
         let (other_start, other_end) =
             to_sorted_pair((&other.start, &other.end));
         if start == other_start && end == other_end {
-            return vec![self.clone(), other.clone()];
+            return vec![];
         }
         let other_start_orientation = end.orient(start, other_start);
         let other_end_orientation = end.orient(start, other_end);
@@ -179,8 +179,10 @@ where
                 maybe_events_count.unwrap_unchecked()
             })
         };
-        for event in operation.by_ref() {
-            events.push(event);
+        while let Some(event) = operation.next() {
+            if is_right_event(event) {
+                events.push(operation.to_opposite_event(event));
+            }
         }
         let mut result = operation.reduce_events(events);
         result.reserve(
@@ -259,8 +261,10 @@ where
                 maybe_events_count.unwrap_unchecked()
             })
         };
-        for event in operation.by_ref() {
-            events.push(event);
+        while let Some(event) = operation.next() {
+            if is_right_event(event) {
+                events.push(operation.to_opposite_event(event));
+            }
         }
         let mut result = operation.reduce_events(events);
         result.reserve(
