@@ -300,11 +300,11 @@ def unite_multisegmental_with_segment(
         segments.append(first_segment)
     if second_break_points:
         second_break_points.sort()
-        start = end = second_start
+        start = second_start
         for end, _ in groupby(second_break_points):
             segments.append(segment_cls(start, end))
             start = end
-        segments.append(segment_cls(end, second_end))
+        segments.append(segment_cls(start, second_end))
     else:
         segments.append(second)
     return collect_non_empty_segments(segments, multisegment_cls)
@@ -458,11 +458,11 @@ def unite_segment_with_multisegmental(
         segments.append(second_segment)
     if first_break_points:
         first_break_points.sort()
-        start = end = first_start
+        start = first_start
         for end, _ in groupby(first_break_points):
             segments.append(segment_cls(start, end))
             start = end
-        segments.append(segment_cls(end, first_end))
+        segments.append(segment_cls(start, first_end))
     else:
         segments.append(first)
     return collect_non_empty_segments(segments, multisegment_cls)
