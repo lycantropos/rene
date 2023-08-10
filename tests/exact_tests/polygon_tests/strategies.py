@@ -18,5 +18,7 @@ compounds = (
         | _strategies.multisegments | _strategies.contours
         | _strategies.multipolygons | polygons
 )
-maybe_shaped_compounds = (_strategies.empty_geometries
-                          | _strategies.multipolygons | polygons)
+maybe_linear_compounds = (_strategies.empty_geometries | _strategies.segments
+                          | _strategies.multisegments | _strategies.contours)
+maybe_shaped_compounds = (_strategies.empty_geometries | polygons
+                          | _strategies.multipolygons)
