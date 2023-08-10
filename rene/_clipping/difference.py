@@ -723,9 +723,7 @@ def subtract_segment_from_segment(
     minuend_start, minuend_end = to_sorted_pair(minuend.start, minuend.end)
     subtrahend_start, subtrahend_end = to_sorted_pair(subtrahend.start,
                                                       subtrahend.end)
-    starts_equal = subtrahend_start == minuend_start
-    ends_equal = subtrahend_end == minuend_end
-    if starts_equal and ends_equal:
+    if minuend_start == subtrahend_start and minuend_end == subtrahend_end:
         return empty_cls()
     subtrahend_start_orientation = orient(minuend_end, minuend_start,
                                           subtrahend_start)
@@ -752,12 +750,12 @@ def subtract_segment_from_segment(
           and subtrahend_end_orientation is Orientation.COLLINEAR
           and subtrahend_start < minuend_end
           and minuend_start < subtrahend_end):
-        if starts_equal:
+        if minuend_start == subtrahend_start:
             if subtrahend_end < minuend_end:
                 return segment_cls(subtrahend_end, minuend_end)
             else:
                 return empty_cls()
-        elif ends_equal:
+        elif minuend_end == subtrahend_end:
             if subtrahend_start < minuend_start:
                 return empty_cls()
             else:
