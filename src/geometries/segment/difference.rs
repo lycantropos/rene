@@ -81,9 +81,7 @@ where
         let (start, end) = to_sorted_pair((&self.start, &self.end));
         let (other_start, other_end) =
             to_sorted_pair((&other.start, &other.end));
-        let starts_equal = other_start == start;
-        let ends_equal = other_end == end;
-        if starts_equal && ends_equal {
+        if start == other_start && end == other_end {
             return vec![];
         }
         let other_start_orientation = end.orient(start, other_start);
@@ -115,13 +113,13 @@ where
             && other_start < end
             && start < other_end
         {
-            if starts_equal {
+            if start == other_start {
                 return if other_end < end {
                     vec![Segment::new(other_end.clone(), end.clone())]
                 } else {
                     vec![]
                 };
-            } else if ends_equal {
+            } else if end == other_end {
                 return if other_start < start {
                     vec![]
                 } else {
