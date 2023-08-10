@@ -3,9 +3,11 @@ from hypothesis import given
 from rene.exact import Empty
 from tests.exact_tests.hints import (ClosedCompoundsPair,
                                      ClosedCompoundsTriplet,
+                                     Compound,
                                      CompoundT,
                                      MaybeShapedCompound)
-from tests.utils import reverse_compound_coordinates
+from tests.utils import (implication,
+                         reverse_compound_coordinates)
 from . import strategies
 
 
@@ -23,6 +25,24 @@ def test_commutativity(pair: ClosedCompoundsPair) -> None:
     result = first ^ second
 
     assert result == second ^ first
+
+
+@given(strategies.maybe_shaped_compounds, strategies.maybe_shaped_compounds)
+def test_degenerate_case(first: MaybeShapedCompound,
+                         second: MaybeShapedCompound) -> None:
+    result = first ^ second
+
+    assert implication(isinstance(result, Empty), first == second)
+
+
+@given(strategies.empty_geometries, strategies.compounds)
+def test_left_neutral_element(first: Empty, second: Compound) -> None:
+    assert first ^ second == second
+
+
+@given(strategies.compounds, strategies.empty_geometries)
+def test_right_neutral_element(first: Compound, second: Empty) -> None:
+    assert first ^ second == first
 
 
 @given(strategies.closed_compounds_triplets)
