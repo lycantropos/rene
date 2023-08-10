@@ -5,11 +5,13 @@ use crate::clipping::{is_right_event, Event, UNION};
 use crate::geometries::{Empty, Multisegment, Point, Segment};
 use crate::operations::{
     do_boxes_have_no_common_continuum, flags_to_false_indices,
-    flags_to_true_indices, to_boxes_have_common_continuum,
+    flags_to_true_indices, to_boxes_have_common_continuum, to_sorted_pair,
+    IntersectCrossingSegments, Orient,
 };
+use crate::oriented::Orientation;
 use crate::relatable::Relatable;
 use crate::traits::{
-    Difference, Elemental, Iterable, Lengthsome, Multisegmental, Union,
+    Elemental, Iterable, Lengthsome, Multisegmental, Segmental, Union,
 };
 
 use super::types::Contour;
@@ -260,21 +262,151 @@ where
     }
 }
 
-impl<Scalar> Union<&Segment<Scalar>> for &Contour<Scalar>
+impl<Scalar: PartialEq> Union<&Segment<Scalar>> for &Contour<Scalar>
 where
-    for<'a> &'a Contour<Scalar>:
-        Difference<&'a Segment<Scalar>, Output = Vec<Segment<Scalar>>>,
-    Scalar: PartialEq,
+    Point<Scalar>: Clone + Ord,
     Segment<Scalar>: Clone,
     for<'a> &'a Box<&'a Scalar>: Relatable,
     for<'a> &'a Contour<Scalar>: Bounded<&'a Scalar>,
+    for<'a> &'a Point<Scalar>:
+        IntersectCrossingSegments<Output = Point<Scalar>> + Orient,
     for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
 {
     type Output = Vec<Segment<Scalar>>;
 
     fn union(self, other: &Segment<Scalar>) -> Self::Output {
-        let mut result = self.difference(other);
-        result.push(other.clone());
+        let (bounding_box, other_bounding_box) =
+            (self.to_bounding_box(), other.to_bounding_box());
+        if do_boxes_have_no_common_continuum(
+            &bounding_box,
+            &other_bounding_box,
+        ) {
+            let mut result = self.segments.clone();
+            result.push(other.clone());
+            return result;
+        }
+        let segments = &self.segments;
+        let mut result = Vec::with_capacity(segments.len());
+        let mut other_break_points = vec![];
+        let (other_start, other_end) = to_sorted_pair(other.endpoints());
+        for (index, segment) in segments.iter().enumerate() {
+            if segment.to_bounding_box().disjoint_with(&other_bounding_box) {
+                result.push(segment.clone());
+                continue;
+            }
+            let (start, end) = to_sorted_pair(segment.endpoints());
+            if other_start == start && other_end == end {
+                result.extend(segments[index + 1..].iter().cloned());
+                break;
+            }
+            let start_orientation = other_end.orient(other_start, start);
+            let end_orientation = other_end.orient(other_start, end);
+            if start_orientation == end_orientation {
+                if start_orientation == Orientation::Collinear {
+                    if other_start == start {
+                        if other_end < end {
+                            result.push(Segment::new(
+                                other_end.clone(),
+                                end.clone(),
+                            ));
+                        }
+                        continue;
+                    } else if other_end == end {
+                        if start < other_start {
+                            result.push(Segment::new(
+                                start.clone(),
+                                other_start.clone(),
+                            ));
+                        }
+                        continue;
+                    } else if other_start < start && start < other_end {
+                        if other_end < end {
+                            result.push(Segment::new(
+                                other_end.clone(),
+                                end.clone(),
+                            ));
+                        }
+                        continue;
+                    } else if start < other_start && other_start < end {
+                        result.push(Segment::new(
+                            start.clone(),
+                            other_start.clone(),
+                        ));
+                        if other_end < end {
+                            result.push(Segment::new(
+                                other_end.clone(),
+                                end.clone(),
+                            ));
+                        }
+                        continue;
+                    }
+                }
+            } else if start_orientation == Orientation::Collinear {
+                if other_start < start && start < other_end {
+                    other_break_points.push(start.clone());
+                }
+            } else if end_orientation == Orientation::Collinear {
+                if other_start < end && end < other_end {
+                    other_break_points.push(end.clone());
+                }
+            } else {
+                let other_start_orientation = start.orient(end, other_start);
+                let other_end_orientation = start.orient(end, other_end);
+                if other_start_orientation == Orientation::Collinear {
+                    if start < other_start && other_start < end {
+                        result.push(Segment::new(
+                            start.clone(),
+                            other_start.clone(),
+                        ));
+                        result.push(Segment::new(
+                            other_start.clone(),
+                            end.clone(),
+                        ));
+                        continue;
+                    }
+                } else if other_end_orientation == Orientation::Collinear {
+                    if start < other_end && other_end < end {
+                        result.push(Segment::new(
+                            start.clone(),
+                            other_end.clone(),
+                        ));
+                        result.push(Segment::new(
+                            other_end.clone(),
+                            end.clone(),
+                        ));
+                        continue;
+                    }
+                } else if other_start_orientation != other_end_orientation {
+                    let cross_point =
+                        IntersectCrossingSegments::intersect_crossing_segments(
+                            start,
+                            end,
+                            other_start,
+                            other_end,
+                        );
+                    other_break_points.push(cross_point.clone());
+                    result.push(Segment::new(
+                        start.clone(),
+                        cross_point.clone(),
+                    ));
+                    result.push(Segment::new(cross_point, end.clone()));
+                    continue;
+                }
+            }
+            result.push(segment.clone());
+        }
+        if !other_break_points.is_empty() {
+            other_break_points.sort();
+            other_break_points.dedup();
+            let mut start = other_start.clone();
+            for end in other_break_points {
+                result.push(Segment::new(start, end.clone()));
+                start = end;
+            }
+            result.push(Segment::new(start, other_end.clone()));
+        } else {
+            result.push(other.clone());
+        }
         result
     }
 }
