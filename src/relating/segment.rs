@@ -349,9 +349,7 @@ where
     let (first_start, first_end) = to_sorted_pair((first_start, first_end));
     let (second_start, second_end) =
         to_sorted_pair((second_start, second_end));
-    let starts_equal = second_start == first_start;
-    let ends_equal = second_end == first_end;
-    if starts_equal && ends_equal {
+    if first_start == second_start && first_end == second_end {
         return Relation::Equal;
     }
     let second_start_orientation = first_end.orient(first_start, second_start);
@@ -398,13 +396,13 @@ where
         } else {
             Relation::Disjoint
         }
-    } else if starts_equal {
+    } else if first_start == second_start {
         if second_end < first_end {
             Relation::Composite
         } else {
             Relation::Component
         }
-    } else if ends_equal {
+    } else if first_end == second_end {
         if second_start < first_start {
             Relation::Component
         } else {
