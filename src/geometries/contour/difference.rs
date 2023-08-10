@@ -1,5 +1,3 @@
-use std::ops::{Add, Div, Mul, Sub};
-
 use crate::bounded::{Bounded, Box};
 use crate::clipping::traits::ReduceEvents;
 use crate::clipping::{is_right_event, linear, mixed};
@@ -9,11 +7,12 @@ use crate::geometries::{
 };
 use crate::operations::{
     do_boxes_have_no_common_continuum, flags_to_false_indices,
-    flags_to_true_indices, subtract_segments_overlap,
-    to_boxes_have_common_continuum, to_boxes_ids_with_common_continuum,
-    CrossMultiply, IntersectCrossingSegments, Orient,
+    flags_to_true_indices, to_boxes_have_common_continuum,
+    to_boxes_ids_with_common_continuum, to_sorted_pair,
+    IntersectCrossingSegments, Orient,
 };
-use crate::relatable::{Relatable, Relation};
+use crate::oriented::Orientation;
+use crate::relatable::Relatable;
 use crate::sweeping::traits::EventsContainer;
 use crate::traits::{
     Difference, Elemental, Iterable, Multipolygonal, Multisegmental, Segmental,
@@ -426,24 +425,14 @@ where
     }
 }
 
-impl<
-        Scalar: Add<Output = Scalar>
-            + Div<Output = Scalar>
-            + Mul<Output = Scalar>
-            + PartialEq
-            + Sub<Output = Scalar>
-            + for<'a> Mul<&'a Scalar, Output = Scalar>,
-    > Difference<&Segment<Scalar>> for &Contour<Scalar>
+impl<Scalar: PartialEq> Difference<&Segment<Scalar>> for &Contour<Scalar>
 where
-    linear::Operation<Point<Scalar>, DIFFERENCE>: Iterator<Item = Event>
-        + ReduceEvents<Output = Vec<Segment<Scalar>>>
-        + for<'a> From<(&'a [&'a Segment<Scalar>], &'a Segment<Scalar>)>,
-    Point<Scalar>: Clone + Elemental<Coordinate = Scalar> + Ord + PartialOrd,
+    Point<Scalar>: Clone + PartialOrd,
     Segment<Scalar>: Clone,
     for<'a> &'a Box<&'a Scalar>: Relatable,
     for<'a> &'a Contour<Scalar>: Bounded<&'a Scalar>,
-    for<'a> &'a Point<Scalar>: CrossMultiply<Output = Scalar> + Orient,
-    for<'a> &'a Scalar: Add<Scalar, Output = Scalar> + Sub<Output = Scalar>,
+    for<'a> &'a Point<Scalar>:
+        IntersectCrossingSegments<Output = Point<Scalar>> + Orient,
     for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
 {
     type Output = Vec<Segment<Scalar>>;
@@ -458,79 +447,83 @@ where
             return self.segments.clone();
         }
         let mut result = Vec::with_capacity(self.segments.len());
+        let (other_start, other_end) = to_sorted_pair(other.endpoints());
         for (index, segment) in self.segments.iter().enumerate() {
             if segment.to_bounding_box().disjoint_with(&other_bounding_box) {
                 result.push(segment.clone());
                 continue;
             }
-            match segment.relate_to(other) {
-                Relation::Equal => {
-                    result.extend(self.segments[index + 1..].iter().cloned());
-                    break;
-                }
-                Relation::Composite => {
-                    let [left_start, left_end, right_start, right_end] = {
-                        let mut endpoints = [
-                            segment.start(),
-                            segment.end(),
-                            other.start(),
-                            other.end(),
-                        ];
-                        endpoints.sort();
-                        endpoints
-                    };
-                    if left_start == left_end {
-                        result.push(Segment::new(
-                            right_start.clone(),
-                            right_end.clone(),
-                        ));
-                    } else if right_start == right_end {
-                        result.push(Segment::new(
-                            left_start.clone(),
-                            left_end.clone(),
-                        ));
-                    } else {
-                        result.push(Segment::new(
-                            left_start.clone(),
-                            left_end.clone(),
-                        ));
-                        result.push(Segment::new(
-                            right_start.clone(),
-                            right_end.clone(),
-                        ));
-                    }
-                    result.extend(self.segments[index + 1..].iter().cloned());
-                    break;
-                }
-                Relation::Cross => {
+            let (start, end) = to_sorted_pair(segment.endpoints());
+            if other_start == start && other_end == end {
+                result.extend(self.segments[index + 1..].iter().cloned());
+                break;
+            }
+            let start_orientation = other_end.orient(other_start, start);
+            let end_orientation = other_end.orient(other_start, end);
+            if start_orientation != Orientation::Collinear
+                && end_orientation != Orientation::Collinear
+                && start_orientation != end_orientation
+            {
+                let other_start_orientation = start.orient(end, other_start);
+                let other_end_orientation = start.orient(end, other_end);
+                if other_start_orientation != Orientation::Collinear
+                    && other_end_orientation != Orientation::Collinear
+                    && (other_start_orientation != other_end_orientation)
+                {
                     let cross_point =
                         IntersectCrossingSegments::intersect_crossing_segments(
-                            segment.start(),
-                            segment.end(),
-                            other.start(),
-                            other.end(),
+                            start,
+                            end,
+                            other_start,
+                            other_end,
                         );
                     result.push(Segment::new(
-                        segment.start().clone(),
+                        start.clone(),
                         cross_point.clone(),
                     ));
+                    result.push(Segment::new(cross_point, end.clone()));
+                    continue;
+                }
+            } else if start_orientation == Orientation::Collinear
+                && end_orientation == Orientation::Collinear
+            {
+                if other_start == start {
+                    if other_end < end {
+                        result
+                            .push(Segment::new(other_end.clone(), end.clone()))
+                    }
+                    continue;
+                } else if other_end == end {
+                    if start < other_start {
+                        result.push(Segment::new(
+                            start.clone(),
+                            other_start.clone(),
+                        ));
+                    }
+                    continue;
+                } else if other_start < start && start < other_end {
+                    if other_end < end {
+                        result.push(Segment::new(
+                            other_end.clone(),
+                            end.clone(),
+                        ));
+                    }
+                    continue;
+                } else if start < other_start && other_start < end {
                     result.push(Segment::new(
-                        cross_point,
-                        segment.end().clone(),
+                        start.clone(),
+                        other_start.clone(),
                     ));
+                    if other_end < end {
+                        result.push(Segment::new(
+                            other_end.clone(),
+                            end.clone(),
+                        ));
+                    }
+                    continue;
                 }
-                Relation::Overlap => {
-                    let (start, end) = subtract_segments_overlap(
-                        segment.start(),
-                        segment.end(),
-                        other.start(),
-                        other.end(),
-                    );
-                    result.push(Segment::new(start.clone(), end.clone()));
-                }
-                Relation::Component => continue,
-                _ => result.push(segment.clone()),
             }
+            result.push(segment.clone());
         }
         result
     }
