@@ -3,7 +3,6 @@ from itertools import (chain,
                        groupby)
 
 from rene import (Orientation,
-                  Relation,
                   hints)
 from rene._utils import (collect_maybe_empty_polygons,
                          collect_maybe_empty_segments,
@@ -13,7 +12,6 @@ from rene._utils import (collect_maybe_empty_polygons,
                          flags_to_true_indices,
                          orient,
                          polygon_to_correctly_oriented_segments,
-                         subtract_segments_overlap,
                          to_boxes_have_common_area,
                          to_boxes_have_common_continuum,
                          to_boxes_ids_with_common_area,
@@ -23,7 +21,8 @@ from rene._utils import (collect_maybe_empty_polygons,
 from . import (linear,
                mixed,
                shaped)
-from .event import Event
+from .event import (Event,
+                    is_right_event)
 
 
 class LinearDifference(linear.Operation[hints.Scalar]):
@@ -374,7 +373,8 @@ def subtract_multisegmental_from_multisegmental(
     for event in operation:
         if operation.to_event_start(event).x > minuend_max_x:
             break
-        events.append(event)
+        if is_right_event(event):
+            events.append(operation.to_opposite_event(event))
     segments = operation.reduce_events(events, segment_cls)
     segments.extend(
             minuend_segments[index]
@@ -427,7 +427,8 @@ def subtract_multisegmental_from_segment(
     for event in operation:
         if operation.to_event_start(event).x > minuend_max_x:
             break
-        events.append(event)
+        if is_right_event(event):
+            events.append(operation.to_opposite_event(event))
     return collect_maybe_empty_segments(
             operation.reduce_events(events, segment_cls), empty_cls,
             multisegment_cls
@@ -644,62 +645,68 @@ def subtract_segment_from_multisegmental(
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
     hints.Segment[hints.Scalar]
 ]:
-    return collect_maybe_empty_segments(
-            raw_subtract_segment_from_multisegmental(minuend, subtrahend,
-                                                     segment_cls),
-            empty_cls, multisegment_cls
-    )
-
-
-def raw_subtract_segment_from_multisegmental(
-        minuend: _Multisegmental[hints.Scalar],
-        subtrahend: hints.Segment[hints.Scalar],
-        segment_cls: t.Type[hints.Segment[hints.Scalar]],
-        /
-) -> t.List[hints.Segment[hints.Scalar]]:
     minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
                                                      subtrahend.bounding_box)
-    minuend_segments = minuend.segments
     if do_boxes_have_no_common_continuum(minuend_bounding_box,
                                          subtrahend_bounding_box):
-        return [*minuend_segments]
-    result = []
+        return minuend
+    segments = []
+    minuend_segments = minuend.segments
+    subtrahend_start, subtrahend_end = to_sorted_pair(subtrahend.start,
+                                                      subtrahend.end)
     for index, minuend_segment in enumerate(minuend_segments):
         if minuend_segment.bounding_box.disjoint_with(subtrahend_bounding_box):
-            result.append(minuend_segment)
+            segments.append(minuend_segment)
             continue
-        relation = minuend_segment.relate_to(subtrahend)
-        if relation is Relation.EQUAL:
-            result.extend(minuend_segments[index + 1:])
+        minuend_start, minuend_end = to_sorted_pair(minuend_segment.start,
+                                                    minuend_segment.end)
+        if subtrahend_start == minuend_start and subtrahend_end == minuend_end:
+            segments.extend(minuend_segments[index + 1:])
             break
-        elif relation is Relation.COMPOSITE:
-            left_start, left_end, right_start, right_end = sorted(
-                    [minuend_segment.start, minuend_segment.end,
-                     subtrahend.start, subtrahend.end]
-            )
-            if left_start == left_end:
-                result.append(segment_cls(right_start, right_end))
-            elif right_start == right_end:
-                result.append(segment_cls(left_start, left_end))
-            else:
-                result.append(segment_cls(left_start, left_end))
-                result.append(segment_cls(right_start, right_end))
-        elif relation is Relation.CROSS:
-            cross_point = to_segments_intersection_point(
-                    minuend_segment.start, minuend_segment.end,
-                    subtrahend.start, subtrahend.end
-            )
-            result.append(segment_cls(minuend_segment.start, cross_point))
-            result.append(segment_cls(cross_point, minuend_segment.end))
-        elif relation is Relation.OVERLAP:
-            start, end = subtract_segments_overlap(
-                    minuend_segment.start, minuend_segment.end,
-                    subtrahend.start, subtrahend.end
-            )
-            result.append(segment_cls(start, end))
-        elif relation is not Relation.COMPONENT:
-            result.append(minuend_segment)
-    return result
+        minuend_start_orientation = orient(subtrahend_end, subtrahend_start,
+                                           minuend_start)
+        minuend_end_orientation = orient(subtrahend_end, subtrahend_start,
+                                         minuend_end)
+        if (minuend_start_orientation is not Orientation.COLLINEAR
+                and minuend_end_orientation is not Orientation.COLLINEAR
+                and minuend_start_orientation is not minuend_end_orientation):
+            subtrahend_start_orientation = orient(minuend_start, minuend_end,
+                                                  subtrahend_start)
+            subtrahend_end_orientation = orient(minuend_start, minuend_end,
+                                                subtrahend_end)
+            if (subtrahend_start_orientation is not Orientation.COLLINEAR
+                    and subtrahend_end_orientation is not Orientation.COLLINEAR
+                    and (subtrahend_start_orientation
+                         is not subtrahend_end_orientation)):
+                cross_point = to_segments_intersection_point(
+                        minuend_start, minuend_end, subtrahend_start,
+                        subtrahend_end
+                )
+                segments.append(segment_cls(minuend_start, cross_point))
+                segments.append(segment_cls(cross_point, minuend_end))
+                continue
+        elif (minuend_start_orientation is Orientation.COLLINEAR
+              and minuend_end_orientation is Orientation.COLLINEAR):
+            if subtrahend_start == minuend_start:
+                if subtrahend_end < minuend_end:
+                    segments.append(segment_cls(subtrahend_end, minuend_end))
+                continue
+            elif subtrahend_end == minuend_end:
+                if minuend_start < subtrahend_start:
+                    segments.append(segment_cls(minuend_start,
+                                                subtrahend_start))
+                continue
+            elif subtrahend_start < minuend_start < subtrahend_end:
+                if subtrahend_end < minuend_end:
+                    segments.append(segment_cls(subtrahend_end, minuend_end))
+                continue
+            elif minuend_start < subtrahend_start < minuend_end:
+                segments.append(segment_cls(minuend_start, subtrahend_start))
+                if subtrahend_end < minuend_end:
+                    segments.append(segment_cls(subtrahend_end, minuend_end))
+                continue
+        segments.append(minuend_segment)
+    return collect_maybe_empty_segments(segments, empty_cls, multisegment_cls)
 
 
 def subtract_segment_from_segment(
