@@ -242,7 +242,7 @@ impl<Point, const IS_FIRST_LINEAR: bool> DetectIfLeftEventFromResult
 {
     fn detect_if_left_event_from_result(&self, event: Event) -> bool {
         self.is_left_event_from_first_operand(event) == IS_FIRST_LINEAR
-            && self.is_inside_left_event(event)
+            && !self.is_outside_left_event(event)
     }
 }
 
@@ -415,12 +415,6 @@ impl<Point, const IS_FIRST_LINEAR: bool, const KIND: u8>
 
     fn is_from_result_event(&self, event: Event) -> bool {
         self.are_from_result[left_event_to_position(self.to_left_event(event))]
-    }
-
-    fn is_inside_left_event(&self, event: Event) -> bool {
-        let event_position = left_event_to_position(event);
-        self.are_other_interior_to_left[event_position]
-            && !self.have_overlap[event_position]
     }
 
     fn is_left_event_from_first_operand(&self, event: Event) -> bool {
