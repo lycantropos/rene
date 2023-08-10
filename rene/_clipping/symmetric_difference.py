@@ -17,7 +17,8 @@ from rene._utils import (all_equal,
                          to_sorted_pair)
 from . import (linear,
                shaped)
-from .event import Event
+from .event import (Event,
+                    is_right_event)
 
 
 class LinearSymmetricDifference(linear.Operation[hints.Scalar]):
@@ -347,7 +348,9 @@ def symmetric_subtract_multisegmental_from_segment(
     operation = LinearSymmetricDifference.from_segments_iterables(
             [minuend], subtrahend_common_continuum_segments
     )
-    segments = operation.reduce_events(list(operation), segment_cls)
+    segments = operation.reduce_events([operation.to_opposite_event(event)
+                                        for event in operation
+                                        if is_right_event(event)], segment_cls)
     segments.extend(
             subtrahend_segments[index]
             for index in flags_to_false_indices(
@@ -390,7 +393,9 @@ def symmetric_subtract_segment_from_multisegmental(
     operation = LinearSymmetricDifference.from_segments_iterables(
             minuend_common_continuum_segments, [subtrahend]
     )
-    segments = operation.reduce_events(list(operation), segment_cls)
+    segments = operation.reduce_events([operation.to_opposite_event(event)
+                                        for event in operation
+                                        if is_right_event(event)], segment_cls)
     segments.extend(
             minuend_segments[index]
             for index in flags_to_false_indices(
@@ -449,7 +454,9 @@ def symmetric_subtract_multisegmental_from_multisegmental(
             minuend_common_continuum_segments,
             subtrahend_common_continuum_segments
     )
-    segments = operation.reduce_events(list(operation), segment_cls)
+    segments = operation.reduce_events([operation.to_opposite_event(event)
+                                        for event in operation
+                                        if is_right_event(event)], segment_cls)
     segments.extend(
             minuend_segments[index]
             for index in flags_to_false_indices(
