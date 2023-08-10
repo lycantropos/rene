@@ -5,6 +5,7 @@ from tests.exact_tests import strategies as _strategies
 from tests.utils import (to_pairs,
                          to_triplets)
 
+empty_geometries = _strategies.empty_geometries
 compounds = (_strategies.empty_geometries | _strategies.segments
              | _strategies.multisegments | _strategies.contours
              | _strategies.polygons | _strategies.multipolygons)
