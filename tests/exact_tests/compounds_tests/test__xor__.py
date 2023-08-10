@@ -1,8 +1,9 @@
 from hypothesis import given
 
 from rene.exact import Empty
-from tests.exact_tests.hints import (ClosedCompoundsPair,
-                                     ClosedCompoundsTriplet,
+from tests.exact_tests.hints import (ClosedCompoundsPairT,
+                                     ClosedCompoundsTripletT,
+                                     ClosedIdempotentCompoundsPairT,
                                      Compound,
                                      CompoundT,
                                      MaybeShapedCompound)
@@ -19,7 +20,7 @@ def test_self_inverse(compound: CompoundT) -> None:
 
 
 @given(strategies.closed_compounds_pairs)
-def test_commutativity(pair: ClosedCompoundsPair) -> None:
+def test_commutativity(pair: ClosedCompoundsPairT) -> None:
     first, second = pair
 
     result = first ^ second
@@ -27,9 +28,10 @@ def test_commutativity(pair: ClosedCompoundsPair) -> None:
     assert result == second ^ first
 
 
-@given(strategies.maybe_shaped_compounds, strategies.maybe_shaped_compounds)
-def test_degenerate_case(first: MaybeShapedCompound,
-                         second: MaybeShapedCompound) -> None:
+@given(strategies.closed_idempotent_compounds_pairs)
+def test_degenerate_case(pair: ClosedIdempotentCompoundsPairT) -> None:
+    first, second = pair
+
     result = first ^ second
 
     assert implication(isinstance(result, Empty), first == second)
@@ -46,7 +48,7 @@ def test_right_neutral_element(first: Compound, second: Empty) -> None:
 
 
 @given(strategies.closed_compounds_triplets)
-def test_associativity(triplet: ClosedCompoundsTriplet) -> None:
+def test_associativity(triplet: ClosedCompoundsTripletT) -> None:
     first, second, third = triplet
 
     assert (first ^ second) ^ third == first ^ (second ^ third)
@@ -61,7 +63,7 @@ def test_repeated(first: MaybeShapedCompound,
 
 
 @given(strategies.closed_compounds_pairs)
-def test_alternatives(pair: ClosedCompoundsPair) -> None:
+def test_alternatives(pair: ClosedCompoundsPairT) -> None:
     first, second = pair
 
     result = first ^ second
@@ -71,7 +73,7 @@ def test_alternatives(pair: ClosedCompoundsPair) -> None:
 
 
 @given(strategies.closed_compounds_pairs)
-def test_reversals(pair: ClosedCompoundsPair) -> None:
+def test_reversals(pair: ClosedCompoundsPairT) -> None:
     first, second = pair
 
     result = first ^ second

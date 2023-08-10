@@ -1,8 +1,8 @@
 from hypothesis import given
 
 from rene.exact import Empty
-from tests.exact_tests.hints import (ClosedCompoundsPair,
-                                     ClosedCompoundsTriplet,
+from tests.exact_tests.hints import (ClosedCompoundsPairT,
+                                     ClosedCompoundsTripletT,
                                      CompoundT,
                                      MaybeShapedCompound)
 from tests.utils import (equivalence,
@@ -34,7 +34,7 @@ def test_difference_subtrahend(first: MaybeShapedCompound,
 
 
 @given(strategies.closed_compounds_triplets)
-def test_intersection_minuend(triplet: ClosedCompoundsTriplet) -> None:
+def test_intersection_minuend(triplet: ClosedCompoundsTripletT) -> None:
     first, second, third = triplet
 
     assert (first & second) - third == first & (second - third)
@@ -57,7 +57,7 @@ def test_union_subtrahend(first: MaybeShapedCompound,
 
 
 @given(strategies.closed_compounds_pairs)
-def test_reversals(pair: ClosedCompoundsPair) -> None:
+def test_reversals(pair: ClosedCompoundsPairT) -> None:
     first, second = pair
 
     result = first - second

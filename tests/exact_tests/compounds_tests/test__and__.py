@@ -1,6 +1,6 @@
 from hypothesis import given
 
-from tests.exact_tests.hints import (ClosedCompoundsTriplet,
+from tests.exact_tests.hints import (ClosedCompoundsTripletT,
                                      Compound,
                                      CompoundT,
                                      MaybeShapedCompound)
@@ -34,14 +34,14 @@ def test_associativity(first: Compound,
 
 
 @given(strategies.closed_compounds_triplets)
-def test_difference_operand(triplet: ClosedCompoundsTriplet) -> None:
+def test_difference_operand(triplet: ClosedCompoundsTripletT) -> None:
     first, second, third = triplet
 
     assert (first - second) & third == (first & third) - second
 
 
 @given(strategies.closed_compounds_triplets)
-def test_distribution_over_union(triplet: ClosedCompoundsTriplet) -> None:
+def test_distribution_over_union(triplet: ClosedCompoundsTripletT) -> None:
     first, second, third = triplet
 
     assert first & (second | third) == (first & second) | (first & third)

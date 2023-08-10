@@ -1,7 +1,7 @@
 from hypothesis import given
 
-from tests.exact_tests.hints import (ClosedCompoundsPair,
-                                     ClosedCompoundsTriplet,
+from tests.exact_tests.hints import (ClosedCompoundsPairT,
+                                     ClosedCompoundsTripletT,
                                      MaybeShapedCompound)
 from tests.utils import reverse_compound_coordinates
 from . import strategies
@@ -19,21 +19,21 @@ def test_absorption_identity(first: MaybeShapedCompound,
 
 
 @given(strategies.closed_compounds_pairs)
-def test_commutativity(pair: ClosedCompoundsPair) -> None:
+def test_commutativity(pair: ClosedCompoundsPairT) -> None:
     first, second = pair
 
     assert first | second == second | first
 
 
 @given(strategies.closed_compounds_triplets)
-def test_associativity(triplet: ClosedCompoundsTriplet) -> None:
+def test_associativity(triplet: ClosedCompoundsTripletT) -> None:
     first, second, third = triplet
 
     assert (first | second) | third == first | second | third
 
 
 @given(strategies.closed_compounds_triplets)
-def test_difference_operand(triplet: ClosedCompoundsTriplet) -> None:
+def test_difference_operand(triplet: ClosedCompoundsTripletT) -> None:
     first, second, third = triplet
 
     assert (first - second) | third == (first | third) - (second - third)
@@ -48,7 +48,7 @@ def test_distribution_over_intersection(first: MaybeShapedCompound,
 
 
 @given(strategies.closed_compounds_pairs)
-def test_equivalents(pair: ClosedCompoundsPair) -> None:
+def test_equivalents(pair: ClosedCompoundsPairT) -> None:
     first, second = pair
 
     result = first | second
@@ -57,7 +57,7 @@ def test_equivalents(pair: ClosedCompoundsPair) -> None:
 
 
 @given(strategies.closed_compounds_pairs)
-def test_reversals(pair: ClosedCompoundsPair) -> None:
+def test_reversals(pair: ClosedCompoundsPairT) -> None:
     first, second = pair
 
     result = first | second
