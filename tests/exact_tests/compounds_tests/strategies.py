@@ -1,4 +1,5 @@
 import typing as t
+
 from hypothesis import strategies as _st
 
 from tests.exact_tests import strategies as _strategies
@@ -26,6 +27,8 @@ _closed_idempotent_compounds_strategies: _st.SearchStrategy[
 )
 closed_compounds_pairs = _closed_compounds_strategies.flatmap(to_pairs)
 closed_compounds_triplets = _closed_compounds_strategies.flatmap(to_triplets)
+closed_idempotent_compounds = (idempotent_maybe_linear_compounds
+                               | maybe_shaped_compounds)
 closed_idempotent_compounds_pairs = (
     _closed_idempotent_compounds_strategies.flatmap(to_pairs)
 )

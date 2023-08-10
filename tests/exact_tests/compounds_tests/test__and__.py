@@ -1,15 +1,15 @@
 from hypothesis import given
 
 from tests.exact_tests.hints import (ClosedCompoundsTripletT,
+                                     ClosedIdempotentCompoundT,
                                      Compound,
-                                     CompoundT,
                                      MaybeShapedCompound)
 from tests.utils import reverse_compound_coordinates
 from . import strategies
 
 
-@given(strategies.compounds)
-def test_idempotence(compound: CompoundT) -> None:
+@given(strategies.closed_idempotent_compounds)
+def test_idempotence(compound: ClosedIdempotentCompoundT) -> None:
     result = compound & compound
 
     assert result == compound
@@ -40,10 +40,11 @@ def test_difference_operand(triplet: ClosedCompoundsTripletT) -> None:
     assert (first - second) & third == (first & third) - second
 
 
-@given(strategies.closed_compounds_triplets)
-def test_distribution_over_union(triplet: ClosedCompoundsTripletT) -> None:
-    first, second, third = triplet
-
+@given(strategies.maybe_shaped_compounds, strategies.maybe_shaped_compounds,
+       strategies.maybe_shaped_compounds)
+def test_distribution_over_union(first: MaybeShapedCompound,
+                                 second: MaybeShapedCompound,
+                                 third: MaybeShapedCompound) -> None:
     assert first & (second | third) == (first & second) | (first & third)
 
 

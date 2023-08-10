@@ -12,6 +12,10 @@ CompoundT = _t.TypeVar(
         'CompoundT', _exact.Contour, _exact.Empty, _exact.Multipolygon,
         _exact.Multisegment, _exact.Polygon, _exact.Segment
 )
+ClosedIdempotentCompoundT = _t.TypeVar(
+        'ClosedIdempotentCompoundT', _exact.Empty, _exact.Multipolygon,
+        _exact.Multisegment, _exact.Polygon, _exact.Segment
+)
 IdempotentMaybeLinearCompound = _t.Union[
     _exact.Empty, _exact.Multisegment, _exact.Segment
 ]
