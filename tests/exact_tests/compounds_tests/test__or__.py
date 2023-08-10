@@ -32,10 +32,11 @@ def test_associativity(triplet: ClosedCompoundsTripletT) -> None:
     assert (first | second) | third == first | second | third
 
 
-@given(strategies.closed_compounds_triplets)
-def test_difference_operand(triplet: ClosedCompoundsTripletT) -> None:
-    first, second, third = triplet
-
+@given(strategies.maybe_shaped_compounds, strategies.maybe_shaped_compounds,
+       strategies.maybe_shaped_compounds)
+def test_difference_operand(first: MaybeShapedCompound,
+                            second: MaybeShapedCompound,
+                            third: MaybeShapedCompound) -> None:
     assert (first - second) | third == (first | third) - (second - third)
 
 
@@ -47,10 +48,9 @@ def test_distribution_over_intersection(first: MaybeShapedCompound,
     assert first | (second & third) == (first | second) & (first | third)
 
 
-@given(strategies.closed_compounds_pairs)
-def test_equivalents(pair: ClosedCompoundsPairT) -> None:
-    first, second = pair
-
+@given(strategies.maybe_shaped_compounds, strategies.maybe_shaped_compounds)
+def test_equivalents(first: MaybeShapedCompound,
+                     second: MaybeShapedCompound) -> None:
     result = first | second
 
     assert result == (first ^ second) ^ (first & second)
