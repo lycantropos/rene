@@ -304,9 +304,9 @@ where
 
 pub(crate) fn locate_point_in_region<
     Border,
-    Point: Elemental<Coordinate = Scalar> + PartialEq,
-    Segment,
+    Point: PartialEq,
     Scalar,
+    Segment,
 >(
     border: &Border,
     point: &Point,

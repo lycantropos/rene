@@ -7,7 +7,6 @@ use super::types::Polygon;
 
 impl<'a, Scalar: PartialOrd> Locatable<&Point<Scalar>> for &'a Polygon<Scalar>
 where
-    Point<Scalar>: Elemental<Coordinate = Scalar>,
     for<'b> &'b Contour<Scalar>:
         Multisegmental<IndexSegment = Segment<Scalar>>,
     for<'b> &'b Point<Scalar>: Elemental<Coordinate = &'b Scalar> + Orient,
