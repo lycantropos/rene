@@ -223,60 +223,58 @@ def relate_to_segment(
         return Relation.EQUAL
     second_start_orientation = orient(first_end, first_start, second_start)
     second_end_orientation = orient(first_end, first_start, second_end)
-    if (second_start_orientation is not Orientation.COLLINEAR
-            and second_end_orientation is not Orientation.COLLINEAR):
-        if second_start_orientation is second_end_orientation:
+    if second_start_orientation is second_end_orientation:
+        if second_start_orientation is not Orientation.COLLINEAR:
             return Relation.DISJOINT
-        else:
-            first_start_orientation = orient(second_start, second_end,
-                                             first_start)
-            first_end_orientation = orient(second_start, second_end, first_end)
-            if (first_start_orientation is not Orientation.COLLINEAR
-                    and first_end_orientation is not Orientation.COLLINEAR):
-                if first_start_orientation is first_end_orientation:
-                    return Relation.DISJOINT
-                else:
-                    return Relation.CROSS
-            elif first_start_orientation is not Orientation.COLLINEAR:
-                if second_start < first_end < second_end:
-                    return Relation.TOUCH
-                else:
-                    return Relation.DISJOINT
-            elif second_start < first_start < second_end:
-                return Relation.TOUCH
+        elif first_start == second_start:
+            if second_end < first_end:
+                return Relation.COMPOSITE
             else:
-                return Relation.DISJOINT
-    elif second_start_orientation is not Orientation.COLLINEAR:
-        if first_start <= second_end <= first_end:
+                return Relation.COMPONENT
+        elif first_end == second_end:
+            if second_start < first_start:
+                return Relation.COMPONENT
+            else:
+                return Relation.COMPOSITE
+        elif first_start == second_end or first_end == second_start:
             return Relation.TOUCH
+        elif first_start < second_start < first_end:
+            if second_end < first_end:
+                return Relation.COMPOSITE
+            else:
+                return Relation.OVERLAP
+        elif second_start < first_start < second_end:
+            if first_end < second_end:
+                return Relation.COMPONENT
+            else:
+                return Relation.OVERLAP
         else:
             return Relation.DISJOINT
-    elif second_end_orientation is not Orientation.COLLINEAR:
+    elif second_start_orientation is Orientation.COLLINEAR:
         if first_start <= second_start <= first_end:
             return Relation.TOUCH
         else:
             return Relation.DISJOINT
-    elif first_start == second_start:
-        if second_end < first_end:
-            return Relation.COMPOSITE
+    elif second_end_orientation is Orientation.COLLINEAR:
+        if first_start <= second_end <= first_end:
+            return Relation.TOUCH
         else:
-            return Relation.COMPONENT
-    elif first_end == second_end:
-        if second_start < first_start:
-            return Relation.COMPONENT
-        else:
-            return Relation.COMPOSITE
-    elif first_start == second_end or first_end == second_start:
-        return Relation.TOUCH
-    elif first_start < second_start < first_end:
-        if second_end < first_end:
-            return Relation.COMPOSITE
-        else:
-            return Relation.OVERLAP
-    elif second_start < first_start < second_end:
-        if first_end < second_end:
-            return Relation.COMPONENT
-        else:
-            return Relation.OVERLAP
+            return Relation.DISJOINT
     else:
-        return Relation.DISJOINT
+        first_start_orientation = orient(second_start, second_end, first_start)
+        first_end_orientation = orient(second_start, second_end, first_end)
+        if first_start_orientation is first_end_orientation:
+            assert first_start_orientation is not Orientation.COLLINEAR
+            return Relation.DISJOINT
+        elif first_start_orientation is Orientation.COLLINEAR:
+            if second_start < first_start < second_end:
+                return Relation.TOUCH
+            else:
+                return Relation.DISJOINT
+        elif first_end_orientation is Orientation.COLLINEAR:
+            if second_start < first_end < second_end:
+                return Relation.TOUCH
+            else:
+                return Relation.DISJOINT
+        else:
+            return Relation.CROSS
