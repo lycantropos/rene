@@ -167,84 +167,86 @@ class EventsRegistry(t.Generic[hints.Scalar]):
                                          event_start)
         event_end_orientation = orient(below_event_end, below_event_start,
                                        event_end)
-        if (event_start_orientation is not Orientation.COLLINEAR
-                and event_end_orientation is not Orientation.COLLINEAR):
-            if event_start_orientation is not event_end_orientation:
-                below_event_start_orientation = orient(event_start, event_end,
-                                                       below_event_start)
-                below_event_end_orientation = orient(event_start, event_end,
-                                                     below_event_end)
-                if (below_event_start_orientation is not Orientation.COLLINEAR
-                        and (below_event_end_orientation
-                             is not Orientation.COLLINEAR)):
-                    if (below_event_start_orientation
-                            is not below_event_end_orientation):
-                        point = to_segments_intersection_point(
-                                event_start, event_end, below_event_start,
+        if event_start_orientation is event_end_orientation:
+            if event_start_orientation is Orientation.COLLINEAR:
+                if event_start == below_event_start:
+                    assert event_end != below_event_end
+                    max_end_event, min_end_event = (
+                        (below_event, event)
+                        if event_end < below_event_end
+                        else (event, below_event)
+                    )
+                    self._remove(max_end_event)
+                    min_end = self.to_event_end(min_end_event)
+                    _, min_end_max_end_event = self._divide(max_end_event,
+                                                            min_end)
+                    self._push(min_end_max_end_event)
+                    self._merge_equal_segment_events(event, below_event)
+                elif event_end == below_event_end:
+                    max_start_event, min_start_event = (
+                        (below_event, event)
+                        if event_start < below_event_start
+                        else (event, below_event)
+                    )
+                    max_start = self.to_event_start(max_start_event)
+                    (
+                        max_start_to_min_start_event, max_start_to_end_event
+                    ) = self._divide(min_start_event, max_start)
+                    self._push(max_start_to_min_start_event)
+                    self._merge_equal_segment_events(max_start_event,
+                                                     max_start_to_end_event)
+                elif below_event_start < event_start < below_event_end:
+                    if event_end < below_event_end:
+                        self._divide_event_by_mid_segment_event_endpoints(
+                                below_event, event, event_start, event_end
+                        )
+                    else:
+                        max_start, min_end = event_start, below_event_end
+                        self._divide_overlapping_events(below_event, event,
+                                                        max_start, min_end)
+                elif event_start < below_event_start < event_end:
+                    if below_event_end < event_end:
+                        self._divide_event_by_mid_segment_event_endpoints(
+                                event, below_event, below_event_start,
                                 below_event_end
                         )
-                        assert event_start < point < event_end
-                        assert below_event_start < point < below_event_end
-                        self._divide_event_by_midpoint(below_event, point)
-                        self._divide_event_by_midpoint_checking_above(event,
-                                                                      point)
-                elif below_event_start_orientation != Orientation.COLLINEAR:
-                    if event_start < below_event_end < event_end:
-                        point = below_event_end
-                        self._divide_event_by_midpoint_checking_above(event,
-                                                                      point)
-                elif event_start < below_event_start < event_end:
-                    point = below_event_start
-                    self._divide_event_by_midpoint_checking_above(event, point)
-        elif event_end_orientation is not Orientation.COLLINEAR:
+                    else:
+                        max_start, min_end = below_event_start, event_end
+                        self._divide_overlapping_events(event, below_event,
+                                                        max_start, min_end)
+        elif event_start_orientation is Orientation.COLLINEAR:
             if below_event_start < event_start < below_event_end:
                 point = event_start
                 self._divide_event_by_midpoint(below_event, point)
-        elif event_start_orientation is not Orientation.COLLINEAR:
+        elif event_end_orientation is Orientation.COLLINEAR:
             if below_event_start < event_end < below_event_end:
                 point = event_end
                 self._divide_event_by_midpoint(below_event, point)
-        elif event_start == below_event_start:
-            assert event_end != below_event_end
-            max_end_event, min_end_event = ((below_event, event)
-                                            if event_end < below_event_end
-                                            else (event, below_event))
-            self._remove(max_end_event)
-            min_end = self.to_event_end(min_end_event)
-            _, min_end_max_end_event = self._divide(max_end_event, min_end)
-            self._push(min_end_max_end_event)
-            self._merge_equal_segment_events(event, below_event)
-        elif event_end == below_event_end:
-            max_start_event, min_start_event = (
-                (below_event, event)
-                if event_start < below_event_start
-                else (event, below_event)
-            )
-            max_start = self.to_event_start(max_start_event)
-            (
-                max_start_to_min_start_event, max_start_to_end_event
-            ) = self._divide(min_start_event, max_start)
-            self._push(max_start_to_min_start_event)
-            self._merge_equal_segment_events(max_start_event,
-                                             max_start_to_end_event)
-        elif below_event_start < event_start < below_event_end:
-            if event_end < below_event_end:
-                self._divide_event_by_mid_segment_event_endpoints(
-                        below_event, event, event_start, event_end
+        else:
+            below_event_start_orientation = orient(event_start, event_end,
+                                                   below_event_start)
+            below_event_end_orientation = orient(event_start, event_end,
+                                                 below_event_end)
+            if below_event_start_orientation is Orientation.COLLINEAR:
+                assert below_event_end_orientation is not Orientation.COLLINEAR
+                if event_start < below_event_start < event_end:
+                    point = below_event_start
+                    self._divide_event_by_midpoint_checking_above(event, point)
+            elif below_event_end_orientation is Orientation.COLLINEAR:
+                if event_start < below_event_end < event_end:
+                    point = below_event_end
+                    self._divide_event_by_midpoint_checking_above(event, point)
+            elif (below_event_start_orientation
+                  is not below_event_end_orientation):
+                cross_point = to_segments_intersection_point(
+                        event_start, event_end, below_event_start,
+                        below_event_end
                 )
-            else:
-                max_start, min_end = event_start, below_event_end
-                self._divide_overlapping_events(below_event, event, max_start,
-                                                min_end)
-        elif event_start < below_event_start < event_end:
-            if below_event_end < event_end:
-                self._divide_event_by_mid_segment_event_endpoints(
-                        event, below_event, below_event_start, below_event_end
-                )
-            else:
-                max_start, min_end = below_event_start, event_end
-                self._divide_overlapping_events(event, below_event, max_start,
-                                                min_end)
+                assert event_start < cross_point < event_end
+                assert below_event_start < cross_point < below_event_end
+                self._divide_event_by_midpoint(below_event, cross_point)
+                self._divide_event_by_midpoint_checking_above(event,
+                                                              cross_point)
 
     def _divide(
             self, event: Event, mid_point: hints.Point[hints.Scalar], /
