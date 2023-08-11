@@ -387,137 +387,134 @@ where
             below_event_end.orient(below_event_start, event_start);
         let event_end_orientation =
             below_event_end.orient(below_event_start, event_end);
-        if event_start_orientation != Orientation::Collinear
-            && event_end_orientation != Orientation::Collinear
-        {
-            if event_start_orientation != event_end_orientation {
-                let below_event_start_orientation =
-                    event_start.orient(event_end, below_event_start);
-                let below_event_end_orientation =
-                    event_start.orient(event_end, below_event_end);
-                if below_event_start_orientation != Orientation::Collinear
-                    && below_event_end_orientation != Orientation::Collinear
-                {
-                    if below_event_start_orientation
-                        != below_event_end_orientation
-                    {
-                        let point =
-                            IntersectCrossingSegments::intersect_crossing_segments(
-                                event_start,
-                                event_end,
-                                below_event_start,
-                                below_event_end,
-                            );
-                        self.divide_event_by_midpoint(
-                            below_event,
-                            point.clone(),
-                        );
-                        self.divide_event_by_midpoint(event, point);
+        if event_start_orientation == event_end_orientation {
+            if event_start_orientation == Orientation::Collinear {
+                debug_assert_ne!(
+                    self.is_left_event_from_first_operand(below_event),
+                    self.is_left_event_from_first_operand(event)
+                );
+                if event_start == below_event_start {
+                    if event_end != below_event_end {
+                        let (max_end_event, min_end_event) =
+                            if event_end < below_event_end {
+                                (below_event, event)
+                            } else {
+                                (event, below_event)
+                            };
+                        let min_end =
+                            self.get_event_end(min_end_event).clone();
+                        let (min_end_to_start_event, min_end_to_max_end_event) =
+                            self.divide(max_end_event, min_end);
+                        self.push(min_end_to_start_event);
+                        self.push(min_end_to_max_end_event);
                     }
-                } else if below_event_start_orientation
-                    != Orientation::Collinear
+                } else if event_end == below_event_end {
+                    let (max_start_event, min_start_event) =
+                        if event_start < below_event_start {
+                            (below_event, event)
+                        } else {
+                            (event, below_event)
+                        };
+                    let max_start =
+                        self.get_event_start(max_start_event).clone();
+                    let (max_start_to_min_start_event, max_start_to_end_event) =
+                        self.divide(min_start_event, max_start);
+                    self.push(max_start_to_min_start_event);
+                    self.push(max_start_to_end_event);
+                } else if below_event_start < event_start
+                    && event_start < below_event_end
                 {
-                    if event_start < below_event_end
-                        && below_event_end < event_end
-                    {
-                        let point = below_event_end.clone();
-                        self.divide_event_by_midpoint(event, point);
+                    if event_end < below_event_end {
+                        let event_start = event_start.clone();
+                        let event_end = event_end.clone();
+                        self.divide_event_by_mid_segment_event_endpoints(
+                            below_event,
+                            event,
+                            event_start,
+                            event_end,
+                        );
+                    } else {
+                        let (max_start, min_end) =
+                            (event_start.clone(), below_event_end.clone());
+                        self.divide_overlapping_events(
+                            below_event,
+                            event,
+                            max_start,
+                            min_end,
+                        );
                     }
                 } else if event_start < below_event_start
                     && below_event_start < event_end
                 {
-                    let point = below_event_start.clone();
-                    self.divide_event_by_midpoint(event, point);
+                    if below_event_end < event_end {
+                        let below_event_start = below_event_start.clone();
+                        let below_event_end = below_event_end.clone();
+                        self.divide_event_by_mid_segment_event_endpoints(
+                            event,
+                            below_event,
+                            below_event_start,
+                            below_event_end,
+                        );
+                    } else {
+                        let (max_start, min_end) =
+                            (below_event_start.clone(), event_end.clone());
+                        self.divide_overlapping_events(
+                            event,
+                            below_event,
+                            max_start,
+                            min_end,
+                        );
+                    }
                 }
             }
-        } else if event_end_orientation != Orientation::Collinear {
+        } else if event_start_orientation == Orientation::Collinear {
             if below_event_start < event_start && event_start < below_event_end
             {
                 let point = event_start.clone();
                 self.divide_event_by_midpoint(below_event, point);
             }
-        } else if event_start_orientation != Orientation::Collinear {
+        } else if event_end_orientation == Orientation::Collinear {
             if below_event_start < event_end && event_end < below_event_end {
                 let point = event_end.clone();
                 self.divide_event_by_midpoint(below_event, point);
             }
         } else {
-            // overlap
-            debug_assert_ne!(
-                self.is_left_event_from_first_operand(below_event),
-                self.is_left_event_from_first_operand(event)
-            );
-
-            if event_start == below_event_start {
-                if event_end != below_event_end {
-                    let (max_end_event, min_end_event) =
-                        if event_end < below_event_end {
-                            (below_event, event)
-                        } else {
-                            (event, below_event)
-                        };
-                    let min_end = self.get_event_end(min_end_event).clone();
-                    let (min_end_to_start_event, min_end_to_max_end_event) =
-                        self.divide(max_end_event, min_end);
-                    self.push(min_end_to_start_event);
-                    self.push(min_end_to_max_end_event);
+            let below_event_start_orientation =
+                event_start.orient(event_end, below_event_start);
+            let below_event_end_orientation =
+                event_start.orient(event_end, below_event_end);
+            if below_event_start_orientation == Orientation::Collinear {
+                debug_assert_ne!(
+                    below_event_end_orientation,
+                    Orientation::Collinear
+                );
+                if event_start < below_event_start
+                    && below_event_start < event_end
+                {
+                    let point = below_event_start.clone();
+                    self.divide_event_by_midpoint(event, point);
                 }
-            } else if event_end == below_event_end {
-                let (max_start_event, min_start_event) =
-                    if event_start < below_event_start {
-                        (below_event, event)
-                    } else {
-                        (event, below_event)
-                    };
-                let max_start = self.get_event_start(max_start_event).clone();
-                let (max_start_to_min_start_event, max_start_to_end_event) =
-                    self.divide(min_start_event, max_start);
-                self.push(max_start_to_min_start_event);
-                self.push(max_start_to_end_event);
-            } else if below_event_start < event_start
-                && event_start < below_event_end
+            } else if below_event_end_orientation == Orientation::Collinear {
+                if event_start < below_event_end && below_event_end < event_end
+                {
+                    let point = below_event_end.clone();
+                    self.divide_event_by_midpoint(event, point);
+                }
+            } else if below_event_start_orientation
+                != below_event_end_orientation
             {
-                if event_end < below_event_end {
-                    let event_start = event_start.clone();
-                    let event_end = event_end.clone();
-                    self.divide_event_by_mid_segment_event_endpoints(
-                        below_event,
-                        event,
+                let cross_point =
+                    IntersectCrossingSegments::intersect_crossing_segments(
                         event_start,
                         event_end,
-                    );
-                } else {
-                    let (max_start, min_end) =
-                        (event_start.clone(), below_event_end.clone());
-                    self.divide_overlapping_events(
-                        below_event,
-                        event,
-                        max_start,
-                        min_end,
-                    );
-                }
-            } else if event_start < below_event_start
-                && below_event_start < event_end
-            {
-                if below_event_end < event_end {
-                    let below_event_start = below_event_start.clone();
-                    let below_event_end = below_event_end.clone();
-                    self.divide_event_by_mid_segment_event_endpoints(
-                        event,
-                        below_event,
                         below_event_start,
                         below_event_end,
                     );
-                } else {
-                    let (max_start, min_end) =
-                        (below_event_start.clone(), event_end.clone());
-                    self.divide_overlapping_events(
-                        event,
-                        below_event,
-                        max_start,
-                        min_end,
-                    );
-                }
+                self.divide_event_by_midpoint(
+                    below_event,
+                    cross_point.clone(),
+                );
+                self.divide_event_by_midpoint(event, cross_point);
             }
         }
     }
