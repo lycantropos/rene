@@ -235,9 +235,11 @@ where
         } else {
             let mut result = Vec::with_capacity(events.len() / 2);
             let mut events = events.into_iter();
-            let event = unsafe { events.next().unwrap_unchecked() };
-            let (mut previous_end, mut previous_start) =
-                (self.get_event_end(event), self.get_event_start(event));
+            let first_event = unsafe { events.next().unwrap_unchecked() };
+            let (mut previous_end, mut previous_start) = (
+                self.get_event_end(first_event),
+                self.get_event_start(first_event),
+            );
             let mut is_from_single_operand = true;
             for event in events {
                 let (end, start) =
