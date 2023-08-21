@@ -19,6 +19,7 @@ from . import (linear,
 from .event import (Event,
                     is_left_event,
                     is_right_event)
+from .utils import has_two_or_more_elements
 
 
 class LinearIntersection(linear.Operation[hints.Scalar]):
@@ -32,7 +33,7 @@ class LinearIntersection(linear.Operation[hints.Scalar]):
                     events,
                     key=self._to_event_endpoints
             )
-            if _has_two_or_more_elements(equal_segment_events)
+            if has_two_or_more_elements(equal_segment_events)
         ]
 
 
@@ -906,10 +907,3 @@ def intersect_segment_with_segment(
             segment_cls
     )
     return empty_cls() if maybe_result is None else maybe_result
-
-
-def _has_two_or_more_elements(iterator: t.Iterator[t.Any],
-                              /,
-                              _sentinel: object = object()) -> bool:
-    return (next(iterator, _sentinel) is not _sentinel
-            and next(iterator, _sentinel) is not _sentinel)

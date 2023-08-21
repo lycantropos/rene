@@ -4,8 +4,7 @@ from itertools import (chain,
 
 from rene import (Orientation,
                   hints)
-from rene._utils import (all_equal,
-                         collect_maybe_empty_polygons,
+from rene._utils import (collect_maybe_empty_polygons,
                          collect_maybe_empty_segments,
                          do_boxes_have_no_common_continuum,
                          flags_to_false_indices,
@@ -19,6 +18,7 @@ from . import (linear,
                shaped)
 from .event import (Event,
                     is_right_event)
+from .utils import has_two_or_more_elements
 
 
 class LinearSymmetricDifference(linear.Operation[hints.Scalar]):
@@ -32,8 +32,7 @@ class LinearSymmetricDifference(linear.Operation[hints.Scalar]):
                     events,
                     key=self._to_event_endpoints
             )
-            if all_equal(self._is_from_first_operand_event(event)
-                         for event in equal_segment_events)
+            if not has_two_or_more_elements(equal_segment_events)
         ]
 
 
