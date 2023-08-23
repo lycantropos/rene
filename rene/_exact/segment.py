@@ -52,6 +52,8 @@ class Segment:
         elif isinstance(other, self._context.segment_cls):
             return segment.relate_to_segment(self._start, self._end,
                                              other.start, other.end)
+        elif isinstance(other, self._context.empty_cls):
+            return Relation.DISJOINT
         else:
             raise TypeError(f'Unsupported type: {type(other)!r}.')
 
