@@ -192,7 +192,6 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                                        event_end)
         if event_start_orientation is event_end_orientation:
             if event_start_orientation is Orientation.COLLINEAR:
-                # overlap
                 assert (self._is_left_event_from_first_operand(below_event)
                         is not self._is_left_event_from_first_operand(event))
                 if event_start == below_event_start:
