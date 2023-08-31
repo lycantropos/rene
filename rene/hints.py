@@ -415,6 +415,9 @@ class Contour(_SelfComparable, Multisegmental[Segment[Scalar]],
     def locate(self, point: Point[Scalar], /) -> _Location:
         ...
 
+    def relate_to(self, other: Compound[Scalar], /) -> _Relation:
+        ...
+
     def __new__(cls, vertices: _t.Sequence[Point[Scalar]], /) -> _te.Self:
         ...
 

@@ -110,6 +110,9 @@ class Contour:
     def locate(self, point: Point, /) -> _Location:
         ...
 
+    def relate_to(self, other: _Compound, /) -> _Relation:
+        ...
+
     def __new__(cls, vertices: _t.Sequence[Point], /) -> _te.Self:
         ...
 
