@@ -20,7 +20,8 @@ use super::linear::Operation;
 use super::segment::relate_to_multisegment_segments;
 
 pub(crate) fn relate_to_multisegment<
-    Multisegment,
+    First,
+    Second,
     Point: Clone + Hash + Ord,
     Output: Div<Output = Output>
         + Neg<Output = Output>
@@ -29,12 +30,14 @@ pub(crate) fn relate_to_multisegment<
     Scalar: Div<Output = Scalar> + Hash + Ord,
     Segment,
 >(
-    first: &Multisegment,
-    second: &Multisegment,
+    first: &First,
+    second: &Second,
 ) -> Relation
 where
     for<'a> &'a Output: Signed,
-    for<'a> &'a Multisegment:
+    for<'a> &'a First:
+        Bounded<&'a Scalar> + Multisegmental<IndexSegment = Segment>,
+    for<'a> &'a Second:
         Bounded<&'a Scalar> + Multisegmental<IndexSegment = Segment>,
     for<'a, 'b> &'a bounded::Box<&'b Scalar>: Relatable,
     for<'a, 'b> &'a Segment:
