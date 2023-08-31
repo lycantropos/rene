@@ -70,7 +70,8 @@ class Multisegment:
                    for intersection in sweep(self._segments))
 
     def relate_to(self, other: hints.Compound[Fraction], /) -> Relation:
-        if isinstance(other, self._context.multisegment_cls):
+        if isinstance(other, (self._context.contour_cls,
+                              self._context.multisegment_cls)):
             return multisegment.relate_to_multisegment(self, other)
         elif isinstance(other, self._context.empty_cls):
             return Relation.DISJOINT

@@ -1,3 +1,5 @@
+import typing as t
+
 from rene import (Relation,
                   hints)
 from rene._utils import to_boxes_ids_with_intersection
@@ -6,9 +8,13 @@ from .segment import (
     relate_to_multisegment_segments as relate_segment_to_multisegment_segments
 )
 
+_Multisegmental = t.Union[
+    hints.Contour[hints.Scalar], hints.Multisegment[hints.Scalar]
+]
 
-def relate_to_multisegment(first: hints.Multisegment[hints.Scalar],
-                           second: hints.Multisegment[hints.Scalar],
+
+def relate_to_multisegment(first: _Multisegmental[hints.Scalar],
+                           second: _Multisegmental[hints.Scalar],
                            /) -> Relation:
     first_bounding_box, second_bounding_box = (first.bounding_box,
                                                second.bounding_box)

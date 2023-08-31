@@ -1677,6 +1677,11 @@ impl PyExactMultisegment {
             try_relation_to_py_relation(
                 self.0.relate_to(&other.extract::<PyRef<PyExactEmpty>>()?.0),
             )
+        } else if other.is_instance_of::<PyExactContour>() {
+            try_relation_to_py_relation(
+                self.0
+                    .relate_to(&other.extract::<PyRef<PyExactContour>>()?.0),
+            )
         } else if other.is_instance_of::<Self>() {
             try_relation_to_py_relation(
                 self.0.relate_to(&other.extract::<PyRef<Self>>()?.0),
