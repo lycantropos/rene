@@ -53,6 +53,43 @@ where
     }
 }
 
+pub(crate) trait DotMultiply {
+    type Output;
+
+    fn dot_multiply(
+        first_start: Self,
+        first_end: Self,
+        second_start: Self,
+        second_end: Self,
+    ) -> Self::Output;
+}
+
+impl<Digit, const SHIFT: usize, Point> DotMultiply for &Point
+where
+    Fraction<BigInt<Digit, SHIFT>>: Add<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Mul<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Fraction<BigInt<Digit, SHIFT>>:
+        Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Point:
+        Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
+{
+    type Output = Fraction<BigInt<Digit, SHIFT>>;
+
+    fn dot_multiply(
+        first_start: Self,
+        first_end: Self,
+        second_start: Self,
+        second_end: Self,
+    ) -> Self::Output {
+        let (first_start_x, first_start_y) = first_start.coordinates();
+        let (first_end_x, first_end_y) = first_end.coordinates();
+        let (second_start_x, second_start_y) = second_start.coordinates();
+        let (second_end_x, second_end_y) = second_end.coordinates();
+        (first_end_x - first_start_x) * (second_end_x - second_start_x)
+            + (first_end_y - first_start_y) * (second_end_y - second_start_y)
+    }
+}
+
 pub(crate) trait IntersectCrossingSegments {
     type Output;
 
@@ -187,6 +224,48 @@ pub(crate) trait ToReversedSegments {
     type Output;
 
     fn to_reversed_segments(self) -> Self::Output;
+}
+
+pub(crate) trait Square {
+    type Output;
+
+    fn square(self) -> Self::Output;
+}
+
+impl<Digit, const SHIFT: usize> Square for Fraction<BigInt<Digit, SHIFT>>
+where
+    Fraction<BigInt<Digit, SHIFT>>:
+        Clone + Mul<Output = Fraction<BigInt<Digit, SHIFT>>>,
+{
+    type Output = Self;
+
+    fn square(self) -> Self::Output {
+        self.clone() * self
+    }
+}
+
+pub(crate) trait SquaredMetric<Other = Self> {
+    type Output;
+
+    fn squared_distance_to(self, other: Other) -> Self::Output;
+}
+
+impl<Digit, const SHIFT: usize, Point> SquaredMetric for &Point
+where
+    Fraction<BigInt<Digit, SHIFT>>: Add<Output = Fraction<BigInt<Digit, SHIFT>>>
+        + Square<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Fraction<BigInt<Digit, SHIFT>>:
+        Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    for<'a> &'a Point:
+        Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
+{
+    type Output = Fraction<BigInt<Digit, SHIFT>>;
+
+    fn squared_distance_to(self, other: Self) -> Self::Output {
+        let (start_x, start_y) = self.coordinates();
+        let (other_start_x, other_start_y) = other.coordinates();
+        (start_x - other_start_x).square() + (start_y - other_start_y).square()
+    }
 }
 
 pub(crate) fn ceil_log2<
@@ -463,23 +542,6 @@ where
     result
 }
 
-pub(crate) fn subtract_segments_overlap<'a, Point: PartialOrd>(
-    minuend_start: &'a Point,
-    minuend_end: &'a Point,
-    subtrahend_start: &'a Point,
-    subtrahend_end: &'a Point,
-) -> (&'a Point, &'a Point) {
-    let (minuend_start, minuend_end) =
-        to_sorted_pair((minuend_start, minuend_end));
-    let (subtrahend_start, subtrahend_end) =
-        to_sorted_pair((subtrahend_start, subtrahend_end));
-    if subtrahend_start < minuend_start && minuend_start < subtrahend_end {
-        (subtrahend_end, minuend_end)
-    } else {
-        (minuend_start, subtrahend_start)
-    }
-}
-
 pub(crate) fn to_boxes_have_common_area<Scalar>(
     boxes: &[bounded::Box<Scalar>],
     target_box: &bounded::Box<Scalar>,
@@ -533,6 +595,18 @@ where
         .filter(|&index| {
             do_boxes_have_common_continuum(&boxes[index], target_box)
         })
+        .collect::<Vec<_>>()
+}
+
+pub(crate) fn to_boxes_ids_with_intersection<Scalar: PartialEq>(
+    boxes: &[bounded::Box<Scalar>],
+    target_box: &bounded::Box<Scalar>,
+) -> Vec<usize>
+where
+    for<'a> &'a bounded::Box<Scalar>: Relatable,
+{
+    (0..boxes.len())
+        .filter(|&index| !boxes[index].disjoint_with(target_box))
         .collect::<Vec<_>>()
 }
 

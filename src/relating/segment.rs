@@ -131,7 +131,7 @@ where
 pub(crate) fn relate_to_multisegment<
     'a,
     Multisegment,
-    Point: Eq + Hash + Ord,
+    Point: Hash + Ord,
     Scalar: Div<Output = Scalar> + Eq + Hash + PartialOrd,
     Segment: 'a,
 >(
@@ -147,6 +147,29 @@ where
         + Elemental<Coordinate = &'b Scalar>
         + Orient,
 {
+    relate_to_multisegment_segments(
+        start,
+        end,
+        multisegment.segments().into_iter(),
+    )
+}
+
+pub(super) fn relate_to_multisegment_segments<
+    'a,
+    Point: Hash + Ord,
+    Scalar: Div<Output = Scalar> + Eq + Hash + PartialOrd,
+    Segment: 'a,
+>(
+    mut start: &'a Point,
+    mut end: &'a Point,
+    multisegment_segments: impl Iterator<Item = &'a Segment>,
+) -> Relation
+where
+    &'a Segment: Segmental<Endpoint = &'a Point>,
+    for<'b> &'b Point: CrossMultiply<Output = Scalar>
+        + Elemental<Coordinate = &'b Scalar>
+        + Orient,
+{
     let mut has_no_cross = true;
     let mut has_no_touch = true;
     let mut has_no_overlap = true;
@@ -158,7 +181,7 @@ where
         (start, end) = (end, start);
     }
     let (original_start, original_end) = (start, end);
-    for multisegment_segment in multisegment.segments() {
+    for multisegment_segment in multisegment_segments {
         let (multisegment_segment_start, multisegment_segment_end) =
             multisegment_segment.endpoints();
         let relation = relate_to_segment(
