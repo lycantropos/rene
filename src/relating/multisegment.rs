@@ -12,12 +12,14 @@ use crate::operations::{
 use crate::relatable::{Relatable, Relation};
 use crate::sweeping::traits::{EventsQueue, SweepLine};
 use crate::traits::{
-    Elemental, Iterable, Lengthsome, Multisegmental, Segmental,
+    Elemental, Iterable, Lengthsome, Multisegmental,
+    MultisegmentalIndexSegment, Segmental,
 };
 
 use super::event::{is_left_event, Event};
 use super::linear::Operation;
 use super::multisegmental::relate_to_multisegmental;
+use super::segment::relate_to_multisegment as relate_segment_to_multisegment;
 
 pub(crate) fn relate_to_contour<
     Contour,
@@ -104,4 +106,26 @@ where
         Scalar,
         Segment,
     >(first, second)
+}
+
+pub(crate) fn relate_to_segment<
+    'a,
+    Multisegment,
+    Point: Hash + Ord,
+    Scalar: Div<Output = Scalar> + Eq + Hash + PartialOrd,
+    Segment: 'a,
+>(
+    multisegment: &'a Multisegment,
+    mut start: &'a Point,
+    mut end: &'a Point,
+) -> Relation
+where
+    &'a Multisegment: Multisegmental<IntoIteratorSegment = &'a Segment>,
+    &'a Segment: Segmental<Endpoint = &'a Point>,
+    for<'b> &'b MultisegmentalIndexSegment<&'a Multisegment>: Segmental,
+    for<'b> &'b Point: CrossMultiply<Output = Scalar>
+        + Elemental<Coordinate = &'b Scalar>
+        + Orient,
+{
+    relate_segment_to_multisegment(start, end, multisegment).to_complement()
 }
