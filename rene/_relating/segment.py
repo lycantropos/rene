@@ -20,9 +20,17 @@ def relate_to_contour(
         contour: hints.Contour[hints.Scalar],
         /
 ) -> Relation:
+    return relate_to_contour_segments(start, end, contour.segments)
+
+
+def relate_to_contour_segments(
+        start: hints.Point[hints.Scalar],
+        end: hints.Point[hints.Scalar],
+        contour_segments: t.Sequence[hints.Segment[hints.Scalar]],
+        /
+) -> Relation:
     has_no_cross = has_no_touch = True
     last_touched_edge_index = last_touched_edge_start = None
-    contour_segments = contour.segments
     first_contour_segment = contour_segments[0]
     for index, contour_segment in enumerate(contour_segments):
         contour_segment_start, contour_segment_end = (contour_segment.start,
@@ -62,7 +70,7 @@ def relate_to_contour(
             assert relation is Relation.DISJOINT
     if (not has_no_touch
             and has_no_cross
-            and last_touched_edge_index == len(contour.segments) - 1
+            and last_touched_edge_index == len(contour_segments) - 1
             and start != first_contour_segment.start != end
             and start != first_contour_segment.end != end
             and (orient(start, end, first_contour_segment.start)

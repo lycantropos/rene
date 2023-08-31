@@ -8,22 +8,22 @@ from .segment import (
 
 
 def relate_to_contour(
-        multisegment: hints.Multisegment[hints.Scalar],
-        contour: hints.Contour[hints.Scalar],
+        first: hints.Contour[hints.Scalar],
+        second: hints.Contour[hints.Scalar],
         /
 ) -> Relation:
     return relate_to_multisegmental(
-            multisegment, contour, relate_segment_to_contour_segments,
-            relate_segment_to_multisegment_segments
+            first, second, relate_segment_to_contour_segments,
+            relate_segment_to_contour_segments
     )
 
 
 def relate_to_multisegment(
-        first: hints.Multisegment[hints.Scalar],
-        second: hints.Multisegment[hints.Scalar],
+        contour: hints.Contour[hints.Scalar],
+        multisegment: hints.Multisegment[hints.Scalar],
         /
 ) -> Relation:
     return relate_to_multisegmental(
-            first, second, relate_segment_to_multisegment_segments,
-            relate_segment_to_multisegment_segments
+            contour, multisegment, relate_segment_to_multisegment_segments,
+            relate_segment_to_contour_segments
     )

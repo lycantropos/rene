@@ -58,6 +58,10 @@ class Multisegment:
     def segments(self) -> t.Sequence[hints.Segment[Fraction]]:
         return _MultisegmentSegments(self._segments, _TOKEN)
 
+    def is_valid(self) -> bool:
+        return all(intersection.relation is Relation.TOUCH
+                   for intersection in sweep(self._segments))
+
     def locate(self, point: hints.Point[Fraction], /) -> Location:
         for segment in self._segments:
             location = segment.locate(point)
@@ -65,13 +69,10 @@ class Multisegment:
                 return location
         return Location.EXTERIOR
 
-    def is_valid(self) -> bool:
-        return all(intersection.relation is Relation.TOUCH
-                   for intersection in sweep(self._segments))
-
     def relate_to(self, other: hints.Compound[Fraction], /) -> Relation:
-        if isinstance(other, (self._context.contour_cls,
-                              self._context.multisegment_cls)):
+        if isinstance(other, self._context.contour_cls):
+            return multisegment.relate_to_contour(self, other)
+        elif isinstance(other, self._context.multisegment_cls):
             return multisegment.relate_to_multisegment(self, other)
         elif isinstance(other, self._context.empty_cls):
             return Relation.DISJOINT

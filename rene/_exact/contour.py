@@ -28,7 +28,7 @@ from rene._clipping import (
     unite_multisegmental_with_segment
 )
 from rene._context import Context
-from rene._relating import multisegment
+from rene._relating import contour
 from rene._utils import (are_contour_vertices_non_degenerate,
                          to_arg_min,
                          to_contour_orientation,
@@ -88,9 +88,10 @@ class Contour:
                 else Location.BOUNDARY)
 
     def relate_to(self, other: hints.Compound[Fraction], /) -> Relation:
-        if isinstance(other, (self._context.contour_cls,
-                              self._context.multisegment_cls)):
-            return multisegment.relate_to_multisegment(self, other)
+        if isinstance(other, self._context.contour_cls):
+            return contour.relate_to_contour(self, other)
+        elif isinstance(other, self._context.multisegment_cls):
+            return contour.relate_to_multisegment(self, other)
         elif isinstance(other, self._context.empty_cls):
             return Relation.DISJOINT
         else:
