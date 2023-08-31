@@ -38,6 +38,20 @@ pub enum Relation {
     Within,
 }
 
+impl Relation {
+    pub fn to_complement(self) -> Relation {
+        match self {
+            Relation::Composite => Relation::Component,
+            Relation::Component => Relation::Composite,
+            Relation::Cover => Relation::Within,
+            Relation::Enclosed => Relation::Encloses,
+            Relation::Encloses => Relation::Enclosed,
+            Relation::Within => Relation::Cover,
+            relation => relation,
+        }
+    }
+}
+
 pub trait Relatable<Other = Self> {
     fn component_of(self, other: Other) -> bool
     where
