@@ -41,7 +41,9 @@ where
 impl<Scalar> Relatable<&Contour<Scalar>> for &Segment<Scalar>
 where
     Point<Scalar>: Clone + PartialOrd,
-    for<'a> &'a Contour<Scalar>: Contoural<IndexSegment = Segment<Scalar>>,
+    for<'a> &'a Contour<Scalar>:
+        Contoural<IntoIteratorSegment = &'a Segment<Scalar>>,
+    for<'a, 'b> &'a MultisegmentalIndexSegment<&'b Contour<Scalar>>: Segmental,
     for<'a> &'a Point<Scalar>: Orient,
     for<'a> &'a Segment<Scalar>: Segmental<Endpoint = &'a Point<Scalar>>,
 {

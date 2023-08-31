@@ -73,6 +73,6 @@ where
         + SweepLine<Event = Event>,
 {
     fn relate_to(self, other: &Contour<Scalar>) -> Relation {
-        multisegment::relate_to_multisegment(self, other)
+        multisegment::relate_to_contour(self, other)
     }
 }

@@ -2,30 +2,48 @@ use std::collections::HashSet;
 use std::hash::Hash;
 use std::ops::Div;
 
+use crate::locatable::Location;
 use crate::operations::{
     is_point_in_segment, point_vertex_line_divides_angle,
-    subtract_segments_overlap, to_segments_intersection_scale, to_sorted_pair,
-    CrossMultiply, Orient,
+    to_segments_intersection_scale, to_sorted_pair, CrossMultiply, Orient,
 };
-use crate::oriented::Orientation;
+use crate::oriented::{Orientation, Oriented};
 use crate::relatable::Relation;
 use crate::traits::{
     Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
-    MultisegmentalIndexSegment, Segmental,
+    MultisegmentalIndexSegment, Multivertexal, Polygonal,
+    PolygonalIntoIteratorHole, Segmental, Sequence,
 };
 
 pub(crate) fn relate_to_contour<
     'a,
     Contour,
     Point: Clone + PartialOrd,
-    Segment,
+    Segment: 'a,
 >(
     start: &Point,
     end: &Point,
     contour: &'a Contour,
 ) -> Relation
 where
-    for<'b> &'b Contour: Contoural<IndexSegment = Segment>,
+    for<'b> &'b Contour: Contoural<IntoIteratorSegment = &'b Segment>,
+    for<'b> &'b MultisegmentalIndexSegment<&'a Contour>: Segmental,
+    for<'b> &'b Point: Orient,
+    for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
+{
+    relate_to_contour_segments(start, end, contour.segments().into_iter())
+}
+
+pub(crate) fn relate_to_contour_segments<
+    'a,
+    Point: Clone + PartialOrd,
+    Segment: 'a,
+>(
+    start: &Point,
+    end: &Point,
+    contour_segments: impl Iterator<Item = &'a Segment>,
+) -> Relation
+where
     for<'b> &'b Point: Orient,
     for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
 {
@@ -33,8 +51,12 @@ where
     let mut has_no_touch = true;
     let mut last_touched_edge_index: Option<usize> = None;
     let mut last_touched_edge_start: Option<Point> = None;
-    let contour_segments = contour.segments();
-    for (index, contour_segment) in contour_segments.iter().enumerate() {
+    let mut contour_segments = contour_segments.enumerate();
+    let (mut index, mut contour_segment) =
+        unsafe { contour_segments.next().unwrap_unchecked() };
+    let (first_contour_segment_start, first_contour_segment_end) =
+        contour_segment.endpoints();
+    loop {
         let (contour_segment_start, contour_segment_end) =
             contour_segment.endpoints();
         let relation = relate_to_segment(
@@ -88,16 +110,22 @@ where
             Relation::Disjoint => {}
             _ => unreachable!(),
         }
+        if let Some((next_index, next_contour_segment)) =
+            contour_segments.next()
+        {
+            index = next_index;
+            contour_segment = next_contour_segment;
+        } else {
+            break;
+        }
     }
     if !has_no_touch
         && has_no_cross
         && unsafe {
             debug_assert!(last_touched_edge_index.is_some());
             last_touched_edge_index.unwrap_unchecked()
-        } == contour_segments.len() - 1
+        } == index
     {
-        let (first_contour_segment_start, first_contour_segment_end) =
-            contour_segments[0].endpoints();
         if first_contour_segment_start.ne(start)
             && first_contour_segment_start.ne(end)
             && first_contour_segment_end.ne(start)
@@ -443,5 +471,367 @@ where
         } else {
             Relation::Cross
         }
+    }
+}
+
+pub(crate) fn relate_to_polygon<
+    Border,
+    Point: PartialOrd,
+    Polygon,
+    Scalar,
+    Segment,
+>(
+    start: &Point,
+    end: &Point,
+    polygon: &Polygon,
+) -> Relation
+where
+    Scalar: PartialOrd,
+    for<'a, 'b> &'a <PolygonalIntoIteratorHole<&'b Polygon> as Multisegmental>::IndexSegment: Segmental,
+    for<'a, 'b> &'a <PolygonalIntoIteratorHole<&'b Polygon> as Multivertexal>::IndexVertex: Elemental,
+    for<'a> &'a Border:
+        Contoural<IndexSegment = Segment, IndexVertex = Point> + Oriented,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
+    for<'a> &'a Polygon: Polygonal<
+        Contour = &'a Border,
+        IndexHole = Border,
+    >,
+    for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
+{
+    let relation_without_holes =
+        relate_to_region(start, end, polygon.border());
+    if polygon.holes().len() > 0
+        && matches!(
+            relation_without_holes,
+            Relation::Within | Relation::Enclosed
+        )
+    {
+        let holes = polygon.holes();
+        let relation_with_holes = if holes.len() == 1 {
+            relate_to_region(start, end, &holes[0])
+        } else {
+            relate_to_multiregion(start, end, polygon.holes())
+        };
+        match relation_with_holes {
+            Relation::Disjoint => relation_without_holes,
+            Relation::Touch => Relation::Enclosed,
+            Relation::Enclosed => Relation::Touch,
+            Relation::Within => Relation::Disjoint,
+            _ => relation_with_holes,
+        }
+    } else {
+        relation_without_holes
+    }
+}
+
+fn relate_to_multiregion<
+    Border,
+    Borders: Sequence<IndexItem = Border>,
+    Point: PartialOrd,
+>(
+    _start: &Point,
+    _end: &Point,
+    _borders: Borders,
+) -> Relation {
+    unimplemented!("needs segment-in-multiregion test")
+}
+
+fn relate_to_region<Border, Point: PartialOrd, Scalar, Segment>(
+    start: &Point,
+    end: &Point,
+    border: &Border,
+) -> Relation
+where
+    Scalar: PartialOrd,
+    for<'a> &'a Border:
+        Contoural<IndexSegment = Segment, IndexVertex = Point> + Oriented,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
+    for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
+{
+    let relation_with_border = relate_to_region_border(start, end, border);
+    if relation_with_border == Relation::Cross
+        || relation_with_border == Relation::Component
+    {
+        return relation_with_border;
+    }
+    let (start_index, start_location) =
+        indexed_locate_point_in_region(border, start);
+    if relation_with_border == Relation::Disjoint {
+        if start_location == Location::Exterior {
+            Relation::Disjoint
+        } else {
+            debug_assert_eq!(start_location, Location::Interior);
+            Relation::Within
+        }
+    } else if start_location == Location::Exterior {
+        Relation::Touch
+    } else if start_location == Location::Interior {
+        Relation::Enclosed
+    } else {
+        let (end_index, end_location) =
+            indexed_locate_point_in_region(border, end);
+        if end_location == Location::Exterior {
+            return Relation::Touch;
+        } else if end_location == Location::Interior {
+            return Relation::Enclosed;
+        } else {
+            let border_orientation = border.to_orientation();
+            let positively_oriented =
+                border_orientation == Orientation::Counterclockwise;
+            let vertices = border.vertices();
+            let edge_start_index = if start_index == 0 {
+                vertices.len() - 1
+            } else {
+                start_index - 1
+            };
+            let (edge_start, edge_end) =
+                (&vertices[edge_start_index], &vertices[start_index]);
+            if start == edge_start {
+                let prev_start = if positively_oriented {
+                    &vertices[edge_start_index - 1]
+                } else {
+                    &vertices[start_index]
+                };
+                if prev_start.orient(edge_start, edge_end)
+                    == border_orientation
+                {
+                    if (edge_start.orient(prev_start, end)
+                        == border_orientation)
+                        || (edge_end.orient(edge_start, end)
+                            == border_orientation)
+                    {
+                        return Relation::Touch;
+                    }
+                } else if edge_start.orient(prev_start, end)
+                    == border_orientation
+                    && edge_end.orient(edge_start, end) == border_orientation
+                {
+                    return Relation::Touch;
+                }
+            } else if start == edge_end {
+                let next_end = if positively_oriented {
+                    &vertices[(start_index + 1) % vertices.len()]
+                } else {
+                    &vertices[vertices.len() - start_index - 3]
+                };
+                if edge_start.orient(edge_end, next_end) == border_orientation
+                {
+                    if (edge_end.orient(edge_start, end) == border_orientation)
+                        || (next_end.orient(edge_end, end)
+                            == border_orientation)
+                    {
+                        return Relation::Touch;
+                    } else if edge_end.orient(edge_start, end)
+                        == border_orientation
+                        && next_end.orient(edge_end, end) == border_orientation
+                    {
+                        return Relation::Touch;
+                    }
+                }
+            } else if edge_end.orient(edge_start, end) == border_orientation {
+                return Relation::Touch;
+            }
+            let edge_start_index = if end_index == 0 {
+                vertices.len() - 1
+            } else {
+                end_index - 1
+            };
+            let (edge_start, edge_end) =
+                (&vertices[edge_start_index], &vertices[end_index]);
+            if end == edge_start {
+                let prev_start = if positively_oriented {
+                    &vertices[edge_start_index - 1]
+                } else {
+                    &vertices[end_index]
+                };
+                if prev_start.orient(edge_start, edge_end)
+                    == border_orientation
+                {
+                    if (edge_start.orient(prev_start, start)
+                        == border_orientation)
+                        || (edge_end.orient(edge_start, start)
+                            == border_orientation)
+                    {
+                        return Relation::Touch;
+                    }
+                } else if edge_start.orient(prev_start, start)
+                    == border_orientation
+                    && edge_end.orient(edge_start, start) == border_orientation
+                {
+                    return Relation::Touch;
+                }
+            } else if end == edge_end {
+                let next_end = if positively_oriented {
+                    &vertices[(end_index + 1) % vertices.len()]
+                } else {
+                    &vertices[vertices.len() - end_index - 3]
+                };
+                if edge_start.orient(edge_end, next_end) == border_orientation
+                {
+                    if (edge_end.orient(edge_start, start)
+                        == border_orientation)
+                        || (next_end.orient(edge_end, start)
+                            == border_orientation)
+                    {
+                        return Relation::Touch;
+                    }
+                } else if edge_end.orient(edge_start, start)
+                    == border_orientation
+                    && next_end.orient(edge_end, start) == border_orientation
+                {
+                    return Relation::Touch;
+                }
+            } else if edge_end.orient(edge_start, start) == border_orientation
+            {
+                return Relation::Touch;
+            }
+        }
+        Relation::Enclosed
+    }
+}
+
+fn relate_to_region_border<Border, Point: PartialOrd, Scalar, Segment>(
+    start: &Point,
+    end: &Point,
+    border: &Border,
+) -> Relation
+where
+    Scalar: PartialOrd,
+    for<'a> &'a Border: Contoural<IndexSegment = Segment, IndexVertex = Point>,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
+    for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
+{
+    /*
+        similar to segment-in-contour check
+        but cross has higher priority over overlap
+        because cross with border will be considered as cross with region
+        whereas overlap with border can't be an overlap with region
+        && should be classified by further analysis
+    */
+    let mut has_no_touch = true;
+    let mut has_no_overlap = true;
+    let mut last_touched_edge_start = None;
+    let mut last_touched_edge_index = usize::MAX;
+    let edges = border.segments();
+    for (index, edge) in edges.iter().enumerate() {
+        let (edge_start, edge_end) = edge.endpoints();
+        let relation_with_edge =
+            relate_to_segment(start, end, edge_start, edge_end);
+        if relation_with_edge == Relation::Component
+            || relation_with_edge == Relation::Equal
+        {
+            return Relation::Component;
+        } else if relation_with_edge == Relation::Overlap
+            || relation_with_edge == Relation::Composite
+        {
+            if has_no_overlap {
+                has_no_overlap = false;
+            }
+        } else if relation_with_edge == Relation::Touch {
+            if has_no_touch {
+                has_no_touch = false
+            } else if index - 1 == last_touched_edge_index
+                && start != edge_start
+                && start != edge_end
+                && end != edge_start
+                && end != edge_end
+                && (start.orient(end, edge_start) == Orientation::Collinear)
+                && point_vertex_line_divides_angle(
+                    start,
+                    edge_start,
+                    unsafe { last_touched_edge_start.unwrap_unchecked() },
+                    edge_end,
+                )
+            {
+                return Relation::Cross;
+            }
+            last_touched_edge_index = index;
+            last_touched_edge_start = Some(edge_start);
+        } else if relation_with_edge == Relation::Cross {
+            return Relation::Cross;
+        }
+    }
+    if !has_no_touch && last_touched_edge_index == edges.len() - 1 {
+        let (first_edge_start, first_edge_end) = edges[0].endpoints();
+        if (relate_to_segment(first_edge_start, first_edge_end, start, end)
+            == Relation::Touch)
+            && start != first_edge_start
+            && start != first_edge_end
+            && end != first_edge_start
+            && end != first_edge_end
+            && (start.orient(end, first_edge_start) == Orientation::Collinear)
+            && {
+                point_vertex_line_divides_angle(
+                    start,
+                    first_edge_start,
+                    unsafe { last_touched_edge_start.unwrap_unchecked() },
+                    first_edge_end,
+                )
+            }
+        {
+            return Relation::Cross;
+        }
+    }
+    if has_no_overlap {
+        if has_no_touch {
+            Relation::Disjoint
+        } else {
+            Relation::Touch
+        }
+    } else {
+        Relation::Overlap
+    }
+}
+
+fn indexed_locate_point_in_region<Border, Point: PartialEq, Scalar, Segment>(
+    border: &Border,
+    point: &Point,
+) -> (usize, Location)
+where
+    Scalar: PartialOrd,
+    for<'a> &'a Border: Multisegmental<IndexSegment = Segment>,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
+    for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
+{
+    let mut result = false;
+    let point_y = point.y();
+    for (index, edge) in border.segments().iter().enumerate() {
+        let (start, end) = edge.endpoints();
+        if is_point_in_segment(point, start, end) {
+            return (index, Location::Boundary);
+        }
+        let start_y = start.y();
+        let end_y = end.y();
+        if (start_y.gt(point_y)) != (end_y.gt(point_y))
+            && ((end_y.gt(start_y))
+                == (start.orient(end, point) == Orientation::Counterclockwise))
+        {
+            result = !result;
+        }
+    }
+    (
+        usize::MAX,
+        if result {
+            Location::Interior
+        } else {
+            Location::Exterior
+        },
+    )
+}
+
+fn subtract_segments_overlap<'a, Point: PartialOrd>(
+    minuend_start: &'a Point,
+    minuend_end: &'a Point,
+    subtrahend_start: &'a Point,
+    subtrahend_end: &'a Point,
+) -> (&'a Point, &'a Point) {
+    let (minuend_start, minuend_end) =
+        to_sorted_pair((minuend_start, minuend_end));
+    let (subtrahend_start, subtrahend_end) =
+        to_sorted_pair((subtrahend_start, subtrahend_end));
+    if subtrahend_start < minuend_start && minuend_start < subtrahend_end {
+        (subtrahend_end, minuend_end)
+    } else {
+        (minuend_start, subtrahend_start)
     }
 }

@@ -9,7 +9,7 @@ use crate::operations::{
     SquaredMetric,
 };
 use crate::relatable::{Relatable, Relation};
-use crate::relating::{linear, multisegment, Event};
+use crate::relating::{contour, linear, Event};
 use crate::sweeping::traits::{EventsQueue, SweepLine};
 use crate::traits::{Multisegmental, Segmental};
 
@@ -44,7 +44,7 @@ where
         + SquaredMetric<Output = Scalar>,
 {
     fn relate_to(self, other: Self) -> Relation {
-        multisegment::relate_to_multisegment(self, other)
+        contour::relate_to_contour(self, other)
     }
 }
 
@@ -73,6 +73,6 @@ where
         + SweepLine<Event = Event>,
 {
     fn relate_to(self, other: &Multisegment<Scalar>) -> Relation {
-        multisegment::relate_to_multisegment(self, other)
+        contour::relate_to_multisegment(self, other)
     }
 }
