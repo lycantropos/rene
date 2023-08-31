@@ -6,17 +6,17 @@ use traiter::numbers::Signed;
 use crate::bounded;
 use crate::bounded::Bounded;
 use crate::operations::{
-    to_boxes_ids_with_intersection, CrossMultiply, DotMultiply,
-    IntersectCrossingSegments, Orient, Square, SquaredMetric,
+    CrossMultiply, DotMultiply, IntersectCrossingSegments, Orient, Square,
+    SquaredMetric,
 };
 use crate::relatable::{Relatable, Relation};
 use crate::sweeping::traits::{EventsQueue, SweepLine};
 use crate::traits::{
-    Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
-    MultisegmentalIndexSegment, Segmental,
+    Contoural, Elemental, Multisegmental, MultisegmentalIndexSegment,
+    Segmental,
 };
 
-use super::event::{is_left_event, Event};
+use super::event::Event;
 use super::linear::Operation;
 use super::multisegmental::relate_to_multisegmental;
 use super::segment::relate_to_contour as relate_segment_to_contour;

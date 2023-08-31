@@ -10,13 +10,12 @@ use crate::operations::{
     IntersectCrossingSegments, Orient, Square, SquaredMetric,
 };
 use crate::relatable::{Relatable, Relation};
-use crate::slice_sequence::SliceSequence;
 use crate::sweeping::traits::{EventsQueue, SweepLine};
 use crate::traits::{
     Elemental, Iterable, Lengthsome, Multisegmental, Segmental,
 };
 
-use super::event::{is_left_event, Event};
+use super::event::Event;
 use super::linear::Operation;
 use super::segment::{
     relate_to_contour_segments, relate_to_multisegment_segments,
