@@ -10,7 +10,7 @@ use crate::operations::{
     IntersectCrossingSegments, Orient, Square, SquaredMetric,
 };
 use crate::relatable::{Relatable, Relation};
-use crate::sweeping::traits::{EventsContainer, EventsQueue, SweepLine};
+use crate::sweeping::traits::{EventsQueue, SweepLine};
 use crate::traits::{
     Elemental, Iterable, Lengthsome, Multisegmental, Segmental,
 };
