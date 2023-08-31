@@ -143,6 +143,10 @@ def flags_to_true_indices(flags: t.Sequence[bool], /) -> t.List[int]:
     return [index for index, flag in enumerate(flags) if flag]
 
 
+def square(value: hints.Scalar, /) -> hints.Scalar:
+    return value * value
+
+
 def to_segments_intersection_point(first_start: hints.Point[hints.Scalar],
                                    first_end: hints.Point[hints.Scalar],
                                    second_start: hints.Point[hints.Scalar],
@@ -359,6 +363,16 @@ def to_boxes_ids_with_common_continuum(
     return [box_id
             for box_id, box in enumerate(boxes)
             if do_boxes_have_common_continuum(box, target_box)]
+
+
+def to_boxes_ids_with_intersection(
+        boxes: t.Iterable[hints.Box[hints.Scalar]],
+        target_box: hints.Box[hints.Scalar],
+        /
+) -> t.List[int]:
+    return [box_id
+            for box_id, box in enumerate(boxes)
+            if not box.disjoint_with(target_box)]
 
 
 def to_contour_orientation(vertices: t.Sequence[hints.Point[hints.Scalar]],

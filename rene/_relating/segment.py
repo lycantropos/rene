@@ -83,6 +83,14 @@ def relate_to_multisegment(
         end: hints.Point[hints.Scalar],
         multisegment: hints.Multisegment[hints.Scalar]
 ) -> Relation:
+    return relate_to_multisegment_segments(start, end, multisegment.segments)
+
+
+def relate_to_multisegment_segments(
+        start: hints.Point[hints.Scalar],
+        end: hints.Point[hints.Scalar],
+        multisegment_segments: t.Sequence[hints.Segment[hints.Scalar]]
+) -> Relation:
     is_segment_superset = has_no_touch = has_no_cross = has_no_overlap = True
     clockwise_middle_touch_scales: t.List[hints.Scalar] = []
     counterclockwise_middle_touch_scales: t.List[hints.Scalar] = []
@@ -92,7 +100,7 @@ def relate_to_multisegment(
     if start > end:
         start, end = end, start
     original_start, original_end = start, end
-    for multisegment_segment in multisegment.segments:
+    for multisegment_segment in multisegment_segments:
         multisegment_segment_start, multisegment_segment_end = (
             multisegment_segment.start, multisegment_segment.end
         )
@@ -278,3 +286,185 @@ def relate_to_segment(
                 return Relation.DISJOINT
         else:
             return Relation.CROSS
+
+
+def relate_to_region(start: hints.Point[hints.Scalar],
+                     end: hints.Point[hints.Scalar],
+                     border: hints.Contour[hints.Scalar]) -> Relation:
+    relation_with_border = _relate_to_region_border(start, end, border)
+    if (relation_with_border is Relation.CROSS
+            or relation_with_border is Relation.COMPONENT):
+        return relation_with_border
+    start_index, start_location = _locate_point_in_region(border, start)
+    if relation_with_border is Relation.DISJOINT:
+        return (Relation.DISJOINT
+                if start_location is Location.EXTERIOR
+                else Relation.WITHIN)
+    elif start_location is Location.EXTERIOR:
+        return Relation.TOUCH
+    elif start_location is Location.INTERIOR:
+        return Relation.ENCLOSED
+    else:
+        assert start_index is not None
+        end_index, end_location = _locate_point_in_region(border, end)
+        if end_location is Location.EXTERIOR:
+            return Relation.TOUCH
+        elif end_location is Location.INTERIOR:
+            return Relation.ENCLOSED
+        else:
+            assert end_index is not None
+            border_orientation = border.orientation
+            positively_oriented = (border_orientation
+                                   is Orientation.COUNTERCLOCKWISE)
+            vertices = border.vertices
+            edge_start, edge_end = (vertices[start_index - 1],
+                                    vertices[start_index])
+            if start == edge_start:
+                prev_start = (vertices[start_index - 2]
+                              if positively_oriented
+                              else vertices[start_index])
+                if (orient(prev_start, edge_start, edge_end)
+                        is border_orientation):
+                    if ((orient(edge_start, prev_start, end)
+                         is border_orientation)
+                            or (orient(edge_end, edge_start, end)
+                                is border_orientation)):
+                        return Relation.TOUCH
+                elif (orient(edge_start, prev_start, end)
+                      is orient(edge_end, edge_start, end)
+                      is border_orientation):
+                    return Relation.TOUCH
+            elif start == edge_end:
+                next_end = (vertices[(start_index + 1) % len(vertices)]
+                            if positively_oriented
+                            else vertices[len(vertices) - start_index - 3])
+                if (orient(edge_start, edge_end, next_end)
+                        is border_orientation):
+                    if ((orient(edge_end, edge_start, end)
+                         is border_orientation)
+                            or (orient(next_end, edge_end, end)
+                                is border_orientation)):
+                        return Relation.TOUCH
+                    elif (orient(edge_end, edge_start, end)
+                          is orient(next_end, edge_end, end)
+                          is border_orientation):
+                        return Relation.TOUCH
+            elif orient(edge_end, edge_start, end) is border_orientation:
+                return Relation.TOUCH
+            edge_start, edge_end = vertices[end_index - 1], vertices[end_index]
+            if end == edge_start:
+                prev_start = (vertices[end_index - 2]
+                              if positively_oriented
+                              else vertices[end_index])
+                if (orient(prev_start, edge_start, edge_end)
+                        is border_orientation):
+                    if ((orient(edge_start, prev_start, start)
+                         is border_orientation)
+                            or (orient(edge_end, edge_start, start)
+                                is border_orientation)):
+                        return Relation.TOUCH
+                elif (orient(edge_start, prev_start, start)
+                      is orient(edge_end, edge_start, start)
+                      is border_orientation):
+                    return Relation.TOUCH
+            elif end == edge_end:
+                next_end = (vertices[(end_index + 1) % len(vertices)]
+                            if positively_oriented
+                            else vertices[len(vertices) - end_index - 3])
+                if (orient(edge_start, edge_end, next_end)
+                        is border_orientation):
+                    if ((orient(edge_end, edge_start, start)
+                         is border_orientation)
+                            or (orient(next_end, edge_end, start)
+                                is border_orientation)):
+                        return Relation.TOUCH
+                elif (orient(edge_end, edge_start, start)
+                      is orient(next_end, edge_end, start)
+                      is border_orientation):
+                    return Relation.TOUCH
+            elif orient(edge_end, edge_start, start) is border_orientation:
+                return Relation.TOUCH
+            return Relation.ENCLOSED
+
+
+def _relate_to_region_border(start: hints.Point[hints.Scalar],
+                             end: hints.Point[hints.Scalar],
+                             border: hints.Contour[hints.Scalar]) -> Relation:
+    # similar to segment-in-contour check
+    # but cross has higher priority over overlap
+    # because cross with border will be considered as cross with region
+    # whereas overlap with border can't be an overlap with region
+    # and should be classified by further analysis
+    has_no_touch = has_no_overlap = True
+    last_touched_edge_index = last_touched_edge_start = None
+    for index, edge in enumerate(border.segments):
+        edge_start, edge_end = edge.start, edge.end
+        relation_with_edge = relate_to_segment(edge_start, edge_end, start,
+                                               end)
+        if (relation_with_edge is Relation.COMPONENT
+                or relation_with_edge is Relation.EQUAL):
+            return Relation.COMPONENT
+        elif (relation_with_edge is Relation.OVERLAP
+              or relation_with_edge is Relation.COMPOSITE):
+            if has_no_overlap:
+                has_no_overlap = False
+        elif relation_with_edge is Relation.TOUCH:
+            if has_no_touch:
+                has_no_touch = False
+            else:
+                assert last_touched_edge_index is not None
+                if (
+                        index - last_touched_edge_index == 1
+                        and start != edge_start
+                        and start != edge_end
+                        and end != edge_start
+                        and end != edge_end
+                        and (orient(start, end, edge_start)
+                             is Orientation.COLLINEAR)
+                        and
+                        point_vertex_line_divides_angle(
+                                start, last_touched_edge_start, edge_start,
+                                edge_end
+                        )
+                ):
+                    return Relation.CROSS
+            last_touched_edge_index = index
+            last_touched_edge_start = edge_start
+        elif relation_with_edge is Relation.CROSS:
+            return Relation.CROSS
+    vertices = border.vertices
+    if not has_no_touch and last_touched_edge_index == len(vertices) - 1:
+        first_edge_start, first_edge_end = vertices[-1], vertices[0]
+        if ((relate_to_segment(first_edge_start, first_edge_end, start, end)
+             is Relation.TOUCH)
+                and start != first_edge_start
+                and start != first_edge_end
+                and end != first_edge_start
+                and end != first_edge_end
+                and (orient(start, end, first_edge_start)
+                     is Orientation.COLLINEAR)
+                and point_vertex_line_divides_angle(start, vertices[-2],
+                                                    first_edge_start,
+                                                    first_edge_end)):
+            return Relation.CROSS
+    return ((Relation.DISJOINT if has_no_touch else Relation.TOUCH)
+            if has_no_overlap
+            else Relation.OVERLAP)
+
+
+def _locate_point_in_region(
+        border: hints.Contour[hints.Scalar],
+        point: hints.Point[hints.Scalar]
+) -> t.Tuple[t.Optional[int], Location]:
+    result = False
+    point_y = point.y
+    for index, edge in enumerate(border.segments):
+        start, end = edge.start, edge.end
+        if locate_point_in_segment(start, end, point) is Location.BOUNDARY:
+            return index, Location.BOUNDARY
+        if ((start.y > point_y) is not (end.y > point_y)
+                and ((end.y > start.y)
+                     is (orient(start, end, point)
+                         is Orientation.COUNTERCLOCKWISE))):
+            result = not result
+    return None, (Location.INTERIOR if result else Location.EXTERIOR)

@@ -26,6 +26,7 @@ from rene._clipping import (
     unite_multisegmental_with_segment
 )
 from rene._context import Context
+from rene._relating import multisegment
 
 
 @te.final
@@ -67,6 +68,14 @@ class Multisegment:
     def is_valid(self) -> bool:
         return all(intersection.relation is Relation.TOUCH
                    for intersection in sweep(self._segments))
+
+    def relate_to(self, other: hints.Compound[Fraction], /) -> Relation:
+        if isinstance(other, self._context.multisegment_cls):
+            return multisegment.relate_to_multisegment(self, other)
+        elif isinstance(other, self._context.empty_cls):
+            return Relation.DISJOINT
+        else:
+            raise TypeError(f'Unsupported type: {type(other)!r}.')
 
     _context: t.ClassVar[Context[Fraction]]
     _segments: t.Sequence[hints.Segment[Fraction]]

@@ -500,6 +500,9 @@ class Multisegment(_SelfComparable, Multisegmental[Segment[Scalar]],
     def locate(self, point: Point[Scalar], /) -> _Location:
         ...
 
+    def relate_to(self, other: Compound[Scalar], /) -> _Relation:
+        ...
+
     def __new__(cls, segments: _t.Sequence[Segment[Scalar]], /) -> _te.Self:
         ...
 

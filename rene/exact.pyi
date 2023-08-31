@@ -366,10 +366,13 @@ class Multisegment:
     def segments(self) -> _t.Sequence[Segment]:
         ...
 
+    def is_valid(self) -> bool:
+        ...
+
     def locate(self, point: Point, /) -> _Location:
         ...
 
-    def is_valid(self) -> bool:
+    def relate_to(self, other: _Compound, /) -> _Relation:
         ...
 
     def __new__(cls, segments: _t.Sequence[Segment], /) -> _te.Self:
