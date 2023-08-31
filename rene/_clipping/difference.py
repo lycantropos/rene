@@ -141,8 +141,8 @@ def subtract_multipolygon_from_multisegmental(
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.Union[
-    hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
-    hints.Segment[hints.Scalar]
+    hints.Contour[hints.Scalar], hints.Empty[hints.Scalar],
+    hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]
 ]:
     minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
                                                      subtrahend.bounding_box)
@@ -319,8 +319,8 @@ def subtract_multisegmental_from_multisegmental(
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.Union[
-    hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
-    hints.Segment[hints.Scalar]
+    hints.Contour[hints.Scalar], hints.Empty[hints.Scalar],
+    hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]
 ]:
     minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
                                                      subtrahend.bounding_box)
@@ -504,8 +504,8 @@ def subtract_polygon_from_multisegmental(
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.Union[
-    hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
-    hints.Segment[hints.Scalar]
+    hints.Contour[hints.Scalar], hints.Empty[hints.Scalar],
+    hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]
 ]:
     minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
                                                      subtrahend.bounding_box)
@@ -642,8 +642,8 @@ def subtract_segment_from_multisegmental(
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.Union[
-    hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
-    hints.Segment[hints.Scalar]
+    hints.Contour[hints.Scalar], hints.Empty[hints.Scalar],
+    hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]
 ]:
     minuend_bounding_box, subtrahend_bounding_box = (minuend.bounding_box,
                                                      subtrahend.bounding_box)
