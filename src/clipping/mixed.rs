@@ -27,12 +27,12 @@ pub(crate) struct Operation<Point, const IS_FIRST_LINEAR: bool, const KIND: u8>
 {
     first_segments_count: usize,
     are_from_result: Vec<bool>,
-    are_other_interior_to_left: Vec<bool>,
     endpoints: Box<Vec<Point>>,
     events_queue_data: BinaryHeap<Reverse<EventsQueueKey<Point>>>,
     have_interior_to_left: Vec<bool>,
-    opposites: Box<Vec<Event>>,
     have_overlap: Vec<bool>,
+    opposites: Box<Vec<Event>>,
+    other_have_interior_to_left: Vec<bool>,
     segments_ids: Vec<usize>,
     starts_ids: Vec<usize>,
     sweep_line_data: BTreeSet<SweepLineKey<Point>>,
@@ -386,11 +386,11 @@ impl<Point, const IS_FIRST_LINEAR: bool, const KIND: u8>
         let event_position = left_event_to_position(event);
         if let Some(below_event) = maybe_below_event {
             let below_event_position = left_event_to_position(below_event);
-            self.are_other_interior_to_left[event_position] = {
+            self.other_have_interior_to_left[event_position] = {
                 if self.is_left_event_from_first_operand(event)
                     == self.is_left_event_from_first_operand(below_event)
                 {
-                    self.are_other_interior_to_left[below_event_position]
+                    self.other_have_interior_to_left[below_event_position]
                 } else {
                     self.have_interior_to_left
                         [self.left_event_to_segment_id(below_event)]
@@ -423,7 +423,7 @@ impl<Point, const IS_FIRST_LINEAR: bool, const KIND: u8>
 
     fn is_outside_left_event(&self, event: Event) -> bool {
         let event_position = left_event_to_position(event);
-        !self.are_other_interior_to_left[event_position]
+        !self.other_have_interior_to_left[event_position]
             && !self.have_overlap[event_position]
     }
 
@@ -672,7 +672,7 @@ impl<Point: Clone, const IS_FIRST_LINEAR: bool, const KIND: u8>
         self.endpoints.push(mid_point.clone());
         self.opposites.push(opposite_event);
         self.opposites[opposite_event] = mid_point_to_event_end_event;
-        self.are_other_interior_to_left.push(false);
+        self.other_have_interior_to_left.push(false);
         self.are_from_result.push(false);
         self.have_overlap.push(false);
         self.starts_ids.push(UNDEFINED_INDEX);
@@ -791,12 +791,12 @@ where
         Self {
             first_segments_count,
             are_from_result: vec![false; segments_count],
-            are_other_interior_to_left: vec![false; segments_count],
             endpoints: Box::new(Vec::with_capacity(initial_events_count)),
             events_queue_data: BinaryHeap::with_capacity(initial_events_count),
             have_interior_to_left: vec![true; segments_count],
-            opposites: Box::new(Vec::with_capacity(initial_events_count)),
             have_overlap: vec![false; segments_count],
+            opposites: Box::new(Vec::with_capacity(initial_events_count)),
+            other_have_interior_to_left: vec![false; segments_count],
             segments_ids: (0..segments_count).collect(),
             starts_ids: vec![UNDEFINED_INDEX; initial_events_count],
             sweep_line_data: BTreeSet::new(),

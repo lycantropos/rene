@@ -31,7 +31,6 @@ use super::types::OverlapKind;
 pub(crate) struct Operation<Point, const KIND: u8> {
     first_segments_count: usize,
     are_from_result: Vec<bool>,
-    are_other_interior_to_left: Vec<bool>,
     below_event_from_result: Vec<Event>,
     current_endpoint_first_event: Event,
     current_endpoint_id: usize,
@@ -39,6 +38,7 @@ pub(crate) struct Operation<Point, const KIND: u8> {
     events_queue_data: BinaryHeap<Reverse<EventsQueueKey<Point>>>,
     have_interior_to_left: Vec<bool>,
     opposites: Box<Vec<Event>>,
+    other_have_interior_to_left: Vec<bool>,
     overlap_kinds: Vec<OverlapKind>,
     segments_ids: Vec<usize>,
     starts_ids: Vec<usize>,
@@ -431,11 +431,11 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
         let event_position = left_event_to_position(event);
         if let Some(below_event) = maybe_below_event {
             let below_event_position = left_event_to_position(below_event);
-            self.are_other_interior_to_left[event_position] = {
+            self.other_have_interior_to_left[event_position] = {
                 if self.is_left_event_from_first_operand(event)
                     == self.is_left_event_from_first_operand(below_event)
                 {
-                    self.are_other_interior_to_left[below_event_position]
+                    self.other_have_interior_to_left[below_event_position]
                 } else {
                     self.have_interior_to_left
                         [self.left_event_to_segment_id(below_event)]
@@ -592,7 +592,7 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
 
     fn is_inside_left_event(&self, event: Event) -> bool {
         let event_position = left_event_to_position(event);
-        self.are_other_interior_to_left[event_position]
+        self.other_have_interior_to_left[event_position]
             && self.overlap_kinds[event_position] == OverlapKind::None
     }
 
@@ -602,7 +602,7 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
 
     fn is_outside_left_event(&self, event: Event) -> bool {
         let event_position = left_event_to_position(event);
-        !self.are_other_interior_to_left[event_position]
+        !self.other_have_interior_to_left[event_position]
             && self.overlap_kinds[event_position] == OverlapKind::None
     }
 
@@ -977,7 +977,7 @@ impl<Point: Clone, const KIND: u8> Operation<Point, KIND> {
         self.endpoints.push(mid_point.clone());
         self.opposites.push(opposite_event);
         self.opposites[opposite_event] = mid_point_to_event_end_event;
-        self.are_other_interior_to_left.push(false);
+        self.other_have_interior_to_left.push(false);
         self.are_from_result.push(false);
         self.below_event_from_result.push(UNDEFINED_EVENT);
         self.overlap_kinds.push(OverlapKind::None);
@@ -1094,7 +1094,6 @@ where
         Self {
             first_segments_count,
             are_from_result: vec![false; segments_count],
-            are_other_interior_to_left: vec![false; segments_count],
             below_event_from_result: vec![UNDEFINED_EVENT; segments_count],
             current_endpoint_first_event: UNDEFINED_EVENT,
             current_endpoint_id: 0,
@@ -1102,6 +1101,7 @@ where
             events_queue_data: BinaryHeap::with_capacity(initial_events_count),
             have_interior_to_left: vec![true; segments_count],
             opposites: Box::new(Vec::with_capacity(initial_events_count)),
+            other_have_interior_to_left: vec![false; segments_count],
             overlap_kinds: vec![OverlapKind::None; segments_count],
             segments_ids: (0..segments_count).collect(),
             starts_ids: vec![UNDEFINED_INDEX; initial_events_count],
