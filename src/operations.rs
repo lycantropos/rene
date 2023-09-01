@@ -27,16 +27,16 @@ pub(crate) trait CrossMultiply {
     ) -> Self::Output;
 }
 
-impl<Digit, const SHIFT: usize, Point> CrossMultiply for &Point
+impl<Digit, const DIGIT_BITNESS: usize, Point> CrossMultiply for &Point
 where
-    Fraction<BigInt<Digit, SHIFT>>: Mul<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Fraction<BigInt<Digit, SHIFT>>:
-        Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    Fraction<BigInt<Digit, DIGIT_BITNESS>>: Mul<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>
+        + Sub<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
+    for<'a> &'a Fraction<BigInt<Digit, DIGIT_BITNESS>>:
+        Sub<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
     for<'a> &'a Point:
-        Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
+        Elemental<Coordinate = &'a Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
 {
-    type Output = Fraction<BigInt<Digit, SHIFT>>;
+    type Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>;
 
     fn cross_multiply(
         first_start: Self,
@@ -64,16 +64,16 @@ pub(crate) trait DotMultiply {
     ) -> Self::Output;
 }
 
-impl<Digit, const SHIFT: usize, Point> DotMultiply for &Point
+impl<Digit, const DIGIT_BITNESS: usize, Point> DotMultiply for &Point
 where
-    Fraction<BigInt<Digit, SHIFT>>: Add<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + Mul<Output = Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Fraction<BigInt<Digit, SHIFT>>:
-        Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    Fraction<BigInt<Digit, DIGIT_BITNESS>>: Add<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>
+        + Mul<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
+    for<'a> &'a Fraction<BigInt<Digit, DIGIT_BITNESS>>:
+        Sub<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
     for<'a> &'a Point:
-        Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
+        Elemental<Coordinate = &'a Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
 {
-    type Output = Fraction<BigInt<Digit, SHIFT>>;
+    type Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>;
 
     fn dot_multiply(
         first_start: Self,
@@ -143,16 +143,17 @@ pub(crate) trait LocatePointInPointPointPointCircle {
     ) -> Location;
 }
 
-impl<'a, Digit: 'a, const SHIFT: usize, Point>
+impl<'a, Digit: 'a, const DIGIT_BITNESS: usize, Point>
     LocatePointInPointPointPointCircle for &'a Point
 where
-    &'a Point: Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
-    Fraction<BigInt<Digit, SHIFT>>: Add<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + Mul<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
-    for<'b> &'b Fraction<BigInt<Digit, SHIFT>>: Mul<Output = Fraction<BigInt<Digit, SHIFT>>>
+    &'a Point:
+        Elemental<Coordinate = &'a Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
+    Fraction<BigInt<Digit, DIGIT_BITNESS>>: Add<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>
+        + Mul<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>
+        + Sub<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
+    for<'b> &'b Fraction<BigInt<Digit, DIGIT_BITNESS>>: Mul<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>
         + Signed
-        + Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+        + Sub<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
 {
     fn locate_point_in_point_point_point_circle(
         self,
@@ -232,10 +233,11 @@ pub(crate) trait Square {
     fn square(self) -> Self::Output;
 }
 
-impl<Digit, const SHIFT: usize> Square for Fraction<BigInt<Digit, SHIFT>>
+impl<Digit, const DIGIT_BITNESS: usize> Square
+    for Fraction<BigInt<Digit, DIGIT_BITNESS>>
 where
-    Fraction<BigInt<Digit, SHIFT>>:
-        Clone + Mul<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    Fraction<BigInt<Digit, DIGIT_BITNESS>>:
+        Clone + Mul<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
 {
     type Output = Self;
 
@@ -250,16 +252,16 @@ pub(crate) trait SquaredMetric<Other = Self> {
     fn squared_distance_to(self, other: Other) -> Self::Output;
 }
 
-impl<Digit, const SHIFT: usize, Point> SquaredMetric for &Point
+impl<Digit, const DIGIT_BITNESS: usize, Point> SquaredMetric for &Point
 where
-    Fraction<BigInt<Digit, SHIFT>>: Add<Output = Fraction<BigInt<Digit, SHIFT>>>
-        + Square<Output = Fraction<BigInt<Digit, SHIFT>>>,
-    for<'a> &'a Fraction<BigInt<Digit, SHIFT>>:
-        Sub<Output = Fraction<BigInt<Digit, SHIFT>>>,
+    Fraction<BigInt<Digit, DIGIT_BITNESS>>: Add<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>
+        + Square<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
+    for<'a> &'a Fraction<BigInt<Digit, DIGIT_BITNESS>>:
+        Sub<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
     for<'a> &'a Point:
-        Elemental<Coordinate = &'a Fraction<BigInt<Digit, SHIFT>>>,
+        Elemental<Coordinate = &'a Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
 {
-    type Output = Fraction<BigInt<Digit, SHIFT>>;
+    type Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>;
 
     fn squared_distance_to(self, other: Self) -> Self::Output {
         let (start_x, start_y) = self.coordinates();
