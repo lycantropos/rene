@@ -18,8 +18,8 @@ from .event import (Event,
                     is_left_event,
                     is_right_event,
                     left_event_to_position)
-from .events_queue_key import BinaryEventsQueueKey as EventsQueueKey
-from .sweep_line_key import BinarySweepLineKey as SweepLineKey
+from .events_queue_key import EventsQueueKey
+from .sweep_line_key import SweepLineKey
 
 
 class Operation(ABC, t.Generic[hints.Scalar]):
