@@ -52,13 +52,10 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                  if self._is_from_result_event(event)])
 
     def to_event_end(self, event: Event, /) -> hints.Point[hints.Scalar]:
-        return self.to_event_start(self.to_opposite_event(event))
+        return self.to_event_start(self._to_opposite_event(event))
 
     def to_event_start(self, event: Event, /) -> hints.Point[hints.Scalar]:
         return self.endpoints[event]
-
-    def to_opposite_event(self, event: Event, /) -> Event:
-        return self._opposites[event]
 
     _sweep_line_data: KeyedSet[SweepLineKey[hints.Scalar], Event]
 
@@ -106,7 +103,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         while self:
             event = self._pop()
             if is_right_event(event):
-                opposite_event = self.to_opposite_event(event)
+                opposite_event = self._to_opposite_event(event)
                 assert is_left_event(opposite_event)
                 equal_segment_event = self._find(opposite_event)
                 if equal_segment_event is not None:
@@ -280,7 +277,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
             self, event: Event, mid_point: hints.Point[hints.Scalar], /
     ) -> t.Tuple[Event, Event]:
         assert is_left_event(event)
-        opposite_event = self.to_opposite_event(event)
+        opposite_event = self._to_opposite_event(event)
         mid_point_to_event_end_event: Event = Event(len(self.endpoints))
         self._segments_ids.append(self._left_event_to_segment_id(event))
         self.endpoints.append(mid_point)
@@ -418,17 +415,17 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         for event in contour_events:
             are_events_processed[events_ids[event]] = True
             are_events_processed[
-                events_ids[self.to_opposite_event(event)]
+                events_ids[self._to_opposite_event(event)]
             ] = True
             if is_left_event(event):
                 are_from_in_to_out[events_ids[event]] = False
                 contours_ids[events_ids[event]] = contour_id
             else:
                 are_from_in_to_out[
-                    events_ids[self.to_opposite_event(event)]
+                    events_ids[self._to_opposite_event(event)]
                 ] = True
                 contours_ids[
-                    events_ids[self.to_opposite_event(event)]
+                    events_ids[self._to_opposite_event(event)]
                 ] = contour_id
 
     def _push(self, event: Event, /) -> None:
@@ -441,7 +438,10 @@ class Operation(ABC, t.Generic[hints.Scalar]):
     def _to_left_event(self, event: Event, /) -> Event:
         return (event
                 if is_left_event(event)
-                else self.to_opposite_event(event))
+                else self._to_opposite_event(event))
+
+    def _to_opposite_event(self, event: Event, /) -> Event:
+        return self._opposites[event]
 
     def _to_sweep_line_key(
             self, event: Event, /
