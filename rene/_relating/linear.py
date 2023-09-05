@@ -133,12 +133,11 @@ class Operation(t.Generic[hints.Scalar]):
     def to_event_start(self, event: Event, /) -> hints.Point[hints.Scalar]:
         return self.endpoints[event]
 
-    def to_relation(
-            self,
-            first_is_subset: bool,
-            second_is_subset: bool,
-            min_max_x: hints.Scalar
-    ) -> Relation:
+    def to_relation(self,
+                    first_is_subset: bool,
+                    second_is_subset: bool,
+                    min_max_x: hints.Scalar,
+                    /) -> Relation:
         state: RelationState[hints.Scalar] = RelationState(
                 first_is_subset=first_is_subset,
                 second_is_subset=second_is_subset,
