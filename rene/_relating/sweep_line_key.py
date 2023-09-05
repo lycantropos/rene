@@ -9,7 +9,7 @@ from rene._utils import orient
 from .event import Event
 
 
-class BinarySweepLineKey(t.Generic[hints.Scalar]):
+class SweepLineKey(t.Generic[hints.Scalar]):
     endpoints: Map[Event, hints.Point[hints.Scalar]]
     event: Event
     is_from_first_operand: bool

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import typing as t
-from itertools import chain, groupby
+from itertools import (chain,
+                       groupby)
 
 import typing_extensions as te
 from dendroid import red_black
@@ -20,8 +21,8 @@ from .event import (Event,
                     is_left_event,
                     is_right_event,
                     left_event_to_position)
-from .events_queue_key import BinaryEventsQueueKey as EventsQueueKey
-from .sweep_line_key import BinarySweepLineKey as SweepLineKey
+from .events_queue_key import EventsQueueKey
+from .sweep_line_key import SweepLineKey
 
 
 def dot_multiply(first_start: hints.Point[hints.Scalar],

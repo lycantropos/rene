@@ -10,7 +10,7 @@ from .event import (Event,
                     is_left_event)
 
 
-class BinaryEventsQueueKey(t.Generic[hints.Scalar]):
+class EventsQueueKey(t.Generic[hints.Scalar]):
     event: Event
     is_from_first_operand: bool
     endpoints: Map[Event, hints.Point[hints.Scalar]]
