@@ -10,7 +10,8 @@ from dendroid.hints import KeyedSet
 from prioq.base import PriorityQueue
 
 from rene import (Orientation,
-                  Relation, hints)
+                  Relation,
+                  hints)
 from rene._utils import (all_equal,
                          is_even,
                          orient,
