@@ -12,7 +12,7 @@ from rene._utils import (orient,
                          to_segments_intersection_point,
                          to_sorted_pair)
 from .event import (Event,
-                    is_left_event,
+                    is_event_left,
                     segment_id_to_left_event,
                     segment_id_to_right_event)
 from .events_queue_key import EventsQueueKey
@@ -57,7 +57,7 @@ class EventsRegistry(t.Generic[hints.Scalar]):
     def to_event_segment_id(self, event: Event, /) -> int:
         return self._to_left_event_segment_id(
                 event
-                if is_left_event(event)
+                if is_event_left(event)
                 else self._to_opposite_event(event)
         )
 
@@ -104,7 +104,7 @@ class EventsRegistry(t.Generic[hints.Scalar]):
     def __iter__(self) -> t.Iterator[Event]:
         while self:
             event = self._pop()
-            if is_left_event(event):
+            if is_event_left(event):
                 equal_segment_event = self._find(event)
                 if equal_segment_event is None:
                     self._add(event)
@@ -139,18 +139,18 @@ class EventsRegistry(t.Generic[hints.Scalar]):
                     yield event
 
     def _above(self, event: Event, /) -> t.Optional[Event]:
-        assert is_left_event(event)
+        assert is_event_left(event)
         try:
             return self._sweep_line_data.next(event)
         except ValueError:
             return None
 
     def _add(self, event: Event, /) -> None:
-        assert is_left_event(event)
+        assert is_event_left(event)
         self._sweep_line_data.add(event)
 
     def _below(self, event: Event, /) -> t.Optional[Event]:
-        assert is_left_event(event)
+        assert is_event_left(event)
         try:
             return self._sweep_line_data.prev(event)
         except ValueError:
@@ -251,7 +251,7 @@ class EventsRegistry(t.Generic[hints.Scalar]):
     def _divide(
             self, event: Event, mid_point: hints.Point[hints.Scalar], /
     ) -> t.Tuple[Event, Event]:
-        assert is_left_event(event)
+        assert is_event_left(event)
         opposite_event = self._to_opposite_event(event)
         mid_point_to_event_end_event = Event(len(self._endpoints))
         self._segments_ids.append(self._to_left_event_segment_id(event))
@@ -322,7 +322,7 @@ class EventsRegistry(t.Generic[hints.Scalar]):
                                          max_start_to_min_end_event)
 
     def _find(self, event: Event, /) -> t.Optional[Event]:
-        assert is_left_event(event)
+        assert is_event_left(event)
         try:
             candidate = self._sweep_line_data.floor(event)
         except ValueError:
@@ -368,11 +368,11 @@ class EventsRegistry(t.Generic[hints.Scalar]):
         self._events_queue_data.push(event)
 
     def _remove(self, event: Event, /) -> None:
-        assert is_left_event(event)
+        assert is_event_left(event)
         self._sweep_line_data.remove(event)
 
     def _to_left_event_segment_id(self, event: Event, /) -> int:
-        assert is_left_event(event)
+        assert is_event_left(event)
         return self._segments_ids[event // 2]
 
     def _to_min_collinear_segment_id(self, segment_id: int, /) -> int:

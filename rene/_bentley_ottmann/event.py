@@ -4,7 +4,7 @@ from rene._utils import is_even
 
 Event = NewType('Event', int)
 
-is_left_event = is_even
+is_event_left = is_even
 
 
 def segment_id_to_left_event(segment_id: int, /) -> Event:
