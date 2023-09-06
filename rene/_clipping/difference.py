@@ -22,7 +22,7 @@ from . import (linear,
                mixed,
                shaped)
 from .event import (Event,
-                    is_right_event)
+                    is_event_right)
 
 
 class LinearDifference(linear.Operation[hints.Scalar]):
@@ -35,7 +35,7 @@ class LinearDifference(linear.Operation[hints.Scalar]):
                     events,
                     key=self._to_event_endpoints
             )
-            if all(self._is_from_first_operand_event(event)
+            if all(self._is_event_from_first_operand(event)
                    for event in equal_segment_events)
         ]
 
@@ -43,15 +43,15 @@ class LinearDifference(linear.Operation[hints.Scalar]):
 class LinearShapedDifference(mixed.Operation[hints.Scalar]):
     def _detect_if_left_event_from_result(self, event: Event, /) -> bool:
         return (self._is_left_event_from_first_operand(event)
-                and self._is_outside_left_event(event))
+                and self._is_left_event_outside(event))
 
 
 class ShapedDifference(shaped.Operation[hints.Scalar]):
     def _detect_if_left_event_from_result(self, event: Event, /) -> bool:
-        return (self._is_outside_left_event(event)
+        return (self._is_left_event_outside(event)
                 if self._is_left_event_from_first_operand(event)
-                else (self._is_inside_left_event(event)
-                      or self._is_common_polyline_component_left_event(event)))
+                else (self._is_left_event_inside(event)
+                      or self._is_left_event_common_polyline_component(event)))
 
 
 _Multisegmental = t.Union[
@@ -373,7 +373,7 @@ def subtract_multisegmental_from_multisegmental(
     for event in operation:
         if operation.to_event_start(event).x > minuend_max_x:
             break
-        if is_right_event(event):
+        if is_event_right(event):
             events.append(operation.to_opposite_event(event))
     segments = operation.reduce_events(events, segment_cls)
     segments.extend(
@@ -427,7 +427,7 @@ def subtract_multisegmental_from_segment(
     for event in operation:
         if operation.to_event_start(event).x > minuend_max_x:
             break
-        if is_right_event(event):
+        if is_event_right(event):
             events.append(operation.to_opposite_event(event))
     return collect_maybe_empty_segments(
             operation.reduce_events(events, segment_cls), empty_cls,

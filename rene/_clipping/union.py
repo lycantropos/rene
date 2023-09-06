@@ -17,7 +17,7 @@ from rene._utils import (collect_non_empty_polygons,
 from . import (linear,
                shaped)
 from .event import (Event,
-                    is_right_event)
+                    is_event_right)
 
 
 class LinearUnion(linear.Operation[hints.Scalar]):
@@ -36,9 +36,9 @@ class LinearUnion(linear.Operation[hints.Scalar]):
 
 class ShapedUnion(shaped.Operation[hints.Scalar]):
     def _detect_if_left_event_from_result(self, event: Event, /) -> bool:
-        return (self._is_outside_left_event(event)
+        return (self._is_left_event_outside(event)
                 or (not self._is_left_event_from_first_operand(event)
-                    and self._is_common_region_boundary_left_event(event)))
+                    and self._is_left_event_common_region_boundary(event)))
 
 
 _Multisegmental = t.Union[
@@ -207,7 +207,7 @@ def unite_multisegmental_with_multisegmental(
     )
     segments = operation.reduce_events([operation.to_opposite_event(event)
                                         for event in operation
-                                        if is_right_event(event)], segment_cls)
+                                        if is_event_right(event)], segment_cls)
     segments.extend(
             first_segments[index]
             for index in flags_to_false_indices(

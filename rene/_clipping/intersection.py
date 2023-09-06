@@ -17,8 +17,8 @@ from . import (linear,
                mixed,
                shaped)
 from .event import (Event,
-                    is_left_event,
-                    is_right_event)
+                    is_event_left,
+                    is_event_right)
 from .utils import has_two_or_more_elements
 
 
@@ -40,20 +40,20 @@ class LinearIntersection(linear.Operation[hints.Scalar]):
 class LinearShapedIntersection(mixed.Operation[hints.Scalar]):
     def _detect_if_left_event_from_result(self, event: Event, /) -> bool:
         return (self._is_left_event_from_first_operand(event)
-                and not self._is_outside_left_event(event))
+                and not self._is_left_event_outside(event))
 
 
 class ShapedLinearIntersection(mixed.Operation[hints.Scalar]):
     def _detect_if_left_event_from_result(self, event: Event, /) -> bool:
         return (not self._is_left_event_from_first_operand(event)
-                and not self._is_outside_left_event(event))
+                and not self._is_left_event_outside(event))
 
 
 class ShapedIntersection(shaped.Operation[hints.Scalar]):
     def _detect_if_left_event_from_result(self, event: Event, /) -> bool:
-        return (self._is_inside_left_event(event)
+        return (self._is_left_event_inside(event)
                 or not self._is_left_event_from_first_operand(event)
-                and self._is_common_region_boundary_left_event(event))
+                and self._is_left_event_common_region_boundary(event))
 
 
 _Multisegmental = t.Union[
@@ -199,7 +199,7 @@ def intersect_multipolygon_with_multisegmental(
     for event in operation:
         if operation.to_event_start(event).x > min_max_x:
             break
-        if is_left_event(event):
+        if is_event_left(event):
             events.append(event)
     return collect_maybe_empty_segments(
             operation.reduce_events(events, segment_cls), empty_cls,
@@ -311,7 +311,7 @@ def intersect_multipolygon_with_segment(
     for event in operation:
         if operation.to_event_start(event).x > min_max_x:
             break
-        if is_left_event(event):
+        if is_event_left(event):
             events.append(event)
     return collect_maybe_empty_segments(
             operation.reduce_events(events, segment_cls), empty_cls,
@@ -385,7 +385,7 @@ def intersect_multisegmental_with_multipolygon(
     for event in operation:
         if operation.to_event_start(event).x > min_max_x:
             break
-        if is_left_event(event):
+        if is_event_left(event):
             events.append(event)
     return collect_maybe_empty_segments(
             operation.reduce_events(events, segment_cls), empty_cls,
@@ -457,7 +457,7 @@ def intersect_multisegmental_with_multisegmental(
     for event in operation:
         if operation.to_event_start(event).x > min_max_x:
             break
-        if is_right_event(event):
+        if is_event_right(event):
             events.append(operation.to_opposite_event(event))
     return collect_maybe_empty_segments(
             operation.reduce_events(events, segment_cls), empty_cls,
@@ -513,7 +513,7 @@ def intersect_multisegmental_with_polygon(
     for event in operation:
         if operation.to_event_start(event).x > min_max_x:
             break
-        if is_left_event(event):
+        if is_event_left(event):
             events.append(event)
     return collect_maybe_empty_segments(
             operation.reduce_events(events, segment_cls), empty_cls,
@@ -660,7 +660,7 @@ def intersect_polygon_with_multisegmental(
     for event in operation:
         if operation.to_event_start(event).x > min_max_x:
             break
-        if is_left_event(event):
+        if is_event_left(event):
             events.append(event)
     return collect_maybe_empty_segments(
             operation.reduce_events(events, segment_cls), empty_cls,
@@ -740,7 +740,7 @@ def intersect_polygon_with_segment(
     for event in operation:
         if operation.to_event_start(event).x > min_max_x:
             break
-        if is_left_event(event):
+        if is_event_left(event):
             events.append(event)
     return collect_maybe_empty_segments(
             operation.reduce_events(events, segment_cls), empty_cls,
@@ -817,7 +817,7 @@ def intersect_segment_with_multipolygon(
     for event in operation:
         if operation.to_event_start(event).x > min_max_x:
             break
-        if is_left_event(event):
+        if is_event_left(event):
             events.append(event)
     return collect_maybe_empty_segments(
             operation.reduce_events(events, segment_cls), empty_cls,
@@ -884,7 +884,7 @@ def intersect_segment_with_polygon(
     for event in operation:
         if operation.to_event_start(event).x > min_max_x:
             break
-        if is_left_event(event):
+        if is_event_left(event):
             events.append(event)
     return collect_maybe_empty_segments(
             operation.reduce_events(events, segment_cls), empty_cls,

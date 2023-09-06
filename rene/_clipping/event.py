@@ -8,10 +8,10 @@ Event = NewType('Event', int)
 
 UNDEFINED_EVENT = Event(sys.maxsize)
 
-is_left_event = is_even
-is_right_event = is_odd
+is_event_left = is_even
+is_event_right = is_odd
 
 
 def left_event_to_position(event: Event, /) -> int:
-    assert is_left_event(event)
+    assert is_event_left(event)
     return event // 2

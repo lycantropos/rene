@@ -16,8 +16,8 @@ from rene._utils import (is_even,
                          to_segments_intersection_point,
                          to_sorted_pair)
 from .event import (Event,
-                    is_left_event,
-                    is_right_event,
+                    is_event_left,
+                    is_event_right,
                     left_event_to_position)
 from .events_queue_key import EventsQueueKey
 from .sweep_line_key import SweepLineKey
@@ -82,7 +82,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         ] = PriorityQueue(
                 *map(Event, range(initial_events_count)),
                 key=lambda event: EventsQueueKey(
-                        event, self._is_from_first_operand_event(event),
+                        event, self._is_event_from_first_operand(event),
                         self.endpoints, self._opposites
                 )
         )
@@ -94,9 +94,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
     def __iter__(self) -> t.Iterator[Event]:
         while self:
             event = self._pop()
-            if is_right_event(event):
+            if is_event_right(event):
                 opposite_event = self.to_opposite_event(event)
-                assert is_left_event(opposite_event)
+                assert is_event_left(opposite_event)
                 equal_segment_event = self._find(opposite_event)
                 if equal_segment_event is not None:
                     above_event, below_event = (
@@ -118,18 +118,18 @@ class Operation(ABC, t.Generic[hints.Scalar]):
             yield event
 
     def _above(self, event: Event, /) -> t.Optional[Event]:
-        assert is_left_event(event)
+        assert is_event_left(event)
         try:
             return self._sweep_line_data.next(event)
         except ValueError:
             return None
 
     def _add(self, event: Event, /) -> None:
-        assert is_left_event(event)
+        assert is_event_left(event)
         self._sweep_line_data.add(event)
 
     def _below(self, event: Event, /) -> t.Optional[Event]:
-        assert is_left_event(event)
+        assert is_event_left(event)
         try:
             return self._sweep_line_data.prev(event)
         except ValueError:
@@ -229,7 +229,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
     def _divide(
             self, event: Event, mid_point: hints.Point[hints.Scalar], /
     ) -> t.Tuple[Event, Event]:
-        assert is_left_event(event)
+        assert is_event_left(event)
         opposite_event = self.to_opposite_event(event)
         mid_point_to_event_end_event: Event = Event(len(self.endpoints))
         self._segments_ids.append(self._left_event_to_segment_id(event))
@@ -241,7 +241,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         self._opposites.append(event)
         self._opposites[event] = mid_point_to_event_start_event
         assert (self._is_left_event_from_first_operand(event)
-                is self._is_from_first_operand_event(
+                is self._is_event_from_first_operand(
                         mid_point_to_event_start_event
                 ))
         assert (self._is_left_event_from_first_operand(event)
@@ -281,7 +281,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         self._divide_event_by_midpoint(min_start_event, max_start)
 
     def _find(self, event: Event, /) -> t.Optional[Event]:
-        assert is_left_event(event)
+        assert is_event_left(event)
         candidate = self._sweep_line_data.tree.find(
                 self._to_sweep_line_key(event)
         )
@@ -289,7 +289,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 if candidate is red_black.NIL
                 else candidate.value)
 
-    def _is_from_first_operand_event(self, event: Event, /) -> bool:
+    def _is_event_from_first_operand(self, event: Event, /) -> bool:
         return self._is_left_event_from_first_operand(
                 self._to_left_event(event)
         )
@@ -308,7 +308,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         self._events_queue_data.push(event)
 
     def _remove(self, event: Event, /) -> None:
-        assert is_left_event(event)
+        assert is_event_left(event)
         self._sweep_line_data.remove(event)
 
     def _to_event_endpoints(
@@ -318,7 +318,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
 
     def _to_left_event(self, event: Event, /) -> Event:
         return (event
-                if is_left_event(event)
+                if is_event_left(event)
                 else self.to_opposite_event(event))
 
     def _to_sweep_line_key(

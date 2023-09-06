@@ -17,7 +17,7 @@ from rene._utils import (collect_maybe_empty_polygons,
 from . import (linear,
                shaped)
 from .event import (Event,
-                    is_right_event)
+                    is_event_right)
 from .utils import has_two_or_more_elements
 
 
@@ -38,7 +38,7 @@ class LinearSymmetricDifference(linear.Operation[hints.Scalar]):
 
 class ShapedSymmetricDifference(shaped.Operation[hints.Scalar]):
     def _detect_if_left_event_from_result(self, event: Event, /) -> bool:
-        return not self._is_overlap_left_event(event)
+        return not self._is_left_event_overlapping(event)
 
 
 _Multisegmental = t.Union[
@@ -349,7 +349,7 @@ def symmetric_subtract_multisegmental_from_segment(
     )
     segments = operation.reduce_events([operation.to_opposite_event(event)
                                         for event in operation
-                                        if is_right_event(event)], segment_cls)
+                                        if is_event_right(event)], segment_cls)
     segments.extend(
             subtrahend_segments[index]
             for index in flags_to_false_indices(
@@ -394,7 +394,7 @@ def symmetric_subtract_segment_from_multisegmental(
     )
     segments = operation.reduce_events([operation.to_opposite_event(event)
                                         for event in operation
-                                        if is_right_event(event)], segment_cls)
+                                        if is_event_right(event)], segment_cls)
     segments.extend(
             minuend_segments[index]
             for index in flags_to_false_indices(
@@ -455,7 +455,7 @@ def symmetric_subtract_multisegmental_from_multisegmental(
     )
     segments = operation.reduce_events([operation.to_opposite_event(event)
                                         for event in operation
-                                        if is_right_event(event)], segment_cls)
+                                        if is_event_right(event)], segment_cls)
     segments.extend(
             minuend_segments[index]
             for index in flags_to_false_indices(
