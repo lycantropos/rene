@@ -12,8 +12,10 @@ pub enum Relation {
     Cover,
     /// intersection is a strict subset of each of the geometries,
     /// has dimension less than at least of one of the geometries,
-    /// one of the geometries lies in interior & exterior of the other geometry
-    /// or boundaries cross
+    /// one of the geometries intersects interior of the other
+    /// or if we traverse boundary of each of the geometries in any direction
+    /// then boundary of the other geometry will be on both sides
+    /// at some point of boundaries intersection
     Cross,
     /// at least one geometry is non-empty and intersection is empty
     Disjoint,

@@ -51,8 +51,9 @@ class Relation(Base):
     #: interior of the geometry is a superset of the other
     COVER = 3
     #: intersection is a strict subset of each of the geometries,
-    #: has dimension less than at least of one of the geometries
-    #: and if we traverse boundary of each of the geometries in any direction
+    #: has dimension less than at least of one of the geometries,
+    #: one of the geometries intersects interior of the other
+    #: or if we traverse boundary of each of the geometries in any direction
     #: then boundary of the other geometry will be on both sides
     #: at some point of boundaries intersection
     CROSS = 4
