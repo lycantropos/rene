@@ -304,7 +304,7 @@ impl<Point> EventsContainer for Operation<Point> {
 }
 
 impl<Point> Operation<Point> {
-    pub(crate) fn has_crossing<
+    fn has_crossing<
         Output: Div<Output = Output>
             + Neg<Output = Output>
             + Ord
@@ -379,10 +379,7 @@ impl<Point> Operation<Point> {
         }))
     }
 
-    pub(crate) fn has_intersection(
-        &self,
-        same_start_events: &[Event],
-    ) -> bool {
+    fn has_intersection(&self, same_start_events: &[Event]) -> bool {
         debug_assert!(!same_start_events.is_empty());
         !all_equal(
             same_start_events
@@ -391,12 +388,8 @@ impl<Point> Operation<Point> {
         )
     }
 
-    pub(crate) fn is_from_first_operand_event(&self, event: Event) -> bool {
+    fn is_from_first_operand_event(&self, event: Event) -> bool {
         self.is_left_event_from_first_operand(self.to_left_event(event))
-    }
-
-    pub(crate) fn to_opposite_event(&self, event: Event) -> Event {
-        self.opposites[event]
     }
 
     fn get_endpoints(&self) -> &Vec<Point> {
@@ -430,6 +423,10 @@ impl<Point> Operation<Point> {
         } else {
             self.to_opposite_event(event)
         }
+    }
+
+    fn to_opposite_event(&self, event: Event) -> Event {
+        self.opposites[event]
     }
 
     fn to_signed_point_event_squared_cosine<
