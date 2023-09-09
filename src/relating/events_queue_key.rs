@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use super::event::{is_left_event, Event};
+use super::event::{is_event_left, Event};
 use crate::operations::Orient;
 use crate::oriented::Orientation;
 
@@ -90,13 +90,13 @@ where
 {
     match endpoints[first_event].cmp(&endpoints[second_event]) {
         Ordering::Equal => {
-            if is_left_event(first_event) == is_left_event(second_event) {
+            if is_event_left(first_event) == is_event_left(second_event) {
                 match endpoints[first_event].orient(
                     &endpoints[opposites[first_event]],
                     &endpoints[opposites[second_event]],
                 ) {
                     Orientation::Clockwise => {
-                        if is_left_event(first_event) {
+                        if is_event_left(first_event) {
                             Ordering::Greater
                         } else {
                             Ordering::Less
@@ -114,14 +114,14 @@ where
                         }
                     }
                     Orientation::Counterclockwise => {
-                        if is_left_event(first_event) {
+                        if is_event_left(first_event) {
                             Ordering::Less
                         } else {
                             Ordering::Greater
                         }
                     }
                 }
-            } else if is_left_event(first_event) {
+            } else if is_event_left(first_event) {
                 Ordering::Greater
             } else {
                 Ordering::Less

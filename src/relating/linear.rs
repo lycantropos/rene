@@ -16,9 +16,9 @@ use crate::relating::utils::all_equal;
 use crate::sweeping::traits::{EventsContainer, EventsQueue, SweepLine};
 use crate::traits::{Elemental, Segmental};
 
-use super::event::is_right_event;
+use super::event::is_event_right;
 use super::event::{
-    is_left_event, left_event_to_position, segment_id_to_left_event,
+    is_event_left, left_event_to_position, segment_id_to_left_event,
     segment_id_to_right_event, Event,
 };
 use super::events_queue_key::EventsQueueKey;
@@ -65,7 +65,7 @@ impl RelationState {
             }
             self.detect_touch_or_overlap(same_start_events, operation);
             self.detect_crossing(same_start_events, operation);
-        } else if operation.is_from_first_operand_event(same_start_events[0]) {
+        } else if operation.is_event_from_first_operand(same_start_events[0]) {
             if self.first_is_subset {
                 self.first_is_subset = false
             }
@@ -82,7 +82,7 @@ impl RelationState {
         let mut left_events = same_start_events
             .iter()
             .copied()
-            .filter(|&event| is_left_event(event));
+            .filter(|&event| is_event_left(event));
         match left_events.next() {
             Some(mut prev_event) => loop {
                 if let Some(event) = left_events.next() {
@@ -98,7 +98,7 @@ impl RelationState {
                             break;
                         }
                     } else {
-                        if operation.is_from_first_operand_event(prev_event) {
+                        if operation.is_event_from_first_operand(prev_event) {
                             if self.first_is_subset {
                                 self.first_is_subset = false
                             }
@@ -108,7 +108,7 @@ impl RelationState {
                         prev_event = event;
                     }
                 } else {
-                    if operation.is_from_first_operand_event(prev_event) {
+                    if operation.is_event_from_first_operand(prev_event) {
                         if self.first_is_subset {
                             self.first_is_subset = false
                         }
@@ -210,7 +210,7 @@ where
                         break;
                     }
                     if start.x().gt(min_max_x) {
-                        if self.is_from_first_operand_event(event) {
+                        if self.is_event_from_first_operand(event) {
                             if state.first_is_subset {
                                 state.first_is_subset = false
                             }
@@ -259,9 +259,9 @@ where
     for<'a> <&'a Point as Elemental>::Coordinate: PartialEq,
 {
     fn process_event(&mut self, event: Event) {
-        if is_right_event(event) {
+        if is_event_right(event) {
             let opposite_event = self.to_opposite_event(event);
-            debug_assert!(is_left_event(opposite_event));
+            debug_assert!(is_event_left(opposite_event));
             if let Some(equal_segment_event) =
                 <Self as SweepLine>::find(self, opposite_event)
             {
@@ -277,7 +277,7 @@ where
                 }
             }
         } else if self.insert(event) {
-            debug_assert!(is_left_event(event));
+            debug_assert!(is_event_left(event));
             let (maybe_above_event, maybe_below_event) =
                 (self.above(event), self.below(event));
             if let Some(above_event) = maybe_above_event {
@@ -324,7 +324,7 @@ impl<Point> Operation<Point> {
         }
         let from_first_operand_events_count = same_start_events
             .iter()
-            .filter(|&&event| self.is_from_first_operand_event(event))
+            .filter(|&&event| self.is_event_from_first_operand(event))
             .count();
         if !(1 < from_first_operand_events_count
             && from_first_operand_events_count < same_start_events.len() - 1)
@@ -337,7 +337,7 @@ impl<Point> Operation<Point> {
             Vec::with_capacity(same_start_events.len()),
         );
         for &event in same_start_events {
-            (if self.is_from_first_operand_event(event) {
+            (if self.is_event_from_first_operand(event) {
                 &mut from_first_events
             } else {
                 &mut from_second_events
@@ -384,11 +384,11 @@ impl<Point> Operation<Point> {
         !all_equal(
             same_start_events
                 .iter()
-                .map(|&event| self.is_from_first_operand_event(event)),
+                .map(|&event| self.is_event_from_first_operand(event)),
         )
     }
 
-    fn is_from_first_operand_event(&self, event: Event) -> bool {
+    fn is_event_from_first_operand(&self, event: Event) -> bool {
         self.is_left_event_from_first_operand(self.to_left_event(event))
     }
 
@@ -411,14 +411,14 @@ impl<Point> Operation<Point> {
     fn to_events_queue_key(&self, event: Event) -> EventsQueueKey<Point> {
         EventsQueueKey::new(
             event,
-            self.is_from_first_operand_event(event),
+            self.is_event_from_first_operand(event),
             self.get_endpoints(),
             self.get_opposites(),
         )
     }
 
     fn to_left_event(&self, event: Event) -> Event {
-        if is_left_event(event) {
+        if is_event_left(event) {
             event
         } else {
             self.to_opposite_event(event)
@@ -651,7 +651,7 @@ where
 
 impl<Point: Clone> Operation<Point> {
     fn divide(&mut self, event: Event, mid_point: Point) -> (Event, Event) {
-        debug_assert!(is_left_event(event));
+        debug_assert!(is_event_left(event));
         let opposite_event = self.to_opposite_event(event);
         let mid_point_to_event_end_event: Event = self.endpoints.len();
         self.segments_ids.push(self.left_event_to_segment_id(event));
@@ -664,7 +664,7 @@ impl<Point: Clone> Operation<Point> {
         self.opposites[event] = mid_point_to_event_start_event;
         debug_assert_eq!(
             self.is_left_event_from_first_operand(event),
-            self.is_from_first_operand_event(mid_point_to_event_start_event)
+            self.is_event_from_first_operand(mid_point_to_event_start_event)
         );
         debug_assert_eq!(
             self.is_left_event_from_first_operand(event),
