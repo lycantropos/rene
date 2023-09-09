@@ -59,10 +59,10 @@ def relate_to_multisegmental(
         )
         return (Relation.OVERLAP
                 if (relation is Relation.COMPONENT
-                    or (relation is Relation.COMPOSITE
+                    or ((relation is Relation.COMPOSITE
+                         or relation is Relation.EQUAL)
                         and (len(first_intersecting_segments_ids)
-                             != len(first_segments)))
-                    or relation is Relation.EQUAL)
+                             != len(first_segments))))
                 else relation.complement)
     max_min_x = max(
             min(first_boxes[segment_id].min_x
