@@ -12,13 +12,15 @@ from rene import (Location,
                   Orientation,
                   Relation,
                   hints)
-from rene._relating import segment
+from rene._relating import segment_endpoints
 from rene._utils import (locate_point_in_point_point_point_circle,
                          orient)
 from .mesh import (Mesh,
                    build_delaunay_triangulation,
                    orient_point_to_edge)
-from .quad_edge import (QuadEdge, UNDEFINED_EDGE, to_opposite_edge)
+from .quad_edge import (UNDEFINED_EDGE,
+                        QuadEdge,
+                        to_opposite_edge)
 from .vertices import (ContourVertex,
                        PolygonVertexPosition)
 
@@ -303,7 +305,7 @@ def detect_crossings(mesh: Mesh[hints.Scalar],
     result = []
     while mesh.to_start(candidate) != constraint_end:
         last_crossing = candidate
-        assert segment.relate_to_segment(
+        assert segment_endpoints.relate_to_segment_endpoints(
                 mesh.to_start(last_crossing), mesh.to_end(last_crossing),
                 constraint_start, constraint_end
         ) is Relation.CROSS
@@ -316,12 +318,16 @@ def detect_crossings(mesh: Mesh[hints.Scalar],
                     is Orientation.CLOCKWISE)):
             candidate = to_opposite_edge(mesh.to_right_from_end(last_crossing))
     assert all(to_opposite_edge(edge) not in result for edge in result)
-    assert all(edge in result or to_opposite_edge(edge) in result
-               for edge in mesh.to_unique_edges()
-               if (segment.relate_to_segment(mesh.to_start(edge),
-                                             mesh.to_end(edge),
-                                             constraint_start, constraint_end)
-                   is Relation.CROSS))
+    assert all(
+            edge in result or to_opposite_edge(edge) in result
+            for edge in mesh.to_unique_edges()
+            if (
+                    segment_endpoints.relate_to_segment_endpoints(
+                            mesh.to_start(edge), mesh.to_end(edge),
+                            constraint_start, constraint_end
+                    ) is Relation.CROSS
+            )
+    )
     return result
 
 
@@ -523,7 +529,7 @@ def resolve_crossings(mesh: Mesh[hints.Scalar],
         crossing = crossings_queue.popleft()
         if is_convex_quadrilateral_diagonal(mesh, crossing):
             mesh.swap_diagonal(crossing)
-            relation = segment.relate_to_segment(
+            relation = segment_endpoints.relate_to_segment_endpoints(
                     mesh.to_start(crossing), mesh.to_end(crossing),
                     constraint_start, constraint_end
             )
