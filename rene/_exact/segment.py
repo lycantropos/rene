@@ -45,13 +45,11 @@ class Segment:
 
     def relate_to(self, other: hints.Compound[Fraction], /) -> Relation:
         if isinstance(other, self._context.contour_cls):
-            return segment.relate_to_contour(self._start, self._end, other)
+            return segment.relate_to_contour(self, other)
         elif isinstance(other, self._context.multisegment_cls):
-            return segment.relate_to_multisegment(self._start, self._end,
-                                                  other)
+            return segment.relate_to_multisegment(self, other)
         elif isinstance(other, self._context.segment_cls):
-            return segment.relate_to_segment(self._start, self._end,
-                                             other.start, other.end)
+            return segment.relate_to_segment(self, other)
         elif isinstance(other, self._context.empty_cls):
             return Relation.DISJOINT
         else:

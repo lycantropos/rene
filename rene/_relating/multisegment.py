@@ -1,9 +1,9 @@
 from rene import (Relation,
                   hints)
 from .multisegmental import relate_to_multisegmental
-from .segment import (
+from .segment import relate_to_multisegment as relate_segment_to_multisegment
+from .segment_endpoints import (
     relate_to_contour_segments as relate_segment_to_contour_segments,
-    relate_to_multisegment as relate_segment_to_multisegment,
     relate_to_multisegment_segments as relate_segment_to_multisegment_segments
 )
 
@@ -31,7 +31,6 @@ def relate_to_multisegment(
 
 
 def relate_to_segment(multisegment: hints.Multisegment[hints.Scalar],
-                      start: hints.Point[hints.Scalar],
-                      end: hints.Point[hints.Scalar],
+                      segment: hints.Segment[hints.Scalar],
                       /) -> Relation:
-    return relate_segment_to_multisegment(start, end, multisegment).complement
+    return relate_segment_to_multisegment(segment, multisegment).complement

@@ -8,7 +8,7 @@ from .linear import Operation
 _Multisegmental = t.Union[
     hints.Contour[hints.Scalar], hints.Multisegment[hints.Scalar]
 ]
-_SegmentToSegmentsRelater = t.Callable[
+_EndpointsToSegmentsRelater = t.Callable[
     [
         hints.Point[hints.Scalar], hints.Point[hints.Scalar],
         t.Sequence[hints.Segment[hints.Scalar]]
@@ -20,8 +20,8 @@ _SegmentToSegmentsRelater = t.Callable[
 def relate_to_multisegmental(
         first: _Multisegmental[hints.Scalar],
         second: _Multisegmental[hints.Scalar],
-        first_to_second_relater: _SegmentToSegmentsRelater[hints.Scalar],
-        second_to_first_relater: _SegmentToSegmentsRelater[hints.Scalar],
+        first_to_second_relater: _EndpointsToSegmentsRelater[hints.Scalar],
+        second_to_first_relater: _EndpointsToSegmentsRelater[hints.Scalar],
         /
 ) -> Relation:
     first_bounding_box, second_bounding_box = (first.bounding_box,

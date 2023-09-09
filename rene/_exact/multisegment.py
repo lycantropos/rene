@@ -75,7 +75,9 @@ class Multisegment:
         elif isinstance(other, self._context.multisegment_cls):
             return multisegment.relate_to_multisegment(self, other)
         elif isinstance(other, self._context.segment_cls):
-            return multisegment.relate_to_segment(self, other.start, other.end)
+            return multisegment.relate_to_segment(self, other)
+        elif isinstance(other, self._context.polygon_cls):
+            return multisegment.relate_to_region(self, other.border)
         elif isinstance(other, self._context.empty_cls):
             return Relation.DISJOINT
         else:
