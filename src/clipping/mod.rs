@@ -1,4 +1,4 @@
-pub(crate) use self::event::{is_left_event, is_right_event, Event};
+pub(crate) use self::event::{is_event_left, is_event_right, Event};
 pub(crate) use self::operation_kind::{
     DIFFERENCE, INTERSECTION, SYMMETRIC_DIFFERENCE, UNION,
 };

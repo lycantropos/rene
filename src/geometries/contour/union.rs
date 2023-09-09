@@ -1,7 +1,7 @@
 use crate::bounded::{Bounded, Box};
 use crate::clipping::linear::Operation;
 use crate::clipping::traits::ReduceEvents;
-use crate::clipping::{is_right_event, Event, UNION};
+use crate::clipping::{is_event_right, Event, UNION};
 use crate::geometries::{Empty, Multisegment, Point, Segment};
 use crate::operations::{
     do_boxes_have_no_common_continuum, flags_to_false_indices,
@@ -133,7 +133,7 @@ where
             })
         };
         while let Some(event) = operation.next() {
-            if is_right_event(event) {
+            if is_event_right(event) {
                 events.push(operation.to_opposite_event(event));
             }
         }
@@ -238,7 +238,7 @@ where
             })
         };
         while let Some(event) = operation.next() {
-            if is_right_event(event) {
+            if is_event_right(event) {
                 events.push(operation.to_opposite_event(event));
             }
         }

@@ -4,7 +4,7 @@ use crate::clipping::linear::{
     Operation,
 };
 use crate::clipping::traits::ReduceEvents;
-use crate::clipping::{is_left_event, mixed, Event, INTERSECTION};
+use crate::clipping::{is_event_left, mixed, Event, INTERSECTION};
 use crate::geometries::{
     Empty, Multipolygon, Multisegment, Point, Polygon, Segment,
 };
@@ -170,7 +170,7 @@ where
             if operation.get_event_start(event).x().gt(min_max_x) {
                 break;
             }
-            if is_left_event(event) {
+            if is_event_left(event) {
                 events.push(event);
             }
         }
@@ -271,7 +271,7 @@ where
             if operation.get_event_start(event).x().gt(min_max_x) {
                 break;
             }
-            if is_left_event(event) {
+            if is_event_left(event) {
                 events.push(event);
             }
         }

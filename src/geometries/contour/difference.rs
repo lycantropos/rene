@@ -1,6 +1,6 @@
 use crate::bounded::{Bounded, Box};
 use crate::clipping::traits::ReduceEvents;
-use crate::clipping::{is_right_event, linear, mixed};
+use crate::clipping::{is_event_right, linear, mixed};
 use crate::clipping::{Event, DIFFERENCE};
 use crate::geometries::{
     Empty, Multipolygon, Multisegment, Point, Polygon, Segment,
@@ -138,7 +138,7 @@ where
             if operation.get_event_start(event).x().gt(max_x) {
                 break;
             }
-            if is_right_event(event) {
+            if is_event_right(event) {
                 events.push(operation.to_opposite_event(event));
             }
         }
@@ -236,7 +236,7 @@ where
             if operation.get_event_start(event).x().gt(max_x) {
                 break;
             }
-            if is_right_event(event) {
+            if is_event_right(event) {
                 events.push(operation.to_opposite_event(event));
             }
         }
@@ -331,7 +331,7 @@ where
             if operation.get_event_start(event).x().gt(max_x) {
                 break;
             }
-            if is_right_event(event) {
+            if is_event_right(event) {
                 events.push(operation.to_opposite_event(event));
             }
         }
@@ -410,7 +410,7 @@ where
             if operation.get_event_start(event).x().gt(max_x) {
                 break;
             }
-            if is_right_event(event) {
+            if is_event_right(event) {
                 events.push(operation.to_opposite_event(event));
             }
         }

@@ -1,6 +1,6 @@
 use crate::bounded::{Bounded, Box};
 use crate::clipping::traits::ReduceEvents;
-use crate::clipping::{is_left_event, Event, INTERSECTION};
+use crate::clipping::{is_event_left, Event, INTERSECTION};
 use crate::clipping::{mixed, shaped};
 use crate::geometries::{
     Contour, Empty, Multipolygon, Multisegment, Point, Segment,
@@ -153,7 +153,7 @@ where
             if operation.get_event_start(event).x().gt(min_max_x) {
                 break;
             }
-            if is_left_event(event) {
+            if is_event_left(event) {
                 events.push(event);
             }
         }
@@ -292,7 +292,7 @@ where
             if operation.get_event_start(event).x().gt(min_max_x) {
                 break;
             }
-            if is_left_event(event) {
+            if is_event_left(event) {
                 events.push(event);
             }
         }
@@ -340,7 +340,7 @@ where
             if operation.get_event_start(event).x().gt(min_max_x) {
                 break;
             }
-            if is_left_event(event) {
+            if is_event_left(event) {
                 events.push(event);
             }
         }

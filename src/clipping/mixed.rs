@@ -13,9 +13,9 @@ use crate::sweeping::traits::{EventsContainer, EventsQueue, SweepLine};
 use crate::traits::{Elemental, Segmental};
 
 use super::constants::UNDEFINED_INDEX;
-use super::event::is_right_event;
+use super::event::is_event_right;
 use super::event::{
-    is_left_event, left_event_to_position, segment_id_to_left_event,
+    is_event_left, left_event_to_position, segment_id_to_left_event,
     segment_id_to_right_event, Event,
 };
 use super::events_queue_key::EventsQueueKey;
@@ -242,7 +242,7 @@ impl<Point, const IS_FIRST_LINEAR: bool> DetectIfLeftEventFromResult
 {
     fn detect_if_left_event_from_result(&self, event: Event) -> bool {
         self.is_left_event_from_first_operand(event) == IS_FIRST_LINEAR
-            && !self.is_outside_left_event(event)
+            && !self.is_left_event_outside(event)
     }
 }
 
@@ -251,7 +251,7 @@ impl<Point> DetectIfLeftEventFromResult
 {
     fn detect_if_left_event_from_result(&self, event: Event) -> bool {
         self.is_left_event_from_first_operand(event)
-            && self.is_outside_left_event(event)
+            && self.is_left_event_outside(event)
     }
 }
 
@@ -272,9 +272,9 @@ where
 
     fn next(&mut self) -> Option<Self::Item> {
         while let Some(event) = self.pop() {
-            if is_right_event(event) {
+            if is_event_right(event) {
                 let opposite_event = self.to_opposite_event(event);
-                debug_assert!(is_left_event(opposite_event));
+                debug_assert!(is_event_left(opposite_event));
                 if let Some(equal_segment_event) =
                     <Self as SweepLine>::find(self, opposite_event)
                 {
@@ -291,7 +291,7 @@ where
                 }
                 return Some(event);
             } else if self.insert(event) {
-                debug_assert!(is_left_event(event));
+                debug_assert!(is_event_left(event));
                 let maybe_below_event = self.below(event);
                 self.compute_left_event_fields(event, maybe_below_event);
                 if let Some(above_event) = self.above(event) {
@@ -341,7 +341,7 @@ where
     fn reduce_events(&self, events: Vec<Event>) -> Self::Output {
         events
             .into_iter()
-            .filter(|&event| self.is_from_result_event(event))
+            .filter(|&event| self.is_event_from_result(event))
             .map(|event| {
                 Segment::from((
                     self.get_event_start(event).clone(),
@@ -409,11 +409,11 @@ impl<Point, const IS_FIRST_LINEAR: bool, const KIND: u8>
         &self.opposites
     }
 
-    fn is_from_first_operand_event(&self, event: Event) -> bool {
+    fn is_event_from_first_operand(&self, event: Event) -> bool {
         self.is_left_event_from_first_operand(self.to_left_event(event))
     }
 
-    fn is_from_result_event(&self, event: Event) -> bool {
+    fn is_event_from_result(&self, event: Event) -> bool {
         self.are_from_result[left_event_to_position(self.to_left_event(event))]
     }
 
@@ -421,7 +421,7 @@ impl<Point, const IS_FIRST_LINEAR: bool, const KIND: u8>
         self.left_event_to_segment_id(event) < self.first_segments_count
     }
 
-    fn is_outside_left_event(&self, event: Event) -> bool {
+    fn is_left_event_outside(&self, event: Event) -> bool {
         let event_position = left_event_to_position(event);
         !self.other_have_interior_to_left[event_position]
             && !self.have_overlap[event_position]
@@ -434,14 +434,14 @@ impl<Point, const IS_FIRST_LINEAR: bool, const KIND: u8>
     fn to_events_queue_key(&self, event: Event) -> EventsQueueKey<Point> {
         EventsQueueKey::new(
             event,
-            self.is_from_first_operand_event(event),
+            self.is_event_from_first_operand(event),
             self.get_endpoints(),
             self.get_opposites(),
         )
     }
 
     fn to_left_event(&self, event: Event) -> Event {
-        if is_left_event(event) {
+        if is_event_left(event) {
             event
         } else {
             self.to_opposite_event(event)
@@ -665,7 +665,7 @@ impl<Point: Clone, const IS_FIRST_LINEAR: bool, const KIND: u8>
     Operation<Point, IS_FIRST_LINEAR, KIND>
 {
     fn divide(&mut self, event: Event, mid_point: Point) -> (Event, Event) {
-        debug_assert!(is_left_event(event));
+        debug_assert!(is_event_left(event));
         let opposite_event = self.to_opposite_event(event);
         let mid_point_to_event_end_event: Event = self.endpoints.len();
         self.segments_ids.push(self.left_event_to_segment_id(event));
@@ -683,7 +683,7 @@ impl<Point: Clone, const IS_FIRST_LINEAR: bool, const KIND: u8>
         self.starts_ids.push(UNDEFINED_INDEX);
         debug_assert_eq!(
             self.is_left_event_from_first_operand(event),
-            self.is_from_first_operand_event(mid_point_to_event_start_event)
+            self.is_event_from_first_operand(mid_point_to_event_start_event)
         );
         debug_assert_eq!(
             self.is_left_event_from_first_operand(event),
