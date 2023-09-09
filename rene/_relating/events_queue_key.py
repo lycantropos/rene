@@ -7,7 +7,7 @@ from rene import (Orientation,
 from rene._hints import Map
 from rene._utils import orient
 from .event import (Event,
-                    is_left_event)
+                    is_event_left)
 
 
 class EventsQueueKey(t.Generic[hints.Scalar]):
@@ -48,11 +48,11 @@ class EventsQueueKey(t.Generic[hints.Scalar]):
             # different starts, but same x-coordinate,
             # the event with lower y-coordinate is processed first
             return start_y < other_start_y
-        elif is_left_event(event) is not is_left_event(other_event):
+        elif is_event_left(event) is not is_event_left(other_event):
             # same start, but one is a left endpoint
             # and the other is a right endpoint,
             # the right endpoint is processed first
-            return not is_left_event(event)
+            return not is_event_left(event)
         else:
             other_end_orientation = orient(
                     event_start, self.endpoints[self.opposites[event]],
@@ -66,5 +66,5 @@ class EventsQueueKey(t.Generic[hints.Scalar]):
                 return (other_end_orientation
                         # the lowest segment is processed first
                         is (Orientation.COUNTERCLOCKWISE
-                            if is_left_event(event)
+                            if is_event_left(event)
                             else Orientation.CLOCKWISE))
