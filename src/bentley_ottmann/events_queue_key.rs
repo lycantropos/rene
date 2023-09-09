@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use super::event::{is_left_event, Event};
+use super::event::{is_event_left, Event};
 
 pub(super) struct EventsQueueKey<Point> {
     pub(super) event: Event,
@@ -70,10 +70,10 @@ fn compare_events<Point: Ord>(
 ) -> Ordering {
     match endpoints[first_event].cmp(&endpoints[second_event]) {
         Ordering::Equal => {
-            if is_left_event(first_event) == is_left_event(second_event) {
+            if is_event_left(first_event) == is_event_left(second_event) {
                 endpoints[opposites[first_event]]
                     .cmp(&endpoints[opposites[second_event]])
-            } else if is_left_event(first_event) {
+            } else if is_event_left(first_event) {
                 Ordering::Greater
             } else {
                 Ordering::Less

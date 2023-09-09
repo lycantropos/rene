@@ -2,7 +2,7 @@ use traiter::numbers::Parity;
 
 pub(super) type Event = usize;
 
-pub(super) fn is_left_event(event: Event) -> bool {
+pub(super) fn is_event_left(event: Event) -> bool {
     event.is_even()
 }
 

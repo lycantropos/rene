@@ -9,7 +9,7 @@ use crate::traits::{
     Segmental,
 };
 
-use super::event::{is_left_event, Event};
+use super::event::{is_event_left, Event};
 use super::events_registry::EventsRegistry;
 use super::sweep::{Intersection, Sweep};
 
@@ -108,7 +108,7 @@ where
     let mut result = Vec::with_capacity(segments.len());
     let mut events_registry = EventsRegistry::<Point, true>::from(segments);
     while let Some(event) = events_registry.next() {
-        if !is_left_event(event) {
+        if !is_event_left(event) {
             result.push(Segment::from((
                 events_registry.get_event_start(event).clone(),
                 events_registry.get_event_end(event).clone(),

@@ -9,7 +9,7 @@ use crate::sweeping::traits::{EventsQueue, SweepLine};
 use crate::traits::{Segmental, Sequence};
 
 use super::event::{
-    is_left_event, segment_id_to_left_event, segment_id_to_right_event, Event,
+    is_event_left, segment_id_to_left_event, segment_id_to_right_event, Event,
 };
 use super::events_queue_key::EventsQueueKey;
 use super::sweep_line_key::SweepLineKey;
@@ -33,7 +33,7 @@ where
 
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(event) = self.pop() {
-            if is_left_event(event) {
+            if is_event_left(event) {
                 if let Some(equal_segment_event) =
                     <Self as SweepLine>::find(self, event)
                 {
@@ -58,7 +58,7 @@ where
                 }
             } else {
                 let event_opposite = self.to_opposite_event(event);
-                debug_assert!(is_left_event(event_opposite));
+                debug_assert!(is_event_left(event_opposite));
                 if let Some(equal_segment_event) =
                     <Self as SweepLine>::find(self, event_opposite)
                 {
@@ -118,7 +118,7 @@ impl<Point, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
     }
 
     pub(super) fn to_event_segment_id(&self, event: Event) -> usize {
-        self.to_left_event_segment_id(if is_left_event(event) {
+        self.to_left_event_segment_id(if is_event_left(event) {
             event
         } else {
             self.to_opposite_event(event)
@@ -126,7 +126,7 @@ impl<Point, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
     }
 
     fn to_left_event_segment_id(&self, event: Event) -> usize {
-        debug_assert!(is_left_event(event));
+        debug_assert!(is_event_left(event));
         self.segments_ids[event / 2]
     }
 
@@ -146,7 +146,7 @@ impl<Point, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
     }
 
     fn to_sweep_line_key(&self, event: Event) -> SweepLineKey<Point> {
-        debug_assert!(is_left_event(event));
+        debug_assert!(is_event_left(event));
         SweepLineKey::new(event, &self.endpoints, &self.opposites)
     }
 }
@@ -322,8 +322,8 @@ where
         second: Event,
     ) {
         debug_assert_ne!(first, second);
-        debug_assert!(is_left_event(first));
-        debug_assert!(is_left_event(second));
+        debug_assert!(is_event_left(first));
+        debug_assert!(is_event_left(second));
         debug_assert_ne!(
             self.to_left_event_segment_id(first),
             self.to_left_event_segment_id(second)
@@ -431,7 +431,7 @@ impl<Point: Clone, const UNIQUE: bool> EventsRegistry<Point, UNIQUE> {
         event: Event,
         mid_point: Point,
     ) -> (Event, Event) {
-        debug_assert!(is_left_event(event));
+        debug_assert!(is_event_left(event));
         let opposite_event = self.to_opposite_event(event);
         let mid_point_to_event_end_event = self.endpoints.len();
         self.segments_ids.push(self.to_left_event_segment_id(event));
