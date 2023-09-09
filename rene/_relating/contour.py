@@ -1,6 +1,11 @@
+import typing as t
+
 from rene import (Relation,
                   hints)
-from .multisegmental import relate_to_multisegmental
+from .multisegmental import (
+    relate_to_multisegmental,
+    relate_to_polygon as relate_multisegmental_to_polygon
+)
 from .segment import relate_to_contour as relate_segment_to_contour
 from .segment_endpoints import (
     relate_to_contour_segments as relate_segment_endpoints_to_contour_segments,
@@ -26,6 +31,12 @@ def relate_to_multisegment(contour: hints.Contour[hints.Scalar],
             relate_segment_endpoints_to_multisegment_segments,
             relate_segment_endpoints_to_contour_segments
     )
+
+
+def relate_to_polygon(contour: hints.Contour[hints.Scalar],
+                      polygon: hints.Polygon[hints.Scalar],
+                      /) -> Relation:
+    return relate_multisegmental_to_polygon(contour, polygon)
 
 
 def relate_to_segment(contour: hints.Contour[hints.Scalar],
