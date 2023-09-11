@@ -23,7 +23,7 @@ use super::operation_kind::{DIFFERENCE, INTERSECTION};
 use super::sweep_line_key::SweepLineKey;
 use super::traits::ReduceEvents;
 
-pub(crate) struct Operation<Point, const IS_FIRST_LINEAR: bool, const KIND: u8>
+pub(crate) struct Operation<Point, const FIRST_IS_LINEAR: bool, const KIND: u8>
 {
     first_segments_count: usize,
     are_from_result: Vec<bool>,
@@ -237,11 +237,11 @@ trait DetectIfLeftEventFromResult {
     fn detect_if_left_event_from_result(&self, event: Event) -> bool;
 }
 
-impl<Point, const IS_FIRST_LINEAR: bool> DetectIfLeftEventFromResult
-    for Operation<Point, IS_FIRST_LINEAR, INTERSECTION>
+impl<Point, const FIRST_IS_LINEAR: bool> DetectIfLeftEventFromResult
+    for Operation<Point, FIRST_IS_LINEAR, INTERSECTION>
 {
     fn detect_if_left_event_from_result(&self, event: Event) -> bool {
-        self.is_left_event_from_first_operand(event) == IS_FIRST_LINEAR
+        self.is_left_event_from_first_operand(event) == FIRST_IS_LINEAR
             && !self.is_left_event_outside(event)
     }
 }
@@ -257,9 +257,9 @@ impl<Point> DetectIfLeftEventFromResult
 
 impl<
         Point: Clone + PartialOrd,
-        const IS_FIRST_LINEAR: bool,
+        const FIRST_IS_LINEAR: bool,
         const KIND: u8,
-    > Iterator for Operation<Point, IS_FIRST_LINEAR, KIND>
+    > Iterator for Operation<Point, FIRST_IS_LINEAR, KIND>
 where
     Self: EventsQueue<Event = Event>
         + DetectIfLeftEventFromResult
@@ -330,8 +330,8 @@ where
     }
 }
 
-impl<Scalar, const IS_FIRST_LINEAR: bool, const KIND: u8> ReduceEvents
-    for Operation<Point<Scalar>, IS_FIRST_LINEAR, KIND>
+impl<Scalar, const FIRST_IS_LINEAR: bool, const KIND: u8> ReduceEvents
+    for Operation<Point<Scalar>, FIRST_IS_LINEAR, KIND>
 where
     Segment<Scalar>: From<(Point<Scalar>, Point<Scalar>)>,
     Point<Scalar>: Clone,
@@ -352,8 +352,8 @@ where
     }
 }
 
-impl<Point, const IS_FIRST_LINEAR: bool, const KIND: u8> EventsContainer
-    for Operation<Point, IS_FIRST_LINEAR, KIND>
+impl<Point, const FIRST_IS_LINEAR: bool, const KIND: u8> EventsContainer
+    for Operation<Point, FIRST_IS_LINEAR, KIND>
 {
     type Endpoint = Point;
     type Event = Event;
@@ -367,8 +367,8 @@ impl<Point, const IS_FIRST_LINEAR: bool, const KIND: u8> EventsContainer
     }
 }
 
-impl<Point, const IS_FIRST_LINEAR: bool, const KIND: u8>
-    Operation<Point, IS_FIRST_LINEAR, KIND>
+impl<Point, const FIRST_IS_LINEAR: bool, const KIND: u8>
+    Operation<Point, FIRST_IS_LINEAR, KIND>
 {
     pub(crate) fn to_opposite_event(&self, event: Event) -> Event {
         self.opposites[event]
@@ -460,9 +460,9 @@ impl<Point, const IS_FIRST_LINEAR: bool, const KIND: u8>
 
 impl<
         Point: Clone + PartialOrd,
-        const IS_FIRST_LINEAR: bool,
+        const FIRST_IS_LINEAR: bool,
         const KIND: u8,
-    > Operation<Point, IS_FIRST_LINEAR, KIND>
+    > Operation<Point, FIRST_IS_LINEAR, KIND>
 where
     Self: EventsQueue<Event = Event> + SweepLine<Event = Event>,
     for<'a> &'a Point: IntersectCrossingSegments<Output = Point> + Orient,
@@ -661,8 +661,8 @@ where
     }
 }
 
-impl<Point: Clone, const IS_FIRST_LINEAR: bool, const KIND: u8>
-    Operation<Point, IS_FIRST_LINEAR, KIND>
+impl<Point: Clone, const FIRST_IS_LINEAR: bool, const KIND: u8>
+    Operation<Point, FIRST_IS_LINEAR, KIND>
 {
     fn divide(&mut self, event: Event, mid_point: Point) -> (Event, Event) {
         debug_assert!(is_event_left(event));
@@ -695,8 +695,8 @@ impl<Point: Clone, const IS_FIRST_LINEAR: bool, const KIND: u8>
     }
 }
 
-impl<Point: Ord, const IS_FIRST_LINEAR: bool, const KIND: u8> EventsQueue
-    for Operation<Point, IS_FIRST_LINEAR, KIND>
+impl<Point: Ord, const FIRST_IS_LINEAR: bool, const KIND: u8> EventsQueue
+    for Operation<Point, FIRST_IS_LINEAR, KIND>
 where
     for<'a> &'a Point: Orient,
 {
@@ -716,8 +716,8 @@ where
     }
 }
 
-impl<Point, const IS_FIRST_LINEAR: bool, const KIND: u8> SweepLine
-    for Operation<Point, IS_FIRST_LINEAR, KIND>
+impl<Point, const FIRST_IS_LINEAR: bool, const KIND: u8> SweepLine
+    for Operation<Point, FIRST_IS_LINEAR, KIND>
 where
     SweepLineKey<Point>: Ord,
 {
@@ -752,8 +752,8 @@ where
     }
 }
 
-impl<Point: Ord, const IS_FIRST_LINEAR: bool, const KIND: u8>
-    Operation<Point, IS_FIRST_LINEAR, KIND>
+impl<Point: Ord, const FIRST_IS_LINEAR: bool, const KIND: u8>
+    Operation<Point, FIRST_IS_LINEAR, KIND>
 where
     for<'a> &'a Point: Orient,
 {
