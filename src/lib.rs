@@ -187,9 +187,7 @@ trait Count<T> {
 
 impl<'a, T: PartialEq> Count<T> for SliceSequence<'a, T> {
     fn count(&self, value: &T) -> usize {
-        self.iter()
-            .filter(|&candidate| candidate.eq(&value))
-            .count()
+        self.iter().filter(|&candidate| candidate.eq(value)).count()
     }
 }
 

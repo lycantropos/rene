@@ -437,7 +437,7 @@ where
         let mut operation =
             mixed::Operation::<Point<_>, false, INTERSECTION>::from((
                 &common_continuum_polygons,
-                &other,
+                other,
             ));
         let mut events = {
             let (_, maybe_events_count) = operation.size_hint();
