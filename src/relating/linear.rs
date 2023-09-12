@@ -83,8 +83,8 @@ impl RelationState {
             .iter()
             .copied()
             .filter(|&event| is_event_left(event));
-        match left_events.next() {
-            Some(mut prev_event) => loop {
+        if let Some(mut prev_event) = left_events.next() {
+            loop {
                 if let Some(event) = left_events.next() {
                     if operation.get_event_end(event)
                         == operation.get_event_end(prev_event)
@@ -117,8 +117,7 @@ impl RelationState {
                     }
                     break;
                 }
-            },
-            None => {}
+            }
         }
     }
 
