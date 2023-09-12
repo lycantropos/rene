@@ -1,12 +1,10 @@
 import typing as t
 from itertools import chain
 
-from rene import (Orientation,
-                  Relation,
+from rene import (Relation,
                   hints)
 from rene._utils import (merge_boxes,
-                         to_boxes_ids_with_intersection,
-                         to_oriented_segments)
+                         to_boxes_ids_with_intersection)
 from . import (linear,
                mixed)
 from .segment import (relate_to_multiregion as relate_segment_to_multiregion,
