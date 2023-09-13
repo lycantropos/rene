@@ -161,6 +161,7 @@ pub type ElementalCoordinate<T> = <T as Elemental>::Coordinate;
 pub type MultisegmentalIndexSegment<T> = <T as Multisegmental>::IndexSegment;
 pub type MultivertexalIndexVertex<T> = <T as Multivertexal>::IndexVertex;
 pub type PolygonalContour<T> = <T as Polygonal>::Contour;
+pub type PolygonalHoles<T> = <T as Polygonal>::Holes;
 pub type PolygonalIndexHole<T> = <T as Polygonal>::IndexHole;
 pub type PolygonalIntoIteratorHole<T> = <T as Polygonal>::IntoIteratorHole;
 pub type SegmentalCoordinate<T> = ElementalCoordinate<SegmentalEndpoint<T>>;

@@ -29,12 +29,7 @@ where
     }
 
     fn relate_to(self, other: Self) -> Relation {
-        segment::relate_to_segment(
-            &self.start,
-            &self.end,
-            &other.start,
-            &other.end,
-        )
+        segment::relate_to_segment(self, other)
     }
 }
 
@@ -48,7 +43,7 @@ where
     for<'a> &'a Segment<Scalar>: Segmental<Endpoint = &'a Point<Scalar>>,
 {
     fn relate_to(self, other: &Contour<Scalar>) -> Relation {
-        segment::relate_to_contour(&self.start, &self.end, other)
+        segment::relate_to_contour(self, other)
     }
 }
 
@@ -66,6 +61,6 @@ where
         + Orient,
 {
     fn relate_to(self, other: &Multisegment<Scalar>) -> Relation {
-        segment::relate_to_multisegment(&self.start, &self.end, other)
+        segment::relate_to_multisegment(self, other)
     }
 }

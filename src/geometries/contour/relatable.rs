@@ -82,13 +82,13 @@ where
 impl<Scalar> Relatable<&Segment<Scalar>> for &Contour<Scalar>
 where
     Point<Scalar>: Clone + PartialOrd,
+    for<'a, 'b> &'a MultisegmentalIndexSegment<&'b Contour<Scalar>>: Segmental,
     for<'a> &'a Contour<Scalar>:
         Contoural<IntoIteratorSegment = &'a Segment<Scalar>>,
-    for<'a> &'a MultisegmentalIndexSegment<Self>: Segmental,
     for<'a> &'a Point<Scalar>: Orient,
     for<'a> &'a Segment<Scalar>: Segmental<Endpoint = &'a Point<Scalar>>,
 {
     fn relate_to(self, other: &Segment<Scalar>) -> Relation {
-        contour::relate_to_segment(self, other.start(), other.end())
+        contour::relate_to_segment(self, other)
     }
 }

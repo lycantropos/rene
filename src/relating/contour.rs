@@ -108,21 +108,15 @@ where
     >(contour, multisegment)
 }
 
-pub(crate) fn relate_to_segment<
-    'a,
-    Contour,
-    Point: Clone + PartialOrd,
-    Segment: 'a,
->(
-    contour: &'a Contour,
-    start: &Point,
-    end: &Point,
+pub(crate) fn relate_to_segment<Contour, Point: Clone + PartialOrd, Segment>(
+    contour: &Contour,
+    segment: &Segment,
 ) -> Relation
 where
-    for<'b> &'b Contour: Contoural<IntoIteratorSegment = &'b Segment>,
-    for<'b> &'b MultisegmentalIndexSegment<&'a Contour>: Segmental,
-    for<'b> &'b Point: Orient,
-    for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
+    for<'a, 'b> &'a MultisegmentalIndexSegment<&'b Contour>: Segmental,
+    for<'a> &'a Contour: Contoural<IntoIteratorSegment = &'a Segment>,
+    for<'a> &'a Point: Orient,
+    for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
 {
-    relate_segment_to_contour(start, end, contour).to_complement()
+    relate_segment_to_contour(segment, contour).to_complement()
 }

@@ -92,6 +92,6 @@ where
         + Orient,
 {
     fn relate_to(self, other: &'a Segment<Scalar>) -> Relation {
-        multisegment::relate_to_segment(self, other.start(), other.end())
+        multisegment::relate_to_segment(self, other)
     }
 }

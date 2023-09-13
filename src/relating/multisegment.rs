@@ -110,13 +110,12 @@ where
 pub(crate) fn relate_to_segment<
     'a,
     Multisegment,
-    Point: Hash + Ord,
+    Point: 'a + Hash + Ord,
     Scalar: Div<Output = Scalar> + Eq + Hash + PartialOrd,
     Segment: 'a,
 >(
     multisegment: &'a Multisegment,
-    mut start: &'a Point,
-    mut end: &'a Point,
+    segment: &'a Segment,
 ) -> Relation
 where
     &'a Multisegment: Multisegmental<IntoIteratorSegment = &'a Segment>,
@@ -126,5 +125,5 @@ where
         + Elemental<Coordinate = &'b Scalar>
         + Orient,
 {
-    relate_segment_to_multisegment(start, end, multisegment).to_complement()
+    relate_segment_to_multisegment(segment, multisegment).to_complement()
 }

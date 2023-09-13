@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 use crate::iteration::PairwiseCombinations;
 use crate::operations::Orient;
 use crate::relatable::Relation;
-use crate::relating::segment;
+use crate::relating::segment_endpoints;
 
 use super::event::Event;
 use super::events_registry::EventsRegistry;
@@ -128,11 +128,9 @@ where
             };
             debug_assert_eq!(
                 relation,
-                segment::relate_to_segment(
-                    first_start,
-                    first_end,
-                    second_start,
-                    second_end
+                segment_endpoints::relate_to_segment_endpoints(
+                    (first_start, first_end),
+                    (second_start, second_end)
                 )
             );
             Some(Intersection {

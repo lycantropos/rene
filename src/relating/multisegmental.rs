@@ -17,9 +17,7 @@ use crate::traits::{
 
 use super::event::Event;
 use super::linear::Operation;
-use super::segment::{
-    relate_to_contour_segments, relate_to_multisegment_segments,
-};
+use super::segment;
 
 pub(crate) fn relate_to_multisegmental<
     const FIRST_IS_CONTOUR: bool,
@@ -75,18 +73,16 @@ where
     }
     let second_segments = second.segments();
     if first_intersecting_segments_ids.len() == 1 {
-        let (first_intersecting_segment_start, first_intersecting_segment_end) =
-            first_segments[first_intersecting_segments_ids[0]].endpoints();
+        let first_intersecting_segment =
+            &first_segments[first_intersecting_segments_ids[0]];
         return match if SECOND_IS_CONTOUR {
-            relate_to_contour_segments(
-                first_intersecting_segment_start,
-                first_intersecting_segment_end,
+            segment::relate_to_contour_segments(
+                first_intersecting_segment,
                 second_segments.iter(),
             )
         } else {
-            relate_to_multisegment_segments(
-                first_intersecting_segment_start,
-                first_intersecting_segment_end,
+            segment::relate_to_multisegment_segments(
+                first_intersecting_segment,
                 second_segments.iter(),
             )
         } {
@@ -105,22 +101,18 @@ where
     if second_intersecting_segments_ids.is_empty() {
         return Relation::Disjoint;
     } else if second_intersecting_segments_ids.len() == 1 {
-        let (
-            second_intersecting_segment_start,
-            second_intersecting_segment_end,
-        ) = second_segments[second_intersecting_segments_ids[0]].endpoints();
+        let second_intersecting_segment =
+            &second_segments[second_intersecting_segments_ids[0]];
         return match if FIRST_IS_CONTOUR {
-            relate_to_contour_segments(
-                second_intersecting_segment_start,
-                second_intersecting_segment_end,
+            segment::relate_to_contour_segments(
+                second_intersecting_segment,
                 first_intersecting_segments_ids
                     .iter()
                     .map(|&index| &first_segments[index]),
             )
         } else {
-            relate_to_multisegment_segments(
-                second_intersecting_segment_start,
-                second_intersecting_segment_end,
+            segment::relate_to_multisegment_segments(
+                second_intersecting_segment,
                 first_intersecting_segments_ids
                     .iter()
                     .map(|&index| &first_segments[index]),
