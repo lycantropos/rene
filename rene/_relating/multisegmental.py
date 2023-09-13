@@ -222,7 +222,8 @@ def relate_to_region(multisegmental: _Multisegmental[hints.Scalar],
         multisegmental_segment = multisegmental_segments[
             intersecting_segments_ids[0]
         ]
-        relation = relate_segment_to_region(multisegmental_segment, border)
+        relation = relate_segment_to_region(multisegmental_segment, border,
+                                            reverse_region_orientation)
         return (Relation.TOUCH
                 if relation is Relation.COMPONENT or relation is Relation.EQUAL
                 else (Relation.CROSS

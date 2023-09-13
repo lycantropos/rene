@@ -298,12 +298,14 @@ def relate_to_segment_endpoints(
 def relate_to_region(start: hints.Point[hints.Scalar],
                      end: hints.Point[hints.Scalar],
                      border: hints.Contour[hints.Scalar],
+                     reverse_orientation: bool,
                      /) -> Relation:
-    relation_with_border = _relate_to_region_border(start, end, border)
+    edges = border.segments
+    relation_with_border = _relate_to_region_border(start, end, edges)
     if (relation_with_border is Relation.CROSS
             or relation_with_border is Relation.COMPONENT):
         return relation_with_border
-    start_index, start_location = _locate_point_in_region(border, start)
+    start_index, start_location = _locate_point_in_region(edges, start)
     if relation_with_border is Relation.DISJOINT:
         return (Relation.DISJOINT
                 if start_location is Location.EXTERIOR
@@ -314,7 +316,7 @@ def relate_to_region(start: hints.Point[hints.Scalar],
         return Relation.ENCLOSED
     else:
         assert start_index is not None
-        end_index, end_location = _locate_point_in_region(border, end)
+        end_index, end_location = _locate_point_in_region(edges, end)
         if end_location is Location.EXTERIOR:
             return Relation.TOUCH
         elif end_location is Location.INTERIOR:
@@ -322,16 +324,15 @@ def relate_to_region(start: hints.Point[hints.Scalar],
         else:
             assert end_index is not None
             assert end_location is Location.BOUNDARY, end_location
-            border_orientation = border.orientation
-            positively_oriented = (border_orientation
-                                   is Orientation.COUNTERCLOCKWISE)
-            edges = border.segments
             edge = edges[start_index]
             edge_start, edge_end = edge.start, edge.end
+            border_orientation = (Orientation.CLOCKWISE
+                                  if reverse_orientation
+                                  else Orientation.COUNTERCLOCKWISE)
             if start == edge_start:
-                prev_start = (edges[start_index - 1].start
-                              if positively_oriented
-                              else edges[start_index + 1].end)
+                prev_start = (edges[(start_index + 1) % len(edges)].end
+                              if reverse_orientation
+                              else edges[start_index - 1].start)
                 if (orient(prev_start, edge_start, edge_end)
                         is border_orientation):
                     if ((orient(edge_start, prev_start, end)
@@ -344,9 +345,9 @@ def relate_to_region(start: hints.Point[hints.Scalar],
                       is border_orientation):
                     return Relation.TOUCH
             elif start == edge_end:
-                next_end = (edges[(start_index + 1) % len(edges)].end
-                            if positively_oriented
-                            else edges[start_index - 1].start)
+                next_end = (edges[start_index - 1].start
+                            if reverse_orientation
+                            else edges[(start_index + 1) % len(edges)].end)
                 if (orient(edge_start, edge_end, next_end)
                         is border_orientation):
                     if ((orient(edge_end, edge_start, end)
@@ -363,9 +364,9 @@ def relate_to_region(start: hints.Point[hints.Scalar],
             edge = edges[end_index]
             edge_start, edge_end = edge.start, edge.end
             if end == edge_start:
-                prev_start = (edges[end_index - 1].start
-                              if positively_oriented
-                              else edges[end_index + 1].end)
+                prev_start = (edges[(end_index + 1) % len(edges)].end
+                              if reverse_orientation
+                              else edges[end_index - 1].start)
                 if (orient(prev_start, edge_start, edge_end)
                         is border_orientation):
                     if ((orient(edge_start, prev_start, start)
@@ -378,9 +379,9 @@ def relate_to_region(start: hints.Point[hints.Scalar],
                       is border_orientation):
                     return Relation.TOUCH
             elif end == edge_end:
-                next_end = (edges[(end_index + 1) % len(edges)].end
-                            if positively_oriented
-                            else edges[end_index - 1].start)
+                next_end = (edges[end_index - 1].start
+                            if reverse_orientation
+                            else edges[(end_index + 1) % len(edges)].end)
                 if (orient(edge_start, edge_end, next_end)
                         is border_orientation):
                     if ((orient(edge_end, edge_start, start)
@@ -399,32 +400,31 @@ def relate_to_region(start: hints.Point[hints.Scalar],
 
 def _relate_to_region_border(start: hints.Point[hints.Scalar],
                              end: hints.Point[hints.Scalar],
-                             border: hints.Contour[hints.Scalar],
+                             edges: t.Sequence[hints.Segment[hints.Scalar]],
                              /) -> Relation:
     # similar to segment-in-contour check
     # but cross has higher priority over overlap
     # because cross with border will be considered as cross with region
     # whereas overlap with border can't be an overlap with region
     # and should be classified by further analysis
-    has_no_touch = has_no_overlap = True
+    has_touch = has_overlap = False
     last_touched_edge_index = last_touched_edge_start = None
-    edges = border.segments
     for index, edge in enumerate(edges):
         edge_start, edge_end = edge.start, edge.end
         relation_with_edge = relate_to_segment_endpoints(edge_start, edge_end,
                                                          start, end)
         if (relation_with_edge is Relation.COMPONENT
                 or relation_with_edge is Relation.OVERLAP):
-            if has_no_overlap:
-                has_no_overlap = False
+            if not has_overlap:
+                has_overlap = True
         elif (relation_with_edge is Relation.COMPOSITE
               or relation_with_edge is Relation.EQUAL):
             return Relation.COMPONENT
         elif relation_with_edge is Relation.CROSS:
             return Relation.CROSS
         elif relation_with_edge is Relation.TOUCH:
-            if has_no_touch:
-                has_no_touch = False
+            if not has_touch:
+                has_touch = True
             else:
                 assert last_touched_edge_index is not None
                 if (
@@ -444,7 +444,7 @@ def _relate_to_region_border(start: hints.Point[hints.Scalar],
                     return Relation.CROSS
             last_touched_edge_index = index
             last_touched_edge_start = edge_start
-    if not has_no_touch and last_touched_edge_index == len(edges) - 1:
+    if has_touch and last_touched_edge_index == len(edges) - 1:
         first_edge = edges[0]
         first_edge_start, first_edge_end = first_edge.start, first_edge.end
         if ((relate_to_segment_endpoints(first_edge_start, first_edge_end,
@@ -460,18 +460,17 @@ def _relate_to_region_border(start: hints.Point[hints.Scalar],
                                                     edges[-1].start,
                                                     first_edge_end)):
             return Relation.CROSS
-    return ((Relation.DISJOINT if has_no_touch else Relation.TOUCH)
-            if has_no_overlap
-            else Relation.OVERLAP)
+    return (Relation.OVERLAP
+            if has_overlap
+            else (Relation.TOUCH if has_touch else Relation.DISJOINT))
 
 
-def _locate_point_in_region(
-        border: hints.Contour[hints.Scalar],
-        point: hints.Point[hints.Scalar]
-) -> t.Tuple[t.Optional[int], Location]:
+def _locate_point_in_region(edges: t.Sequence[hints.Segment[hints.Scalar]],
+                            point: hints.Point[hints.Scalar],
+                            /) -> t.Tuple[t.Optional[int], Location]:
     result = False
     point_y = point.y
-    for index, edge in enumerate(border.segments):
+    for index, edge in enumerate(edges):
         start, end = edge.start, edge.end
         if locate_point_in_segment(start, end, point) is Location.BOUNDARY:
             return index, Location.BOUNDARY

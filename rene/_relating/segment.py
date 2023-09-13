@@ -52,12 +52,12 @@ def relate_to_multisegment(segment: hints.Segment[hints.Scalar],
 def relate_to_polygon(segment: hints.Segment[hints.Scalar],
                       polygon: hints.Polygon[hints.Scalar],
                       /) -> Relation:
-    relation_without_holes = relate_to_region(segment, polygon.border)
+    relation_without_holes = relate_to_region(segment, polygon.border, False)
     holes = polygon.holes
     if holes and (relation_without_holes is Relation.WITHIN
                   or relation_without_holes is Relation.ENCLOSED):
         relation_with_holes = (
-            relate_to_region(segment, holes[0])
+            relate_to_region(segment, holes[0], True)
             if len(holes) == 1
             else relate_to_multiregion(segment, holes, True)
         )
@@ -77,8 +77,10 @@ def relate_to_polygon(segment: hints.Segment[hints.Scalar],
 
 def relate_to_region(segment: hints.Segment[hints.Scalar],
                      border: hints.Contour[hints.Scalar],
+                     reverse_orientation: bool,
                      /) -> Relation:
-    return relate_endpoints_to_region(segment.start, segment.end, border)
+    return relate_endpoints_to_region(segment.start, segment.end, border,
+                                      reverse_orientation)
 
 
 def relate_to_segment(first: hints.Segment[hints.Scalar],
