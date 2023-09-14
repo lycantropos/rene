@@ -23,11 +23,11 @@ use super::segment::relate_to_multisegment as relate_segment_to_multisegment;
 pub(crate) fn relate_to_contour<
     Contour,
     Multisegment,
-    Point: Clone + Hash + Ord,
     Output: Div<Output = Output>
         + Neg<Output = Output>
         + Ord
         + Square<Output = Output>,
+    Point: Clone + Hash + Ord,
     Scalar: Div<Output = Scalar> + Hash + Ord,
     Segment,
 >(
@@ -35,17 +35,17 @@ pub(crate) fn relate_to_contour<
     contour: &Contour,
 ) -> Relation
 where
-    for<'a> &'a Output: Signed,
-    for<'a> &'a Contour:
-        Bounded<&'a Scalar> + Multisegmental<IndexSegment = Segment>,
-    for<'a> &'a Multisegment:
-        Bounded<&'a Scalar> + Multisegmental<IndexSegment = Segment>,
     for<'a, 'b> &'a bounded::Box<&'b Scalar>: Relatable,
     for<'a, 'b> &'a Segment:
         Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point>,
     for<'a, 'b> Operation<Point>: From<(&'a [&'b Segment], &'a [&'b Segment])>
         + EventsQueue<Event = Event>
         + SweepLine<Event = Event>,
+    for<'a> &'a Contour:
+        Bounded<&'a Scalar> + Multisegmental<IndexSegment = Segment>,
+    for<'a> &'a Multisegment:
+        Bounded<&'a Scalar> + Multisegmental<IndexSegment = Segment>,
+    for<'a> &'a Output: Signed,
     for<'a> &'a Point: CrossMultiply<Output = Scalar>
         + DotMultiply<Output = Output>
         + Elemental<Coordinate = &'a Scalar>
@@ -58,8 +58,8 @@ where
         true,
         Multisegment,
         Contour,
-        Point,
         Output,
+        Point,
         Scalar,
         Segment,
     >(multisegment, contour)
@@ -100,8 +100,8 @@ where
         false,
         Multisegment,
         Multisegment,
-        Point,
         Output,
+        Point,
         Scalar,
         Segment,
     >(first, second)

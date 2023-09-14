@@ -7,7 +7,7 @@ use crate::operations::{
     is_point_in_segment, point_vertex_line_divides_angle,
     to_segments_intersection_scale, to_sorted_pair, CrossMultiply, Orient,
 };
-use crate::oriented::{Orientation, Oriented};
+use crate::oriented::Orientation;
 use crate::relatable::Relation;
 use crate::traits::{
     Elemental, Iterable, Lengthsome, Multisegmental, Segmental, Sequence,
@@ -411,17 +411,17 @@ where
 }
 
 pub(super) fn relate_to_region<
+    const REVERSE_ORIENTATION: bool,
     Border,
     Point: PartialOrd,
     Scalar: PartialOrd,
     Segment,
-    const REVERSE_ORIENTATION: bool,
 >(
     (start, end): (&Point, &Point),
     border: &Border,
 ) -> Relation
 where
-    for<'a> &'a Border: Multisegmental<IndexSegment = Segment> + Oriented,
+    for<'a> &'a Border: Multisegmental<IndexSegment = Segment>,
     for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
     for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
 {

@@ -10,15 +10,17 @@ use crate::operations::{
     SquaredMetric,
 };
 use crate::relatable::{Relatable, Relation};
+use crate::relating::mixed;
 use crate::sweeping::traits::{EventsQueue, SweepLine};
 use crate::traits::{
     Contoural, Elemental, Multisegmental, MultisegmentalIndexSegment,
-    Segmental,
+    Multivertexal, MultivertexalIndexVertex, Polygonal,
+    PolygonalIntoIteratorHole, Segmental,
 };
 
 use super::event::Event;
-use super::linear::Operation;
-use super::multisegmental::relate_to_multisegmental;
+use super::linear;
+use super::multisegmental;
 use super::segment::relate_to_contour as relate_segment_to_contour;
 
 pub(crate) fn relate_to_contour<
@@ -35,15 +37,15 @@ pub(crate) fn relate_to_contour<
     second: &Contour,
 ) -> Relation
 where
-    for<'a> &'a Output: Signed,
-    for<'a> &'a Contour:
-        Bounded<&'a Scalar> + Multisegmental<IndexSegment = Segment>,
     for<'a, 'b> &'a bounded::Box<&'b Scalar>: Relatable,
     for<'a, 'b> &'a Segment:
         Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point>,
-    for<'a, 'b> Operation<Point>: From<(&'a [&'b Segment], &'a [&'b Segment])>
+    for<'a, 'b> linear::Operation<Point>: From<(&'a [&'b Segment], &'a [&'b Segment])>
         + EventsQueue<Event = Event>
         + SweepLine<Event = Event>,
+    for<'a> &'a Contour:
+        Bounded<&'a Scalar> + Multisegmental<IndexSegment = Segment>,
+    for<'a> &'a Output: Signed,
     for<'a> &'a Point: CrossMultiply<Output = Scalar>
         + DotMultiply<Output = Output>
         + Elemental<Coordinate = &'a Scalar>
@@ -51,13 +53,13 @@ where
         + Orient
         + SquaredMetric<Output = Output>,
 {
-    relate_to_multisegmental::<
+    multisegmental::relate_to_multisegmental::<
         true,
         true,
         Contour,
         Contour,
-        Point,
         Output,
+        Point,
         Scalar,
         Segment,
     >(first, second)
@@ -66,11 +68,11 @@ where
 pub(crate) fn relate_to_multisegment<
     Contour,
     Multisegment,
-    Point: Clone + Hash + Ord,
     Output: Div<Output = Output>
         + Neg<Output = Output>
         + Ord
         + Square<Output = Output>,
+    Point: Clone + Hash + Ord,
     Scalar: Div<Output = Scalar> + Hash + Ord,
     Segment,
 >(
@@ -78,17 +80,17 @@ pub(crate) fn relate_to_multisegment<
     multisegment: &Multisegment,
 ) -> Relation
 where
-    for<'a> &'a Output: Signed,
+    for<'a, 'b> &'a bounded::Box<&'b Scalar>: Relatable,
+    for<'a, 'b> &'a Segment:
+        Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point>,
+    for<'a, 'b> linear::Operation<Point>: From<(&'a [&'b Segment], &'a [&'b Segment])>
+        + EventsQueue<Event = Event>
+        + SweepLine<Event = Event>,
     for<'a> &'a Contour:
         Bounded<&'a Scalar> + Multisegmental<IndexSegment = Segment>,
     for<'a> &'a Multisegment:
         Bounded<&'a Scalar> + Multisegmental<IndexSegment = Segment>,
-    for<'a, 'b> &'a bounded::Box<&'b Scalar>: Relatable,
-    for<'a, 'b> &'a Segment:
-        Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point>,
-    for<'a, 'b> Operation<Point>: From<(&'a [&'b Segment], &'a [&'b Segment])>
-        + EventsQueue<Event = Event>
-        + SweepLine<Event = Event>,
+    for<'a> &'a Output: Signed,
     for<'a> &'a Point: CrossMultiply<Output = Scalar>
         + DotMultiply<Output = Output>
         + Elemental<Coordinate = &'a Scalar>
@@ -96,16 +98,66 @@ where
         + Orient
         + SquaredMetric<Output = Output>,
 {
-    relate_to_multisegmental::<
+    multisegmental::relate_to_multisegmental::<
         true,
         false,
         Contour,
         Multisegment,
-        Point,
         Output,
+        Point,
         Scalar,
         Segment,
     >(contour, multisegment)
+}
+
+pub(crate) fn relate_to_polygon<
+    Contour,
+    Output: Div<Output = Output>
+        + Neg<Output = Output>
+        + Ord
+        + Square<Output = Output>,
+    Point: Clone + Hash + Ord,
+    Polygon,
+    Scalar: Div<Output = Scalar> + Hash + Ord,
+    Segment: Clone + Segmental<Endpoint = Point>,
+>(
+    contour: &Contour,
+    polygon: &Polygon,
+) -> Relation
+where
+    mixed::Operation<true, false, Point>:
+        EventsQueue<Event = Event> + SweepLine<Event = Event>,
+    mixed::Operation<true, true, Point>:
+        EventsQueue<Event = Event> + SweepLine<Event = Event>,
+    for<'a, 'b> &'a <PolygonalIntoIteratorHole<&'b Polygon> as Multisegmental>::IndexSegment: Segmental,
+    for<'a, 'b> &'a <PolygonalIntoIteratorHole<&'b Polygon> as Multivertexal>::IndexVertex: Elemental,
+    for<'a, 'b> &'a MultivertexalIndexVertex<&'b Contour>: Elemental,
+    for<'a, 'b> &'a bounded::Box<&'b Scalar>: Relatable,
+    for<'a, 'b> linear::Operation<Point>: From<(&'a [&'b Segment], &'a [&'b Segment])>
+        + EventsQueue<Event = Event>
+        + SweepLine<Event = Event>,
+    for<'a> &'a Contour: Bounded<&'a Scalar>
+        + Contoural<IndexSegment = Segment, IntoIteratorSegment = &'a Segment>,
+    for<'a> &'a Output: Signed,
+    for<'a> &'a Point: CrossMultiply<Output = Scalar>
+        + DotMultiply<Output = Output>
+        + Elemental<Coordinate = &'a Scalar>
+        + IntersectCrossingSegments<Output = Point>
+        + Orient
+        + SquaredMetric<Output = Output>,
+    for<'a> &'a Polygon: Polygonal<Contour = &'a Contour, IndexHole =Contour>,
+    for<'a> &'a Segment: Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point>,
+{
+    multisegmental::relate_to_polygon::<
+        true,
+        Contour,
+        Contour,
+        Output,
+        Point,
+        Polygon,
+        Scalar,
+        Segment,
+    >(contour, polygon)
 }
 
 pub(crate) fn relate_to_segment<Contour, Point: Clone + PartialOrd, Segment>(

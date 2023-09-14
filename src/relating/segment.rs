@@ -6,7 +6,6 @@ use crate::operations::{
     to_boxes_ids_with_intersection, CrossMultiply, IntersectCrossingSegments,
     Orient,
 };
-use crate::oriented::Oriented;
 use crate::relatable::Relation;
 use crate::relating::{mixed, Event};
 use crate::sweeping::traits::{EventsQueue, SweepLine};
@@ -128,7 +127,7 @@ where
     for<'a, 'b> &'a <PolygonalIntoIteratorHole<&'b Polygon> as Multivertexal>::IndexVertex: Elemental,
     for<'a, 'b> &'a MultivertexalIndexVertex<&'b Border>: Elemental,
     for<'a> &'a Border:
-        Bounded<&'a Scalar> + Contoural<IndexSegment = Segment, IntoIteratorSegment=&'a Segment> + Oriented,
+        Bounded<&'a Scalar> + Contoural<IndexSegment = Segment, IntoIteratorSegment=&'a Segment>,
     for<'a> &'a Point: Elemental<Coordinate = &'a Scalar>
         + IntersectCrossingSegments<Output = Point>
         + Orient,
@@ -139,7 +138,7 @@ where
     for<'a> &'a Segment: Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point>,
 {
     let relation_without_holes =
-        relate_to_region::<Border, Point, Scalar, Segment, false>(
+        relate_to_region::<false, Border, Point, Scalar, Segment>(
             segment,
             polygon.border(),
         );
@@ -151,17 +150,17 @@ where
     {
         let holes = polygon.holes();
         let relation_with_holes = if holes.len() == 1 {
-            relate_to_region::<Border, Point, Scalar, Segment, true>(
+            relate_to_region::<true, Border, Point, Scalar, Segment>(
                 segment, &holes[0],
             )
         } else {
             relate_to_multiregion::<
+                true,
                 Border,
                 PolygonalHoles<&Polygon>,
                 Point,
                 Scalar,
                 Segment,
-                true,
             >(segment, polygon.holes())
         };
         match relation_with_holes {
@@ -176,19 +175,19 @@ where
     }
 }
 
-fn relate_to_multiregion<
+pub(super) fn relate_to_multiregion<
+    const REVERSE_ORIENTATION: bool,
     Border,
     Borders: Sequence<IndexItem = Border>,
     Point: Clone + Ord,
     Scalar: Ord,
     Segment: Clone + Segmental<Endpoint = Point>,
-    const REVERSE_ORIENTATION: bool,
 >(
     segment: &Segment,
     borders: Borders,
 ) -> Relation
 where
-    mixed::Operation<Point, true, REVERSE_ORIENTATION>:
+    mixed::Operation<true, REVERSE_ORIENTATION, Point>:
         EventsQueue<Event = Event> + SweepLine<Event = Event>,
     for<'a, 'b> &'a MultisegmentalIndexSegment<&'b Border>: Segmental,
     for<'a> &'a Border: Bounded<&'a Scalar>
@@ -220,18 +219,18 @@ where
                 .max()
                 .unwrap_unchecked()
         });
-        let intersecting_borders = intersecting_borders_ids
+        let intersecting_borders_segments = intersecting_borders_ids
             .iter()
             .map(|&border_id| borders[border_id].segments())
             .collect::<Vec<_>>();
-        mixed::Operation::<Point, true, REVERSE_ORIENTATION>::from_segments_iterators(
+        mixed::Operation::<true, REVERSE_ORIENTATION, Point>::from_segments_iterators(
             (1, std::iter::once(segment.clone())),
             (
-                intersecting_borders
+                intersecting_borders_segments
                     .iter()
                     .map(|segments| segments.len())
                     .sum::<usize>(),
-                intersecting_borders.into_iter().flat_map(|border_segments| border_segments.into_iter().cloned()),
+                intersecting_borders_segments.into_iter().flat_map(|border_segments| border_segments.into_iter().cloned()),
             ),
         )
         .into_relation(
@@ -242,25 +241,25 @@ where
 }
 
 pub(super) fn relate_to_region<
+    const REVERSE_ORIENTATION: bool,
     Border,
     Point: PartialOrd,
     Scalar: PartialOrd,
     Segment,
-    const REVERSE_ORIENTATION: bool,
 >(
     segment: &Segment,
     border: &Border,
 ) -> Relation
 where
-    for<'a> &'a Border: Multisegmental<IndexSegment = Segment> + Oriented,
+    for<'a> &'a Border: Multisegmental<IndexSegment = Segment>,
     for<'a> &'a Point: Elemental<Coordinate = &'a Scalar> + Orient,
     for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
 {
     segment_endpoints::relate_to_region::<
+        REVERSE_ORIENTATION,
         Border,
         Point,
         Scalar,
         Segment,
-        REVERSE_ORIENTATION,
     >(segment.endpoints(), border)
 }

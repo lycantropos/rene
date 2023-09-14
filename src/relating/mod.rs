@@ -4,7 +4,7 @@ pub(crate) mod contour;
 mod event;
 mod events_queue_key;
 pub(crate) mod linear;
-mod mixed;
+pub(crate) mod mixed;
 pub(crate) mod multisegment;
 mod multisegmental;
 pub(crate) mod segment;
