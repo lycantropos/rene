@@ -94,6 +94,8 @@ class Contour:
             return contour.relate_to_multisegment(self, other)
         elif isinstance(other, self._context.segment_cls):
             return contour.relate_to_segment(self, other)
+        elif isinstance(other, self._context.polygon_cls):
+            return contour.relate_to_polygon(self, other)
         elif isinstance(other, self._context.empty_cls):
             return Relation.DISJOINT
         else:

@@ -1096,6 +1096,11 @@ impl PyExactContour {
                 self.0
                     .relate_to(&other.extract::<PyRef<PyExactSegment>>()?.0),
             )
+        } else if other.is_instance_of::<PyExactPolygon>() {
+            try_relation_to_py_relation(
+                self.0
+                    .relate_to(&other.extract::<PyRef<PyExactPolygon>>()?.0),
+            )
         } else {
             Err(PyTypeError::new_err(format!(
                 "Expected compound geometry, but got {}.",
