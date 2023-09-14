@@ -10,7 +10,6 @@ use crate::operations::{
     SquaredMetric,
 };
 use crate::relatable::{Relatable, Relation};
-use crate::relating::mixed;
 use crate::sweeping::traits::{EventsQueue, SweepLine};
 use crate::traits::{
     Contoural, Elemental, Multisegmental, MultisegmentalIndexSegment,
@@ -19,9 +18,7 @@ use crate::traits::{
 };
 
 use super::event::Event;
-use super::linear;
-use super::multisegmental;
-use super::segment::relate_to_contour as relate_segment_to_contour;
+use super::{linear, mixed, multisegmental, segment};
 
 pub(crate) fn relate_to_contour<
     Contour,
@@ -170,5 +167,5 @@ where
     for<'a> &'a Point: Orient,
     for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
 {
-    relate_segment_to_contour(segment, contour).to_complement()
+    segment::relate_to_contour(segment, contour).to_complement()
 }
