@@ -93,8 +93,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 state.update(same_start_events, self)
                 same_start_events.clear()
                 if (state.linear_intersects_shaped_interior
-                        and not state.linear_is_subset_of_shaped
-                        and not state.shaped_border_is_subset_of_linear):
+                        and not state.linear_is_subset_of_shaped):
                     break
                 if start.x > min_max_x:
                     if self.is_event_from_linear(event):
