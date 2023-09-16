@@ -60,14 +60,14 @@ impl RelationState {
                 .iter()
                 .copied()
                 .filter(|&event| is_event_left(event));
-            if let Some(mut prev_event) = left_events.next() {
+            if let Some(mut event) = left_events.next() {
                 loop {
-                    if let Some(event) = left_events.next() {
+                    if let Some(next_event) = left_events.next() {
                         if operation.get_event_end(event)
-                            == operation.get_event_end(prev_event)
+                            == operation.get_event_end(next_event)
                         {
-                            if let Some(event) = left_events.next() {
-                                prev_event = event;
+                            if let Some(next_event) = left_events.next() {
+                                event = next_event;
                             } else {
                                 break;
                             }
@@ -78,7 +78,7 @@ impl RelationState {
                                 {
                                     self.linear_is_subset_of_shaped = false
                                 }
-                                if !self.linear_intersects_shaped_border
+                                if !self.linear_intersects_shaped_interior
                                     && operation.is_event_inside(event)
                                 {
                                     self.linear_intersects_shaped_interior =
@@ -87,17 +87,17 @@ impl RelationState {
                             } else if self.shaped_border_is_subset_of_linear {
                                 self.shaped_border_is_subset_of_linear = false
                             }
-                            prev_event = event;
+                            event = next_event;
                         }
                     } else {
-                        if operation.is_event_from_linear(prev_event) {
+                        if operation.is_event_from_linear(event) {
                             if self.linear_is_subset_of_shaped
-                                && operation.is_event_outside(prev_event)
+                                && operation.is_event_outside(event)
                             {
                                 self.linear_is_subset_of_shaped = false
                             }
-                            if !self.linear_intersects_shaped_border
-                                && operation.is_event_inside(prev_event)
+                            if !self.linear_intersects_shaped_interior
+                                && operation.is_event_inside(event)
                             {
                                 self.linear_intersects_shaped_interior = true;
                             }
@@ -114,7 +114,7 @@ impl RelationState {
             {
                 self.linear_is_subset_of_shaped = false
             }
-            if !self.linear_intersects_shaped_border
+            if !self.linear_intersects_shaped_interior
                 && operation.is_event_inside(same_start_events[0])
             {
                 self.linear_intersects_shaped_interior = true;
@@ -237,7 +237,7 @@ impl<Point, const FIRST_IS_LINEAR: bool, const REVERSE_ORIENTATION: bool>
                             {
                                 state.linear_is_subset_of_shaped = false
                             }
-                            if !state.linear_intersects_shaped_border
+                            if !state.linear_intersects_shaped_interior
                                 && self.is_event_inside(event)
                             {
                                 state.linear_intersects_shaped_interior = true;
@@ -259,7 +259,35 @@ impl<Point, const FIRST_IS_LINEAR: bool, const REVERSE_ORIENTATION: bool>
             }
         }
         debug_assert!(same_start_events.is_empty());
-        Relation::Disjoint
+        if state.shaped_border_is_subset_of_linear {
+            if state.linear_is_subset_of_shaped {
+                if state.linear_intersects_shaped_interior {
+                    Relation::Enclosed
+                } else {
+                    Relation::Component
+                }
+            } else if state.linear_intersects_shaped_interior {
+                Relation::Cross
+            } else {
+                Relation::Touch
+            }
+        } else if state.linear_is_subset_of_shaped {
+            if state.linear_intersects_shaped_interior {
+                if state.linear_intersects_shaped_border {
+                    Relation::Enclosed
+                } else {
+                    Relation::Within
+                }
+            } else {
+                Relation::Component
+            }
+        } else if state.linear_intersects_shaped_interior {
+            Relation::Cross
+        } else if state.linear_intersects_shaped_border {
+            Relation::Touch
+        } else {
+            Relation::Disjoint
+        }
     }
 }
 
