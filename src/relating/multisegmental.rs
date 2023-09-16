@@ -490,7 +490,8 @@ where
             Segment,
         >(multisegmental_intersecting_segment, border)
         {
-            Relation::Component | Relation::Equal => Relation::Overlap,
+            Relation::Component => Relation::Touch,
+            Relation::Enclosed | Relation::Within => Relation::Cross,
             relation => relation,
         };
     }
