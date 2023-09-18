@@ -14,8 +14,8 @@ use crate::relating::mixed;
 use crate::sweeping::traits::{EventsQueue, SweepLine};
 use crate::traits::{
     Contoural, Elemental, Iterable, Lengthsome, Multisegmental,
-    MultisegmentalIndexSegment, Multivertexal, MultivertexalIndexVertex,
-    Polygonal, PolygonalIntoIteratorHole, Segmental,
+    MultisegmentalIndexSegment, MultivertexalIndexVertex, Polygonal,
+    PolygonalIntoIteratorHole, Segmental,
 };
 
 use super::event::Event;
