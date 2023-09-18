@@ -35,24 +35,6 @@ where
     relate_to_contour_segments(segment, contour.segments().into_iter())
 }
 
-pub(crate) fn relate_to_contour_segments<
-    'a,
-    Point: Clone + PartialOrd,
-    Segment: 'a,
->(
-    segment: &Segment,
-    contour_segments: impl Iterator<Item = &'a Segment>,
-) -> Relation
-where
-    for<'b> &'b Point: Orient,
-    for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
-{
-    segment_endpoints::relate_to_contour_segments(
-        segment.endpoints(),
-        contour_segments,
-    )
-}
-
 pub(crate) fn relate_to_multisegment<
     'a,
     Multisegment,
@@ -77,64 +59,28 @@ where
     )
 }
 
-pub(super) fn relate_to_multisegment_segments<
-    'a,
-    Point: 'a + Hash + Ord,
-    Scalar: Div<Output = Scalar> + Eq + Hash + PartialOrd,
-    Segment: 'a,
->(
-    segment: &'a Segment,
-    multisegment_segments: impl Iterator<Item = &'a Segment>,
-) -> Relation
-where
-    &'a Segment: Segmental<Endpoint = &'a Point>,
-    for<'b> &'b Point: CrossMultiply<Output = Scalar>
-        + Elemental<Coordinate = &'b Scalar>
-        + Orient,
-{
-    segment_endpoints::relate_to_multisegment_segments(
-        segment.endpoints(),
-        multisegment_segments,
-    )
-}
-
-pub(crate) fn relate_to_segment<Point: PartialOrd, Segment>(
-    first: &Segment,
-    second: &Segment,
-) -> Relation
-where
-    for<'a> &'a Point: Orient,
-    for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
-{
-    segment_endpoints::relate_to_segment_endpoints(
-        first.endpoints(),
-        second.endpoints(),
-    )
-}
-
 pub(crate) fn relate_to_polygon<
     Border,
     Point: Clone + Ord,
     Polygon,
     Scalar: Ord,
-    Segment: Clone + Segmental<Endpoint=Point>,
+    Segment: Clone + Segmental<Endpoint = Point>,
 >(
     segment: &Segment,
     polygon: &Polygon,
 ) -> Relation
 where
-    for<'a, 'b> &'a <PolygonalIntoIteratorHole<&'b Polygon> as Multisegmental>::IndexSegment: Segmental,
-    for<'a, 'b> &'a <PolygonalIntoIteratorHole<&'b Polygon> as Multivertexal>::IndexVertex: Elemental,
+    for<'a, 'b> &'a MultisegmentalIndexSegment<PolygonalIntoIteratorHole<&'b Polygon>>:
+        Segmental,
     for<'a, 'b> &'a MultivertexalIndexVertex<&'b Border>: Elemental,
-    for<'a> &'a Border:
-        Bounded<&'a Scalar> + Contoural<IndexSegment = Segment, IntoIteratorSegment=&'a Segment>,
+    for<'a, 'b> &'a MultivertexalIndexVertex<PolygonalIntoIteratorHole<&'b Polygon>>:
+        Elemental,
+    for<'a> &'a Border: Bounded<&'a Scalar>
+        + Contoural<IndexSegment = Segment, IntoIteratorSegment = &'a Segment>,
     for<'a> &'a Point: Elemental<Coordinate = &'a Scalar>
         + IntersectCrossingSegments<Output = Point>
         + Orient,
-    for<'a> &'a Polygon: Polygonal<
-        Contour = &'a Border,
-        IndexHole = Border,
-    >,
+    for<'a> &'a Polygon: Polygonal<Contour = &'a Border, IndexHole = Border>,
     for<'a> &'a Segment: Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point>,
 {
     let relation_without_holes =
@@ -172,6 +118,38 @@ where
     } else {
         relation_without_holes
     }
+}
+
+pub(crate) fn relate_to_segment<Point: PartialOrd, Segment>(
+    first: &Segment,
+    second: &Segment,
+) -> Relation
+where
+    for<'a> &'a Point: Orient,
+    for<'a> &'a Segment: Segmental<Endpoint = &'a Point>,
+{
+    segment_endpoints::relate_to_segment_endpoints(
+        first.endpoints(),
+        second.endpoints(),
+    )
+}
+
+pub(super) fn relate_to_contour_segments<
+    'a,
+    Point: Clone + PartialOrd,
+    Segment: 'a,
+>(
+    segment: &Segment,
+    contour_segments: impl Iterator<Item = &'a Segment>,
+) -> Relation
+where
+    for<'b> &'b Point: Orient,
+    for<'b> &'b Segment: Segmental<Endpoint = &'b Point>,
+{
+    segment_endpoints::relate_to_contour_segments(
+        segment.endpoints(),
+        contour_segments,
+    )
 }
 
 pub(super) fn relate_to_multiregion<
@@ -238,6 +216,27 @@ where
             min_max_x,
         )
     }
+}
+
+pub(super) fn relate_to_multisegment_segments<
+    'a,
+    Point: 'a + Hash + Ord,
+    Scalar: Div<Output = Scalar> + Eq + Hash + PartialOrd,
+    Segment: 'a,
+>(
+    segment: &'a Segment,
+    multisegment_segments: impl Iterator<Item = &'a Segment>,
+) -> Relation
+where
+    &'a Segment: Segmental<Endpoint = &'a Point>,
+    for<'b> &'b Point: CrossMultiply<Output = Scalar>
+        + Elemental<Coordinate = &'b Scalar>
+        + Orient,
+{
+    segment_endpoints::relate_to_multisegment_segments(
+        segment.endpoints(),
+        multisegment_segments,
+    )
 }
 
 pub(super) fn relate_to_region<
