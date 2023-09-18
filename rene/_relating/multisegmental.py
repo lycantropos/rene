@@ -141,18 +141,18 @@ def relate_to_polygon(multisegmental: _Multisegmental[hints.Scalar],
     )
     intersecting_segments = [multisegmental_segments[segment_id]
                              for segment_id in intersecting_segments_ids]
-    holes = polygon.holes
-    holes_boxes = [hole.bounding_box for hole in holes]
-    intersecting_holes_ids = to_boxes_ids_with_intersection(
-            holes_boxes, multisegmental_bounding_box
-    )
     return mixed.LinearShapedOperation.from_segments_iterables(
             intersecting_segments,
-            chain(border.segments,
-                  chain.from_iterable(holes[hole_id].segments
-                                      for hole_id in intersecting_holes_ids))
-            if intersecting_holes_ids
-            else border.segments
+            chain(
+                    border.segments,
+                    chain.from_iterable(
+                            hole.segments
+                            for hole in polygon.holes
+                            if not hole.bounding_box.disjoint_with(
+                                    multisegmental_bounding_box
+                            )
+                    )
+            )
     ).to_relation(
             len(intersecting_segments) == len(multisegmental_segments),
             min_max_x
