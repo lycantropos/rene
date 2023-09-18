@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import typing as t
+from itertools import chain
 
 from rene import (Relation,
                   hints)
@@ -18,6 +19,38 @@ def relate_to_contour(segment: hints.Segment[hints.Scalar],
                       contour: hints.Contour[hints.Scalar],
                       /) -> Relation:
     return relate_endpoints_to_contour(segment.start, segment.end, contour)
+
+
+def relate_to_multipolygon(segment: hints.Segment[hints.Scalar],
+                           multipolygon: hints.Multipolygon[hints.Scalar],
+                           /) -> Relation:
+    segment_bounding_box = segment.bounding_box
+    polygons = multipolygon.polygons
+    polygons_bounding_boxes = [polygon.bounding_box for polygon in polygons]
+    intersecting_polygons_ids = to_boxes_ids_with_intersection(
+            polygons_bounding_boxes, segment_bounding_box
+    )
+    if not intersecting_polygons_ids:
+        return Relation.DISJOINT
+    min_max_x = min(segment_bounding_box.max_x,
+                    max(polygons_bounding_boxes[polygon_id].max_x
+                        for polygon_id in intersecting_polygons_ids))
+    return mixed.LinearShapedOperation.from_segments_iterables(
+            [segment],
+            chain.from_iterable(
+                    chain(
+                            polygon.border.segments,
+                            chain.from_iterable(
+                                    hole.segments
+                                    for hole in polygon.holes
+                                    if not hole.bounding_box.disjoint_with(
+                                            segment_bounding_box
+                                    )
+                            )
+                    )
+                    for polygon in polygons
+            )
+    ).to_relation(True, min_max_x)
 
 
 def relate_to_multiregion(segment: hints.Segment[hints.Scalar],
