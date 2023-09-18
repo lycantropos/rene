@@ -93,9 +93,7 @@ impl<
 where
     Point<Scalar>: Clone + Hash + Ord,
     Segment<Scalar>: Clone + Segmental<Endpoint = Point<Scalar>>,
-    mixed::Operation<true, false, Point<Scalar>>:
-        EventsQueue<Event = Event> + SweepLine<Event = Event>,
-    mixed::Operation<true, true, Point<Scalar>>:
+    mixed::Operation<true, Point<Scalar>>:
         EventsQueue<Event = Event> + SweepLine<Event = Event>,
     for<'a, 'b> &'a <PolygonalIntoIteratorHole<&'b Polygon<Scalar>> as Multisegmental>::IndexSegment: Segmental,
     for<'a, 'b> &'a <PolygonalIntoIteratorHole<&'b Polygon<Scalar>> as Multivertexal>::IndexVertex: Elemental,

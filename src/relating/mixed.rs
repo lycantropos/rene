@@ -18,11 +18,7 @@ use super::event::{
 use super::events_queue_key::EventsQueueKey;
 use super::sweep_line_key::SweepLineKey;
 
-pub(crate) struct Operation<
-    const FIRST_IS_LINEAR: bool,
-    const REVERSE_ORIENTATION: bool,
-    Point,
-> {
+pub(crate) struct Operation<const FIRST_IS_LINEAR: bool, Point> {
     first_segments_count: usize,
     are_from_result: Vec<bool>,
     endpoints: Box<Vec<Point>>,
@@ -42,14 +38,10 @@ struct RelationState {
 }
 
 impl RelationState {
-    fn update<
-        const FIRST_IS_LINEAR: bool,
-        const REVERSE_ORIENTATION: bool,
-        Point: PartialEq,
-    >(
+    fn update<const FIRST_IS_LINEAR: bool, Point: PartialEq>(
         &mut self,
         same_start_events: &[Event],
-        operation: &Operation<FIRST_IS_LINEAR, REVERSE_ORIENTATION, Point>,
+        operation: &Operation<FIRST_IS_LINEAR, Point>,
     ) {
         debug_assert!(!same_start_events.is_empty());
         if operation.has_border_intersection(same_start_events) {
@@ -126,12 +118,10 @@ impl RelationState {
 }
 
 impl<
-        const REVERSE_ORIENTATION: bool,
         Point: Ord,
         Segment: Clone + Segmental<Endpoint = Point>,
         ShapedSegments: Sequence<IndexItem = Segment>,
-    > From<(&[&Segment], ShapedSegments)>
-    for Operation<false, REVERSE_ORIENTATION, Point>
+    > From<(&[&Segment], ShapedSegments)> for Operation<false, Point>
 where
     for<'a> &'a Point: Orient,
     for<'a> &'a Segment: Segmental,
@@ -147,11 +137,7 @@ where
     }
 }
 
-impl<
-        const FIRST_IS_LINEAR: bool,
-        const REVERSE_ORIENTATION: bool,
-        Point: Ord,
-    > Operation<FIRST_IS_LINEAR, REVERSE_ORIENTATION, Point>
+impl<const FIRST_IS_LINEAR: bool, Point: Ord> Operation<FIRST_IS_LINEAR, Point>
 where
     for<'a> &'a Point: Orient,
 {
@@ -176,9 +162,8 @@ where
     }
 }
 
-impl<Point, const FIRST_IS_LINEAR: bool, const REVERSE_ORIENTATION: bool>
-    EventsContainer
-    for Operation<FIRST_IS_LINEAR, REVERSE_ORIENTATION, Point>
+impl<Point, const FIRST_IS_LINEAR: bool> EventsContainer
+    for Operation<FIRST_IS_LINEAR, Point>
 {
     type Endpoint = Point;
     type Event = Event;
@@ -192,9 +177,7 @@ impl<Point, const FIRST_IS_LINEAR: bool, const REVERSE_ORIENTATION: bool>
     }
 }
 
-impl<Point, const FIRST_IS_LINEAR: bool, const REVERSE_ORIENTATION: bool>
-    Operation<FIRST_IS_LINEAR, REVERSE_ORIENTATION, Point>
-{
+impl<Point, const FIRST_IS_LINEAR: bool> Operation<FIRST_IS_LINEAR, Point> {
     pub(super) fn into_relation<Scalar: PartialOrd>(
         mut self,
         linear_is_subset_of_shaped: bool,
@@ -291,9 +274,7 @@ impl<Point, const FIRST_IS_LINEAR: bool, const REVERSE_ORIENTATION: bool>
     }
 }
 
-impl<Point, const FIRST_IS_LINEAR: bool, const REVERSE_ORIENTATION: bool>
-    Operation<FIRST_IS_LINEAR, REVERSE_ORIENTATION, Point>
-{
+impl<Point, const FIRST_IS_LINEAR: bool> Operation<FIRST_IS_LINEAR, Point> {
     fn compute_left_event_fields(
         &mut self,
         event: Event,
@@ -449,11 +430,8 @@ impl<Point, const FIRST_IS_LINEAR: bool, const REVERSE_ORIENTATION: bool>
     }
 }
 
-impl<
-        const FIRST_IS_LINEAR: bool,
-        const REVERSE_ORIENTATION: bool,
-        Point: Clone + PartialOrd,
-    > Operation<FIRST_IS_LINEAR, REVERSE_ORIENTATION, Point>
+impl<const FIRST_IS_LINEAR: bool, Point: Clone + PartialOrd>
+    Operation<FIRST_IS_LINEAR, Point>
 where
     Self: EventsQueue<Event = Event> + SweepLine<Event = Event>,
     for<'a> &'a Point: IntersectCrossingSegments<Output = Point> + Orient,
@@ -649,11 +627,8 @@ where
     }
 }
 
-impl<
-        const FIRST_IS_LINEAR: bool,
-        const REVERSE_ORIENTATION: bool,
-        Point: Clone,
-    > Operation<FIRST_IS_LINEAR, REVERSE_ORIENTATION, Point>
+impl<const FIRST_IS_LINEAR: bool, Point: Clone>
+    Operation<FIRST_IS_LINEAR, Point>
 {
     fn divide(&mut self, event: Event, mid_point: Point) -> (Event, Event) {
         debug_assert!(is_event_left(event));
@@ -683,11 +658,8 @@ impl<
     }
 }
 
-impl<
-        const FIRST_IS_LINEAR: bool,
-        const REVERSE_ORIENTATION: bool,
-        Point: Ord,
-    > EventsQueue for Operation<FIRST_IS_LINEAR, REVERSE_ORIENTATION, Point>
+impl<const FIRST_IS_LINEAR: bool, Point: Ord> EventsQueue
+    for Operation<FIRST_IS_LINEAR, Point>
 where
     for<'a> &'a Point: Orient,
 {
@@ -707,8 +679,8 @@ where
     }
 }
 
-impl<Point, const FIRST_IS_LINEAR: bool, const REVERSE_ORIENTATION: bool>
-    SweepLine for Operation<FIRST_IS_LINEAR, REVERSE_ORIENTATION, Point>
+impl<Point, const FIRST_IS_LINEAR: bool> SweepLine
+    for Operation<FIRST_IS_LINEAR, Point>
 where
     SweepLineKey<Point>: Ord,
 {
@@ -743,11 +715,7 @@ where
     }
 }
 
-impl<
-        const FIRST_IS_LINEAR: bool,
-        const REVERSE_ORIENTATION: bool,
-        Point: Ord,
-    > Operation<FIRST_IS_LINEAR, REVERSE_ORIENTATION, Point>
+impl<const FIRST_IS_LINEAR: bool, Point: Ord> Operation<FIRST_IS_LINEAR, Point>
 where
     for<'a> &'a Point: Orient,
 {
@@ -789,7 +757,7 @@ where
             let segment_id = segment_id_offset + segment_index;
             if end < start {
                 (start, end) = (end, start);
-                self.have_interior_to_left[segment_id] = REVERSE_ORIENTATION;
+                self.have_interior_to_left[segment_id] = false;
             }
             let left_event = segment_id_to_left_event(segment_id);
             let right_event = segment_id_to_right_event(segment_id);
@@ -813,7 +781,7 @@ where
             are_from_result: vec![false; segments_count],
             endpoints: Box::new(Vec::with_capacity(initial_events_count)),
             events_queue_data: BinaryHeap::with_capacity(initial_events_count),
-            have_interior_to_left: vec![!REVERSE_ORIENTATION; segments_count],
+            have_interior_to_left: vec![true; segments_count],
             opposites: Box::new(Vec::with_capacity(initial_events_count)),
             other_have_interior_to_left: vec![false; segments_count],
             segments_ids: (0..segments_count).collect(),

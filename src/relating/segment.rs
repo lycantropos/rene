@@ -155,7 +155,6 @@ where
             )
         } else {
             relate_to_multiregion::<
-                true,
                 Border,
                 PolygonalHoles<&Polygon>,
                 Point,
@@ -176,7 +175,6 @@ where
 }
 
 pub(super) fn relate_to_multiregion<
-    const REVERSE_ORIENTATION: bool,
     Border,
     Borders: Sequence<IndexItem = Border>,
     Point: Clone + Ord,
@@ -187,7 +185,7 @@ pub(super) fn relate_to_multiregion<
     borders: Borders,
 ) -> Relation
 where
-    mixed::Operation<true, REVERSE_ORIENTATION, Point>:
+    mixed::Operation<true, Point>:
         EventsQueue<Event = Event> + SweepLine<Event = Event>,
     for<'a, 'b> &'a MultisegmentalIndexSegment<&'b Border>: Segmental,
     for<'a> &'a Border: Bounded<&'a Scalar>
@@ -223,14 +221,16 @@ where
             .iter()
             .map(|&border_id| borders[border_id].segments())
             .collect::<Vec<_>>();
-        mixed::Operation::<true, REVERSE_ORIENTATION, Point>::from_segments_iterators(
+        mixed::Operation::<true, Point>::from_segments_iterators(
             (1, std::iter::once(segment.clone())),
             (
                 intersecting_borders_segments
                     .iter()
                     .map(|segments| segments.len())
                     .sum::<usize>(),
-                intersecting_borders_segments.into_iter().flat_map(|border_segments| border_segments.into_iter().cloned()),
+                intersecting_borders_segments.into_iter().flat_map(
+                    |border_segments| border_segments.into_iter().cloned(),
+                ),
             ),
         )
         .into_relation(

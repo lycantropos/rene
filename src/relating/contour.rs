@@ -122,9 +122,7 @@ pub(crate) fn relate_to_polygon<
     polygon: &Polygon,
 ) -> Relation
 where
-    mixed::Operation<true, false, Point>:
-        EventsQueue<Event = Event> + SweepLine<Event = Event>,
-    mixed::Operation<true, true, Point>:
+    mixed::Operation<true, Point>:
         EventsQueue<Event = Event> + SweepLine<Event = Event>,
     for<'a, 'b> &'a <PolygonalIntoIteratorHole<&'b Polygon> as Multisegmental>::IndexSegment: Segmental,
     for<'a, 'b> &'a <PolygonalIntoIteratorHole<&'b Polygon> as Multivertexal>::IndexVertex: Elemental,
