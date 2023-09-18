@@ -36,7 +36,6 @@ class Operation(ABC, t.Generic[hints.Scalar]):
             cls,
             first: t.Iterable[hints.Segment[hints.Scalar]],
             second: t.Iterable[hints.Segment[hints.Scalar]],
-            reverse_shaped_orientation: bool,
             /
     ) -> te.Self:
         ...
@@ -441,7 +440,6 @@ class LinearShapedOperation(Operation[hints.Scalar]):
             cls,
             first: t.Iterable[hints.Segment[hints.Scalar]],
             second: t.Iterable[hints.Segment[hints.Scalar]],
-            reverse_shaped_orientation: bool,
             /
     ) -> te.Self:
         endpoints: t.List[hints.Point[hints.Scalar]] = []
@@ -449,8 +447,7 @@ class LinearShapedOperation(Operation[hints.Scalar]):
         _populate_with_linear_segments(first, endpoints, have_interior_to_left)
         first_segments_count = len(have_interior_to_left)
         _populate_with_shaped_segments(second, endpoints,
-                                       have_interior_to_left,
-                                       reverse_shaped_orientation)
+                                       have_interior_to_left)
         second_segments_count = (len(have_interior_to_left)
                                  - first_segments_count)
         return cls(first_segments_count, second_segments_count, endpoints,
@@ -466,13 +463,11 @@ class ShapedLinearOperation(Operation[hints.Scalar]):
             cls,
             first: t.Iterable[hints.Segment[hints.Scalar]],
             second: t.Iterable[hints.Segment[hints.Scalar]],
-            reverse_shaped_orientation: bool,
             /
     ) -> te.Self:
         endpoints: t.List[hints.Point[hints.Scalar]] = []
         have_interior_to_left: t.List[bool] = []
-        _populate_with_shaped_segments(first, endpoints, have_interior_to_left,
-                                       reverse_shaped_orientation)
+        _populate_with_shaped_segments(first, endpoints, have_interior_to_left)
         first_segments_count = len(have_interior_to_left)
         _populate_with_linear_segments(second, endpoints,
                                        have_interior_to_left)
@@ -552,16 +547,15 @@ def _populate_with_shaped_segments(
         segments: t.Iterable[hints.Segment[hints.Scalar]],
         endpoints: t.List[hints.Point[hints.Scalar]],
         have_interior_to_left: t.List[bool],
-        reverse_orientation: bool,
         /
 ) -> None:
     for segment in segments:
         start, end = segment.start, segment.end
-        if start > end:
+        if end < start:
             start, end = end, start
-            have_interior_to_left.append(reverse_orientation)
+            have_interior_to_left.append(False)
         else:
-            have_interior_to_left.append(not reverse_orientation)
+            have_interior_to_left.append(True)
         endpoints.append(start)
         endpoints.append(end)
 

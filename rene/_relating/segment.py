@@ -22,7 +22,6 @@ def relate_to_contour(segment: hints.Segment[hints.Scalar],
 
 def relate_to_multiregion(segment: hints.Segment[hints.Scalar],
                           borders: t.Sequence[hints.Contour[hints.Scalar]],
-                          reverse_shaped_orientation: bool,
                           /) -> Relation:
     assert len(borders) > 1, borders
     segment_bounding_box = segment.bounding_box
@@ -36,9 +35,7 @@ def relate_to_multiregion(segment: hints.Segment[hints.Scalar],
                     max(borders_bounding_boxes[border_id].max_x
                         for border_id in intersecting_borders_ids))
     return mixed.LinearShapedOperation.from_segments_iterables(
-            [segment],
-            [edge for border in borders for edge in border.segments],
-            reverse_shaped_orientation
+            [segment], [edge for border in borders for edge in border.segments]
     ).to_relation(True, min_max_x)
 
 
@@ -59,7 +56,7 @@ def relate_to_polygon(segment: hints.Segment[hints.Scalar],
         relation_with_holes = (
             relate_to_region(segment, holes[0], True)
             if len(holes) == 1
-            else relate_to_multiregion(segment, holes, True)
+            else relate_to_multiregion(segment, holes)
         )
         if relation_with_holes is Relation.DISJOINT:
             return relation_without_holes
