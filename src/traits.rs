@@ -158,6 +158,8 @@ where
 }
 
 pub type ElementalCoordinate<T> = <T as Elemental>::Coordinate;
+pub type MultipolygonalIntoIteratorPolygon<T> =
+    <T as Multipolygonal>::IntoIteratorPolygon;
 pub type MultisegmentalIndexSegment<T> = <T as Multisegmental>::IndexSegment;
 pub type MultivertexalIndexVertex<T> = <T as Multivertexal>::IndexVertex;
 pub type PolygonalContour<T> = <T as Polygonal>::Contour;
