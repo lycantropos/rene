@@ -6,7 +6,8 @@ from rene import (Relation,
 from rene._utils import to_boxes_ids_with_intersection
 from . import (linear,
                mixed)
-from .segment import relate_to_polygon as relate_segment_to_polygon
+from .segment import (relate_to_multipolygon as relate_segment_to_multipolygon,
+                      relate_to_polygon as relate_segment_to_polygon)
 
 _Multisegmental = t.Union[
     hints.Contour[hints.Scalar], hints.Multisegment[hints.Scalar]
@@ -18,6 +19,71 @@ _EndpointsToSegmentsRelater = t.Callable[
     ],
     Relation
 ]
+
+
+def relate_to_multipolygon(multisegmental: _Multisegmental[hints.Scalar],
+                           multipolygon: hints.Multipolygon[hints.Scalar],
+                           /) -> Relation:
+    multisegmental_bounding_box, multipolygon_bounding_box = (
+        multisegmental.bounding_box, multipolygon.bounding_box
+    )
+    if multisegmental_bounding_box.disjoint_with(multipolygon_bounding_box):
+        return Relation.DISJOINT
+    multisegmental_segments = multisegmental.segments
+    multisegmental_boxes = [segment.bounding_box
+                            for segment in multisegmental_segments]
+    intersecting_segments_ids = to_boxes_ids_with_intersection(
+            multisegmental_boxes, multipolygon_bounding_box
+    )
+    if not intersecting_segments_ids:
+        return Relation.DISJOINT
+    elif len(intersecting_segments_ids) == 1:
+        intersecting_segment = multisegmental_segments[
+            intersecting_segments_ids[0]
+        ]
+        relation = relate_segment_to_multipolygon(intersecting_segment,
+                                                  multipolygon)
+        return (Relation.TOUCH
+                if relation is Relation.COMPONENT
+                else (Relation.CROSS
+                      if (relation is Relation.ENCLOSED
+                          or relation is Relation.WITHIN)
+                      else relation))
+    multipolygon_polygons = multipolygon.polygons
+    multipolygon_boxes = [polygon.bounding_box
+                          for polygon in multipolygon_polygons]
+    intersecting_polygons_ids = to_boxes_ids_with_intersection(
+            multipolygon_boxes, multisegmental_bounding_box
+    )
+    min_max_x = min(
+            max(multisegmental_boxes[segment_id].max_x
+                for segment_id in intersecting_segments_ids),
+            max(multipolygon_boxes[polygon_id].max_x
+                for polygon_id in intersecting_polygons_ids),
+    )
+    return mixed.LinearShapedOperation.from_segments_iterables(
+            [multisegmental_segments[segment_id]
+             for segment_id in intersecting_segments_ids],
+            chain.from_iterable(
+                    chain(
+                            polygon.border.segments,
+                            chain.from_iterable(
+                                    hole.segments
+                                    for hole in polygon.holes
+                                    if not hole.bounding_box.disjoint_with(
+                                            multisegmental_bounding_box
+                                    )
+                            )
+                    )
+                    for polygon in [
+                        multipolygon_polygons[polygon_id]
+                        for polygon_id in intersecting_polygons_ids
+                    ]
+            )
+    ).to_relation(
+            len(intersecting_segments_ids) == len(multisegmental_segments),
+            min_max_x
+    )
 
 
 def relate_to_multisegmental(
