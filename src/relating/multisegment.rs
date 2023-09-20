@@ -12,8 +12,9 @@ use crate::operations::{
 use crate::relatable::{Relatable, Relation};
 use crate::sweeping::traits::{EventsQueue, SweepLine};
 use crate::traits::{
-    Contoural, Elemental, Multisegmental, MultisegmentalIndexSegment,
-    Multivertexal, MultivertexalIndexVertex, Polygonal,
+    Contoural, Elemental, Multipolygonal, MultipolygonalIntoIteratorPolygon,
+    Multisegmental, MultisegmentalIndexSegment, Multivertexal,
+    MultivertexalIndexVertex, Polygonal, PolygonalContour, PolygonalIndexHole,
     PolygonalIntoIteratorHole, Segmental,
 };
 
@@ -63,6 +64,82 @@ where
         Scalar,
         Segment,
     >(multisegment, contour)
+}
+
+pub(crate) fn relate_to_multipolygon<
+    Border,
+    Multipolygon,
+    Multisegment,
+    Point: Clone + Ord,
+    Polygon,
+    Scalar: Ord,
+    Segment: Clone + Segmental<Endpoint = Point>,
+>(
+    multisegment: &Multisegment,
+    multipolygon: &Multipolygon,
+) -> Relation
+where
+    mixed::Operation<true, Point>:
+        EventsQueue<Event = Event> + SweepLine<Event = Event>,
+    for<'a> &'a Border:
+        Bounded<&'a Scalar> + Contoural<IntoIteratorSegment = &'a Segment>,
+    for<'a> &'a Multipolygon:
+        Bounded<&'a Scalar> + Multipolygonal<IndexPolygon = Polygon>,
+    for<'a> &'a Multisegment:
+        Bounded<&'a Scalar> + Multisegmental<IndexSegment = Segment>,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar>
+        + IntersectCrossingSegments<Output = Point>
+        + Orient,
+    for<'a> &'a Polygon: Bounded<&'a Scalar>
+        + Polygonal<Contour = &'a Border, IntoIteratorHole = &'a Border>,
+    for<'a> &'a Segment: Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point>,
+    for<'a, 'b> &'a MultisegmentalIndexSegment<
+        PolygonalContour<MultipolygonalIntoIteratorPolygon<&'b Multipolygon>>,
+    >: Segmental,
+    for<'a, 'b> &'a MultisegmentalIndexSegment<
+        PolygonalIntoIteratorHole<
+            MultipolygonalIntoIteratorPolygon<&'b Multipolygon>,
+        >,
+    >: Segmental,
+    for<'a, 'b> &'a MultivertexalIndexVertex<
+        PolygonalContour<MultipolygonalIntoIteratorPolygon<&'b Multipolygon>>,
+    >: Elemental,
+    for<'a, 'b> &'a MultivertexalIndexVertex<
+        PolygonalIntoIteratorHole<
+            MultipolygonalIntoIteratorPolygon<&'b Multipolygon>,
+        >,
+    >: Elemental,
+    for<'a, 'b> &'a MultisegmentalIndexSegment<&'b Border>: Segmental,
+    for<'a, 'b> &'a MultivertexalIndexVertex<&'b Border>: Elemental,
+    for<'a, 'b> &'a PolygonalIndexHole<
+        MultipolygonalIntoIteratorPolygon<&'b Multipolygon>,
+    >: Contoural,
+    for<'a, 'b> &'a PolygonalIndexHole<&'b Polygon>: Contoural,
+    for<'a, 'b, 'c> &'a MultisegmentalIndexSegment<
+        &'b PolygonalIndexHole<
+            MultipolygonalIntoIteratorPolygon<&'c Multipolygon>,
+        >,
+    >: Segmental,
+    for<'a, 'b, 'c> &'a MultivertexalIndexVertex<
+        &'b PolygonalIndexHole<
+            MultipolygonalIntoIteratorPolygon<&'c Multipolygon>,
+        >,
+    >: Elemental,
+    for<'a, 'b, 'c> &'a MultisegmentalIndexSegment<&'b PolygonalIndexHole<&'c Polygon>>:
+        Segmental,
+    for<'a, 'b, 'c> &'a MultivertexalIndexVertex<&'b PolygonalIndexHole<&'c Polygon>>:
+        Elemental,
+{
+    multisegmental::relate_to_multipolygon::<
+        false,
+        Border,
+        Multipolygon,
+        Multisegment,
+        Point,
+        Polygon,
+        Scalar,
+        Segment,
+    >(multisegment, multipolygon)
 }
 
 pub(crate) fn relate_to_multisegment<
