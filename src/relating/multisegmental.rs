@@ -211,7 +211,7 @@ pub(super) fn relate_to_polygon<
     Scalar: Div<Output = Scalar> + Hash + Ord,
     Segment: Clone + Segmental<Endpoint = Point>,
 >(
-    multisegment: &Multisegment,
+    multisegmental: &Multisegment,
     polygon: &Polygon,
 ) -> Relation
 where
@@ -240,13 +240,13 @@ where
     for<'a> &'a Polygon: Polygonal<Contour = &'a Border, IndexHole = Border>,
     for<'a> &'a Segment: Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point>,
 {
-    let multisegmental_bounding_box = multisegment.to_bounding_box();
+    let multisegmental_bounding_box = multisegmental.to_bounding_box();
     let border = polygon.border();
     let polygon_bounding_box = border.to_bounding_box();
     if multisegmental_bounding_box.disjoint_with(&polygon_bounding_box) {
         return Relation::Disjoint;
     }
-    let multisegmental_segments = multisegment.segments();
+    let multisegmental_segments = multisegmental.segments();
     let multisegmental_bounding_boxes = multisegmental_segments
         .iter()
         .map(Bounded::to_bounding_box)
@@ -258,20 +258,13 @@ where
     if intersecting_segments_ids.is_empty() {
         return Relation::Disjoint;
     } else if intersecting_segments_ids.len() == 1 {
-        let intersecting_segment =
-            &multisegmental_segments[intersecting_segments_ids[0]];
-        let relation =
-            segment::relate_to_polygon(intersecting_segment, polygon);
-        return if multisegmental_segments.len()
-            == intersecting_segments_ids.len()
-        {
-            relation
-        } else {
-            match relation {
-                Relation::Component => Relation::Touch,
-                Relation::Enclosed | Relation::Within => Relation::Cross,
-                relation => relation,
-            }
+        return match segment::relate_to_polygon(
+            &multisegmental_segments[intersecting_segments_ids[0]],
+            polygon,
+        ) {
+            Relation::Component => Relation::Touch,
+            Relation::Enclosed | Relation::Within => Relation::Cross,
+            relation => relation,
         };
     }
     let min_max_x = unsafe {
