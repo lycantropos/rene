@@ -124,15 +124,12 @@ def relate_to_polygon(multisegmental: _Multisegmental[hints.Scalar],
             intersecting_segments_ids[0]
         ]
         relation = relate_segment_to_polygon(intersecting_segment, polygon)
-        return (relation
-                if (len(intersecting_segments_ids)
-                    == len(multisegmental_segments))
-                else (Relation.TOUCH
-                      if relation is Relation.COMPONENT
-                      else (Relation.CROSS
-                            if (relation is Relation.ENCLOSED
-                                or relation is Relation.WITHIN)
-                            else relation)))
+        return (Relation.TOUCH
+                if relation is Relation.COMPONENT
+                else (Relation.CROSS
+                      if (relation is Relation.ENCLOSED
+                          or relation is Relation.WITHIN)
+                      else relation))
     min_max_x = min(
             max(multisegmental_boxes[segment_id].max_x
                 for segment_id in intersecting_segments_ids),
