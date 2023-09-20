@@ -106,9 +106,8 @@ def relate_to_multisegmental(
 def relate_to_polygon(multisegmental: _Multisegmental[hints.Scalar],
                       polygon: hints.Polygon[hints.Scalar],
                       /) -> Relation:
-    border = polygon.border
     multisegmental_bounding_box, polygon_bounding_box = (
-        multisegmental.bounding_box, border.bounding_box
+        multisegmental.bounding_box, polygon.bounding_box
     )
     if multisegmental_bounding_box.disjoint_with(polygon_bounding_box):
         return Relation.DISJOINT
@@ -144,7 +143,7 @@ def relate_to_polygon(multisegmental: _Multisegmental[hints.Scalar],
     return mixed.LinearShapedOperation.from_segments_iterables(
             intersecting_segments,
             chain(
-                    border.segments,
+                    polygon.border.segments,
                     chain.from_iterable(
                             hole.segments
                             for hole in polygon.holes
