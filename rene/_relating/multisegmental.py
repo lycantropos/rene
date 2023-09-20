@@ -38,15 +38,15 @@ def relate_to_multisegmental(
     )
     if not first_intersecting_segments_ids:
         return Relation.DISJOINT
-    second_segments = second.segments
-    if len(first_intersecting_segments_ids) == 1:
+    elif len(first_intersecting_segments_ids) == 1:
         first_segment = first_segments[first_intersecting_segments_ids[0]]
         relation = first_to_second_relater(
-                first_segment.start, first_segment.end, second_segments
+                first_segment.start, first_segment.end, second.segments
         )
         return (Relation.OVERLAP
                 if relation is Relation.COMPONENT or relation is Relation.EQUAL
                 else relation)
+    second_segments = second.segments
     second_boxes = [segment.bounding_box for segment in second_segments]
     second_intersecting_segments_ids = to_boxes_ids_with_intersection(
             second_boxes, first_bounding_box
