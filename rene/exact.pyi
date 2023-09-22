@@ -505,6 +505,9 @@ class Polygon:
     def locate(self, point: Point, /) -> _Location:
         ...
 
+    def relate_to(self, other: _Compound, /) -> _Relation:
+        ...
+
     def __new__(
             cls, border: Contour, holes: _t.Sequence[Contour], /
     ) -> _te.Self:

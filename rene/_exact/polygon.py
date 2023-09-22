@@ -7,6 +7,7 @@ import typing_extensions as te
 from rithm.fraction import Fraction
 
 from rene import (Location,
+                  Relation,
                   hints)
 from rene._clipping import (intersect_polygon_with_multipolygon,
                             intersect_polygon_with_multisegmental,
@@ -19,6 +20,7 @@ from rene._clipping import (intersect_polygon_with_multipolygon,
                             unite_polygon_with_multipolygon,
                             unite_polygon_with_polygon)
 from rene._context import Context
+from rene._relating import polygon
 from rene._utils import locate_point_in_region
 
 
@@ -46,6 +48,18 @@ class Polygon:
                 elif location_in_hole is Location.BOUNDARY:
                     return Location.BOUNDARY
         return location_without_holes
+
+    def relate_to(self, other: hints.Compound[Fraction], /) -> Relation:
+        if isinstance(other, self._context.contour_cls):
+            return polygon.relate_to_contour(self, other)
+        elif isinstance(other, self._context.multisegment_cls):
+            return polygon.relate_to_multisegment(self, other)
+        elif isinstance(other, self._context.segment_cls):
+            return polygon.relate_to_segment(self, other)
+        elif isinstance(other, self._context.empty_cls):
+            return Relation.DISJOINT
+        else:
+            raise TypeError(f'Unsupported type: {type(other)!r}.')
 
     _context: t.ClassVar[Context[Fraction]]
     _border: hints.Contour[Fraction]

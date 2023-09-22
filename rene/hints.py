@@ -594,6 +594,9 @@ class Polygon(_SelfComparable, _te.Protocol[Scalar]):
     def locate(self, point: Point[Scalar], /) -> _Location:
         ...
 
+    def relate_to(self, other: Compound[Scalar], /) -> _Relation:
+        ...
+
     def __new__(cls,
                 border: Contour[Scalar],
                 holes: _t.Sequence[Contour[Scalar]], /) -> Polygon[Scalar]:
