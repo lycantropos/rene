@@ -26,7 +26,8 @@ from .events_queue_key import EventsQueueKey
 from .sweep_line_key import SweepLineKey
 
 SegmentEndpoints = t.Tuple[
-    hints.Point[hints.Scalar], hints.Point[hints.Scalar]]
+    hints.Point[hints.Scalar], hints.Point[hints.Scalar]
+]
 
 
 class Operation(ABC, t.Generic[hints.Scalar]):
