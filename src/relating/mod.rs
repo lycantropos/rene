@@ -8,6 +8,7 @@ pub(crate) mod mixed;
 pub(crate) mod multipolygon;
 pub(crate) mod multisegment;
 mod multisegmental;
+pub(crate) mod polygon;
 pub(crate) mod segment;
 pub(crate) mod segment_endpoints;
 mod sweep_line_key;
