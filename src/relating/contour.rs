@@ -71,7 +71,7 @@ pub(crate) fn relate_to_multipolygon<
     Scalar: Ord,
     Segment: Clone + Segmental<Endpoint = Point>,
 >(
-    multisegment: &Contour,
+    contour: &Contour,
     multipolygon: &Multipolygon,
 ) -> Relation
 where
@@ -132,7 +132,7 @@ where
         Polygon,
         Scalar,
         Segment,
-    >(multisegment, multipolygon)
+    >(contour, multipolygon)
 }
 
 pub(crate) fn relate_to_multisegment<
