@@ -8,6 +8,7 @@ from rithm.fraction import Fraction
 
 from rene import (MIN_MULTIPOLYGON_POLYGONS_COUNT,
                   Location,
+                  Relation,
                   hints)
 from rene._clipping import (intersect_multipolygon_with_multipolygon,
                             intersect_multipolygon_with_multisegmental,
@@ -20,6 +21,7 @@ from rene._clipping import (intersect_multipolygon_with_multipolygon,
                             unite_multipolygon_with_multipolygon,
                             unite_multipolygon_with_polygon)
 from rene._context import Context
+from rene._relating import multipolygon
 
 
 @te.final
@@ -54,6 +56,18 @@ class Multipolygon:
             if location is not Location.EXTERIOR:
                 return location
         return Location.EXTERIOR
+
+    def relate_to(self, other: hints.Compound[Fraction], /) -> Relation:
+        if isinstance(other, self._context.contour_cls):
+            return multipolygon.relate_to_contour(self, other)
+        elif isinstance(other, self._context.multisegment_cls):
+            return multipolygon.relate_to_multisegment(self, other)
+        elif isinstance(other, self._context.segment_cls):
+            return multipolygon.relate_to_segment(self, other)
+        elif isinstance(other, self._context.empty_cls):
+            return Relation.DISJOINT
+        else:
+            raise TypeError(f'Unsupported type: {type(other)!r}.')
 
     _context: t.ClassVar[Context[Fraction]]
     _polygons: t.Sequence[hints.Polygon[Fraction]]

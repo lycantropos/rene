@@ -290,6 +290,9 @@ class Multipolygon:
     def locate(self, point: Point, /) -> _Location:
         ...
 
+    def relate_to(self, other: _Compound, /) -> _Relation:
+        ...
+
     def __new__(cls, polygons: _t.Sequence[Polygon], /) -> _te.Self:
         ...
 

@@ -1528,6 +1528,36 @@ impl PyExactMultipolygon {
         try_location_to_py_location(self.0.locate(&point.0))
     }
 
+    #[pyo3(signature = (other, /))]
+    fn relate_to(&self, other: &PyAny) -> PyResult<&PyAny> {
+        if other.is_instance_of::<PyExactEmpty>() {
+            try_relation_to_py_relation(
+                self.0.relate_to(&other.extract::<PyRef<PyExactEmpty>>()?.0),
+            )
+        } else if other.is_instance_of::<PyExactContour>() {
+            try_relation_to_py_relation(
+                self.0
+                    .relate_to(&other.extract::<PyRef<PyExactContour>>()?.0),
+            )
+        } else if other.is_instance_of::<PyExactMultisegment>() {
+            try_relation_to_py_relation(
+                self.0.relate_to(
+                    &other.extract::<PyRef<PyExactMultisegment>>()?.0,
+                ),
+            )
+        } else if other.is_instance_of::<PyExactSegment>() {
+            try_relation_to_py_relation(
+                self.0
+                    .relate_to(&other.extract::<PyRef<PyExactSegment>>()?.0),
+            )
+        } else {
+            Err(PyTypeError::new_err(format!(
+                "Expected compound geometry, but got {}.",
+                other.get_type().repr()?
+            )))
+        }
+    }
+
     fn __and__(&self, other: &PyAny) -> PyResult<PyObject> {
         let py = other.py();
         if other.is_instance(PyExactEmpty::type_object(py))? {
