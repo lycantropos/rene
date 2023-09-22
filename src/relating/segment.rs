@@ -7,7 +7,6 @@ use crate::operations::{
     Orient,
 };
 use crate::relatable::{Relatable, Relation};
-use crate::relating::{mixed, Event};
 use crate::sweeping::traits::{EventsQueue, SweepLine};
 use crate::traits::{
     Contoural, Elemental, Iterable, Lengthsome, Multipolygonal,
@@ -17,7 +16,7 @@ use crate::traits::{
     PolygonalIntoIteratorHole, Segmental, Sequence,
 };
 
-use super::segment_endpoints;
+use super::{mixed, segment_endpoints, Event};
 
 pub(crate) fn relate_to_contour<
     'a,

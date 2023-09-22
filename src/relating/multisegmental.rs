@@ -10,7 +10,6 @@ use crate::operations::{
     IntersectCrossingSegments, Orient, Square, SquaredMetric,
 };
 use crate::relatable::{Relatable, Relation};
-use crate::relating::mixed;
 use crate::sweeping::traits::{EventsQueue, SweepLine};
 use crate::traits::{
     Contoural, Elemental, Iterable, Lengthsome, Multipolygonal,
@@ -20,9 +19,7 @@ use crate::traits::{
     Segmental,
 };
 
-use super::event::Event;
-use super::linear;
-use super::segment;
+use super::{linear, mixed, segment, Event};
 
 pub(super) fn relate_to_multipolygon<
     const IS_CONTOUR: bool,

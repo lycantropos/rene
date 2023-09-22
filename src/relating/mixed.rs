@@ -6,7 +6,6 @@ use std::ops::Bound::{Excluded, Unbounded};
 use crate::operations::{IntersectCrossingSegments, Orient};
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
-use crate::relating::utils::all_equal;
 use crate::sweeping::traits::{EventsContainer, EventsQueue, SweepLine};
 use crate::traits::{Elemental, Segmental, Sequence};
 
@@ -17,6 +16,7 @@ use super::event::{
 };
 use super::events_queue_key::EventsQueueKey;
 use super::sweep_line_key::SweepLineKey;
+use super::utils::all_equal;
 
 pub(crate) struct Operation<const FIRST_IS_LINEAR: bool, Point> {
     first_segments_count: usize,

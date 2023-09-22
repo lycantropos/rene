@@ -12,17 +12,16 @@ use crate::operations::{
 };
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
-use crate::relating::utils::all_equal;
 use crate::sweeping::traits::{EventsContainer, EventsQueue, SweepLine};
 use crate::traits::{Elemental, Segmental};
 
-use super::event::is_event_right;
 use super::event::{
-    is_event_left, left_event_to_position, segment_id_to_left_event,
-    segment_id_to_right_event, Event,
+    is_event_left, is_event_right, left_event_to_position,
+    segment_id_to_left_event, segment_id_to_right_event, Event,
 };
 use super::events_queue_key::EventsQueueKey;
 use super::sweep_line_key::SweepLineKey;
+use super::utils::all_equal;
 
 pub(crate) struct Operation<Point> {
     first_segments_count: usize,
