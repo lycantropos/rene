@@ -5,6 +5,7 @@ mod event;
 mod events_queue_key;
 pub(crate) mod linear;
 pub(crate) mod mixed;
+pub(crate) mod multipolygon;
 pub(crate) mod multisegment;
 mod multisegmental;
 pub(crate) mod segment;
