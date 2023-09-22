@@ -405,12 +405,12 @@ where
         + IntersectCrossingSegments<Output = Point>
         + Orient
         + SquaredMetric<Output = Output>,
-    for<'a> &'a Polygon: Polygonal<Contour = &'a Border, IndexHole = Border>,
+    for<'a> &'a Polygon: Bounded<&'a Scalar>
+        + Polygonal<Contour = &'a Border, IndexHole = Border>,
     for<'a> &'a Segment: Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point>,
 {
     let multisegmental_bounding_box = multisegmental.to_bounding_box();
-    let border = polygon.border();
-    let polygon_bounding_box = border.to_bounding_box();
+    let polygon_bounding_box = polygon.to_bounding_box();
     if multisegmental_bounding_box.disjoint_with(&polygon_bounding_box) {
         return Relation::Disjoint;
     }
@@ -447,7 +447,7 @@ where
         .iter()
         .map(|&index| &multisegmental_segments[index])
         .collect::<Vec<_>>();
-    let border_segments = border.segments();
+    let border_segments = polygon.border().segments();
     let holes = polygon.holes();
     let intersecting_holes_segments = holes
         .iter()

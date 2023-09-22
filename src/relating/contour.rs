@@ -213,7 +213,7 @@ where
         + IntersectCrossingSegments<Output = Point>
         + Orient
         + SquaredMetric<Output = Output>,
-    for<'a> &'a Polygon: Polygonal<Contour = &'a Contour, IndexHole =Contour>,
+    for<'a> &'a Polygon: Bounded<&'a Scalar> + Polygonal<Contour = &'a Contour, IndexHole =Contour>,
     for<'a> &'a Segment: Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point>,
 {
     multisegmental::relate_to_polygon::<

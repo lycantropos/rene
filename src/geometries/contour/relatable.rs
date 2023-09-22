@@ -183,7 +183,7 @@ where
         + IntersectCrossingSegments<Output = Point<Scalar>>
         + Orient
         + SquaredMetric<Output = Scalar>,
-    for<'a> &'a Polygon<Scalar>: Polygonal<Contour = &'a Contour<Scalar>, IndexHole =Contour<Scalar>>,
+    for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar> + Polygonal<Contour = &'a Contour<Scalar>, IndexHole =Contour<Scalar>>,
     for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point<Scalar>>,
 {
     fn relate_to(self, other: &Polygon<Scalar>) -> Relation {
