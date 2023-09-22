@@ -27,7 +27,7 @@ pub(crate) fn relate_to_contour<
     contour: &Contour,
 ) -> Relation
 where
-    mixed::Operation<true, Point>:
+    mixed::Operation<false, Point>:
         EventsQueue<Event = Event> + SweepLine<Event = Event>,
     for<'a> &'a Contour: Bounded<&'a Scalar>
         + Contoural<IndexSegment = Segment, IntoIteratorSegment = &'a Segment>,
@@ -100,7 +100,7 @@ pub(crate) fn relate_to_multisegment<
     multisegment: &Multisegment,
 ) -> Relation
 where
-    mixed::Operation<true, Point>:
+    mixed::Operation<false, Point>:
         EventsQueue<Event = Event> + SweepLine<Event = Event>,
     for<'a> &'a Border:
         Bounded<&'a Scalar> + Contoural<IntoIteratorSegment = &'a Segment>,
@@ -177,7 +177,7 @@ fn relate_to_multisegmental<
     multisegmental: &Multisegment,
 ) -> Relation
 where
-    mixed::Operation<true, Point>:
+    mixed::Operation<false, Point>:
         EventsQueue<Event = Event> + SweepLine<Event = Event>,
     for<'a> &'a Border:
         Bounded<&'a Scalar> + Contoural<IntoIteratorSegment = &'a Segment>,
@@ -344,7 +344,7 @@ pub(crate) fn relate_to_segment<
     segment: &Segment,
 ) -> Relation
 where
-    mixed::Operation<true, Point>:
+    mixed::Operation<false, Point>:
         EventsQueue<Event = Event> + SweepLine<Event = Event>,
     for<'a> &'a Border:
         Bounded<&'a Scalar> + Contoural<IntoIteratorSegment = &'a Segment>,
