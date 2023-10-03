@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import enum
 import typing as t
 from abc import (ABC,
                  abstractmethod)
@@ -23,7 +24,6 @@ from .event import (UNDEFINED_EVENT,
                     is_event_right,
                     left_event_to_position)
 from .events_queue_key import EventsQueueKey
-from .overlap_kind import OverlapKind
 from .sweep_line_key import SweepLineKey
 
 
@@ -679,6 +679,12 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 event, self._is_left_event_from_first_operand(event),
                 self.endpoints, self._opposites
         )
+
+
+class OverlapKind(enum.IntEnum):
+    NONE = 0
+    SAME_ORIENTATION = 1
+    DIFFERENT_ORIENTATION = 2
 
 
 def _populate_with_segments(
