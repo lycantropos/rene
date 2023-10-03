@@ -13,6 +13,7 @@ from .segment_endpoints import (
     relate_to_region as relate_endpoints_to_region,
     relate_to_segment_endpoints as relate_endpoints_to_endpoints
 )
+from .utils import polygon_to_segments
 
 
 def relate_to_contour(segment: hints.Segment[hints.Scalar],
@@ -35,21 +36,17 @@ def relate_to_multipolygon(segment: hints.Segment[hints.Scalar],
     min_max_x = min(segment_bounding_box.max_x,
                     max(polygons_bounding_boxes[polygon_id].max_x
                         for polygon_id in intersecting_polygons_ids))
+    intersecting_polygons = [
+        polygons[polygon_id]
+        for polygon_id in intersecting_polygons_ids
+        if polygons_bounding_boxes[polygon_id].min_x <= min_max_x
+    ]
+    assert intersecting_polygons
     return mixed.LinearShapedOperation.from_segments_iterables(
             [segment],
-            chain.from_iterable(
-                    chain(
-                            polygon.border.segments,
-                            chain.from_iterable(
-                                    hole.segments
-                                    for hole in polygon.holes
-                                    if not hole.bounding_box.disjoint_with(
-                                            segment_bounding_box
-                                    )
-                            )
-                    )
-                    for polygon in polygons
-            )
+            chain.from_iterable(polygon_to_segments(polygon,
+                                                    segment_bounding_box)
+                                for polygon in intersecting_polygons)
     ).to_relation(True, min_max_x)
 
 
@@ -58,14 +55,14 @@ def relate_to_multiregion(segment: hints.Segment[hints.Scalar],
                           /) -> Relation:
     assert len(borders) > 1, borders
     segment_bounding_box = segment.bounding_box
-    borders_bounding_boxes = [border.bounding_box for border in borders]
+    regions_bounding_boxes = [border.bounding_box for border in borders]
     intersecting_borders_ids = to_boxes_ids_with_intersection(
-            borders_bounding_boxes, segment_bounding_box
+            regions_bounding_boxes, segment_bounding_box
     )
     if not intersecting_borders_ids:
         return Relation.DISJOINT
     min_max_x = min(segment_bounding_box.max_x,
-                    max(borders_bounding_boxes[border_id].max_x
+                    max(regions_bounding_boxes[border_id].max_x
                         for border_id in intersecting_borders_ids))
     return mixed.LinearShapedOperation.from_segments_iterables(
             [segment], [edge for border in borders for edge in border.segments]

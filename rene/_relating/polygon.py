@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import typing as t
-from itertools import chain
 
 from rene import (Relation,
                   hints)
 from rene._utils import to_boxes_ids_with_intersection
 from . import mixed
+from .utils import polygon_to_segments
 
 
 def relate_to_contour(polygon: hints.Polygon[hints.Scalar],
@@ -30,17 +30,7 @@ def relate_to_segment(polygon: hints.Polygon[hints.Scalar],
         return Relation.DISJOINT
     min_max_x = min(segment_bounding_box.max_x, polygon_bounding_box.max_x)
     return mixed.ShapedLinearOperation.from_segments_iterables(
-            chain(
-                    polygon.border.segments,
-                    chain.from_iterable(
-                            hole.segments
-                            for hole in polygon.holes
-                            if not hole.bounding_box.disjoint_with(
-                                    segment_bounding_box
-                            )
-                    )
-            ),
-            [segment]
+            polygon_to_segments(polygon, segment_bounding_box), [segment]
     ).to_relation(True, min_max_x)
 
 
@@ -80,16 +70,7 @@ def relate_to_multisegmental(polygon: hints.Polygon[hints.Scalar],
                     max(multisegmental_boxes[segment_id].max_x
                         for segment_id in intersecting_segments_ids))
     return mixed.ShapedLinearOperation.from_segments_iterables(
-            chain(
-                    polygon.border.segments,
-                    chain.from_iterable(
-                            hole.segments
-                            for hole in polygon.holes
-                            if not hole.bounding_box.disjoint_with(
-                                    multisegmental_bounding_box
-                            )
-                    )
-            ),
+            polygon_to_segments(polygon,  multisegmental_bounding_box),
             [multisegmental_segments[segment_id]
              for segment_id in intersecting_segments_ids]
     ).to_relation(

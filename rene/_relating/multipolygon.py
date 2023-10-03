@@ -93,19 +93,9 @@ def relate_to_segment(multipolygon: hints.Multipolygon[hints.Scalar],
                     max(polygons_bounding_boxes[polygon_id].max_x
                         for polygon_id in intersecting_polygons_ids))
     return mixed.ShapedLinearOperation.from_segments_iterables(
-            chain.from_iterable(
-                    chain(
-                            polygon.border.segments,
-                            chain.from_iterable(
-                                    hole.segments
-                                    for hole in polygon.holes
-                                    if not hole.bounding_box.disjoint_with(
-                                            segment_bounding_box
-                                    )
-                            )
-                    )
-                    for polygon in polygons
-            ),
+            chain.from_iterable(polygon_to_segments(polygon,
+                                                    segment_bounding_box)
+                                for polygon in polygons),
             [segment]
     ).to_relation(True, min_max_x)
 
@@ -154,25 +144,24 @@ def relate_to_multisegmental(multipolygon: hints.Multipolygon[hints.Scalar],
             max(multisegmental_boxes[segment_id].max_x
                 for segment_id in intersecting_segments_ids),
     )
+    intersecting_polygons = [
+        multipolygon_polygons[polygon_id]
+        for polygon_id in intersecting_polygons_ids
+        if multipolygon_boxes[polygon_id].min_x <= min_max_x
+    ]
+    assert intersecting_polygons
+    intersecting_segments = [
+        multisegmental_segments[segment_id]
+        for segment_id in intersecting_segments_ids
+        if multisegmental_boxes[segment_id].min_x <= min_max_x
+    ]
+    assert intersecting_segments
     return mixed.ShapedLinearOperation.from_segments_iterables(
             chain.from_iterable(
-                    chain(
-                            polygon.border.segments,
-                            chain.from_iterable(
-                                    hole.segments
-                                    for hole in polygon.holes
-                                    if not hole.bounding_box.disjoint_with(
-                                            multisegmental_bounding_box
-                                    )
-                            )
-                    )
-                    for polygon in [
-                        multipolygon_polygons[polygon_id]
-                        for polygon_id in intersecting_polygons_ids
-                    ]
+                    polygon_to_segments(polygon, multisegmental_bounding_box)
+                    for polygon in intersecting_polygons
             ),
-            [multisegmental_segments[segment_id]
-             for segment_id in intersecting_segments_ids]
+            intersecting_segments
     ).to_relation(
             len(intersecting_segments_ids) == len(multisegmental_segments),
             min_max_x
