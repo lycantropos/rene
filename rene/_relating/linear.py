@@ -12,7 +12,7 @@ from prioq.base import PriorityQueue
 from rene import (Orientation,
                   Relation,
                   hints)
-from rene._utils import (all_equal,
+from rene._utils import (all_same,
                          is_even,
                          orient,
                          square,
@@ -112,15 +112,15 @@ class Operation(t.Generic[hints.Scalar]):
         )
         largest_angle_end = self.to_event_end(largest_angle_event)
         base_orientation = orient(start, base_end, largest_angle_end)
-        return not all_equal(
+        return not all_same(
                 is_point_in_angle(self.to_event_end(event), start, base_end,
                                   largest_angle_end, base_orientation)
                 for event in from_first_events
         )
 
     def has_intersection(self, same_start_events: t.Sequence[Event]) -> bool:
-        return not all_equal(self.is_event_from_first_operand(event)
-                             for event in same_start_events)
+        return not all_same(self.is_event_from_first_operand(event)
+                            for event in same_start_events)
 
     def is_event_from_first_operand(self, event: Event, /) -> bool:
         return self._is_left_event_from_first_operand(

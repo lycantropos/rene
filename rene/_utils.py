@@ -22,9 +22,14 @@ _OrderedT = t.TypeVar('_OrderedT',
 _T = t.TypeVar('_T')
 
 
-def all_equal(iterable: t.Iterable[t.Any]) -> bool:
-    groups = groupby(iterable)
-    return bool(next(groups, True)) and not next(groups, False)
+def all_same(iterable: t.Iterable[t.Any]) -> bool:
+    iterator = iter(iterable)
+    try:
+        value = next(iterator)
+    except StopIteration:
+        return True
+    else:
+        return all(candidate is value for candidate in iterator)
 
 
 def are_contour_vertices_non_degenerate(

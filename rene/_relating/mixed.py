@@ -14,7 +14,7 @@ from prioq.base import PriorityQueue
 from rene import (Orientation,
                   Relation,
                   hints)
-from rene._utils import (all_equal,
+from rene._utils import (all_same,
                          is_even,
                          orient,
                          to_segments_intersection_point)
@@ -43,8 +43,8 @@ class Operation(ABC, t.Generic[hints.Scalar]):
 
     def has_border_intersection(self, same_start_events: t.List[Event],
                                 /) -> bool:
-        return not all_equal(self._is_event_from_first_operand(event)
-                             for event in same_start_events)
+        return not all_same(self._is_event_from_first_operand(event)
+                            for event in same_start_events)
 
     @abstractmethod
     def is_event_from_linear(self, event: Event, /) -> bool:
