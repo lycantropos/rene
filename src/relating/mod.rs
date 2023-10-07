@@ -11,5 +11,6 @@ mod multisegmental;
 pub(crate) mod polygon;
 pub(crate) mod segment;
 pub(crate) mod segment_endpoints;
+pub(crate) mod shaped;
 mod sweep_line_key;
 mod utils;
