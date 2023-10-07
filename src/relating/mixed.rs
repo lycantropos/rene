@@ -1,4 +1,3 @@
-use core::convert::From;
 use std::cmp::Reverse;
 use std::collections::{BTreeSet, BinaryHeap};
 use std::ops::Bound::{Excluded, Unbounded};
@@ -7,7 +6,7 @@ use crate::operations::{IntersectCrossingSegments, Orient};
 use crate::oriented::Orientation;
 use crate::relatable::Relation;
 use crate::sweeping::traits::{EventsContainer, EventsQueue, SweepLine};
-use crate::traits::{Elemental, Segmental, Sequence};
+use crate::traits::{Elemental, Segmental};
 
 use super::event::is_event_right;
 use super::event::{
@@ -114,26 +113,6 @@ impl RelationState {
         } else if self.shaped_border_is_subset_of_linear {
             self.shaped_border_is_subset_of_linear = false
         }
-    }
-}
-
-impl<
-        Point: Ord,
-        Segment: Clone + Segmental<Endpoint = Point>,
-        ShapedSegments: Sequence<IndexItem = Segment>,
-    > From<(&[&Segment], ShapedSegments)> for Operation<false, Point>
-where
-    for<'a> &'a Point: Orient,
-    for<'a> &'a Segment: Segmental,
-{
-    fn from(
-        (linear_segments, shaped_segments): (&[&Segment], ShapedSegments),
-    ) -> Self {
-        let mut result =
-            Self::with_capacity(linear_segments.len(), shaped_segments.len());
-        result.extend_from_linear(linear_segments.iter().copied().cloned());
-        result.extend_from_shaped(shaped_segments.iter().cloned());
-        result
     }
 }
 
