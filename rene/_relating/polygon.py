@@ -106,7 +106,7 @@ def relate_to_multisegmental(polygon: hints.Polygon[hints.Scalar],
                     max(multisegmental_boxes[segment_id].max_x
                         for segment_id in intersecting_segments_ids))
     return mixed.ShapedLinearOperation.from_segments_iterables(
-            polygon_to_segments(polygon,  multisegmental_bounding_box),
+            polygon_to_segments(polygon, multisegmental_bounding_box),
             [multisegmental_segments[segment_id]
              for segment_id in intersecting_segments_ids]
     ).to_relation(
