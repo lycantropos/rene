@@ -78,6 +78,38 @@ def relate_to_multisegment(multipolygon: hints.Multipolygon[hints.Scalar],
     return relate_to_multisegmental(multipolygon, multisegment)
 
 
+def relate_to_polygon(multipolygon: hints.Multipolygon[hints.Scalar],
+                      polygon: hints.Polygon[hints.Scalar],
+                      /) -> Relation:
+    multipolygon_bounding_box, polygon_bounding_box = (
+        multipolygon.bounding_box, polygon.bounding_box
+    )
+    if multipolygon_bounding_box.disjoint_with(polygon_bounding_box):
+        return Relation.DISJOINT
+    polygons = multipolygon.polygons
+    polygons_bounding_boxes = [polygon.bounding_box for polygon in polygons]
+    intersecting_polygons_ids = to_boxes_ids_with_intersection(
+            polygons_bounding_boxes, polygon_bounding_box
+    )
+    if not intersecting_polygons_ids:
+        return Relation.DISJOINT
+    min_max_x = min(polygon_bounding_box.max_x,
+                    max(polygons_bounding_boxes[polygon_id].max_x
+                        for polygon_id in intersecting_polygons_ids))
+    intersecting_polygons = [
+        polygons[polygon_id]
+        for polygon_id in intersecting_polygons_ids
+        if polygons_bounding_boxes[polygon_id].min_x <= min_max_x
+    ]
+    assert intersecting_polygons
+    return shaped.Operation.from_segments_iterables(
+            chain.from_iterable(polygon_to_segments(polygon,
+                                                    polygon_bounding_box)
+                                for polygon in intersecting_polygons),
+            polygon_to_segments(polygon, multipolygon_bounding_box)
+    ).to_relation(len(intersecting_polygons) == len(polygons), True, min_max_x)
+
+
 def relate_to_segment(multipolygon: hints.Multipolygon[hints.Scalar],
                       segment: hints.Segment[hints.Scalar],
                       /) -> Relation:
