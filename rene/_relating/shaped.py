@@ -217,11 +217,13 @@ class Operation(t.Generic[hints.Scalar]):
     def _compute_left_event_fields(
             self, event: Event, below_event: t.Optional[Event], /
     ) -> None:
-        event_position = left_event_to_position(event)
         if below_event is not None:
-            below_event_position = left_event_to_position(below_event)
-            self._other_have_interior_to_left[event_position] = (
-                self._other_have_interior_to_left[below_event_position]
+            self._other_have_interior_to_left[
+                left_event_to_position(event)
+            ] = (
+                self._other_have_interior_to_left[
+                    left_event_to_position(below_event)
+                ]
                 if (self._is_left_event_from_first_operand(event)
                     is self._is_left_event_from_first_operand(below_event))
                 else self.have_interior_to_left[
