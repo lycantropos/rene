@@ -66,6 +66,10 @@ class Multipolygon:
             return multipolygon.relate_to_segment(self, other)
         elif isinstance(other, self._context.empty_cls):
             return Relation.DISJOINT
+        elif isinstance(other, self._context.multipolygon_cls):
+            return multipolygon.relate_to_multipolygon(self, other)
+        elif isinstance(other, self._context.polygon_cls):
+            return multipolygon.relate_to_polygon(self, other)
         else:
             raise TypeError(f'Unsupported type: {type(other)!r}.')
 
