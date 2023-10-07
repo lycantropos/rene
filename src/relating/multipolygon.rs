@@ -163,6 +163,136 @@ where
     >(multipolygon, multisegment)
 }
 
+pub(crate) fn relate_to_segment<
+    Border,
+    Multipolygon,
+    Point: Clone + Ord,
+    Polygon,
+    Scalar: Ord,
+    Segment: Clone + Segmental<Endpoint = Point>,
+>(
+    multipolygon: &Multipolygon,
+    segment: &Segment,
+) -> Relation
+where
+    mixed::Operation<false, Point>:
+        EventsQueue<Event = Event> + SweepLine<Event = Event>,
+    for<'a> &'a Border:
+        Bounded<&'a Scalar> + Contoural<IntoIteratorSegment = &'a Segment>,
+    for<'a> &'a Multipolygon: Multipolygonal<IndexPolygon = Polygon>,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar>
+        + IntersectCrossingSegments<Output = Point>
+        + Orient,
+    for<'a> &'a Polygon: Bounded<&'a Scalar>
+        + Polygonal<Contour = &'a Border, IntoIteratorHole = &'a Border>,
+    for<'a> &'a Segment: Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point>,
+    for<'a, 'b> &'a MultisegmentalIndexSegment<
+        PolygonalContour<MultipolygonalIntoIteratorPolygon<&'b Multipolygon>>,
+    >: Segmental,
+    for<'a, 'b> &'a MultisegmentalIndexSegment<
+        PolygonalIntoIteratorHole<
+            MultipolygonalIntoIteratorPolygon<&'b Multipolygon>,
+        >,
+    >: Segmental,
+    for<'a, 'b> &'a MultivertexalIndexVertex<
+        PolygonalContour<MultipolygonalIntoIteratorPolygon<&'b Multipolygon>>,
+    >: Elemental,
+    for<'a, 'b> &'a MultivertexalIndexVertex<
+        PolygonalIntoIteratorHole<
+            MultipolygonalIntoIteratorPolygon<&'b Multipolygon>,
+        >,
+    >: Elemental,
+    for<'a, 'b> &'a MultisegmentalIndexSegment<&'b Border>: Segmental,
+    for<'a, 'b> &'a MultivertexalIndexVertex<&'b Border>: Elemental,
+    for<'a, 'b> &'a PolygonalIndexHole<
+        MultipolygonalIntoIteratorPolygon<&'b Multipolygon>,
+    >: Contoural,
+    for<'a, 'b> &'a PolygonalIndexHole<&'b Polygon>: Contoural,
+    for<'a, 'b, 'c> &'a MultisegmentalIndexSegment<
+        &'b PolygonalIndexHole<
+            MultipolygonalIntoIteratorPolygon<&'c Multipolygon>,
+        >,
+    >: Segmental,
+    for<'a, 'b, 'c> &'a MultivertexalIndexVertex<
+        &'b PolygonalIndexHole<
+            MultipolygonalIntoIteratorPolygon<&'c Multipolygon>,
+        >,
+    >: Elemental,
+    for<'a, 'b, 'c> &'a MultisegmentalIndexSegment<&'b PolygonalIndexHole<&'c Polygon>>:
+        Segmental,
+    for<'a, 'b, 'c> &'a MultivertexalIndexVertex<&'b PolygonalIndexHole<&'c Polygon>>:
+        Elemental,
+{
+    let segment_bounding_box = segment.to_bounding_box();
+    let polygons = multipolygon.polygons();
+    let polygons_bounding_boxes = polygons
+        .iter()
+        .map(Bounded::to_bounding_box)
+        .collect::<Vec<_>>();
+    let intersecting_polygons_ids = to_boxes_ids_with_intersection(
+        &polygons_bounding_boxes,
+        &segment_bounding_box,
+    );
+    if intersecting_polygons_ids.is_empty() {
+        Relation::Disjoint
+    } else {
+        let min_max_x = segment_bounding_box.get_max_x().min(unsafe {
+            intersecting_polygons_ids
+                .iter()
+                .map(|&border_id| {
+                    polygons_bounding_boxes[border_id].get_max_x()
+                })
+                .max()
+                .unwrap_unchecked()
+        });
+        let intersecting_polygons_borders_segments = intersecting_polygons_ids
+            .iter()
+            .map(|&polygon_id| polygons[polygon_id].border().segments())
+            .collect::<Vec<_>>();
+        let intersecting_polygons_holes_segments = intersecting_polygons_ids
+            .iter()
+            .flat_map(|&polygon_id| {
+                polygons[polygon_id].holes().into_iter().filter_map(|hole| {
+                    if hole
+                        .to_bounding_box()
+                        .disjoint_with(&segment_bounding_box)
+                    {
+                        None
+                    } else {
+                        Some(hole.segments())
+                    }
+                })
+            })
+            .collect::<Vec<_>>();
+        mixed::Operation::<false, Point>::from_segments_iterators(
+            (
+                intersecting_polygons_borders_segments
+                    .iter()
+                    .map(|segments| segments.len())
+                    .sum::<usize>()
+                    + intersecting_polygons_holes_segments
+                        .iter()
+                        .map(|segments| segments.len())
+                        .sum::<usize>(),
+                intersecting_polygons_borders_segments
+                    .into_iter()
+                    .flat_map(|border_segments| {
+                        border_segments.into_iter().cloned()
+                    })
+                    .chain(
+                        intersecting_polygons_holes_segments
+                            .into_iter()
+                            .flat_map(|hole_segments| {
+                                hole_segments.into_iter().cloned()
+                            }),
+                    ),
+            ),
+            (1, std::iter::once(segment.clone())),
+        )
+        .into_relation(true, min_max_x)
+    }
+}
+
 fn relate_to_multisegmental<
     const IS_CONTOUR: bool,
     Border,
@@ -329,135 +459,5 @@ where
             intersecting_segments_ids.len() == multisegmental_segments.len(),
             min_max_x,
         )
-    }
-}
-
-pub(crate) fn relate_to_segment<
-    Border,
-    Multipolygon,
-    Point: Clone + Ord,
-    Polygon,
-    Scalar: Ord,
-    Segment: Clone + Segmental<Endpoint = Point>,
->(
-    multipolygon: &Multipolygon,
-    segment: &Segment,
-) -> Relation
-where
-    mixed::Operation<false, Point>:
-        EventsQueue<Event = Event> + SweepLine<Event = Event>,
-    for<'a> &'a Border:
-        Bounded<&'a Scalar> + Contoural<IntoIteratorSegment = &'a Segment>,
-    for<'a> &'a Multipolygon: Multipolygonal<IndexPolygon = Polygon>,
-    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar>
-        + IntersectCrossingSegments<Output = Point>
-        + Orient,
-    for<'a> &'a Polygon: Bounded<&'a Scalar>
-        + Polygonal<Contour = &'a Border, IntoIteratorHole = &'a Border>,
-    for<'a> &'a Segment: Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point>,
-    for<'a, 'b> &'a MultisegmentalIndexSegment<
-        PolygonalContour<MultipolygonalIntoIteratorPolygon<&'b Multipolygon>>,
-    >: Segmental,
-    for<'a, 'b> &'a MultisegmentalIndexSegment<
-        PolygonalIntoIteratorHole<
-            MultipolygonalIntoIteratorPolygon<&'b Multipolygon>,
-        >,
-    >: Segmental,
-    for<'a, 'b> &'a MultivertexalIndexVertex<
-        PolygonalContour<MultipolygonalIntoIteratorPolygon<&'b Multipolygon>>,
-    >: Elemental,
-    for<'a, 'b> &'a MultivertexalIndexVertex<
-        PolygonalIntoIteratorHole<
-            MultipolygonalIntoIteratorPolygon<&'b Multipolygon>,
-        >,
-    >: Elemental,
-    for<'a, 'b> &'a MultisegmentalIndexSegment<&'b Border>: Segmental,
-    for<'a, 'b> &'a MultivertexalIndexVertex<&'b Border>: Elemental,
-    for<'a, 'b> &'a PolygonalIndexHole<
-        MultipolygonalIntoIteratorPolygon<&'b Multipolygon>,
-    >: Contoural,
-    for<'a, 'b> &'a PolygonalIndexHole<&'b Polygon>: Contoural,
-    for<'a, 'b, 'c> &'a MultisegmentalIndexSegment<
-        &'b PolygonalIndexHole<
-            MultipolygonalIntoIteratorPolygon<&'c Multipolygon>,
-        >,
-    >: Segmental,
-    for<'a, 'b, 'c> &'a MultivertexalIndexVertex<
-        &'b PolygonalIndexHole<
-            MultipolygonalIntoIteratorPolygon<&'c Multipolygon>,
-        >,
-    >: Elemental,
-    for<'a, 'b, 'c> &'a MultisegmentalIndexSegment<&'b PolygonalIndexHole<&'c Polygon>>:
-        Segmental,
-    for<'a, 'b, 'c> &'a MultivertexalIndexVertex<&'b PolygonalIndexHole<&'c Polygon>>:
-        Elemental,
-{
-    let segment_bounding_box = segment.to_bounding_box();
-    let polygons = multipolygon.polygons();
-    let polygons_bounding_boxes = polygons
-        .iter()
-        .map(Bounded::to_bounding_box)
-        .collect::<Vec<_>>();
-    let intersecting_polygons_ids = to_boxes_ids_with_intersection(
-        &polygons_bounding_boxes,
-        &segment_bounding_box,
-    );
-    if intersecting_polygons_ids.is_empty() {
-        Relation::Disjoint
-    } else {
-        let min_max_x = segment_bounding_box.get_max_x().min(unsafe {
-            intersecting_polygons_ids
-                .iter()
-                .map(|&border_id| {
-                    polygons_bounding_boxes[border_id].get_max_x()
-                })
-                .max()
-                .unwrap_unchecked()
-        });
-        let intersecting_polygons_borders_segments = intersecting_polygons_ids
-            .iter()
-            .map(|&polygon_id| polygons[polygon_id].border().segments())
-            .collect::<Vec<_>>();
-        let intersecting_polygons_holes_segments = intersecting_polygons_ids
-            .iter()
-            .flat_map(|&polygon_id| {
-                polygons[polygon_id].holes().into_iter().filter_map(|hole| {
-                    if hole
-                        .to_bounding_box()
-                        .disjoint_with(&segment_bounding_box)
-                    {
-                        None
-                    } else {
-                        Some(hole.segments())
-                    }
-                })
-            })
-            .collect::<Vec<_>>();
-        mixed::Operation::<false, Point>::from_segments_iterators(
-            (
-                intersecting_polygons_borders_segments
-                    .iter()
-                    .map(|segments| segments.len())
-                    .sum::<usize>()
-                    + intersecting_polygons_holes_segments
-                        .iter()
-                        .map(|segments| segments.len())
-                        .sum::<usize>(),
-                intersecting_polygons_borders_segments
-                    .into_iter()
-                    .flat_map(|border_segments| {
-                        border_segments.into_iter().cloned()
-                    })
-                    .chain(
-                        intersecting_polygons_holes_segments
-                            .into_iter()
-                            .flat_map(|hole_segments| {
-                                hole_segments.into_iter().cloned()
-                            }),
-                    ),
-            ),
-            (1, std::iter::once(segment.clone())),
-        )
-        .into_relation(true, min_max_x)
     }
 }
