@@ -286,6 +286,96 @@ where
     >(polygon, multisegment)
 }
 
+pub(crate) fn relate_to_polygon<
+    Border,
+    Point: Clone + Ord,
+    Polygon,
+    Scalar: Ord,
+    Segment: Clone + Segmental<Endpoint = Point>,
+>(
+    first: &Polygon,
+    second: &Polygon,
+) -> Relation
+where
+    shaped::Operation<Point>:
+        EventsQueue<Event = Event> + SweepLine<Event = Event>,
+    for<'a> &'a Border:
+        Bounded<&'a Scalar> + Contoural<IntoIteratorSegment = &'a Segment>,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar>
+        + IntersectCrossingSegments<Output = Point>
+        + Orient,
+    for<'a> &'a Polygon: Bounded<&'a Scalar>
+        + Polygonal<Contour = &'a Border, IntoIteratorHole = &'a Border>,
+    for<'a> &'a Segment: Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point>,
+    for<'a, 'b> &'a MultisegmentalIndexSegment<&'b Border>: Segmental,
+    for<'a, 'b> &'a MultivertexalIndexVertex<&'b Border>: Elemental,
+    for<'a, 'b> &'a PolygonalIndexHole<&'b Polygon>: Contoural,
+    for<'a, 'b, 'c> &'a MultisegmentalIndexSegment<&'b PolygonalIndexHole<&'c Polygon>>:
+        Segmental,
+    for<'a, 'b, 'c> &'a MultivertexalIndexVertex<&'b PolygonalIndexHole<&'c Polygon>>:
+        Elemental,
+{
+    let first_bounding_box = first.to_bounding_box();
+    let second_bounding_box = second.to_bounding_box();
+    if first_bounding_box.disjoint_with(&second_bounding_box) {
+        return Relation::Disjoint;
+    }
+    let min_max_x = first_bounding_box
+        .get_max_x()
+        .min(second_bounding_box.get_max_x());
+    let first_border_segments = first.border().segments();
+    let first_intersecting_holes_segments = first
+        .holes()
+        .into_iter()
+        .filter_map(|hole| {
+            if hole.to_bounding_box().disjoint_with(&second_bounding_box) {
+                None
+            } else {
+                Some(hole.segments())
+            }
+        })
+        .collect::<Vec<_>>();
+    let second_border_segments = second.border().segments();
+    let second_intersecting_holes_segments = second
+        .holes()
+        .into_iter()
+        .filter_map(|hole| {
+            if hole.to_bounding_box().disjoint_with(&second_bounding_box) {
+                None
+            } else {
+                Some(hole.segments())
+            }
+        })
+        .collect::<Vec<_>>();
+    shaped::Operation::<Point>::from_segments_iterators(
+        (
+            first_border_segments.len()
+                + first_intersecting_holes_segments
+                    .iter()
+                    .map(|hole_segments| hole_segments.len())
+                    .sum::<usize>(),
+            first_border_segments.into_iter().cloned().chain(
+                first_intersecting_holes_segments.into_iter().flat_map(
+                    |hole_segments| hole_segments.into_iter().cloned(),
+                ),
+            ),
+        ),
+        (
+            second_border_segments.len()
+                + second_intersecting_holes_segments
+                    .iter()
+                    .map(|hole_segments| hole_segments.len())
+                    .sum::<usize>(),
+            second_border_segments.into_iter().cloned().chain(
+                second_intersecting_holes_segments.into_iter().flat_map(
+                    |hole_segments| hole_segments.into_iter().cloned(),
+                ),
+            ),
+        ),
+    )
+    .into_relation(true, true, min_max_x)
+}
+
 pub(crate) fn relate_to_segment<
     Border,
     Point: Clone + Ord,
