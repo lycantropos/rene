@@ -87,6 +87,206 @@ where
     >(multipolygon, contour)
 }
 
+pub(crate) fn relate_to_multipolygon<
+    Border,
+    Multipolygon,
+    Point: Clone + Ord,
+    Polygon,
+    Scalar: Ord,
+    Segment: Clone + Segmental<Endpoint = Point>,
+>(
+    first: &Multipolygon,
+    second: &Multipolygon,
+) -> Relation
+where
+    shaped::Operation<Point>:
+        EventsQueue<Event = Event> + SweepLine<Event = Event>,
+    for<'a> &'a Border:
+        Bounded<&'a Scalar> + Contoural<IntoIteratorSegment = &'a Segment>,
+    for<'a> &'a Multipolygon:
+        Bounded<&'a Scalar> + Multipolygonal<IndexPolygon = Polygon>,
+    for<'a> &'a Point: Elemental<Coordinate = &'a Scalar>
+        + IntersectCrossingSegments<Output = Point>
+        + Orient,
+    for<'a> &'a Polygon: Bounded<&'a Scalar>
+        + Polygonal<Contour = &'a Border, IntoIteratorHole = &'a Border>,
+    for<'a> &'a Segment: Bounded<&'a Scalar> + Segmental<Endpoint = &'a Point>,
+    for<'a, 'b> &'a MultisegmentalIndexSegment<
+        PolygonalContour<MultipolygonalIntoIteratorPolygon<&'b Multipolygon>>,
+    >: Segmental,
+    for<'a, 'b> &'a MultisegmentalIndexSegment<
+        PolygonalIntoIteratorHole<
+            MultipolygonalIntoIteratorPolygon<&'b Multipolygon>,
+        >,
+    >: Segmental,
+    for<'a, 'b> &'a MultivertexalIndexVertex<
+        PolygonalContour<MultipolygonalIntoIteratorPolygon<&'b Multipolygon>>,
+    >: Elemental,
+    for<'a, 'b> &'a MultivertexalIndexVertex<
+        PolygonalIntoIteratorHole<
+            MultipolygonalIntoIteratorPolygon<&'b Multipolygon>,
+        >,
+    >: Elemental,
+    for<'a, 'b> &'a MultisegmentalIndexSegment<&'b Border>: Segmental,
+    for<'a, 'b> &'a MultivertexalIndexVertex<&'b Border>: Elemental,
+    for<'a, 'b> &'a PolygonalIndexHole<
+        MultipolygonalIntoIteratorPolygon<&'b Multipolygon>,
+    >: Contoural,
+    for<'a, 'b> &'a PolygonalIndexHole<&'b Polygon>: Contoural,
+    for<'a, 'b, 'c> &'a MultisegmentalIndexSegment<
+        &'b PolygonalIndexHole<
+            MultipolygonalIntoIteratorPolygon<&'c Multipolygon>,
+        >,
+    >: Segmental,
+    for<'a, 'b, 'c> &'a MultivertexalIndexVertex<
+        &'b PolygonalIndexHole<
+            MultipolygonalIntoIteratorPolygon<&'c Multipolygon>,
+        >,
+    >: Elemental,
+    for<'a, 'b, 'c> &'a MultisegmentalIndexSegment<&'b PolygonalIndexHole<&'c Polygon>>:
+        Segmental,
+    for<'a, 'b, 'c> &'a MultivertexalIndexVertex<&'b PolygonalIndexHole<&'c Polygon>>:
+        Elemental,
+{
+    let first_bounding_box = first.to_bounding_box();
+    let second_bounding_box = second.to_bounding_box();
+    if first_bounding_box.disjoint_with(&second_bounding_box) {
+        return Relation::Disjoint;
+    }
+    let first_polygons = first.polygons();
+    let first_bounding_boxes = first_polygons
+        .iter()
+        .map(Bounded::to_bounding_box)
+        .collect::<Vec<_>>();
+    let first_intersecting_polygons_ids = to_boxes_ids_with_intersection(
+        &first_bounding_boxes,
+        &second_bounding_box,
+    );
+    if first_intersecting_polygons_ids.is_empty() {
+        return Relation::Disjoint;
+    }
+    let second_polygons = second.polygons();
+    let second_bounding_boxes = second_polygons
+        .iter()
+        .map(Bounded::to_bounding_box)
+        .collect::<Vec<_>>();
+    let second_intersecting_polygons_ids = to_boxes_ids_with_intersection(
+        &second_bounding_boxes,
+        &first_bounding_box,
+    );
+    let min_max_x = unsafe {
+        first_intersecting_polygons_ids
+            .iter()
+            .map(|&index| first_bounding_boxes[index].get_max_x())
+            .max()
+            .unwrap_unchecked()
+    }
+    .min(unsafe {
+        second_intersecting_polygons_ids
+            .iter()
+            .map(|&index| second_bounding_boxes[index].get_max_x())
+            .max()
+            .unwrap_unchecked()
+    });
+    let first_intersecting_polygons_borders_segments =
+        first_intersecting_polygons_ids
+            .iter()
+            .map(|&polygon_id| first_polygons[polygon_id].border().segments())
+            .collect::<Vec<_>>();
+    let first_intersecting_polygons_holes_segments =
+        first_intersecting_polygons_ids
+            .iter()
+            .flat_map(|&polygon_id| {
+                first_polygons[polygon_id].holes().into_iter().filter_map(
+                    |hole| {
+                        if hole
+                            .to_bounding_box()
+                            .disjoint_with(&second_bounding_box)
+                        {
+                            None
+                        } else {
+                            Some(hole.segments())
+                        }
+                    },
+                )
+            })
+            .collect::<Vec<_>>();
+    let second_intersecting_polygons_borders_segments =
+        second_intersecting_polygons_ids
+            .iter()
+            .map(|&polygon_id| second_polygons[polygon_id].border().segments())
+            .collect::<Vec<_>>();
+    let second_intersecting_polygons_holes_segments =
+        second_intersecting_polygons_ids
+            .iter()
+            .flat_map(|&polygon_id| {
+                second_polygons[polygon_id].holes().into_iter().filter_map(
+                    |hole| {
+                        if hole
+                            .to_bounding_box()
+                            .disjoint_with(&second_bounding_box)
+                        {
+                            None
+                        } else {
+                            Some(hole.segments())
+                        }
+                    },
+                )
+            })
+            .collect::<Vec<_>>();
+    shaped::Operation::<Point>::from_segments_iterators(
+        (
+            first_intersecting_polygons_borders_segments
+                .iter()
+                .map(|segments| segments.len())
+                .sum::<usize>()
+                + first_intersecting_polygons_holes_segments
+                    .iter()
+                    .map(|segments| segments.len())
+                    .sum::<usize>(),
+            first_intersecting_polygons_borders_segments
+                .into_iter()
+                .flat_map(|border_segments| {
+                    border_segments.into_iter().cloned()
+                })
+                .chain(
+                    first_intersecting_polygons_holes_segments
+                        .into_iter()
+                        .flat_map(|hole_segments| {
+                            hole_segments.into_iter().cloned()
+                        }),
+                ),
+        ),
+        (
+            second_intersecting_polygons_borders_segments
+                .iter()
+                .map(|segments| segments.len())
+                .sum::<usize>()
+                + second_intersecting_polygons_holes_segments
+                    .iter()
+                    .map(|segments| segments.len())
+                    .sum::<usize>(),
+            second_intersecting_polygons_borders_segments
+                .into_iter()
+                .flat_map(|border_segments| {
+                    border_segments.into_iter().cloned()
+                })
+                .chain(
+                    second_intersecting_polygons_holes_segments
+                        .into_iter()
+                        .flat_map(|hole_segments| {
+                            hole_segments.into_iter().cloned()
+                        }),
+                ),
+        ),
+    )
+    .into_relation(
+        first_intersecting_polygons_ids.len() == first_polygons.len(),
+        second_intersecting_polygons_ids.len() == second_polygons.len(),
+        min_max_x,
+    )
+}
+
 pub(crate) fn relate_to_multisegment<
     Border,
     Multipolygon,
