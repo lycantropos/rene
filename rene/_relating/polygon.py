@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from itertools import chain
+
 import typing as t
 
 from rene import (Relation,
                   hints)
 from rene._utils import to_boxes_ids_with_intersection
-from . import mixed
+from . import (mixed,
+               shaped)
 from .utils import polygon_to_segments
 
 
@@ -15,10 +18,43 @@ def relate_to_contour(polygon: hints.Polygon[hints.Scalar],
     return relate_to_multisegmental(polygon, contour)
 
 
+def relate_to_multipolygon(polygon: hints.Polygon[hints.Scalar],
+                           multipolygon: hints.Multipolygon[hints.Scalar],
+                           /) -> Relation:
+    polygon_bounding_box, multipolygon_bounding_box = (
+        polygon.bounding_box, multipolygon.bounding_box
+    )
+    if polygon_bounding_box.disjoint_with(multipolygon_bounding_box):
+        return Relation.DISJOINT
+    polygons = multipolygon.polygons
+    polygons_bounding_boxes = [polygon.bounding_box for polygon in polygons]
+    intersecting_polygons_ids = to_boxes_ids_with_intersection(
+            polygons_bounding_boxes, polygon_bounding_box
+    )
+    if not intersecting_polygons_ids:
+        return Relation.DISJOINT
+    min_max_x = min(polygon_bounding_box.max_x,
+                    max(polygons_bounding_boxes[polygon_id].max_x
+                        for polygon_id in intersecting_polygons_ids))
+    intersecting_polygons = [
+        polygons[polygon_id]
+        for polygon_id in intersecting_polygons_ids
+        if polygons_bounding_boxes[polygon_id].min_x <= min_max_x
+    ]
+    assert intersecting_polygons
+    return shaped.Operation.from_segments_iterables(
+            polygon_to_segments(polygon, multipolygon_bounding_box),
+            chain.from_iterable(polygon_to_segments(polygon,
+                                                    polygon_bounding_box)
+                                for polygon in intersecting_polygons)
+    ).to_relation(True, len(intersecting_polygons) == len(polygons), min_max_x)
+
+
 def relate_to_multisegment(polygon: hints.Polygon[hints.Scalar],
                            multisegment: hints.Multisegment[hints.Scalar],
                            /) -> Relation:
     return relate_to_multisegmental(polygon, multisegment)
+
 
 
 def relate_to_segment(polygon: hints.Polygon[hints.Scalar],
