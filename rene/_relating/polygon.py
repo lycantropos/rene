@@ -56,6 +56,19 @@ def relate_to_multisegment(polygon: hints.Polygon[hints.Scalar],
     return relate_to_multisegmental(polygon, multisegment)
 
 
+def relate_to_polygon(first: hints.Polygon[hints.Scalar],
+                      second: hints.Polygon[hints.Scalar],
+                      /) -> Relation:
+    first_bounding_box, second_bounding_box = (first.bounding_box,
+                                               second.bounding_box)
+    if first_bounding_box.disjoint_with(second_bounding_box):
+        return Relation.DISJOINT
+    min_max_x = min(first_bounding_box.max_x, second_bounding_box.max_x)
+    return shaped.Operation.from_segments_iterables(
+            polygon_to_segments(first, second_bounding_box),
+            polygon_to_segments(second, first_bounding_box)
+    ).to_relation(True, True, min_max_x)
+
 
 def relate_to_segment(polygon: hints.Polygon[hints.Scalar],
                       segment: hints.Segment[hints.Scalar],
