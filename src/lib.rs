@@ -2040,7 +2040,11 @@ impl PyExactPolygon {
 
     #[pyo3(signature = (other, /))]
     fn relate_to(&self, other: &PyAny) -> PyResult<&PyAny> {
-        if other.is_instance_of::<PyExactEmpty>() {
+        if other.is_instance_of::<Self>() {
+            try_relation_to_py_relation(
+                self.0.relate_to(&other.extract::<PyRef<Self>>()?.0),
+            )
+        } else if other.is_instance_of::<PyExactEmpty>() {
             try_relation_to_py_relation(
                 self.0.relate_to(&other.extract::<PyRef<PyExactEmpty>>()?.0),
             )
@@ -2048,6 +2052,12 @@ impl PyExactPolygon {
             try_relation_to_py_relation(
                 self.0
                     .relate_to(&other.extract::<PyRef<PyExactContour>>()?.0),
+            )
+        } else if other.is_instance_of::<PyExactMultipolygon>() {
+            try_relation_to_py_relation(
+                self.0.relate_to(
+                    &other.extract::<PyRef<PyExactMultipolygon>>()?.0,
+                ),
             )
         } else if other.is_instance_of::<PyExactMultisegment>() {
             try_relation_to_py_relation(
