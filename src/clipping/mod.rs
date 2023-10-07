@@ -12,4 +12,3 @@ mod operation_kind;
 pub(crate) mod shaped;
 mod sweep_line_key;
 pub(crate) mod traits;
-mod types;

@@ -26,7 +26,6 @@ use super::operation_kind::{
 };
 use super::sweep_line_key::SweepLineKey;
 use super::traits::ReduceEvents;
-use super::types::OverlapKind;
 
 pub(crate) struct Operation<Point, const KIND: u8> {
     first_segments_count: usize,
@@ -1108,6 +1107,13 @@ where
             sweep_line_data: BTreeSet::new(),
         }
     }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum OverlapKind {
+    None,
+    SameOrientation,
+    DifferentOrientation,
 }
 
 fn collect_references<T: Clone>(vertices: &[&T]) -> Vec<T> {
