@@ -44,6 +44,13 @@ pub(crate) struct Operation<Point, const KIND: u8> {
     sweep_line_data: BTreeSet<SweepLineKey<Point>>,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum OverlapKind {
+    None,
+    SameOrientation,
+    DifferentOrientation,
+}
+
 impl<
         Point: Ord,
         Polygon,
@@ -1107,13 +1114,6 @@ where
             sweep_line_data: BTreeSet::new(),
         }
     }
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-enum OverlapKind {
-    None,
-    SameOrientation,
-    DifferentOrientation,
 }
 
 fn collect_references<T: Clone>(vertices: &[&T]) -> Vec<T> {
