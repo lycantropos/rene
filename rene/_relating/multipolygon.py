@@ -92,10 +92,16 @@ def relate_to_segment(multipolygon: hints.Multipolygon[hints.Scalar],
     min_max_x = min(segment_bounding_box.max_x,
                     max(polygons_bounding_boxes[polygon_id].max_x
                         for polygon_id in intersecting_polygons_ids))
+    intersecting_polygons = [
+        polygons[polygon_id]
+        for polygon_id in intersecting_polygons_ids
+        if polygons_bounding_boxes[polygon_id].min_x <= min_max_x
+    ]
+    assert intersecting_polygons
     return mixed.ShapedLinearOperation.from_segments_iterables(
             chain.from_iterable(polygon_to_segments(polygon,
                                                     segment_bounding_box)
-                                for polygon in polygons),
+                                for polygon in intersecting_polygons),
             [segment]
     ).to_relation(True, min_max_x)
 
