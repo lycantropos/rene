@@ -24,13 +24,6 @@ from .events_queue_key import EventsQueueKey
 from .sweep_line_key import SweepLineKey
 
 
-class EventKind(enum.IntEnum):
-    COMMON_POLYLINE_SEGMENT = enum.auto()
-    COMMON_REGION_EDGE = enum.auto()
-    INSIDE = enum.auto()
-    OUTSIDE = enum.auto()
-
-
 class Operation(t.Generic[hints.Scalar]):
     @classmethod
     def from_segments_iterables(
@@ -475,6 +468,19 @@ class Operation(t.Generic[hints.Scalar]):
         )
 
 
+class EventKind(enum.IntEnum):
+    COMMON_POLYLINE_SEGMENT = enum.auto()
+    COMMON_REGION_EDGE = enum.auto()
+    INSIDE = enum.auto()
+    OUTSIDE = enum.auto()
+
+
+class OverlapKind(enum.IntEnum):
+    NONE = 0
+    SAME_ORIENTATION = 1
+    DIFFERENT_ORIENTATION = 2
+
+
 class RelationState(t.Generic[hints.Scalar]):
     def update(self,
                same_start_events: t.List[Event],
@@ -575,12 +581,6 @@ class RelationState(t.Generic[hints.Scalar]):
             first_is_subset, has_continuous_intersection,
             second_boundary_intersects_first_interior, second_is_subset
         )
-
-
-class OverlapKind(enum.IntEnum):
-    NONE = 0
-    SAME_ORIENTATION = 1
-    DIFFERENT_ORIENTATION = 2
 
 
 def _populate_with_segments(
