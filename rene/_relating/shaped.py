@@ -154,9 +154,9 @@ class Operation(t.Generic[hints.Scalar]):
                         if state.has_continuous_intersection
                         else Relation.TOUCH)
         else:
-            return (Relation.WITHIN
+            return (Relation.COVER
                     if state.second_is_subset
-                    else (Relation.COVER
+                    else (Relation.WITHIN
                           if state.first_is_subset
                           else (Relation.OVERLAP
                                 if state.has_continuous_intersection
