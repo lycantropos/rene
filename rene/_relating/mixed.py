@@ -478,7 +478,9 @@ class ShapedLinearOperation(Operation[hints.Scalar]):
                    have_interior_to_left)
 
     def is_event_from_linear(self, event: Event, /) -> bool:
-        return not self._is_left_event_from_first_operand(event)
+        return not self._is_left_event_from_first_operand(
+                self._to_left_event(event)
+        )
 
 
 class RelationState(t.Generic[hints.Scalar]):
