@@ -7,7 +7,7 @@ services:
       args:
         - IMAGE_NAME=${PYPY_IMAGE_NAME}
         - IMAGE_VERSION=${PYPY_IMAGE_VERSION}
-    image: lycantropos/rene-pypy:0.1.0-alpha
+    image: lycantropos/rene-pypy:0.1.0
     volumes:
       - ./pyproject.toml:/opt/rene/pyproject.toml
       - ./README.md:/opt/rene/README.md
