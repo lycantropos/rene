@@ -51,6 +51,12 @@ jobs:
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.9'
             platform: { os: 'windows-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.10'
+            platform: { os: 'macos-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.10'
+            platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.10'
+            platform: { os: 'windows-latest', python_architecture: 'x64' }
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v3
@@ -352,6 +358,12 @@ jobs:
           - python_version: 'pypy-3.9'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.9'
+            platform: { os: 'windows-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.10'
+            platform: { os: 'macos-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.10'
+            platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.10'
             platform: { os: 'windows-latest', python_architecture: 'x64' }
     steps:
       - name: 'Setup Python'
