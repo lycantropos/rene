@@ -1,7 +1,7 @@
 use crate::triangulation::QuadEdge;
 
 pub(crate) trait BoundaryEndpoints<Endpoint> {
-    fn get_boundary_points(&self) -> Vec<&Endpoint>;
+    fn get_boundary_endpoints(&self) -> Vec<&Endpoint>;
 }
 
 pub(super) trait DelaunayTriangulatable {

@@ -1,7 +1,5 @@
 use std::ops::{Add, Div, Mul, Sub};
 
-use rithm::big_int::BigInt;
-use rithm::fraction::Fraction;
 use traiter::numbers::{BitLength, IsPowerOfTwo, One, Sign, Signed};
 
 use crate::bounded;
@@ -27,32 +25,6 @@ pub(crate) trait CrossMultiply {
     ) -> Self::Output;
 }
 
-impl<Digit, const DIGIT_BITNESS: usize, Point> CrossMultiply for &Point
-where
-    Fraction<BigInt<Digit, DIGIT_BITNESS>>: Mul<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>
-        + Sub<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
-    for<'a> &'a Fraction<BigInt<Digit, DIGIT_BITNESS>>:
-        Sub<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
-    for<'a> &'a Point:
-        Elemental<Coordinate = &'a Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
-{
-    type Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>;
-
-    fn cross_multiply(
-        first_start: Self,
-        first_end: Self,
-        second_start: Self,
-        second_end: Self,
-    ) -> Self::Output {
-        let (first_start_x, first_start_y) = first_start.coordinates();
-        let (first_end_x, first_end_y) = first_end.coordinates();
-        let (second_start_x, second_start_y) = second_start.coordinates();
-        let (second_end_x, second_end_y) = second_end.coordinates();
-        (first_end_x - first_start_x) * (second_end_y - second_start_y)
-            - (first_end_y - first_start_y) * (second_end_x - second_start_x)
-    }
-}
-
 pub(crate) trait DotMultiply {
     type Output;
 
@@ -62,32 +34,6 @@ pub(crate) trait DotMultiply {
         second_start: Self,
         second_end: Self,
     ) -> Self::Output;
-}
-
-impl<Digit, const DIGIT_BITNESS: usize, Point> DotMultiply for &Point
-where
-    Fraction<BigInt<Digit, DIGIT_BITNESS>>: Add<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>
-        + Mul<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
-    for<'a> &'a Fraction<BigInt<Digit, DIGIT_BITNESS>>:
-        Sub<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
-    for<'a> &'a Point:
-        Elemental<Coordinate = &'a Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
-{
-    type Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>;
-
-    fn dot_multiply(
-        first_start: Self,
-        first_end: Self,
-        second_start: Self,
-        second_end: Self,
-    ) -> Self::Output {
-        let (first_start_x, first_start_y) = first_start.coordinates();
-        let (first_end_x, first_end_y) = first_end.coordinates();
-        let (second_start_x, second_start_y) = second_start.coordinates();
-        let (second_end_x, second_end_y) = second_end.coordinates();
-        (first_end_x - first_start_x) * (second_end_x - second_start_x)
-            + (first_end_y - first_start_y) * (second_end_y - second_start_y)
-    }
 }
 
 pub(crate) trait IntersectCrossingSegments {
@@ -143,45 +89,6 @@ pub(crate) trait LocatePointInPointPointPointCircle {
     ) -> Location;
 }
 
-impl<'a, Digit: 'a, const DIGIT_BITNESS: usize, Point>
-    LocatePointInPointPointPointCircle for &'a Point
-where
-    &'a Point:
-        Elemental<Coordinate = &'a Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
-    Fraction<BigInt<Digit, DIGIT_BITNESS>>: Add<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>
-        + Mul<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>
-        + Sub<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
-    for<'b> &'b Fraction<BigInt<Digit, DIGIT_BITNESS>>: Mul<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>
-        + Signed
-        + Sub<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
-{
-    fn locate_point_in_point_point_point_circle(
-        self,
-        first: Self,
-        second: Self,
-        third: Self,
-    ) -> Location {
-        let (first_dx, first_dy) =
-            (first.x() - self.x(), first.y() - self.y());
-        let (second_dx, second_dy) =
-            (second.x() - self.x(), second.y() - self.y());
-        let (third_dx, third_dy) =
-            (third.x() - self.x(), third.y() - self.y());
-        match ((&first_dx * &first_dx + &first_dy * &first_dy)
-            * (&second_dx * &third_dy - &second_dy * &third_dx)
-            - (&second_dx * &second_dx + &second_dy * &second_dy)
-                * (&first_dx * &third_dy - &first_dy * &third_dx)
-            + (&third_dx * &third_dx + &third_dy * &third_dy)
-                * (first_dx * second_dy - first_dy * second_dx))
-            .sign()
-        {
-            Sign::Negative => Location::Exterior,
-            Sign::Positive => Location::Interior,
-            Sign::Zero => Location::Boundary,
-        }
-    }
-}
-
 pub(crate) trait Orient {
     fn orient(
         self,
@@ -233,41 +140,10 @@ pub(crate) trait Square {
     fn square(self) -> Self::Output;
 }
 
-impl<Digit, const DIGIT_BITNESS: usize> Square
-    for Fraction<BigInt<Digit, DIGIT_BITNESS>>
-where
-    Fraction<BigInt<Digit, DIGIT_BITNESS>>:
-        Clone + Mul<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
-{
-    type Output = Self;
-
-    fn square(self) -> Self::Output {
-        self.clone() * self
-    }
-}
-
 pub(crate) trait SquaredMetric<Other = Self> {
     type Output;
 
     fn squared_distance_to(self, other: Other) -> Self::Output;
-}
-
-impl<Digit, const DIGIT_BITNESS: usize, Point> SquaredMetric for &Point
-where
-    Fraction<BigInt<Digit, DIGIT_BITNESS>>: Add<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>
-        + Square<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
-    for<'a> &'a Fraction<BigInt<Digit, DIGIT_BITNESS>>:
-        Sub<Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
-    for<'a> &'a Point:
-        Elemental<Coordinate = &'a Fraction<BigInt<Digit, DIGIT_BITNESS>>>,
-{
-    type Output = Fraction<BigInt<Digit, DIGIT_BITNESS>>;
-
-    fn squared_distance_to(self, other: Self) -> Self::Output {
-        let (start_x, start_y) = self.coordinates();
-        let (other_start_x, other_start_y) = other.coordinates();
-        (start_x - other_start_x).square() + (start_y - other_start_y).square()
-    }
 }
 
 pub(crate) fn ceil_log2<

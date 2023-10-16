@@ -16,7 +16,7 @@ impl<Endpoint> BoundaryEndpoints<Endpoint> for DelaunayTriangulation<Endpoint>
 where
     for<'a> &'a Endpoint: Orient,
 {
-    fn get_boundary_points(&self) -> Vec<&Endpoint> {
+    fn get_boundary_endpoints(&self) -> Vec<&Endpoint> {
         let endpoints = self.mesh.get_endpoints();
         if endpoints.len() < MIN_CONTOUR_VERTICES_COUNT {
             endpoints.iter().collect()

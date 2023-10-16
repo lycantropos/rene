@@ -33,7 +33,7 @@ impl<Endpoint: Clone> BoundaryEndpoints<Endpoint>
 where
     for<'a> &'a Endpoint: Orient,
 {
-    fn get_boundary_points(&self) -> Vec<&Endpoint> {
+    fn get_boundary_endpoints(&self) -> Vec<&Endpoint> {
         debug_assert!(
             self.mesh.get_endpoints().len() >= MIN_CONTOUR_VERTICES_COUNT
         );
