@@ -137,7 +137,7 @@ class Contour:
     def __and__(
             self,
             other: t.Union[
-                hints.Contour[hints.Scalar], hints.Multipolygon[Fraction],
+                hints.Contour[Fraction], hints.Multipolygon[Fraction],
                 hints.Multisegment[Fraction], hints.Polygon[Fraction],
                 hints.Segment[Fraction]
             ],
@@ -230,7 +230,7 @@ class Contour:
     def __or__(
             self,
             other: t.Union[
-                hints.Contour[hints.Scalar], hints.Multisegment[Fraction],
+                hints.Contour[Fraction], hints.Multisegment[Fraction],
                 hints.Segment[Fraction]
             ],
             /
@@ -277,7 +277,7 @@ class Contour:
     def __sub__(
             self,
             other: t.Union[
-                hints.Contour[hints.Scalar], hints.Multipolygon[Fraction],
+                hints.Contour[Fraction], hints.Multipolygon[Fraction],
                 hints.Multisegment[Fraction], hints.Polygon[Fraction],
                 hints.Segment[Fraction]
             ],
@@ -337,7 +337,7 @@ class Contour:
     def __xor__(
             self,
             other: t.Union[
-                hints.Contour[hints.Scalar], hints.Multisegment[Fraction],
+                hints.Contour[Fraction], hints.Multisegment[Fraction],
                 hints.Segment[Fraction]
             ],
             /
