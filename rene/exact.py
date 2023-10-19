@@ -1,15 +1,5 @@
 try:
-    from ._cexact import (Box,
-                          ConstrainedDelaunayTriangulation,
-                          Contour,
-                          DelaunayTriangulation,
-                          Empty,
-                          Multipolygon,
-                          Multisegment,
-                          Point,
-                          Polygon,
-                          Segment,
-                          Trapezoidation as _RawTrapezoidation)
+    from . import _cexact
 except ImportError:
     from ._exact import (Box,
                          ConstrainedDelaunayTriangulation,
@@ -28,12 +18,24 @@ else:
 
     import typing_extensions as _te
 
-    from ._crene import Location as _Location
+    from . import Location as _Location
     from ._utils import (
         polygon_to_segments_count as _polygon_to_segments_count,
         validate_seed as _validate_seed
     )
     from .hints import Seeder as _Seeder
+
+    Box = _cexact.Box
+    ConstrainedDelaunayTriangulation = _cexact.ConstrainedDelaunayTriangulation
+    Contour = _cexact.Contour
+    DelaunayTriangulation = _cexact.DelaunayTriangulation
+    Empty = _cexact.Empty
+    Multipolygon = _cexact.Multipolygon
+    Multisegment = _cexact.Multisegment
+    Point = _cexact.Point
+    Polygon = _cexact.Polygon
+    Segment = _cexact.Segment
+    _RawTrapezoidation = _cexact.Trapezoidation
 
 
     @_te.final
