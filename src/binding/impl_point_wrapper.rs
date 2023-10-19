@@ -7,10 +7,11 @@ macro_rules! impl_point_wrapper {
             fn new(
                 x: &pyo3::PyAny,
                 y: &pyo3::PyAny,
+                py: pyo3::Python,
             ) -> pyo3::prelude::PyResult<Self> {
                 Ok(Self(Point::new(
-                    TryFromPyAny::try_from_py_any(x)?,
-                    TryFromPyAny::try_from_py_any(y)?,
+                    TryFromPyAny::try_from_py_any(x, py)?,
+                    TryFromPyAny::try_from_py_any(y, py)?,
                 )))
             }
 

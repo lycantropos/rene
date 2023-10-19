@@ -19,7 +19,7 @@ macro_rules! impl_py_sequence {
             > {
                 if self.step > 0 {
                     super::generic_iterator::GenericIterator::Forward(
-                        (&self.$container_field.deref().0)
+                        (&std::ops::Deref::deref(&self.$container_field).0)
                             .$values_method()
                             .into_iter()
                             .skip(self.start as usize)
@@ -29,7 +29,7 @@ macro_rules! impl_py_sequence {
                 } else {
                     let elements_count = self.len();
                     super::generic_iterator::GenericIterator::Backward(
-                        (&self.$container_field.deref().0)
+                        (&std::ops::Deref::deref(&self.$container_field).0)
                             .$values_method()
                             .into_iter()
                             .skip(

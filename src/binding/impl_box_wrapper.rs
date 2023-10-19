@@ -9,12 +9,13 @@ macro_rules! impl_box_wrapper {
                 max_x: &pyo3::PyAny,
                 min_y: &pyo3::PyAny,
                 max_y: &pyo3::PyAny,
+                py: pyo3::Python,
             ) -> pyo3::prelude::PyResult<Self> {
                 Ok(Self(Box::new(
-                    TryFromPyAny::try_from_py_any(min_x)?,
-                    TryFromPyAny::try_from_py_any(max_x)?,
-                    TryFromPyAny::try_from_py_any(min_y)?,
-                    TryFromPyAny::try_from_py_any(max_y)?,
+                    TryFromPyAny::try_from_py_any(min_x, py)?,
+                    TryFromPyAny::try_from_py_any(max_x, py)?,
+                    TryFromPyAny::try_from_py_any(min_y, py)?,
+                    TryFromPyAny::try_from_py_any(max_y, py)?,
                 )))
             }
 

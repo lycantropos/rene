@@ -5,7 +5,10 @@ pub(super) trait TryFromPyAny
 where
     Self: Sized,
 {
-    fn try_from_py_any(value: &pyo3::PyAny) -> pyo3::prelude::PyResult<Self>;
+    fn try_from_py_any(
+        value: &pyo3::PyAny,
+        py: pyo3::Python,
+    ) -> pyo3::prelude::PyResult<Self>;
 }
 
 pub(super) trait TryToPyAny {
