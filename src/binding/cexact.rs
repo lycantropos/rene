@@ -368,7 +368,7 @@ type Polygon = crate::geometries::Polygon<Fraction>;
 type Segment = crate::geometries::Segment<Fraction>;
 type Trapezoidation = crate::seidel::Trapezoidation<Point>;
 
-#[pyo3::prelude::pyclass(name = "BaseBox", module = "rene.exact")]
+#[pyo3::prelude::pyclass(name = "Box", module = "rene.exact")]
 #[derive(Clone)]
 struct PyBox(Box);
 
