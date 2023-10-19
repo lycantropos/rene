@@ -5,11 +5,13 @@ import typing_extensions as te
 from rithm.fraction import Fraction
 from rithm.integer import Int
 
+from rene._geometries.base_point import BasePoint
+
 _Coordinate = t.Union[Fraction, Int, Rational, float, int]
 
 
 @te.final
-class Point:
+class Point(BasePoint[Fraction]):
     @property
     def x(self) -> Fraction:
         return self._x
@@ -32,81 +34,3 @@ class Point:
         self = super().__new__(cls)
         self._x, self._y = Fraction(x), Fraction(y)
         return self
-
-    @t.overload
-    def __eq__(self, other: te.Self, /) -> bool:
-        ...
-
-    @t.overload
-    def __eq__(self, other: t.Any, /) -> t.Any:
-        ...
-
-    def __eq__(self, other: t.Any, /) -> t.Any:
-        return (self._x == other._x and self._y == other._y
-                if isinstance(other, Point)
-                else NotImplemented)
-
-    @t.overload
-    def __ge__(self, other: te.Self, /) -> bool:
-        ...
-
-    @t.overload
-    def __ge__(self, other: t.Any, /) -> t.Any:
-        ...
-
-    def __ge__(self, other: t.Any, /) -> t.Any:
-        return (self._x > other._x
-                or self._x == other._x and self._y >= other._y
-                if isinstance(other, Point)
-                else NotImplemented)
-
-    @t.overload
-    def __gt__(self, other: te.Self, /) -> bool:
-        ...
-
-    @t.overload
-    def __gt__(self, other: t.Any, /) -> t.Any:
-        ...
-
-    def __gt__(self, other: t.Any, /) -> t.Any:
-        return (self._x > other._x
-                or self._x == other._x and self._y > other._y
-                if isinstance(other, Point)
-                else NotImplemented)
-
-    def __hash__(self) -> int:
-        return hash((self._x, self._y))
-
-    @t.overload
-    def __le__(self, other: te.Self, /) -> bool:
-        ...
-
-    @t.overload
-    def __le__(self, other: t.Any, /) -> t.Any:
-        ...
-
-    def __le__(self, other: t.Any, /) -> t.Any:
-        return (self._x < other._x
-                or self._x == other._x and self._y <= other._y
-                if isinstance(other, Point)
-                else NotImplemented)
-
-    @t.overload
-    def __lt__(self, other: te.Self, /) -> bool:
-        ...
-
-    @t.overload
-    def __lt__(self, other: t.Any, /) -> t.Any:
-        ...
-
-    def __lt__(self, other: t.Any, /) -> t.Any:
-        return (self._x < other._x
-                or self._x == other._x and self._y < other._y
-                if isinstance(other, Point)
-                else NotImplemented)
-
-    def __repr__(self) -> str:
-        return f'{type(self).__qualname__}({self._x!r}, {self._y!r})'
-
-    def __str__(self) -> str:
-        return f'{type(self).__qualname__}({self._x}, {self._y})'
