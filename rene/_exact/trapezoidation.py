@@ -26,7 +26,8 @@ class Trapezoidation:
                 if seeder is None
                 else seeder())
         validate_seed(seed)
-        return cls(_RawTrapezoidation.from_multisegment(multisegment, seed))
+        return cls(_RawTrapezoidation.from_multisegment(multisegment, seed,
+                                                        cls._context.orient))
 
     @classmethod
     def from_polygon(cls,
@@ -38,7 +39,8 @@ class Trapezoidation:
                 if seeder is None
                 else seeder())
         validate_seed(seed)
-        return cls(_RawTrapezoidation.from_polygon(polygon, seed))
+        return cls(_RawTrapezoidation.from_polygon(polygon, seed,
+                                                   cls._context.orient))
 
     @property
     def height(self) -> int:

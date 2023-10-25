@@ -5,6 +5,8 @@ import typing_extensions as te
 
 from rene import (Relation,
                   hints)
+from rene._hints import (Orienteer,
+                         SegmentsIntersector)
 from .events_registry import EventsRegistry
 
 
@@ -54,10 +56,15 @@ class Intersection(t.Generic[hints.Scalar]):
 
 
 def sweep(
-        segments: t.Sequence[hints.Segment[hints.Scalar]], /
+        segments: t.Sequence[hints.Segment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
+        /
 ) -> t.Iterable[Intersection[hints.Scalar]]:
-    events_registry = EventsRegistry.from_segments(segments,
-                                                   unique=False)
+    events_registry = EventsRegistry.from_segments(
+            segments, orienteer, segments_intersector,
+            unique=False
+    )
     events = iter(events_registry)
     event = next(events)
     start = events_registry.to_event_start(event)

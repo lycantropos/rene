@@ -4,15 +4,15 @@ from itertools import (chain,
 
 from rene import (Orientation,
                   hints)
+from rene._hints import (Orienteer,
+                         SegmentsIntersector)
 from rene._utils import (collect_maybe_empty_polygons,
                          collect_maybe_empty_segments,
                          do_boxes_have_no_common_continuum,
                          flags_to_false_indices,
                          flags_to_true_indices,
-                         orient,
                          polygon_to_correctly_oriented_segments,
                          to_boxes_have_common_continuum,
-                         to_segments_intersection_point,
                          to_sorted_pair)
 from . import (linear,
                shaped)
@@ -52,8 +52,10 @@ def symmetric_subtract_polygon_from_polygon(
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multipolygon[hints.Scalar],
@@ -65,8 +67,11 @@ def symmetric_subtract_polygon_from_polygon(
                                          second_bounding_box):
         return multipolygon_cls([minuend, subtrahend])
     operation = ShapedSymmetricDifference.from_segments_iterables(
-            polygon_to_correctly_oriented_segments(minuend, segment_cls),
-            polygon_to_correctly_oriented_segments(subtrahend, segment_cls)
+            polygon_to_correctly_oriented_segments(minuend, orienteer,
+                                                   segment_cls),
+            polygon_to_correctly_oriented_segments(subtrahend, orienteer,
+                                                   segment_cls),
+            orienteer, segments_intersector
     )
     return collect_maybe_empty_polygons(
             operation.reduce_events(list(operation), contour_cls, polygon_cls),
@@ -80,8 +85,10 @@ def symmetric_subtract_polygon_from_multipolygon(
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multipolygon[hints.Scalar],
@@ -108,11 +115,13 @@ def symmetric_subtract_polygon_from_multipolygon(
     ]
     operation = ShapedSymmetricDifference.from_segments_iterables(
             chain.from_iterable(
-                    polygon_to_correctly_oriented_segments(polygon,
+                    polygon_to_correctly_oriented_segments(polygon, orienteer,
                                                            segment_cls)
                     for polygon in minuend_common_continuum_polygons
             ),
-            polygon_to_correctly_oriented_segments(subtrahend, segment_cls)
+            polygon_to_correctly_oriented_segments(subtrahend, orienteer,
+                                                   segment_cls),
+            orienteer, segments_intersector
     )
     polygons = operation.reduce_events(list(operation), contour_cls,
                                        polygon_cls)
@@ -131,8 +140,10 @@ def symmetric_subtract_multipolygon_from_polygon(
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multipolygon[hints.Scalar],
@@ -159,12 +170,14 @@ def symmetric_subtract_multipolygon_from_polygon(
         for index in subtrahend_common_continuum_polygons_ids
     ]
     operation = ShapedSymmetricDifference.from_segments_iterables(
-            polygon_to_correctly_oriented_segments(minuend, segment_cls),
+            polygon_to_correctly_oriented_segments(minuend, orienteer,
+                                                   segment_cls),
             chain.from_iterable(
-                    polygon_to_correctly_oriented_segments(polygon,
+                    polygon_to_correctly_oriented_segments(polygon, orienteer,
                                                            segment_cls)
                     for polygon in subtrahend_common_continuum_polygons
-            )
+            ),
+            orienteer, segments_intersector
     )
     polygons = operation.reduce_events(list(operation), contour_cls,
                                        polygon_cls)
@@ -183,8 +196,10 @@ def symmetric_subtract_multipolygon_from_multipolygon(
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multipolygon[hints.Scalar],
@@ -226,15 +241,16 @@ def symmetric_subtract_multipolygon_from_multipolygon(
     ]
     operation = ShapedSymmetricDifference.from_segments_iterables(
             chain.from_iterable(
-                    polygon_to_correctly_oriented_segments(polygon,
+                    polygon_to_correctly_oriented_segments(polygon, orienteer,
                                                            segment_cls)
                     for polygon in minuend_common_continuum_polygons
             ),
             chain.from_iterable(
-                    polygon_to_correctly_oriented_segments(polygon,
+                    polygon_to_correctly_oriented_segments(polygon, orienteer,
                                                            segment_cls)
                     for polygon in subtrahend_common_continuum_polygons
-            )
+            ),
+            orienteer, segments_intersector
     )
     polygons = operation.reduce_events(list(operation), contour_cls,
                                        polygon_cls)
@@ -258,7 +274,9 @@ def symmetric_subtract_segment_from_segment(
         subtrahend: hints.Segment[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -269,22 +287,22 @@ def symmetric_subtract_segment_from_segment(
                                                       subtrahend.end)
     if subtrahend_start == minuend_start and subtrahend_end == minuend_end:
         return empty_cls()
-    subtrahend_start_orientation = orient(minuend_end, minuend_start,
-                                          subtrahend_start)
-    subtrahend_end_orientation = orient(minuend_end, minuend_start,
-                                        subtrahend_end)
+    subtrahend_start_orientation = orienteer(minuend_end, minuend_start,
+                                             subtrahend_start)
+    subtrahend_end_orientation = orienteer(minuend_end, minuend_start,
+                                           subtrahend_end)
     if (subtrahend_start_orientation is not Orientation.COLLINEAR
             and subtrahend_end_orientation is not Orientation.COLLINEAR
             and (subtrahend_start_orientation
                  is not subtrahend_end_orientation)):
-        minuend_start_orientation = orient(subtrahend_start, subtrahend_end,
-                                           minuend_start)
-        minuend_end_orientation = orient(subtrahend_start, subtrahend_end,
-                                         minuend_end)
+        minuend_start_orientation = orienteer(subtrahend_start, subtrahend_end,
+                                              minuend_start)
+        minuend_end_orientation = orienteer(subtrahend_start, subtrahend_end,
+                                            minuend_end)
         if (minuend_start_orientation is not Orientation.COLLINEAR
                 and minuend_end_orientation is not Orientation.COLLINEAR
                 and minuend_start_orientation is not minuend_end_orientation):
-            cross_point = to_segments_intersection_point(
+            cross_point = segments_intersector(
                     minuend_start, minuend_end, subtrahend_start,
                     subtrahend_end
             )
@@ -318,7 +336,9 @@ def symmetric_subtract_multisegmental_from_segment(
         subtrahend: _Multisegmental[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -345,7 +365,8 @@ def symmetric_subtract_multisegmental_from_segment(
         for index in subtrahend_common_continuum_segments_ids
     ]
     operation = LinearSymmetricDifference.from_segments_iterables(
-            [minuend], subtrahend_common_continuum_segments
+            [minuend], subtrahend_common_continuum_segments, orienteer,
+            segments_intersector
     )
     segments = operation.reduce_events([operation.to_opposite_event(event)
                                         for event in operation
@@ -364,7 +385,9 @@ def symmetric_subtract_segment_from_multisegmental(
         subtrahend: hints.Segment[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -390,7 +413,8 @@ def symmetric_subtract_segment_from_multisegmental(
         for index in minuend_common_continuum_segments_ids
     ]
     operation = LinearSymmetricDifference.from_segments_iterables(
-            minuend_common_continuum_segments, [subtrahend]
+            minuend_common_continuum_segments, [subtrahend], orienteer,
+            segments_intersector
     )
     segments = operation.reduce_events([operation.to_opposite_event(event)
                                         for event in operation
@@ -409,7 +433,9 @@ def symmetric_subtract_multisegmental_from_multisegmental(
         subtrahend: _Multisegmental[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -451,7 +477,8 @@ def symmetric_subtract_multisegmental_from_multisegmental(
     ]
     operation = LinearSymmetricDifference.from_segments_iterables(
             minuend_common_continuum_segments,
-            subtrahend_common_continuum_segments
+            subtrahend_common_continuum_segments, orienteer,
+            segments_intersector
     )
     segments = operation.reduce_events([operation.to_opposite_event(event)
                                         for event in operation

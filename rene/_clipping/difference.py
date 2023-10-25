@@ -4,19 +4,19 @@ from itertools import (chain,
 
 from rene import (Orientation,
                   hints)
+from rene._hints import (Orienteer,
+                         SegmentsIntersector)
 from rene._utils import (collect_maybe_empty_polygons,
                          collect_maybe_empty_segments,
                          do_boxes_have_no_common_area,
                          do_boxes_have_no_common_continuum,
                          flags_to_false_indices,
                          flags_to_true_indices,
-                         orient,
                          polygon_to_correctly_oriented_segments,
                          to_boxes_have_common_area,
                          to_boxes_have_common_continuum,
                          to_boxes_ids_with_common_area,
                          to_boxes_ids_with_common_continuum,
-                         to_segments_intersection_point,
                          to_sorted_pair)
 from . import (linear,
                mixed,
@@ -65,8 +65,10 @@ def subtract_multipolygon_from_multipolygon(
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multipolygon[hints.Scalar],
@@ -109,16 +111,18 @@ def subtract_multipolygon_from_multipolygon(
                         for polygon_id in minuend_common_area_polygons_ids)
     operation = ShapedDifference.from_segments_iterables(
             chain.from_iterable(
-                    polygon_to_correctly_oriented_segments(polygon,
+                    polygon_to_correctly_oriented_segments(polygon, orienteer,
                                                            segment_cls)
                     for polygon in minuend_common_area_polygons
             ),
             (segment
              for polygon in subtrahend_common_area_polygons
              for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   orienteer,
                                                                    segment_cls)
              if (minuend_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= minuend_max_x))
+                 and min(segment.start.x, segment.end.x) <= minuend_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -138,7 +142,9 @@ def subtract_multipolygon_from_multisegmental(
         subtrahend: hints.Multipolygon[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Contour[hints.Scalar], hints.Empty[hints.Scalar],
@@ -189,9 +195,11 @@ def subtract_multipolygon_from_multisegmental(
             (segment
              for polygon in subtrahend_common_continuum_polygons
              for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   orienteer,
                                                                    segment_cls)
              if (minuend_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= minuend_max_x))
+                 and min(segment.start.x, segment.end.x) <= minuend_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -214,8 +222,10 @@ def subtract_multipolygon_from_polygon(
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multipolygon[hints.Scalar],
@@ -241,13 +251,16 @@ def subtract_multipolygon_from_polygon(
     minuend_max_x, minuend_min_x = (minuend_bounding_box.max_x,
                                     minuend_bounding_box.min_x)
     operation = ShapedDifference.from_segments_iterables(
-            polygon_to_correctly_oriented_segments(minuend, segment_cls),
+            polygon_to_correctly_oriented_segments(minuend, orienteer,
+                                                   segment_cls),
             (segment
              for polygon in subtrahend_common_area_polygons
              for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   orienteer,
                                                                    segment_cls)
              if (minuend_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= minuend_max_x))
+                 and min(segment.start.x, segment.end.x) <= minuend_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -265,7 +278,9 @@ def subtract_multipolygon_from_segment(
         subtrahend: hints.Multipolygon[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -296,9 +311,11 @@ def subtract_multipolygon_from_segment(
             (segment
              for polygon in subtrahend_common_continuum_polygons
              for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   orienteer,
                                                                    segment_cls)
              if (minuend_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= minuend_max_x))
+                 and min(segment.start.x, segment.end.x) <= minuend_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -316,7 +333,9 @@ def subtract_multisegmental_from_multisegmental(
         subtrahend: _Multisegmental[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Contour[hints.Scalar], hints.Empty[hints.Scalar],
@@ -367,7 +386,8 @@ def subtract_multisegmental_from_multisegmental(
             (segment
              for segment in subtrahend_common_continuum_segments
              if (minuend_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= minuend_max_x))
+                 and min(segment.start.x, segment.end.x) <= minuend_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -390,7 +410,9 @@ def subtract_multisegmental_from_segment(
         subtrahend: _Multisegmental[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -421,7 +443,8 @@ def subtract_multisegmental_from_segment(
             (segment
              for segment in subtrahend_common_continuum_segments
              if (minuend_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= minuend_max_x))
+                 and min(segment.start.x, segment.end.x) <= minuend_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -441,8 +464,10 @@ def subtract_polygon_from_multipolygon(
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multipolygon[hints.Scalar],
@@ -473,15 +498,17 @@ def subtract_polygon_from_multipolygon(
                         for polygon_id in minuend_common_area_polygons_ids)
     operation = ShapedDifference.from_segments_iterables(
             chain.from_iterable(
-                    polygon_to_correctly_oriented_segments(polygon,
+                    polygon_to_correctly_oriented_segments(polygon, orienteer,
                                                            segment_cls)
                     for polygon in minuend_common_area_polygons
             ),
             (segment
              for segment in polygon_to_correctly_oriented_segments(subtrahend,
+                                                                   orienteer,
                                                                    segment_cls)
              if (minuend_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= minuend_max_x))
+                 and min(segment.start.x, segment.end.x) <= minuend_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -501,7 +528,9 @@ def subtract_polygon_from_multisegmental(
         subtrahend: hints.Polygon[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Contour[hints.Scalar], hints.Empty[hints.Scalar],
@@ -538,9 +567,11 @@ def subtract_polygon_from_multisegmental(
             minuend_common_continuum_segments,
             (segment
              for segment in polygon_to_correctly_oriented_segments(subtrahend,
+                                                                   orienteer,
                                                                    segment_cls)
              if (minuend_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= minuend_max_x))
+                 and min(segment.start.x, segment.end.x) <= minuend_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -563,8 +594,10 @@ def subtract_polygon_from_polygon(
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multipolygon[hints.Scalar],
@@ -578,12 +611,15 @@ def subtract_polygon_from_polygon(
     minuend_max_x, minuend_min_x = (minuend_bounding_box.max_x,
                                     minuend_bounding_box.min_x)
     operation = ShapedDifference.from_segments_iterables(
-            polygon_to_correctly_oriented_segments(minuend, segment_cls),
+            polygon_to_correctly_oriented_segments(minuend, orienteer,
+                                                   segment_cls),
             (segment
              for segment in polygon_to_correctly_oriented_segments(subtrahend,
+                                                                   orienteer,
                                                                    segment_cls)
              if (minuend_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= minuend_max_x))
+                 and min(segment.start.x, segment.end.x) <= minuend_max_x)),
+            orienteer, segments_intersector
     )
     minuend_max_x = minuend_bounding_box.max_x
     events = []
@@ -602,7 +638,9 @@ def subtract_polygon_from_segment(
         subtrahend: hints.Polygon[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -619,9 +657,11 @@ def subtract_polygon_from_segment(
             [minuend],
             (segment
              for segment in polygon_to_correctly_oriented_segments(subtrahend,
+                                                                   orienteer,
                                                                    segment_cls)
              if (minuend_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= minuend_max_x))
+                 and min(segment.start.x, segment.end.x) <= minuend_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -639,7 +679,9 @@ def subtract_segment_from_multisegmental(
         subtrahend: hints.Segment[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Contour[hints.Scalar], hints.Empty[hints.Scalar],
@@ -663,22 +705,23 @@ def subtract_segment_from_multisegmental(
         if subtrahend_start == minuend_start and subtrahend_end == minuend_end:
             segments.extend(minuend_segments[index + 1:])
             break
-        minuend_start_orientation = orient(subtrahend_end, subtrahend_start,
-                                           minuend_start)
-        minuend_end_orientation = orient(subtrahend_end, subtrahend_start,
-                                         minuend_end)
+        minuend_start_orientation = orienteer(subtrahend_end, subtrahend_start,
+                                              minuend_start)
+        minuend_end_orientation = orienteer(subtrahend_end, subtrahend_start,
+                                            minuend_end)
         if (minuend_start_orientation is not Orientation.COLLINEAR
                 and minuend_end_orientation is not Orientation.COLLINEAR
                 and minuend_start_orientation is not minuend_end_orientation):
-            subtrahend_start_orientation = orient(minuend_start, minuend_end,
-                                                  subtrahend_start)
-            subtrahend_end_orientation = orient(minuend_start, minuend_end,
-                                                subtrahend_end)
+            subtrahend_start_orientation = orienteer(minuend_start,
+                                                     minuend_end,
+                                                     subtrahend_start)
+            subtrahend_end_orientation = orienteer(minuend_start, minuend_end,
+                                                   subtrahend_end)
             if (subtrahend_start_orientation is not Orientation.COLLINEAR
                     and subtrahend_end_orientation is not Orientation.COLLINEAR
                     and (subtrahend_start_orientation
                          is not subtrahend_end_orientation)):
-                cross_point = to_segments_intersection_point(
+                cross_point = segments_intersector(
                         minuend_start, minuend_end, subtrahend_start,
                         subtrahend_end
                 )
@@ -714,7 +757,9 @@ def subtract_segment_from_segment(
         subtrahend: hints.Segment[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -725,22 +770,22 @@ def subtract_segment_from_segment(
                                                       subtrahend.end)
     if minuend_start == subtrahend_start and minuend_end == subtrahend_end:
         return empty_cls()
-    subtrahend_start_orientation = orient(minuend_end, minuend_start,
-                                          subtrahend_start)
-    subtrahend_end_orientation = orient(minuend_end, minuend_start,
-                                        subtrahend_end)
+    subtrahend_start_orientation = orienteer(minuend_end, minuend_start,
+                                             subtrahend_start)
+    subtrahend_end_orientation = orienteer(minuend_end, minuend_start,
+                                           subtrahend_end)
     if (subtrahend_start_orientation is not Orientation.COLLINEAR
             and subtrahend_end_orientation is not Orientation.COLLINEAR
             and (subtrahend_start_orientation
                  is not subtrahend_end_orientation)):
-        minuend_start_orientation = orient(subtrahend_start, subtrahend_end,
-                                           minuend_start)
-        minuend_end_orientation = orient(subtrahend_start, subtrahend_end,
-                                         minuend_end)
+        minuend_start_orientation = orienteer(subtrahend_start, subtrahend_end,
+                                              minuend_start)
+        minuend_end_orientation = orienteer(subtrahend_start, subtrahend_end,
+                                            minuend_end)
         if (minuend_start_orientation is not Orientation.COLLINEAR
                 and minuend_end_orientation is not Orientation.COLLINEAR
                 and minuend_start_orientation is not minuend_end_orientation):
-            cross_point = to_segments_intersection_point(
+            cross_point = segments_intersector(
                     minuend_start, minuend_end, subtrahend_start,
                     subtrahend_end
             )

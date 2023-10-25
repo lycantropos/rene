@@ -12,11 +12,11 @@ from prioq.base import PriorityQueue
 from rene import (Orientation,
                   Relation,
                   hints)
+from rene._hints import (Orienteer,
+                         SegmentsIntersector)
 from rene._utils import (all_same,
                          is_even,
-                         orient,
                          square,
-                         to_segments_intersection_point,
                          to_sorted_pair)
 from .event import (Event,
                     is_event_left,
@@ -26,48 +26,14 @@ from .events_queue_key import EventsQueueKey
 from .sweep_line_key import SweepLineKey
 
 
-def dot_multiply(first_start: hints.Point[hints.Scalar],
-                 first_end: hints.Point[hints.Scalar],
-                 second_start: hints.Point[hints.Scalar],
-                 second_end: hints.Point[hints.Scalar]) -> hints.Scalar:
-    return ((first_end.x - first_start.x) * (second_end.x - second_start.x)
-            + (first_end.y - first_start.y) * (second_end.y - second_start.y))
-
-
-def has_two_elements(iterator: t.Iterator[t.Any]) -> bool:
-    return (next(iterator, None) is not None
-            and next(iterator, None) is not None)
-
-
-def is_point_in_angle(point: hints.Point[hints.Scalar],
-                      vertex: hints.Point[hints.Scalar],
-                      first_ray_point: hints.Point[hints.Scalar],
-                      second_ray_point: hints.Point[hints.Scalar],
-                      angle_orientation: Orientation) -> bool:
-    first_half_orientation = orient(vertex, first_ray_point, point)
-    second_half_orientation = orient(vertex, point, second_ray_point)
-    return (second_half_orientation == angle_orientation
-            if first_half_orientation is Orientation.COLLINEAR
-            else (first_half_orientation is angle_orientation
-                  if second_half_orientation is Orientation.COLLINEAR
-                  else ((first_half_orientation is second_half_orientation)
-                        and first_half_orientation
-                        is (Orientation.COUNTERCLOCKWISE
-                            if angle_orientation is Orientation.COLLINEAR
-                            else angle_orientation))))
-
-
-def squared_distance(start: hints.Point[hints.Scalar],
-                     end: hints.Point[hints.Scalar]) -> hints.Scalar:
-    return square(start.x - end.x) + square(start.y - end.y)
-
-
 class Operation(t.Generic[hints.Scalar]):
     @classmethod
     def from_segments_iterables(
             cls,
             first: t.Iterable[hints.Segment[hints.Scalar]],
             second: t.Iterable[hints.Segment[hints.Scalar]],
+            orienteer: Orienteer[hints.Scalar],
+            segments_intersector: SegmentsIntersector[hints.Scalar],
             /
     ) -> te.Self:
         endpoints: t.List[hints.Point[hints.Scalar]] = []
@@ -75,7 +41,8 @@ class Operation(t.Generic[hints.Scalar]):
         first_segments_count = len(endpoints) >> 1
         _populate_with_segments(second, endpoints)
         second_segments_count = (len(endpoints) >> 1) - first_segments_count
-        return cls(first_segments_count, second_segments_count, endpoints)
+        return cls(first_segments_count, second_segments_count, endpoints,
+                   orienteer, segments_intersector)
 
     def has_crossing(self, same_start_events: t.Sequence[Event]) -> bool:
         if len(same_start_events) < 4:
@@ -111,10 +78,11 @@ class Operation(t.Generic[hints.Scalar]):
                 )
         )
         largest_angle_end = self.to_event_end(largest_angle_event)
-        base_orientation = orient(start, base_end, largest_angle_end)
+        base_orientation = self._orienteer(start, base_end, largest_angle_end)
         return not all_same(
                 is_point_in_angle(self.to_event_end(event), start, base_end,
-                                  largest_angle_end, base_orientation)
+                                  largest_angle_end, base_orientation,
+                                  self._orienteer)
                 for event in from_first_events
         )
 
@@ -196,7 +164,9 @@ class Operation(t.Generic[hints.Scalar]):
 
     __slots__ = (
         'first_segments_count', 'second_segments_count', 'endpoints',
-        '_events_queue_data', '_opposites', '_segments_ids', '_sweep_line_data'
+        '_events_queue_data', '_opposites', '_orienteer',
+        '_segments_intersector',
+        '_segments_ids', '_sweep_line_data'
     )
 
     def __bool__(self) -> bool:
@@ -206,11 +176,15 @@ class Operation(t.Generic[hints.Scalar]):
                  first_segments_count: int,
                  second_segments_count: int,
                  endpoints: t.List[hints.Point[hints.Scalar]],
+                 orienteer: Orienteer[hints.Scalar],
+                 segments_intersector: SegmentsIntersector[hints.Scalar],
                  /) -> None:
         (
             self.endpoints, self.first_segments_count,
-            self.second_segments_count
-        ) = endpoints, first_segments_count, second_segments_count
+            self.second_segments_count, self._orienteer,
+            self._segments_intersector
+        ) = (endpoints, first_segments_count, second_segments_count,
+             orienteer, segments_intersector)
         segments_count = first_segments_count + second_segments_count
         initial_events_count = 2 * segments_count
         self._opposites = [Event(((index >> 1) << 1) + is_even(index))
@@ -222,7 +196,7 @@ class Operation(t.Generic[hints.Scalar]):
                 *map(Event, range(initial_events_count)),
                 key=lambda event: EventsQueueKey(
                         event, self.is_event_from_first_operand(event),
-                        self.endpoints, self._opposites
+                        self.endpoints, self._opposites, self._orienteer
                 )
         )
         self._sweep_line_data = red_black.set_(key=self._to_sweep_line_key)
@@ -252,10 +226,12 @@ class Operation(t.Generic[hints.Scalar]):
         event_end = self.to_event_end(event)
         below_event_start = self.to_event_start(below_event)
         below_event_end = self.to_event_end(below_event)
-        event_start_orientation = orient(below_event_end, below_event_start,
-                                         event_start)
-        event_end_orientation = orient(below_event_end, below_event_start,
-                                       event_end)
+        event_start_orientation = self._orienteer(
+                below_event_end, below_event_start, event_start
+        )
+        event_end_orientation = self._orienteer(
+                below_event_end, below_event_start, event_end
+        )
         if event_start_orientation is event_end_orientation:
             if event_start_orientation is Orientation.COLLINEAR:
                 assert (self._is_left_event_from_first_operand(below_event)
@@ -312,10 +288,12 @@ class Operation(t.Generic[hints.Scalar]):
                 point = event_end
                 self._divide_event_by_midpoint(below_event, point)
         else:
-            below_event_start_orientation = orient(event_start, event_end,
-                                                   below_event_start)
-            below_event_end_orientation = orient(event_start, event_end,
-                                                 below_event_end)
+            below_event_start_orientation = self._orienteer(
+                    event_start, event_end, below_event_start
+            )
+            below_event_end_orientation = self._orienteer(
+                    event_start, event_end, below_event_end
+            )
             if below_event_start_orientation is Orientation.COLLINEAR:
                 assert below_event_end_orientation is not Orientation.COLLINEAR
                 if event_start < below_event_start < event_end:
@@ -325,7 +303,7 @@ class Operation(t.Generic[hints.Scalar]):
                     self._divide_event_by_midpoint(event, below_event_end)
             elif (below_event_start_orientation
                   is not below_event_end_orientation):
-                cross_point = to_segments_intersection_point(
+                cross_point = self._segments_intersector(
                         event_start, event_end, below_event_start,
                         below_event_end
                 )
@@ -453,7 +431,7 @@ class Operation(t.Generic[hints.Scalar]):
     ) -> SweepLineKey[hints.Scalar]:
         return SweepLineKey(
                 event, self._is_left_event_from_first_operand(event),
-                self.endpoints, self._opposites
+                self.endpoints, self._opposites, self._orienteer
         )
 
     def to_signed_point_event_squared_cosine(self,
@@ -466,6 +444,44 @@ class Operation(t.Generic[hints.Scalar]):
                  if dot_product > 0
                  else -square(dot_product))
                 / squared_distance(start, end))
+
+
+def dot_multiply(first_start: hints.Point[hints.Scalar],
+                 first_end: hints.Point[hints.Scalar],
+                 second_start: hints.Point[hints.Scalar],
+                 second_end: hints.Point[hints.Scalar]) -> hints.Scalar:
+    return ((first_end.x - first_start.x) * (second_end.x - second_start.x)
+            + (first_end.y - first_start.y) * (second_end.y - second_start.y))
+
+
+def has_two_elements(iterator: t.Iterator[t.Any]) -> bool:
+    return (next(iterator, None) is not None
+            and next(iterator, None) is not None)
+
+
+def is_point_in_angle(point: hints.Point[hints.Scalar],
+                      vertex: hints.Point[hints.Scalar],
+                      first_ray_point: hints.Point[hints.Scalar],
+                      second_ray_point: hints.Point[hints.Scalar],
+                      angle_orientation: Orientation,
+                      orienteer: Orienteer[hints.Scalar],
+                      /) -> bool:
+    first_half_orientation = orienteer(vertex, first_ray_point, point)
+    second_half_orientation = orienteer(vertex, point, second_ray_point)
+    return (second_half_orientation == angle_orientation
+            if first_half_orientation is Orientation.COLLINEAR
+            else (first_half_orientation is angle_orientation
+                  if second_half_orientation is Orientation.COLLINEAR
+                  else ((first_half_orientation is second_half_orientation)
+                        and first_half_orientation
+                        is (Orientation.COUNTERCLOCKWISE
+                            if angle_orientation is Orientation.COLLINEAR
+                            else angle_orientation))))
+
+
+def squared_distance(start: hints.Point[hints.Scalar],
+                     end: hints.Point[hints.Scalar]) -> hints.Scalar:
+    return square(start.x - end.x) + square(start.y - end.y)
 
 
 class RelationState(t.Generic[hints.Scalar]):

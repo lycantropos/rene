@@ -3,6 +3,8 @@ from itertools import chain
 
 from rene import (Relation,
                   hints)
+from rene._hints import (Orienteer,
+                         SegmentsIntersector)
 from rene._utils import to_boxes_ids_with_intersection
 from . import (linear,
                mixed)
@@ -22,9 +24,13 @@ _EndpointsToSegmentsRelater = t.Callable[
 ]
 
 
-def relate_to_multipolygon(multisegmental: _Multisegmental[hints.Scalar],
-                           multipolygon: hints.Multipolygon[hints.Scalar],
-                           /) -> Relation:
+def relate_to_multipolygon(
+        multisegmental: _Multisegmental[hints.Scalar],
+        multipolygon: hints.Multipolygon[hints.Scalar],
+        orienteer: Orienteer[hints.Scalar],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
+        /
+) -> Relation:
     multisegmental_bounding_box, multipolygon_bounding_box = (
         multisegmental.bounding_box, multipolygon.bounding_box
     )
@@ -42,8 +48,10 @@ def relate_to_multipolygon(multisegmental: _Multisegmental[hints.Scalar],
         intersecting_segment = multisegmental_segments[
             intersecting_segments_ids[0]
         ]
-        relation = relate_segment_to_multipolygon(intersecting_segment,
-                                                  multipolygon)
+        relation = relate_segment_to_multipolygon(
+                intersecting_segment, multipolygon, orienteer,
+                segments_intersector
+        )
         return (Relation.TOUCH
                 if relation is Relation.COMPONENT
                 else (Relation.CROSS
@@ -81,7 +89,8 @@ def relate_to_multipolygon(multisegmental: _Multisegmental[hints.Scalar],
             chain.from_iterable(
                     polygon_to_segments(polygon, multisegmental_bounding_box)
                     for polygon in intersecting_polygons
-            )
+            ),
+            orienteer, segments_intersector
     ).to_relation(
             len(intersecting_segments_ids) == len(multisegmental_segments),
             min_max_x
@@ -93,6 +102,8 @@ def relate_to_multisegmental(
         second: _Multisegmental[hints.Scalar],
         first_to_second_relater: _EndpointsToSegmentsRelater[hints.Scalar],
         second_to_first_relater: _EndpointsToSegmentsRelater[hints.Scalar],
+        orienteer: Orienteer[hints.Scalar],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> Relation:
     first_bounding_box, second_bounding_box = (first.bounding_box,
@@ -109,7 +120,7 @@ def relate_to_multisegmental(
     elif len(first_intersecting_segments_ids) == 1:
         first_segment = first_segments[first_intersecting_segments_ids[0]]
         relation = first_to_second_relater(
-                first_segment.start, first_segment.end, second.segments
+                first_segment.start, first_segment.end, second.segments,
         )
         return (Relation.OVERLAP
                 if relation is Relation.COMPONENT or relation is Relation.EQUAL
@@ -163,7 +174,8 @@ def relate_to_multisegmental(
     ]
     assert second_intersecting_segments
     return linear.Operation.from_segments_iterables(
-            first_intersecting_segments, second_intersecting_segments
+            first_intersecting_segments, second_intersecting_segments,
+            orienteer, segments_intersector
     ).to_relation(
             len(first_intersecting_segments) == len(first_segments),
             len(second_intersecting_segments) == len(second_segments),
@@ -173,6 +185,8 @@ def relate_to_multisegmental(
 
 def relate_to_polygon(multisegmental: _Multisegmental[hints.Scalar],
                       polygon: hints.Polygon[hints.Scalar],
+                      orienteer: Orienteer[hints.Scalar],
+                      segments_intersector: SegmentsIntersector[hints.Scalar],
                       /) -> Relation:
     multisegmental_bounding_box, polygon_bounding_box = (
         multisegmental.bounding_box, polygon.bounding_box
@@ -191,7 +205,8 @@ def relate_to_polygon(multisegmental: _Multisegmental[hints.Scalar],
         intersecting_segment = multisegmental_segments[
             intersecting_segments_ids[0]
         ]
-        relation = relate_segment_to_polygon(intersecting_segment, polygon)
+        relation = relate_segment_to_polygon(intersecting_segment, polygon,
+                                             orienteer, segments_intersector)
         return (Relation.TOUCH
                 if relation is Relation.COMPONENT
                 else (Relation.CROSS
@@ -216,7 +231,8 @@ def relate_to_polygon(multisegmental: _Multisegmental[hints.Scalar],
                                     multisegmental_bounding_box
                             )
                     )
-            )
+            ),
+            orienteer, segments_intersector
     ).to_relation(
             len(intersecting_segments) == len(multisegmental_segments),
             min_max_x

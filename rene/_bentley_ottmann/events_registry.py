@@ -8,9 +8,9 @@ from prioq.base import PriorityQueue
 
 from rene import (Orientation,
                   hints)
-from rene._utils import (orient,
-                         to_segments_intersection_point,
-                         to_sorted_pair)
+from rene._hints import (Orienteer,
+                         SegmentsIntersector)
+from rene._utils import to_sorted_pair
 from .event import (Event,
                     is_event_left,
                     segment_id_to_left_event,
@@ -23,9 +23,12 @@ class EventsRegistry(t.Generic[hints.Scalar]):
     @classmethod
     def from_segments(cls,
                       segments: t.Sequence[hints.Segment[hints.Scalar]],
+                      orienteer: Orienteer[hints.Scalar],
+                      segments_intersector: SegmentsIntersector[hints.Scalar],
+                      /,
                       *,
                       unique: bool) -> EventsRegistry[hints.Scalar]:
-        result = cls(unique=unique)
+        result = cls(orienteer, segments_intersector, unique)
         for segment_id, segment in enumerate(segments):
             left_event = segment_id_to_left_event(segment_id)
             right_event = segment_id_to_right_event(segment_id)
@@ -74,12 +77,20 @@ class EventsRegistry(t.Generic[hints.Scalar]):
     ) -> hints.Point[hints.Scalar]:
         return self.to_event_start(segment_id_to_left_event(segment_id))
 
-    __slots__ = ('_endpoints', '_events_queue_data',
-                 '_min_collinear_segments_ids', '_opposites', '_segments_ids',
-                 '_sweep_line_data', '_unique')
+    __slots__ = (
+        '_endpoints', '_events_queue_data',
+        '_min_collinear_segments_ids', '_opposites', '_orienteer',
+        '_segments_ids', '_segments_intersector', '_sweep_line_data', '_unique'
+    )
 
-    def __init__(self, *, unique: bool) -> None:
-        self._unique = unique
+    def __init__(self,
+                 orienteer: Orienteer[hints.Scalar],
+                 segments_intersector: SegmentsIntersector[hints.Scalar],
+                 unique: bool,
+                 /) -> None:
+        self._orienteer, self._segments_intersector, self._unique = (
+            orienteer, segments_intersector, unique
+        )
         self._opposites: t.List[Event] = []
         self._endpoints: t.List[hints.Point[hints.Scalar]] = []
         self._segments_ids: t.List[int] = []
@@ -96,7 +107,8 @@ class EventsRegistry(t.Generic[hints.Scalar]):
     def _event_to_sweep_line_key(
             self, event: Event, /
     ) -> SweepLineKey[hints.Scalar]:
-        return SweepLineKey(self._endpoints, self._opposites, event)
+        return SweepLineKey(self._endpoints, self._opposites, event,
+                            self._orienteer)
 
     def __bool__(self) -> bool:
         return bool(self._events_queue_data)
@@ -163,10 +175,12 @@ class EventsRegistry(t.Generic[hints.Scalar]):
         event_end = self.to_event_end(event)
         below_event_start = self.to_event_start(below_event)
         below_event_end = self.to_event_end(below_event)
-        event_start_orientation = orient(below_event_end, below_event_start,
-                                         event_start)
-        event_end_orientation = orient(below_event_end, below_event_start,
-                                       event_end)
+        event_start_orientation = self._orienteer(
+                below_event_end, below_event_start, event_start
+        )
+        event_end_orientation = self._orienteer(
+                below_event_end, below_event_start, event_end
+        )
         if event_start_orientation is event_end_orientation:
             if event_start_orientation is Orientation.COLLINEAR:
                 if event_start == below_event_start:
@@ -223,10 +237,12 @@ class EventsRegistry(t.Generic[hints.Scalar]):
                 point = event_end
                 self._divide_event_by_midpoint(below_event, point)
         else:
-            below_event_start_orientation = orient(event_start, event_end,
-                                                   below_event_start)
-            below_event_end_orientation = orient(event_start, event_end,
-                                                 below_event_end)
+            below_event_start_orientation = self._orienteer(
+                    event_start, event_end, below_event_start
+            )
+            below_event_end_orientation = self._orienteer(
+                    event_start, event_end, below_event_end
+            )
             if below_event_start_orientation is Orientation.COLLINEAR:
                 assert below_event_end_orientation is not Orientation.COLLINEAR
                 if event_start < below_event_start < event_end:
@@ -238,7 +254,7 @@ class EventsRegistry(t.Generic[hints.Scalar]):
                     self._divide_event_by_midpoint_checking_above(event, point)
             elif (below_event_start_orientation
                   is not below_event_end_orientation):
-                cross_point = to_segments_intersection_point(
+                cross_point = self._segments_intersector(
                         event_start, event_end, below_event_start,
                         below_event_end
                 )

@@ -3,12 +3,13 @@ from itertools import groupby
 
 from rene import (Orientation,
                   hints)
+from rene._hints import (Orienteer,
+                         SegmentsIntersector)
 from rene._utils import (collect_maybe_empty_polygons,
                          collect_maybe_empty_segments,
                          do_boxes_have_common_continuum,
                          do_boxes_have_no_common_area,
                          do_boxes_have_no_common_continuum,
-                         orient,
                          polygon_to_correctly_oriented_segments,
                          to_boxes_ids_with_common_area,
                          to_boxes_ids_with_common_continuum,
@@ -67,8 +68,10 @@ def intersect_multipolygon_with_multipolygon(
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multipolygon[hints.Scalar],
@@ -112,15 +115,18 @@ def intersect_multipolygon_with_multipolygon(
             (segment
              for polygon in first_common_area_polygons
              for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   orienteer,
                                                                    segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
             (segment
              for polygon in second_common_area_polygons
              for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   orienteer,
                                                                    segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -138,7 +144,9 @@ def intersect_multipolygon_with_multisegmental(
         second: _Multisegmental[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -187,6 +195,7 @@ def intersect_multipolygon_with_multisegmental(
             (segment
              for polygon in first_common_continuum_polygons
              for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   orienteer,
                                                                    segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
@@ -194,6 +203,7 @@ def intersect_multipolygon_with_multisegmental(
              for segment in second_common_continuum_segments
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -213,8 +223,10 @@ def intersect_multipolygon_with_polygon(
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multipolygon[hints.Scalar],
@@ -245,14 +257,17 @@ def intersect_multipolygon_with_polygon(
             (segment
              for polygon in first_common_area_polygons
              for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   orienteer,
                                                                    segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
             (segment
              for segment in polygon_to_correctly_oriented_segments(second,
+                                                                   orienteer,
                                                                    segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= min_max_x))
+                 and min(segment.start.x, segment.end.x) <= min_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -270,7 +285,9 @@ def intersect_multipolygon_with_segment(
         second: hints.Segment[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -302,10 +319,12 @@ def intersect_multipolygon_with_segment(
             (segment
              for polygon in first_common_continuum_polygons
              for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   orienteer,
                                                                    segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
-            [second]
+            [second],
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -324,7 +343,9 @@ def intersect_multisegmental_with_multipolygon(
         second: hints.Multipolygon[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -377,9 +398,11 @@ def intersect_multisegmental_with_multipolygon(
             (segment
              for polygon in second_common_continuum_polygons
              for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   orienteer,
                                                                    segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -398,7 +421,9 @@ def intersect_multisegmental_with_multisegmental(
         second: _Multisegmental[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -452,6 +477,7 @@ def intersect_multisegmental_with_multisegmental(
              for segment in second_common_continuum_segments
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -470,7 +496,9 @@ def intersect_multisegmental_with_polygon(
         second: hints.Polygon[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -505,9 +533,11 @@ def intersect_multisegmental_with_polygon(
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
             (segment
              for segment in polygon_to_correctly_oriented_segments(second,
+                                                                   orienteer,
                                                                    segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= min_max_x))
+                 and min(segment.start.x, segment.end.x) <= min_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -526,6 +556,7 @@ def intersect_multisegmental_with_segment(
         second: hints.Segment[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.Union[
@@ -539,7 +570,7 @@ def intersect_multisegmental_with_segment(
              for maybe_segment in [
                  intersect_segments_with_common_continuum_bounding_boxes(
                          first_segment.start, first_segment.end, second_start,
-                         second_end, segment_cls
+                         second_end, orienteer, segment_cls
                  )
                  for first_segment in first.segments
                  if do_boxes_have_common_continuum(first_segment.bounding_box,
@@ -556,8 +587,10 @@ def intersect_polygon_with_multipolygon(
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multipolygon[hints.Scalar],
@@ -587,15 +620,18 @@ def intersect_polygon_with_multipolygon(
     operation = ShapedIntersection.from_segments_iterables(
             (segment
              for segment in polygon_to_correctly_oriented_segments(first,
+                                                                   orienteer,
                                                                    segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
             (segment
              for polygon in second_common_area_polygons
              for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   orienteer,
                                                                    segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= min_max_x))
+                 and min(segment.start.x, segment.end.x) <= min_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -613,7 +649,9 @@ def intersect_polygon_with_multisegmental(
         second: _Multisegmental[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -648,13 +686,15 @@ def intersect_polygon_with_multisegmental(
     operation = ShapedLinearIntersection.from_segments_iterables(
             (segment
              for segment in polygon_to_correctly_oriented_segments(first,
+                                                                   orienteer,
                                                                    segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
             (segment
              for segment in second_common_area_segments
              if (max_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= min_max_x))
+                 and min(segment.start.x, segment.end.x) <= min_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -674,8 +714,10 @@ def intersect_polygon_with_polygon(
         contour_cls: t.Type[hints.Contour[hints.Scalar]],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multipolygon[hints.Scalar],
@@ -690,14 +732,17 @@ def intersect_polygon_with_polygon(
     operation = ShapedIntersection.from_segments_iterables(
             (segment
              for segment in polygon_to_correctly_oriented_segments(first,
+                                                                   orienteer,
                                                                    segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
             (segment
              for segment in polygon_to_correctly_oriented_segments(second,
+                                                                   orienteer,
                                                                    segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= min_max_x))
+                 and min(segment.start.x, segment.end.x) <= min_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -715,7 +760,9 @@ def intersect_polygon_with_segment(
         second: hints.Segment[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -731,10 +778,12 @@ def intersect_polygon_with_segment(
     operation = ShapedLinearIntersection.from_segments_iterables(
             (segment
              for segment in polygon_to_correctly_oriented_segments(first,
+                                                                   orienteer,
                                                                    segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
                  and min(segment.start.x, segment.end.x) <= min_max_x)),
-            [second]
+            [second],
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -753,6 +802,7 @@ def intersect_segments_with_common_continuum_bounding_boxes(
         end: hints.Point[hints.Scalar],
         other_start: hints.Point[hints.Scalar],
         other_end: hints.Point[hints.Scalar],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.Optional[hints.Segment[hints.Scalar]]:
@@ -760,10 +810,11 @@ def intersect_segments_with_common_continuum_bounding_boxes(
     other_start, other_end = to_sorted_pair(other_start, other_end)
     return (segment_cls(max(start, other_start), min(end, other_end))
             if ((start == other_start
-                 or orient(end, start, other_start) is Orientation.COLLINEAR)
-                and
-                (end == other_end
-                 or orient(end, start, other_end) is Orientation.COLLINEAR))
+                 or (orienteer(end, start, other_start)
+                     is Orientation.COLLINEAR))
+                and (end == other_end
+                     or (orienteer(end, start, other_end)
+                         is Orientation.COLLINEAR)))
             else None)
 
 
@@ -772,7 +823,9 @@ def intersect_segment_with_multipolygon(
         second: hints.Multipolygon[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -809,9 +862,11 @@ def intersect_segment_with_multipolygon(
             (segment
              for polygon in second_common_continuum_polygons
              for segment in polygon_to_correctly_oriented_segments(polygon,
+                                                                   orienteer,
                                                                    segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= min_max_x))
+                 and min(segment.start.x, segment.end.x) <= min_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -830,6 +885,7 @@ def intersect_segment_with_multisegmental(
         second: _Multisegmental[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.Union[
@@ -843,7 +899,7 @@ def intersect_segment_with_multisegmental(
              for maybe_segment in [
                  intersect_segments_with_common_continuum_bounding_boxes(
                          first_start, first_end, second_segment.start,
-                         second_segment.end, segment_cls
+                         second_segment.end, orienteer, segment_cls
                  )
                  for second_segment in second.segments
                  if do_boxes_have_common_continuum(second_segment.bounding_box,
@@ -859,7 +915,9 @@ def intersect_segment_with_polygon(
         second: hints.Polygon[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
         multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        segments_intersector: SegmentsIntersector[hints.Scalar],
         /
 ) -> t.Union[
     hints.Empty[hints.Scalar], hints.Multisegment[hints.Scalar],
@@ -876,9 +934,11 @@ def intersect_segment_with_polygon(
             [first],
             (segment
              for segment in polygon_to_correctly_oriented_segments(second,
+                                                                   orienteer,
                                                                    segment_cls)
              if (max_min_x <= max(segment.start.x, segment.end.x)
-                 and min(segment.start.x, segment.end.x) <= min_max_x))
+                 and min(segment.start.x, segment.end.x) <= min_max_x)),
+            orienteer, segments_intersector
     )
     events = []
     for event in operation:
@@ -896,6 +956,7 @@ def intersect_segment_with_segment(
         first: hints.Segment[hints.Scalar],
         second: hints.Segment[hints.Scalar],
         empty_cls: t.Type[hints.Empty[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]],
         /
 ) -> t.Union[hints.Empty[hints.Scalar], hints.Segment[hints.Scalar]]:
@@ -904,6 +965,6 @@ def intersect_segment_with_segment(
         return empty_cls()
     maybe_result = intersect_segments_with_common_continuum_bounding_boxes(
             first.start, first.end, second.start, second.end,
-            segment_cls
+            orienteer, segment_cls
     )
     return empty_cls() if maybe_result is None else maybe_result

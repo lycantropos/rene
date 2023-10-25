@@ -6,7 +6,7 @@ import typing_extensions as te
 
 from rene import (Orientation,
                   hints)
-from rene._utils import orient
+from rene._hints import Orienteer
 
 
 class Edge(t.Generic[hints.Scalar]):
@@ -18,28 +18,35 @@ class Edge(t.Generic[hints.Scalar]):
     def from_endpoints(cls,
                        left_point_index: int,
                        right_point_index: int,
-                       interior_to_left: bool) -> te.Self:
-        return cls(left_point_index, right_point_index, interior_to_left)
+                       interior_to_left: bool,
+                       orienteer: Orienteer[hints.Scalar]) -> te.Self:
+        return cls(left_point_index, right_point_index, interior_to_left,
+                   orienteer)
 
     def orientation_of(
             self,
             point: hints.Point[hints.Scalar],
             endpoints: t.Sequence[hints.Point[hints.Scalar]]
     ) -> Orientation:
-        return orient(endpoints[self.left_point_index],
-                      endpoints[self.right_point_index], point)
+        return self._orienteer(endpoints[self.left_point_index],
+                               endpoints[self.right_point_index], point)
 
-    __slots__ = 'interior_to_left', 'left_point_index', 'right_point_index'
+    _orienteer: Orienteer[hints.Scalar]
+
+    __slots__ = ('interior_to_left', 'left_point_index', 'right_point_index',
+                 '_orienteer')
 
     def __new__(cls,
                 left_point_index: int,
                 right_point_index: int,
-                interior_to_left: bool) -> te.Self:
+                interior_to_left: bool,
+                orienteer: Orienteer[hints.Scalar],
+                /) -> te.Self:
         self = super().__new__(cls)
         (
             self.interior_to_left, self.left_point_index,
-            self.right_point_index
-        ) = interior_to_left, left_point_index, right_point_index
+            self.right_point_index, self._orienteer
+        ) = interior_to_left, left_point_index, right_point_index, orienteer
         return self
 
     def is_under(self,

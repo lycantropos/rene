@@ -11,9 +11,9 @@ from prioq.base import PriorityQueue
 
 from rene import (Orientation,
                   hints)
+from rene._hints import (Orienteer,
+                         SegmentsIntersector)
 from rene._utils import (is_even,
-                         orient,
-                         to_segments_intersection_point,
                          to_sorted_pair)
 from .event import (Event,
                     is_event_left,
@@ -29,6 +29,8 @@ class Operation(ABC, t.Generic[hints.Scalar]):
             cls,
             first: t.Iterable[hints.Segment[hints.Scalar]],
             second: t.Iterable[hints.Segment[hints.Scalar]],
+            orienteer: Orienteer[hints.Scalar],
+            segments_intersector: SegmentsIntersector[hints.Scalar],
             /
     ) -> te.Self:
         endpoints: t.List[hints.Point[hints.Scalar]] = []
@@ -36,7 +38,8 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         first_segments_count = len(endpoints) >> 1
         _populate_with_segments(second, endpoints)
         second_segments_count = (len(endpoints) >> 1) - first_segments_count
-        return cls(first_segments_count, second_segments_count, endpoints)
+        return cls(first_segments_count, second_segments_count, endpoints,
+                   orienteer, segments_intersector)
 
     @abstractmethod
     def reduce_events(
@@ -60,18 +63,23 @@ class Operation(ABC, t.Generic[hints.Scalar]):
 
     __slots__ = (
         'first_segments_count', 'second_segments_count', 'endpoints',
-        '_events_queue_data', '_opposites', '_segments_ids', '_sweep_line_data'
+        '_events_queue_data', '_opposites', '_orienteer', '_segments_ids',
+        '_segments_intersector', '_sweep_line_data'
     )
 
     def __init__(self,
                  first_segments_count: int,
                  second_segments_count: int,
                  endpoints: t.List[hints.Point[hints.Scalar]],
+                 orienteer: Orienteer[hints.Scalar],
+                 segments_intersector: SegmentsIntersector[hints.Scalar],
                  /) -> None:
         (
             self.endpoints, self.first_segments_count,
-            self.second_segments_count
-        ) = endpoints, first_segments_count, second_segments_count
+            self.second_segments_count, self._orienteer,
+            self._segments_intersector
+        ) = (endpoints, first_segments_count, second_segments_count, orienteer,
+             segments_intersector)
         segments_count = first_segments_count + second_segments_count
         initial_events_count = 2 * segments_count
         self._opposites = [Event(((index >> 1) << 1) + is_even(index))
@@ -83,7 +91,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 *map(Event, range(initial_events_count)),
                 key=lambda event: EventsQueueKey(
                         event, self._is_event_from_first_operand(event),
-                        self.endpoints, self._opposites
+                        self.endpoints, self._opposites, self._orienteer
                 )
         )
         self._sweep_line_data = red_black.set_(key=self._to_sweep_line_key)
@@ -142,10 +150,12 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         event_end = self.to_event_end(event)
         below_event_start = self.to_event_start(below_event)
         below_event_end = self.to_event_end(below_event)
-        event_start_orientation = orient(below_event_end, below_event_start,
-                                         event_start)
-        event_end_orientation = orient(below_event_end, below_event_start,
-                                       event_end)
+        event_start_orientation = self._orienteer(
+                below_event_end, below_event_start, event_start
+        )
+        event_end_orientation = self._orienteer(
+                below_event_end, below_event_start, event_end
+        )
         if event_start_orientation is event_end_orientation:
             if event_start_orientation is Orientation.COLLINEAR:
                 assert (self._is_left_event_from_first_operand(below_event)
@@ -202,10 +212,12 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 point = event_end
                 self._divide_event_by_midpoint(below_event, point)
         else:
-            below_event_start_orientation = orient(event_start, event_end,
-                                                   below_event_start)
-            below_event_end_orientation = orient(event_start, event_end,
-                                                 below_event_end)
+            below_event_start_orientation = self._orienteer(
+                    event_start, event_end, below_event_start
+            )
+            below_event_end_orientation = self._orienteer(
+                    event_start, event_end, below_event_end
+            )
             if below_event_start_orientation is Orientation.COLLINEAR:
                 assert below_event_end_orientation is not Orientation.COLLINEAR
                 if event_start < below_event_start < event_end:
@@ -217,7 +229,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                     self._divide_event_by_midpoint(event, point)
             elif (below_event_start_orientation
                   is not below_event_end_orientation):
-                cross_point = to_segments_intersection_point(
+                cross_point = self._segments_intersector(
                         event_start, event_end, below_event_start,
                         below_event_end
                 )
@@ -326,7 +338,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
     ) -> SweepLineKey[hints.Scalar]:
         return SweepLineKey(
                 event, self._is_left_event_from_first_operand(event),
-                self.endpoints, self._opposites
+                self.endpoints, self._opposites, self._orienteer
         )
 
 

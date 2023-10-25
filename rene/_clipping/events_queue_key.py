@@ -4,8 +4,8 @@ import typing_extensions as te
 
 from rene import (Orientation,
                   hints)
-from rene._hints import Map
-from rene._utils import orient
+from rene._hints import (Map,
+                         Orienteer)
 from .event import (Event,
                     is_event_left)
 
@@ -15,20 +15,23 @@ class EventsQueueKey(t.Generic[hints.Scalar]):
     is_from_first_operand: bool
     endpoints: Map[Event, hints.Point[hints.Scalar]]
     opposites: Map[Event, Event]
+    _orienteer: Orienteer[hints.Scalar]
 
-    __slots__ = 'endpoints', 'event', 'is_from_first_operand', 'opposites'
+    __slots__ = ('endpoints', 'event', 'is_from_first_operand', 'opposites',
+                 '_orienteer')
 
     def __new__(cls,
                 event: Event,
                 is_from_first_operand: bool,
                 endpoints: Map[Event, hints.Point[hints.Scalar]],
                 opposites: Map[Event, Event],
+                orienteer: Orienteer[hints.Scalar],
                 /) -> te.Self:
         self = super().__new__(cls)
         (
             self.endpoints, self.event, self.is_from_first_operand,
-            self.opposites
-        ) = endpoints, event, is_from_first_operand, opposites
+            self.opposites, self._orienteer
+        ) = endpoints, event, is_from_first_operand, opposites, orienteer
         return self
 
     def __lt__(self, other: te.Self, /) -> bool:
@@ -54,7 +57,7 @@ class EventsQueueKey(t.Generic[hints.Scalar]):
             # the right endpoint is processed first
             return not is_event_left(event)
         else:
-            other_end_orientation = orient(
+            other_end_orientation = self._orienteer(
                     event_start, self.endpoints[self.opposites[event]],
                     self.endpoints[self.opposites[other_event]],
             )

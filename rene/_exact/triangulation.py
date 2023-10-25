@@ -21,7 +21,11 @@ from rene._utils import shrink_collinear_vertices
 class ConstrainedDelaunayTriangulation:
     @classmethod
     def from_polygon(cls, polygon: hints.Polygon[Fraction], /) -> te.Self:
-        return cls(_RawConstrainedDelaunayTriangulation.from_polygon(polygon))
+        return cls(
+                _RawConstrainedDelaunayTriangulation.from_polygon(
+                        polygon, cls._context.orient
+                )
+        )
 
     @property
     def border(self) -> hints.Contour[Fraction]:
@@ -29,7 +33,8 @@ class ConstrainedDelaunayTriangulation:
         return self._context.contour_cls(
                 boundary_points
                 if len(boundary_points) < MIN_CONTOUR_VERTICES_COUNT
-                else shrink_collinear_vertices(boundary_points)
+                else shrink_collinear_vertices(boundary_points,
+                                               self._context.orient)
         )
 
     @property
@@ -64,7 +69,8 @@ class DelaunayTriangulation:
     def from_points(
             cls, points: t.Sequence[hints.Point[Fraction]], /
     ) -> te.Self:
-        return cls(_RawDelaunayTriangulation.from_points(points))
+        return cls(_RawDelaunayTriangulation.from_points(points,
+                                                         cls._context.orient))
 
     @property
     def border(self) -> hints.Contour[Fraction]:
@@ -72,7 +78,8 @@ class DelaunayTriangulation:
         return self._context.contour_cls(
                 boundary_points
                 if len(boundary_points) < MIN_CONTOUR_VERTICES_COUNT
-                else shrink_collinear_vertices(boundary_points)
+                else shrink_collinear_vertices(boundary_points,
+                                               self._context.orient)
         )
 
     @property

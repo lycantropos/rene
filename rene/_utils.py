@@ -10,6 +10,7 @@ from rene import (MIN_CONTOUR_VERTICES_COUNT,
                   Location,
                   Orientation,
                   hints)
+from rene._hints import Orienteer
 
 
 class Ordered(te.Protocol):
@@ -33,15 +34,17 @@ def all_same(iterable: t.Iterable[t.Any]) -> bool:
 
 
 def are_contour_vertices_non_degenerate(
-        vertices: t.Sequence[hints.Point[hints.Scalar]], /
+        vertices: t.Sequence[hints.Point[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
+        /
 ) -> bool:
-    return (all(orient(vertices[index - 1], vertices[index],
-                       vertices[index + 1]) is not Orientation.COLLINEAR
+    return (all(orienteer(vertices[index - 1], vertices[index],
+                          vertices[index + 1]) is not Orientation.COLLINEAR
                 for index in range(1, len(vertices) - 1))
             and (len(vertices) <= MIN_CONTOUR_VERTICES_COUNT
-                 or ((orient(vertices[-2], vertices[-1], vertices[0])
+                 or ((orienteer(vertices[-2], vertices[-1], vertices[0])
                       is not Orientation.COLLINEAR)
-                     and (orient(vertices[-1], vertices[0], vertices[1])
+                     and (orienteer(vertices[-1], vertices[0], vertices[1])
                           is not Orientation.COLLINEAR))))
 
 
@@ -152,28 +155,6 @@ def square(value: hints.Scalar, /) -> hints.Scalar:
     return value * value
 
 
-def to_segments_intersection_point(first_start: hints.Point[hints.Scalar],
-                                   first_end: hints.Point[hints.Scalar],
-                                   second_start: hints.Point[hints.Scalar],
-                                   second_end: hints.Point[hints.Scalar],
-                                   /) -> hints.Point[hints.Scalar]:
-    scale = to_segments_intersection_scale(first_start, first_end,
-                                           second_start, second_end)
-    return type(first_start)(
-            first_start.x + (first_end.x - first_start.x) * scale,
-            first_start.y + (first_end.y - first_start.y) * scale
-    )
-
-
-def to_segments_intersection_scale(first_start: hints.Point[hints.Scalar],
-                                   first_end: hints.Point[hints.Scalar],
-                                   second_start: hints.Point[hints.Scalar],
-                                   second_end: hints.Point[hints.Scalar],
-                                   /) -> hints.Scalar:
-    return (cross_multiply(first_start, second_start, second_start, second_end)
-            / cross_multiply(first_start, first_end, second_start, second_end))
-
-
 def is_even(value: int, /) -> bool:
     return value & 1 == 0
 
@@ -202,18 +183,21 @@ def locate_point_in_point_point_point_circle(point: hints.Point[hints.Scalar],
 
 
 def locate_point_in_region(
-        border: hints.Contour[hints.Scalar], point: hints.Point[hints.Scalar],
+        border: hints.Contour[hints.Scalar],
+        point: hints.Point[hints.Scalar],
+        orienteer: Orienteer[hints.Scalar],
         /
 ) -> Location:
     is_point_inside = False
     point_y = point.y
     for edge in border.segments:
         end, start = edge.end, edge.start
-        if locate_point_in_segment(start, end, point) is Location.BOUNDARY:
+        if (locate_point_in_segment(start, end, point, orienteer)
+                is Location.BOUNDARY):
             return Location.BOUNDARY
         if ((start.y > point_y) is not (end.y > point_y)
                 and ((end.y > start.y)
-                     is (orient(start, end, point)
+                     is (orienteer(start, end, point)
                          is Orientation.COUNTERCLOCKWISE))):
             is_point_inside = not is_point_inside
     return Location.INTERIOR if is_point_inside else Location.EXTERIOR
@@ -222,6 +206,7 @@ def locate_point_in_region(
 def locate_point_in_segment(start: hints.Point[hints.Scalar],
                             end: hints.Point[hints.Scalar],
                             point: hints.Point[hints.Scalar],
+                            orienteer: Orienteer[hints.Scalar],
                             /) -> Location:
     return (Location.BOUNDARY
             if (start == point
@@ -232,7 +217,7 @@ def locate_point_in_segment(start: hints.Point[hints.Scalar],
                     and (start.y <= point.y <= end.y
                          if start.y <= end.y
                          else end.y < point.y < start.y)
-                    and orient(start, end, point) is Orientation.COLLINEAR))
+                    and orienteer(start, end, point) is Orientation.COLLINEAR))
             else Location.EXTERIOR)
 
 
@@ -252,19 +237,6 @@ def merge_boxes(boxes: t.Iterable[hints.Box[hints.Scalar]],
         if box.min_y < min_y:
             min_y = box.min_y
     return type(first_box)(min_x, max_x, min_y, max_y)
-
-
-def orient(vertex: hints.Point[hints.Scalar],
-           first_ray_point: hints.Point[hints.Scalar],
-           second_ray_point: hints.Point[hints.Scalar],
-           /) -> Orientation:
-    raw = to_sign(cross_multiply(vertex, first_ray_point, vertex,
-                                 second_ray_point))
-    return (Orientation.COLLINEAR
-            if raw == 0
-            else (Orientation.COUNTERCLOCKWISE
-                  if raw > 0
-                  else Orientation.CLOCKWISE))
 
 
 def permute(values: t.MutableSequence[_T], seed: int, /) -> None:
@@ -288,21 +260,24 @@ def point_vertex_line_divides_angle(
         vertex: hints.Point[hints.Scalar],
         first_ray_point: hints.Point[hints.Scalar],
         second_ray_point: hints.Point[hints.Scalar],
+        orienteer: Orienteer[hints.Scalar],
         /
 ) -> bool:
-    return (orient(vertex, first_ray_point, point)
-            is orient(vertex, point, second_ray_point))
+    return (orienteer(vertex, first_ray_point, point)
+            is orienteer(vertex, point, second_ray_point))
 
 
 def polygon_to_correctly_oriented_segments(
         polygon: hints.Polygon[hints.Scalar],
+        orienteer: Orienteer[hints.Scalar],
         segment_cls: t.Type[hints.Segment[hints.Scalar]]
 ) -> t.Iterable[hints.Segment[hints.Scalar]]:
     yield from to_oriented_segments(polygon.border.vertices,
-                                    Orientation.COUNTERCLOCKWISE, segment_cls)
+                                    Orientation.COUNTERCLOCKWISE, orienteer,
+                                    segment_cls)
     for hole in polygon.holes:
         yield from to_oriented_segments(hole.vertices, Orientation.CLOCKWISE,
-                                        segment_cls)
+                                        orienteer, segment_cls)
 
 
 def polygon_to_segments_count(polygon: hints.Polygon[hints.Scalar], /) -> int:
@@ -314,16 +289,16 @@ def rotate_sequence(value: t.Sequence[_T]) -> t.List[_T]:
     return [value[0], *value[:0:-1]]
 
 
-def shrink_collinear_vertices(
-        vertices: t.Sequence[hints.Point[hints.Scalar]], /
-) -> t.List[hints.Point[hints.Scalar]]:
+def shrink_collinear_vertices(vertices: t.Sequence[hints.Point[hints.Scalar]],
+                              orienteer: Orienteer[hints.Scalar],
+                              /) -> t.List[hints.Point[hints.Scalar]]:
     assert len(vertices) >= MIN_CONTOUR_VERTICES_COUNT
     result = [vertices[0]]
     for index in range(1, len(vertices) - 1):
-        if (orient(result[-1], vertices[index], vertices[index + 1])
+        if (orienteer(result[-1], vertices[index], vertices[index + 1])
                 is not Orientation.COLLINEAR):
             result.append(vertices[index])
-    if (orient(result[-1], vertices[-1], result[0])
+    if (orienteer(result[-1], vertices[-1], result[0])
             is not Orientation.COLLINEAR):
         result.append(vertices[-1])
     return result
@@ -382,9 +357,11 @@ def to_boxes_ids_with_intersection(
 
 def to_contour_orientation(vertices: t.Sequence[hints.Point[hints.Scalar]],
                            min_vertex_index: int,
+                           orienteer: Orienteer[hints.Scalar],
                            /) -> Orientation:
-    return orient(vertices[min_vertex_index - 1], vertices[min_vertex_index],
-                  vertices[(min_vertex_index + 1) % len(vertices)])
+    return orienteer(vertices[min_vertex_index - 1],
+                     vertices[min_vertex_index],
+                     vertices[(min_vertex_index + 1) % len(vertices)])
 
 
 def to_contour_segments(vertices: t.Sequence[hints.Point[hints.Scalar]],
@@ -398,11 +375,13 @@ def to_contour_segments(vertices: t.Sequence[hints.Point[hints.Scalar]],
 
 def to_oriented_segments(vertices: t.Sequence[hints.Point[hints.Scalar]],
                          target_orientation: Orientation,
+                         orienteer: Orienteer[hints.Scalar],
                          segment_cls: t.Type[hints.Segment[hints.Scalar]],
                          /) -> t.List[hints.Segment[hints.Scalar]]:
     return to_contour_segments(
             vertices
-            if (to_contour_orientation(vertices, to_arg_min(vertices))
+            if (to_contour_orientation(vertices, to_arg_min(vertices),
+                                       orienteer)
                 is target_orientation)
             else rotate_sequence(vertices),
             segment_cls

@@ -8,6 +8,8 @@ import typing_extensions as te
 from rene import (Location,
                   Orientation,
                   hints)
+from rene._context import Context
+from rene._hints import Orienteer
 from rene._utils import (permute,
                          to_arg_min,
                          to_contour_orientation)
@@ -24,6 +26,7 @@ class Trapezoidation(t.Generic[hints.Scalar]):
     def from_multisegment(cls,
                           multisegment: hints.Multisegment[hints.Scalar],
                           seed: int,
+                          orienteer: Orienteer[hints.Scalar],
                           /) -> te.Self:
         assert seed >= 0, f'Seed should be non-negative, but got {seed}.'
         endpoints: t.List[hints.Point[hints.Scalar]] = []
@@ -34,27 +37,30 @@ class Trapezoidation(t.Generic[hints.Scalar]):
             endpoints.append(start)
             end_index = len(endpoints)
             endpoints.append(end)
-            edges.append(Edge.from_endpoints(start_index, end_index, False)
+            edges.append(Edge.from_endpoints(start_index, end_index, False,
+                                             orienteer)
                          if start < end
                          else Edge.from_endpoints(end_index, start_index,
-                                                  False))
+                                                  False, orienteer))
         permute(edges, seed)
-        return cls._from_box(multisegment.bounding_box, edges, endpoints)
+        return cls._from_box(multisegment.bounding_box, edges, endpoints,
+                             orienteer)
 
     @classmethod
     def from_polygon(cls,
                      polygon: hints.Polygon[hints.Scalar],
                      seed: int,
+                     orienteer: Orienteer[hints.Scalar],
                      /) -> te.Self:
         edges: t.List[Edge[hints.Scalar]] = []
         endpoints: t.List[hints.Point[hints.Scalar]] = []
         _populate_from_contour(polygon.border, Orientation.COUNTERCLOCKWISE,
-                               edges, endpoints)
+                               edges, endpoints, orienteer)
         for hole in polygon.holes:
             _populate_from_contour(hole, Orientation.CLOCKWISE, edges,
-                                   endpoints)
+                                   endpoints, orienteer)
         permute(edges, seed)
-        return cls._from_box(polygon.bounding_box, edges, endpoints)
+        return cls._from_box(polygon.bounding_box, edges, endpoints, orienteer)
 
     @property
     def height(self) -> int:
@@ -70,12 +76,14 @@ class Trapezoidation(t.Generic[hints.Scalar]):
             box: hints.Box[hints.Scalar],
             edges: t.List[Edge[hints.Scalar]],
             endpoints: t.List[hints.Point[hints.Scalar]],
+            orienteer: Orienteer[hints.Scalar],
             /
     ) -> te.Self:
         nodes: t.List[Node[hints.Scalar]] = []
         edges_count = len(edges)
         _add_edge_to_single_trapezoid(
-                0, _box_to_trapezoid(box, edges, endpoints, nodes),
+                0, _box_to_trapezoid(box, edges, endpoints, nodes,
+                                     orienteer),
                 edges, endpoints, nodes
         )
         for edge_index in range(1, edges_count):
@@ -326,6 +334,7 @@ def _box_to_trapezoid(box: hints.Box[hints.Scalar],
                       edges: t.List[Edge[hints.Scalar]],
                       endpoints: t.List[hints.Point[hints.Scalar]],
                       nodes: t.List[Node[hints.Scalar]],
+                      orienteer: Orienteer[hints.Scalar],
                       /) -> Trapezoid:
     min_x, min_y, max_x, max_y = box.min_x, box.min_y, box.max_x, box.max_y
     delta_x, delta_y = (max_x - min_x) or 1, (max_y - min_y) or 1
@@ -338,14 +347,16 @@ def _box_to_trapezoid(box: hints.Box[hints.Scalar],
     endpoints.append(point_cls(max_x, max_y))
     above_edge_index = len(edges)
     edges.append(Edge.from_endpoints(above_edge_left_point_index,
-                                     above_edge_right_point_index, True))
+                                     above_edge_right_point_index, True,
+                                     orienteer))
     below_edge_left_point_index = len(endpoints)
     endpoints.append(point_cls(min_x, min_y))
     below_edge_right_point_index = len(endpoints)
     endpoints.append(point_cls(max_x, min_y))
     below_edge_index = len(edges)
     edges.append(Edge.from_endpoints(below_edge_left_point_index,
-                                     below_edge_right_point_index, False))
+                                     below_edge_right_point_index, False,
+                                     orienteer))
     return _create_trapezoid(below_edge_left_point_index,
                              below_edge_right_point_index, below_edge_index,
                              above_edge_index, edges, nodes)
@@ -476,12 +487,13 @@ def _populate_from_contour(
         correct_orientation: Orientation,
         edges: t.List[Edge[hints.Scalar]],
         endpoints: t.List[hints.Point[hints.Scalar]],
+        orienteer: Orienteer[hints.Scalar],
         /
 ) -> None:
     contour_vertices = contour.vertices
     is_contour_correctly_oriented = (
             to_contour_orientation(contour_vertices,
-                                   to_arg_min(contour_vertices))
+                                   to_arg_min(contour_vertices), orienteer)
             is correct_orientation
     )
     first_start = start = contour_vertices[0]
@@ -491,20 +503,22 @@ def _populate_from_contour(
                                     start=first_start_index + 1):
         edges.append(
                 Edge.from_endpoints(start_index, end_index,
-                                    is_contour_correctly_oriented)
+                                    is_contour_correctly_oriented, orienteer)
                 if start < end
                 else Edge.from_endpoints(end_index, start_index,
-                                         not is_contour_correctly_oriented)
+                                         not is_contour_correctly_oriented,
+                                         orienteer)
         )
         start, start_index = end, end_index
     last_end_index, last_end = len(endpoints) - 1, endpoints[-1]
     assert last_end_index == first_start_index + len(contour.vertices) - 1
     edges.append(
             Edge.from_endpoints(first_start_index, last_end_index,
-                                is_contour_correctly_oriented)
+                                is_contour_correctly_oriented, orienteer)
             if first_start < last_end
             else Edge.from_endpoints(last_end_index, first_start_index,
-                                     not is_contour_correctly_oriented)
+                                     not is_contour_correctly_oriented,
+                                     orienteer)
     )
 
 

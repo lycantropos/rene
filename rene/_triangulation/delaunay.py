@@ -6,6 +6,7 @@ import typing_extensions as te
 
 from rene import (Orientation,
                   hints)
+from rene._hints import Orienteer
 from rene._utils import deduplicate
 from .mesh import (Mesh,
                    build_delaunay_triangulation,
@@ -16,14 +17,15 @@ from .quad_edge import (QuadEdge,
 
 class DelaunayTriangulation(t.Generic[hints.Scalar]):
     @classmethod
-    def from_points(
-            cls, points: t.Sequence[hints.Point[hints.Scalar]], /
-    ) -> te.Self:
+    def from_points(cls,
+                    points: t.Sequence[hints.Point[hints.Scalar]],
+                    orienteer: Orienteer[hints.Scalar],
+                    /) -> te.Self:
         endpoints = list(points)
         endpoints.sort()
         mesh = Mesh.from_points(deduplicate(endpoints))
-        left_side, right_side = build_delaunay_triangulation(mesh)
-        return cls(left_side, right_side, mesh)
+        left_side, right_side = build_delaunay_triangulation(mesh, orienteer)
+        return cls(left_side, right_side, mesh, orienteer)
 
     @property
     def left_side(self) -> QuadEdge:
@@ -72,24 +74,26 @@ class DelaunayTriangulation(t.Generic[hints.Scalar]):
                             mesh.to_right_from_start(to_opposite_edge(edge))
                     )
                     and orient_point_to_edge(
-                            mesh, edge, third_vertex
+                            mesh, edge, third_vertex, self._orienteer
                     ) is Orientation.COUNTERCLOCKWISE):
                 result.append((first_vertex, second_vertex, third_vertex))
         return result
 
     _left_side: QuadEdge
-    _right_side: QuadEdge
     _mesh: Mesh[hints.Scalar]
+    _orienteer: Orienteer[hints.Scalar]
+    _right_side: QuadEdge
 
-    __slots__ = '_left_side', '_mesh', '_right_side'
+    __slots__ = '_left_side', '_mesh', '_orienteer', '_right_side'
 
     def __new__(cls,
                 left_side: QuadEdge,
                 right_side: QuadEdge,
                 mesh: Mesh[hints.Scalar],
+                orienteer: Orienteer[hints.Scalar],
                 /) -> te.Self:
         self = super().__new__(cls)
-        self._left_side, self._mesh, self._right_side = (
-            left_side, mesh, right_side
+        self._left_side, self._mesh, self._orienteer, self._right_side = (
+            left_side, mesh, orienteer, right_side
         )
         return self

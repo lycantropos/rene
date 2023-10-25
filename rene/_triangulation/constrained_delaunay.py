@@ -12,9 +12,9 @@ from rene import (Location,
                   Orientation,
                   Relation,
                   hints)
+from rene._hints import Orienteer
 from rene._relating import segment_endpoints
-from rene._utils import (locate_point_in_point_point_point_circle,
-                         orient)
+from rene._utils import locate_point_in_point_point_point_circle
 from .mesh import (Mesh,
                    build_delaunay_triangulation,
                    orient_point_to_edge)
@@ -29,7 +29,10 @@ BORDER_CONTOUR_INDEX = 0
 
 class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
     @classmethod
-    def from_polygon(cls, polygon: hints.Polygon[hints.Scalar], /) -> te.Self:
+    def from_polygon(cls,
+                     polygon: hints.Polygon[hints.Scalar],
+                     orienteer: Orienteer[hints.Scalar],
+                     /) -> te.Self:
         contours_vertices = [polygon.border.vertices,
                              *[hole.vertices for hole in polygon.holes]]
         vertices = list(chain.from_iterable(
@@ -55,7 +58,7 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
                      for vertex in same_point_vertices]
             )
         mesh = Mesh.from_points(points)
-        left_side, right_side = build_delaunay_triangulation(mesh)
+        left_side, right_side = build_delaunay_triangulation(mesh, orienteer)
         contours_sizes = [len(contour_vertices)
                           for contour_vertices in contours_vertices]
         triangular_holes_indices = [
@@ -65,7 +68,7 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
             if hole_size == 3
         ]
         self = cls(left_side, right_side, mesh, polygon_vertices_positions,
-                   triangular_holes_indices)
+                   triangular_holes_indices, orienteer)
         self.constrain(contours_sizes, contours_vertices)
         self.bound(contours_sizes)
         self.cut(contours_vertices)
@@ -95,7 +98,7 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
         while extraneous_mouths:
             mouth = extraneous_mouths.pop()
             first_candidate, second_candidate = mouth_edge_to_incidents(
-                    mesh, mouth
+                    mesh, mouth, self._orienteer
             )
             self.delete_edge(mouth)
             if not is_polygon_edge(mesh, first_candidate, contours_sizes,
@@ -135,15 +138,15 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
                         next_vertex_index
                     ]
                     angle_base_edge = to_angle_containing_constraint_base(
-                            mesh, edge, next_vertex_point
+                            mesh, edge, next_vertex_point, self._orienteer
                     )
                     crossings = detect_crossings(
                             mesh, angle_base_edge, vertex_point,
-                            next_vertex_point
+                            next_vertex_point, self._orienteer
                     )
                     if crossings:
                         set_constraint(mesh, vertex_point, next_vertex_point,
-                                       crossings)
+                                       crossings, self._orienteer)
                     contours_constraints_flags[contour_index][
                         constraint_index
                     ] = True
@@ -154,7 +157,8 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
         mesh = self.mesh
         for edge in mesh.to_unique_edges():
             if is_edge_inside_hole(mesh, edge, contours_vertices,
-                                   self._polygon_vertices_positions):
+                                   self._polygon_vertices_positions,
+                                   self._orienteer):
                 self.delete_edge(edge)
 
     def delete_edge(self, edge: QuadEdge, /) -> None:
@@ -205,7 +209,7 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
                             mesh.to_right_from_start(to_opposite_edge(edge))
                     )
                     and orient_point_to_edge(
-                            mesh, edge, third_vertex
+                            mesh, edge, third_vertex, self._orienteer
                     ) is Orientation.COUNTERCLOCKWISE
                     and
                     not (self._triangular_holes_indices
@@ -226,25 +230,27 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
                 result.append((first_vertex, second_vertex, third_vertex))
         return result
 
-    __slots__ = ('_left_side', '_mesh', '_polygon_vertices_positions',
-                 '_right_side', '_triangular_holes_indices')
+    __slots__ = (
+        '_left_side', '_mesh', '_orienteer', '_polygon_vertices_positions',
+        '_right_side', '_triangular_holes_indices'
+    )
 
     def __init__(
             self,
             left_side: QuadEdge,
             right_side: QuadEdge,
             mesh: Mesh[hints.Scalar],
-            _polygon_vertices_positions: t.List[
-                t.List[PolygonVertexPosition]
-            ],
-            _triangular_holes_indices: t.Container[int],
+            polygon_vertices_positions: t.List[t.List[PolygonVertexPosition]],
+            triangular_holes_indices: t.Container[int],
+            orienteer: Orienteer[hints.Scalar],
             /
     ) -> None:
-        (self._left_side, self._mesh, self._polygon_vertices_positions,
-         self._right_side, self._triangular_holes_indices) = (
-            left_side, mesh, _polygon_vertices_positions, right_side,
-            _triangular_holes_indices
-        )
+        (
+            self._left_side, self._mesh, self._orienteer,
+            self._polygon_vertices_positions, self._right_side,
+            self._triangular_holes_indices
+        ) = (left_side, mesh, orienteer, polygon_vertices_positions,
+             right_side, triangular_holes_indices)
 
     def __bool__(self) -> bool:
         result = bool(self.mesh)
@@ -258,10 +264,11 @@ def angle_contains_point(vertex: hints.Point[hints.Scalar],
                          second_ray_point: hints.Point[hints.Scalar],
                          angle_orientation: Orientation,
                          point: hints.Point[hints.Scalar],
+                         orienteer: Orienteer[hints.Scalar],
                          /) -> bool:
     assert angle_orientation is not Orientation.COLLINEAR
-    first_half_orientation = orient(vertex, first_ray_point, point)
-    second_half_orientation = orient(second_ray_point, vertex, point)
+    first_half_orientation = orienteer(vertex, first_ray_point, point)
+    second_half_orientation = orienteer(second_ray_point, vertex, point)
     return ((first_half_orientation is Orientation.COLLINEAR
              or first_half_orientation is angle_orientation)
             and (second_half_orientation is Orientation.COLLINEAR
@@ -300,6 +307,7 @@ def detect_crossings(mesh: Mesh[hints.Scalar],
                      base_edge: QuadEdge,
                      constraint_start: hints.Point[hints.Scalar],
                      constraint_end: hints.Point[hints.Scalar],
+                     orienteer: Orienteer[hints.Scalar],
                      /) -> t.List[QuadEdge]:
     candidate = mesh.to_left_from_end(base_edge)
     result = []
@@ -307,14 +315,14 @@ def detect_crossings(mesh: Mesh[hints.Scalar],
         last_crossing = candidate
         assert segment_endpoints.relate_to_segment_endpoints(
                 mesh.to_start(last_crossing), mesh.to_end(last_crossing),
-                constraint_start, constraint_end
+                constraint_start, constraint_end, orienteer
         ) is Relation.CROSS
         result.append(last_crossing)
         candidate = mesh.to_right_from_start(last_crossing)
-        if ((orient_point_to_edge(mesh, candidate, constraint_end)
+        if ((orient_point_to_edge(mesh, candidate, constraint_end, orienteer)
              is not Orientation.CLOCKWISE)
-                or (orient(constraint_start, constraint_end,
-                           mesh.to_end(candidate))
+                or (orienteer(constraint_start, constraint_end,
+                              mesh.to_end(candidate))
                     is Orientation.CLOCKWISE)):
             candidate = to_opposite_edge(mesh.to_right_from_end(last_crossing))
     assert all(to_opposite_edge(edge) not in result for edge in result)
@@ -324,7 +332,7 @@ def detect_crossings(mesh: Mesh[hints.Scalar],
             if (
                     segment_endpoints.relate_to_segment_endpoints(
                             mesh.to_start(edge), mesh.to_end(edge),
-                            constraint_start, constraint_end
+                            constraint_start, constraint_end, orienteer
                     ) is Relation.CROSS
             )
     )
@@ -374,6 +382,7 @@ def is_edge_inside_hole(
         edge: QuadEdge,
         contours_vertices: t.List[t.Sequence[hints.Point[hints.Scalar]]],
         polygon_vertices_positions: t.List[t.List[PolygonVertexPosition]],
+        orienteer: Orienteer[hints.Scalar],
         /
 ) -> bool:
     start_index, end_index = mesh.to_start_index(edge), mesh.to_end_index(edge)
@@ -386,7 +395,7 @@ def is_edge_inside_hole(
     assert len(common_holes_positions) <= 1
     return (bool(common_holes_positions)
             and is_segment_inside_hole(start, end, *common_holes_positions[0],
-                                       contours_vertices))
+                                       contours_vertices, orienteer))
 
 
 def is_segment_inside_hole(
@@ -395,6 +404,7 @@ def is_segment_inside_hole(
         start_position: PolygonVertexPosition,
         end_position: PolygonVertexPosition,
         contours_vertices: t.List[t.Sequence[hints.Point[hints.Scalar]]],
+        orienteer: Orienteer[hints.Scalar],
         /
 ) -> bool:
     assert start_position.contour_index == end_position.contour_index
@@ -409,26 +419,28 @@ def is_segment_inside_hole(
     prior_to_end_point = hole_vertices[end_vertex_index - 1]
     next_to_start_point = hole_vertices[(start_vertex_index + 1) % hole_size]
     next_to_end_point = hole_vertices[(end_vertex_index + 1) % hole_size]
-    start_angle_orientation = orient(start, prior_to_start_point,
-                                     next_to_start_point)
-    end_angle_orientation = orient(end, prior_to_end_point,
-                                   next_to_end_point)
+    start_angle_orientation = orienteer(start, prior_to_start_point,
+                                        next_to_start_point)
+    end_angle_orientation = orienteer(end, prior_to_end_point,
+                                      next_to_end_point)
     return (((end_angle_orientation is Orientation.COUNTERCLOCKWISE)
              is angle_contains_point(end, prior_to_end_point,
                                      next_to_end_point, end_angle_orientation,
-                                     start))
+                                     start, orienteer))
             and ((start_angle_orientation is Orientation.COUNTERCLOCKWISE)
                  is angle_contains_point(start, prior_to_start_point,
                                          next_to_start_point,
-                                         start_angle_orientation, end)))
+                                         start_angle_orientation, end,
+                                         orienteer)))
 
 
-def mouth_edge_to_incidents(
-        mesh: Mesh[hints.Scalar], edge: QuadEdge, /
-) -> t.Tuple[QuadEdge, QuadEdge]:
+def mouth_edge_to_incidents(mesh: Mesh[hints.Scalar],
+                            edge: QuadEdge,
+                            orienteer: Orienteer[hints.Scalar],
+                            /) -> t.Tuple[QuadEdge, QuadEdge]:
     left_from_start = mesh.to_left_from_start(edge)
     assert orient_point_to_edge(
-            mesh, edge, mesh.to_end(left_from_start)
+            mesh, edge, mesh.to_end(left_from_start), orienteer
     ) is Orientation.COUNTERCLOCKWISE
     return left_from_start, mesh.to_right_from_end(left_from_start)
 
@@ -458,10 +470,11 @@ def to_contours_constraints_flags(
     return result
 
 
-def edge_should_be_swapped(
-        mesh: Mesh[hints.Scalar], edge: QuadEdge, /
-) -> bool:
-    return (is_convex_quadrilateral_diagonal(mesh, edge)
+def edge_should_be_swapped(mesh: Mesh[hints.Scalar],
+                           edge: QuadEdge,
+                           orienteer: Orienteer[hints.Scalar],
+                           /) -> bool:
+    return (is_convex_quadrilateral_diagonal(mesh, edge, orienteer)
             and
             (locate_point_in_point_point_point_circle(
                     mesh.to_end(mesh.to_right_from_start(edge)),
@@ -477,23 +490,25 @@ def edge_should_be_swapped(
                  is Location.INTERIOR)))
 
 
-def is_convex_quadrilateral_diagonal(
-        mesh: Mesh[hints.Scalar], edge: QuadEdge, /
-) -> bool:
+def is_convex_quadrilateral_diagonal(mesh: Mesh[hints.Scalar],
+                                     edge: QuadEdge,
+                                     orienteer: Orienteer[hints.Scalar],
+                                     /) -> bool:
     return (orient_point_to_edge(mesh, mesh.to_left_from_end(edge),
-                                 mesh.to_start(edge))
+                                 mesh.to_start(edge), orienteer)
             is orient_point_to_edge(mesh, mesh.to_right_from_start(edge),
-                                    mesh.to_end(edge))
+                                    mesh.to_end(edge), orienteer)
             is Orientation.COUNTERCLOCKWISE
             is orient_point_to_edge(
                     mesh,
                     to_opposite_edge(mesh.to_right_from_end(edge)),
-                    mesh.to_end(mesh.to_left_from_start(edge))
+                    mesh.to_end(mesh.to_left_from_start(edge)),
+                    orienteer
             )
             is orient_point_to_edge(
                     mesh,
                     to_opposite_edge(mesh.to_left_from_start(edge)),
-                    mesh.to_end(mesh.to_right_from_start(edge))
+                    mesh.to_end(mesh.to_right_from_start(edge)), orienteer
             ))
 
 
@@ -521,17 +536,18 @@ def resolve_crossings(mesh: Mesh[hints.Scalar],
                       constraint_start: hints.Point[hints.Scalar],
                       constraint_end: hints.Point[hints.Scalar],
                       crossings: t.List[QuadEdge],
+                      orienteer: Orienteer[hints.Scalar],
                       /) -> t.List[QuadEdge]:
     result = []
     crossings_queue = deque(crossings,
                             maxlen=len(crossings))
     while crossings_queue:
         crossing = crossings_queue.popleft()
-        if is_convex_quadrilateral_diagonal(mesh, crossing):
+        if is_convex_quadrilateral_diagonal(mesh, crossing, orienteer):
             mesh.swap_diagonal(crossing)
             relation = segment_endpoints.relate_to_segment_endpoints(
                     mesh.to_start(crossing), mesh.to_end(crossing),
-                    constraint_start, constraint_end
+                    constraint_start, constraint_end, orienteer
             )
             if relation is Relation.CROSS:
                 crossings_queue.append(crossing)
@@ -542,15 +558,16 @@ def resolve_crossings(mesh: Mesh[hints.Scalar],
     return result
 
 
-def restore_delaunay_criterion(
-        mesh: Mesh[hints.Scalar], candidates: t.List[QuadEdge], /
-) -> None:
+def restore_delaunay_criterion(mesh: Mesh[hints.Scalar],
+                               candidates: t.List[QuadEdge],
+                               orienteer: Orienteer[hints.Scalar],
+                               /) -> None:
     while True:
         next_target_edges: t.List[QuadEdge] = []
         edges_to_swap: t.List[QuadEdge] = []
         for edge in candidates:
             (edges_to_swap
-             if edge_should_be_swapped(mesh, edge)
+             if edge_should_be_swapped(mesh, edge, orienteer)
              else next_target_edges).append(edge)
         if not edges_to_swap:
             break
@@ -563,32 +580,36 @@ def set_constraint(mesh: Mesh[hints.Scalar],
                    constraint_start: hints.Point[hints.Scalar],
                    constraint_end: hints.Point[hints.Scalar],
                    crossings: t.List[QuadEdge],
+                   orienteer: Orienteer[hints.Scalar],
                    /) -> None:
     new_edges = resolve_crossings(mesh, constraint_start, constraint_end,
-                                  crossings)
-    restore_delaunay_criterion(mesh, new_edges)
+                                  crossings, orienteer)
+    restore_delaunay_criterion(mesh, new_edges, orienteer)
 
 
 def to_angle_containing_constraint_base(
         mesh: Mesh[hints.Scalar],
         edge: QuadEdge,
         constraint_end: hints.Point[hints.Scalar],
+        orienteer: Orienteer[hints.Scalar],
         /
 ) -> QuadEdge:
     if mesh.to_end(edge) != constraint_end:
-        orientation = orient_point_to_edge(mesh, edge, constraint_end)
+        orientation = orient_point_to_edge(mesh, edge, constraint_end,
+                                           orienteer)
         if orientation is Orientation.COUNTERCLOCKWISE:
             while True:
                 candidate = mesh.to_left_from_start(edge)
                 orientation = orient_point_to_edge(mesh, candidate,
-                                                   constraint_end)
+                                                   constraint_end, orienteer)
                 if orientation is Orientation.CLOCKWISE:
                     break
                 edge = candidate
         else:
             while True:
                 edge = mesh.to_right_from_start(edge)
-                orientation = orient_point_to_edge(mesh, edge, constraint_end)
+                orientation = orient_point_to_edge(mesh, edge, constraint_end,
+                                                   orienteer)
                 if orientation is not Orientation.CLOCKWISE:
                     break
     return edge
