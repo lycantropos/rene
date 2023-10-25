@@ -56,21 +56,21 @@ class BasePolygon(ABC, BaseCompound[hints.Scalar]):
         context = self._context
         if isinstance(other, context.contour_cls):
             return polygon.relate_to_contour(self, other, context.orient,
-                                             context.point_cls)
+                                             context.intersect_segments)
         elif isinstance(other, context.multisegment_cls):
             return polygon.relate_to_multisegment(self, other, context.orient,
-                                                  context.point_cls)
+                                                  context.intersect_segments)
         elif isinstance(other, context.segment_cls):
             return polygon.relate_to_segment(self, other, context.orient,
-                                             context.point_cls)
+                                             context.intersect_segments)
         elif isinstance(other, context.empty_cls):
             return Relation.DISJOINT
         elif isinstance(other, context.multipolygon_cls):
             return polygon.relate_to_multipolygon(self, other, context.orient,
-                                                  context.point_cls)
+                                                  context.intersect_segments)
         elif isinstance(other, context.polygon_cls):
             return polygon.relate_to_polygon(self, other, context.orient,
-                                             context.point_cls)
+                                             context.intersect_segments)
         else:
             raise TypeError(f'Unsupported type: {type(other)!r}.')
 
