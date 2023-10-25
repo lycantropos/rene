@@ -599,7 +599,7 @@ class Polygon(_SelfComparable, _te.Protocol[Scalar]):
 
     def __new__(cls,
                 border: Contour[Scalar],
-                holes: _t.Sequence[Contour[Scalar]], /) -> Polygon[Scalar]:
+                holes: _t.Sequence[Contour[Scalar]], /) -> _te.Self:
         ...
 
     @_t.overload
@@ -682,7 +682,7 @@ class Multipolygon(_SelfComparable, _te.Protocol[Scalar]):
 
     def __new__(
             cls, vertices: _t.Sequence[Polygon[Scalar]], /
-    ) -> Multipolygon[Scalar]:
+    ) -> _te.Self:
         ...
 
     @_t.overload
