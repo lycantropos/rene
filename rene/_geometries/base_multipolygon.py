@@ -61,7 +61,7 @@ class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):
         context = self._context
         if isinstance(other, context.contour_cls):
             return multipolygon.relate_to_contour(self, other, context.orient,
-                                                  context.point_cls)
+                                                  context.intersect_segments)
         elif isinstance(other, context.multisegment_cls):
             return multipolygon.relate_to_multisegment(
                     self, other, context.orient, context.intersect_segments
