@@ -9,8 +9,7 @@ from rene import (MIN_CONTOUR_VERTICES_COUNT,
                   Orientation,
                   exact)
 from rene._utils import (deduplicate,
-                         locate_point_in_point_point_point_circle,
-                         orient)
+                         locate_point_in_point_point_point_circle)
 
 _BoxT = t.TypeVar('_BoxT',
                   bound=exact.Box)
@@ -232,31 +231,28 @@ def rotate_sequence(sequence: t.Sequence[_T1], offset: int, /) -> t.List[_T1]:
             *[sequence[index] for index in range(0, offset)]]
 
 
-def to_convex_hull(points: t.Sequence[_PointT], /) -> t.List[_PointT]:
+_Orienteer = t.Callable[[_PointT, _PointT, _PointT], Orientation]
+
+
+def to_convex_hull(points: t.Sequence[_PointT],
+                   orienteer: _Orienteer[_PointT],
+                   /) -> t.List[_PointT]:
     points = deduplicate(sorted(points))
-    lower, upper = _to_sub_hull(points), _to_sub_hull(reversed(points))
+    lower, upper = (_to_sub_hull(points, orienteer),
+                    _to_sub_hull(reversed(points), orienteer))
     return lower[:-1] + upper[:-1] or points
 
 
 to_distinct = dict.fromkeys
 
 
-def to_max_convex_hull(points: t.Sequence[_PointT], /) -> t.List[_PointT]:
+def to_max_convex_hull(points: t.Sequence[_PointT],
+                       orienteer: _Orienteer[_PointT],
+                       /) -> t.List[_PointT]:
     points = deduplicate(sorted(points))
-    lower, upper = _to_max_sub_hull(points), _to_max_sub_hull(reversed(points))
+    lower, upper = (_to_max_sub_hull(points, orienteer),
+                    _to_max_sub_hull(reversed(points), orienteer))
     return lower[:-1] + upper[:-1] or points
-
-
-def _to_max_sub_hull(points: t.Iterable[_PointT]) -> t.List[_PointT]:
-    result: t.List[_PointT] = []
-    for point in points:
-        while len(result) >= 2:
-            if orient(result[-2], result[-1], point) is Orientation.CLOCKWISE:
-                del result[-1]
-            else:
-                break
-        result.append(point)
-    return result
 
 
 def to_pairs(values: _st.SearchStrategy[_T],
@@ -269,11 +265,28 @@ def to_triplets(values: _st.SearchStrategy[_T],
     return _st.tuples(values, values, values)
 
 
-def _to_sub_hull(points: t.Iterable[_PointT], /) -> t.List[_PointT]:
+def _to_max_sub_hull(points: t.Iterable[_PointT],
+                     orienteer: _Orienteer[_PointT],
+                     /) -> t.List[_PointT]:
     result: t.List[_PointT] = []
     for point in points:
         while len(result) >= 2:
-            if (orient(result[-2], result[-1], point)
+            if (orienteer(result[-2], result[-1], point)
+                    is Orientation.CLOCKWISE):
+                del result[-1]
+            else:
+                break
+        result.append(point)
+    return result
+
+
+def _to_sub_hull(points: t.Iterable[_PointT],
+                 orienteer: _Orienteer[_PointT],
+                 /) -> t.List[_PointT]:
+    result: t.List[_PointT] = []
+    for point in points:
+        while len(result) >= 2:
+            if (orienteer(result[-2], result[-1], point)
                     is not Orientation.COUNTERCLOCKWISE):
                 del result[-1]
             else:

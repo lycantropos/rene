@@ -3,6 +3,7 @@ from typing import Sequence
 from hypothesis import given
 
 from rene import MIN_CONTOUR_VERTICES_COUNT
+from rene._exact import orient
 from rene.exact import (Contour,
                         DelaunayTriangulation,
                         Point)
@@ -25,7 +26,7 @@ def test_basic(points: Sequence[Point]) -> None:
 def test_border(points: Sequence[Point]) -> None:
     result = DelaunayTriangulation.from_points(points)
 
-    convex_hull = to_convex_hull(points)
+    convex_hull = to_convex_hull(points, orient)
     assert (len(convex_hull) < MIN_CONTOUR_VERTICES_COUNT
             or result.border == Contour(convex_hull))
 
@@ -36,7 +37,7 @@ def test_triangles(points: Sequence[Point]) -> None:
 
     triangles = result.triangles
     assert len(triangles) <= max(2 * (len(to_distinct(points)) - 1)
-                                 - len(to_max_convex_hull(points)),
+                                 - len(to_max_convex_hull(points, orient)),
                                  0)
     assert all(is_contour_triangular(triangle) for triangle in triangles)
 
