@@ -59,7 +59,7 @@ where
         + for<'a> From<(&'a [&'a Polygon<Scalar>], &'a [&'a Polygon<Scalar>])>,
     Point<Scalar>: Elemental<Coordinate = Scalar>,
     Polygon<Scalar>: Clone,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
 {
@@ -159,7 +159,7 @@ where
         + for<'a> From<(&'a [&'a Polygon<Scalar>], &'a Polygon<Scalar>)>,
     Point<Scalar>: Elemental<Coordinate = Scalar>,
     Polygon<Scalar>: Clone,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
 {

@@ -54,7 +54,7 @@ where
         + ReduceEvents<Output = Vec<Polygon<Scalar>>>
         + for<'a> From<(&'a [&'a Polygon<Scalar>], &'a [&'a Polygon<Scalar>])>,
     Point<Scalar>: Elemental<Coordinate = Scalar>,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
 {
@@ -139,7 +139,7 @@ where
         + ReduceEvents<Output = Vec<Segment<Scalar>>>
         + for<'a> From<(&'a [&'a Polygon<Scalar>], &'a [&'a Segment<Scalar>])>,
     Point<Scalar>: Elemental<Coordinate = Scalar>,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Contour<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
@@ -235,7 +235,7 @@ where
         + ReduceEvents<Output = Vec<Segment<Scalar>>>
         + for<'a> From<(&'a [&'a Polygon<Scalar>], &'a [&'a Segment<Scalar>])>,
     Point<Scalar>: Elemental<Coordinate = Scalar>,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Multisegment<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
@@ -331,7 +331,7 @@ where
         + ReduceEvents<Output = Vec<Polygon<Scalar>>>
         + for<'a> From<(&'a [&'a Polygon<Scalar>], &'a Polygon<Scalar>)>,
     Point<Scalar>: Elemental<Coordinate = Scalar>,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
 {
@@ -394,7 +394,7 @@ where
         + ReduceEvents<Output = Vec<Segment<Scalar>>>
         + for<'a> From<(&'a [&'a Polygon<Scalar>], &'a Segment<Scalar>)>,
     Point<Scalar>: Elemental<Coordinate = Scalar>,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,

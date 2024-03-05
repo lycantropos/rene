@@ -58,7 +58,7 @@ impl<Scalar> Intersection for &Segment<Scalar>
 where
     Scalar: PartialEq,
     Point<Scalar>: Clone + Ord,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Point<Scalar>: Orient,
     for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
 {
@@ -88,7 +88,7 @@ impl<Scalar> Intersection<&Contour<Scalar>> for &Segment<Scalar>
 where
     Scalar: PartialEq,
     Point<Scalar>: Clone + Ord,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Point<Scalar>: Orient,
     for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
 {
@@ -106,7 +106,7 @@ where
         + ReduceEvents<Output = Vec<Segment<Scalar>>>
         + for<'a> From<(&'a Segment<Scalar>, &'a [&'a Polygon<Scalar>])>,
     Point<Scalar>: Elemental<Coordinate = Scalar>,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Multisegment<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
@@ -176,7 +176,7 @@ impl<Scalar> Intersection<&Multisegment<Scalar>> for &Segment<Scalar>
 where
     Scalar: PartialEq,
     Point<Scalar>: Clone + Ord,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Point<Scalar>: Orient,
     for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
 {
@@ -194,7 +194,7 @@ where
         + ReduceEvents<Output = Vec<Segment<Scalar>>>
         + for<'a> From<(&'a Segment<Scalar>, &'a Polygon<Scalar>)>,
     Point<Scalar>: Elemental<Coordinate = Scalar>,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Multisegment<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,

@@ -127,7 +127,7 @@ where
         + for<'a> From<(&'a Segment<Scalar>, &'a [&'a Segment<Scalar>])>,
     Point<Scalar>: Elemental<Coordinate = Scalar>,
     Segment<Scalar>: Clone,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Contour<Scalar>:
         Bounded<&'a Scalar> + Multisegmental<IndexSegment = Segment<Scalar>>,
     for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
@@ -206,7 +206,7 @@ where
         + for<'a> From<(&'a Segment<Scalar>, &'a [&'a Segment<Scalar>])>,
     Point<Scalar>: Elemental<Coordinate = Scalar>,
     Segment<Scalar>: Clone,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Multisegment<Scalar>:
         Bounded<&'a Scalar> + Multisegmental<IndexSegment = Segment<Scalar>>,
     for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,

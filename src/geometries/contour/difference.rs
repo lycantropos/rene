@@ -65,7 +65,7 @@ where
         + for<'a> From<(&'a [&'a Segment<Scalar>], &'a [&'a Segment<Scalar>])>,
     Point<Scalar>: Elemental<Coordinate = Scalar>,
     Segment<Scalar>: Clone,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Contour<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
 {
@@ -160,7 +160,7 @@ where
         + for<'a> From<(&'a [&'a Segment<Scalar>], &'a [&'a Polygon<Scalar>])>,
     Point<Scalar>: Elemental<Coordinate = Scalar>,
     Segment<Scalar>: Clone,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Contour<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Multipolygon<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
@@ -258,7 +258,7 @@ where
         + for<'a> From<(&'a [&'a Segment<Scalar>], &'a [&'a Segment<Scalar>])>,
     Point<Scalar>: Elemental<Coordinate = Scalar>,
     Segment<Scalar>: Clone,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Contour<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
 {
@@ -353,7 +353,7 @@ where
         + for<'a> From<(&'a [&'a Segment<Scalar>], &'a Polygon<Scalar>)>,
     Point<Scalar>: Elemental<Coordinate = Scalar>,
     Segment<Scalar>: Clone,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Contour<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Polygon<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
@@ -429,7 +429,7 @@ impl<Scalar: PartialEq> Difference<&Segment<Scalar>> for &Contour<Scalar>
 where
     Point<Scalar>: Clone + PartialOrd,
     Segment<Scalar>: Clone,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Contour<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Point<Scalar>:
         IntersectCrossingSegments<Output = Point<Scalar>> + Orient,
