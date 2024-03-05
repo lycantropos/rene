@@ -110,7 +110,7 @@ impl<Scalar: PartialEq> Union<&Contour<Scalar>> for &Segment<Scalar>
 where
     Point<Scalar>: Clone + Ord,
     Segment<Scalar>: Clone,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Contour<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Point<Scalar>:
         IntersectCrossingSegments<Output = Point<Scalar>> + Orient,
@@ -138,7 +138,7 @@ impl<Scalar: PartialEq> Union<&Multisegment<Scalar>> for &Segment<Scalar>
 where
     Point<Scalar>: Clone + Ord,
     Segment<Scalar>: Clone,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Multisegment<Scalar>: Bounded<&'a Scalar>,
     for<'a> &'a Point<Scalar>:
         IntersectCrossingSegments<Output = Point<Scalar>> + Orient,
@@ -173,7 +173,7 @@ fn unite_segment_with_segments<
 where
     Point<Scalar>: Clone + Ord,
     Segment<Scalar>: Clone,
-    for<'a> &'a Box<&'a Scalar>: Relatable,
+    for<'a, 'b> &'a Box<&'b Scalar>: Relatable,
     for<'a> &'a Point<Scalar>:
         IntersectCrossingSegments<Output = Point<Scalar>> + Orient,
     for<'a> &'a Segment<Scalar>: Bounded<&'a Scalar>,
