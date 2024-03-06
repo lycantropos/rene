@@ -133,12 +133,12 @@ class Operation(ABC, t.Generic[hints.Scalar]):
     _sweep_line_data: KeyedSet[SweepLineKey[hints.Scalar], Event]
 
     __slots__ = (
-        'first_segments_count', '_are_from_result',
+        'first_segments_count', 'second_segments_count', '_are_from_result',
         '_other_have_interior_to_left', '_below_event_from_result',
         '_current_endpoint_first_event', '_current_endpoint_id', 'endpoints',
         '_events_queue_data', 'have_interior_to_left', '_opposites',
-        '_overlap_kinds', '_segments_ids', '_segments_intersector',
-        '_starts_ids', '_sweep_line_data'
+        '_orienteer', '_overlap_kinds', '_segments_ids',
+        '_segments_intersector', '_starts_ids', '_sweep_line_data'
     )
 
     def __init__(self,
