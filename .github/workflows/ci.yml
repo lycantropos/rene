@@ -60,8 +60,6 @@ jobs:
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v3
-        with:
-          submodules: true
       - name: 'Setup Python'
         uses: actions/setup-python@v4
         with:
@@ -121,7 +119,7 @@ jobs:
       - name: 'Collect Python coverage'
         run: coverage xml -o coverage_python.xml
       - name: 'Install Rust coverage dependencies'
-        run: cargo install grcov
+        uses: taiki-e/install-action@grcov
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Collect Rust coverage'
         run: >
