@@ -59,9 +59,9 @@ jobs:
             platform: { os: 'windows-latest', python_architecture: 'x64' }
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: 'Setup Python'
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python_version }}
           architecture: ${{ matrix.platform.python_architecture }}
@@ -157,7 +157,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: 'Setup Rust'
         uses: dtolnay/rust-toolchain@stable
       - name: 'Upload'
@@ -171,11 +171,11 @@ jobs:
     needs: pre-deploy
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
       - name: 'Setup Python'
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
       - name: 'Install packaging tools'
         run: python -m pip install -U build
       - name: 'Build sdist'
@@ -281,11 +281,11 @@ jobs:
         ]
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
       - name: 'Setup Python'
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           architecture: ${{ matrix.platform.python_architecture }}
       - name: 'Setup Rust'
@@ -294,7 +294,7 @@ jobs:
           target: ${{ matrix.platform.rust_target }}
         if: ${{ runner.os != 'Linux' }}
       - name: 'Setup QEMU'
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
         with:
           platforms: all
         if: ${{ runner.os == 'Linux' }}
@@ -365,7 +365,7 @@ jobs:
             platform: { os: 'windows-latest', python_architecture: 'x64' }
     steps:
       - name: 'Setup Python'
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python_version }}
           architecture: ${{ matrix.platform.python_architecture }}
@@ -389,7 +389,7 @@ jobs:
           name: dist
           path: dist
       - name: 'Upload'
-        uses: pypa/gh-action-pypi-publish@v1.8.10
+        uses: pypa/gh-action-pypi-publish@v1.11.0
         with:
           packages_dir: dist
           password: ${{ secrets.PYPI_API_TOKEN }}
