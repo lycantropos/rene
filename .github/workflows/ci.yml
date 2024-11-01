@@ -41,9 +41,17 @@ jobs:
         ]
         include:
           - python_version: '3.8'
-            platform: { os: 'macos-13', python_architecture: 'x64' }
+            platform: {
+              os: 'macos-13',
+              python_architecture: 'x64',
+              rust_target: 'x86_64-apple-darwin'
+            }
           - python_version: '3.9'
-            platform: { os: 'macos-13', python_architecture: 'x64' }
+            platform: {
+              os: 'macos-13',
+              python_architecture: 'x64',
+              rust_target: 'x86_64-apple-darwin'
+            }
           - python_version: 'pypy-3.8'
             platform: { os: 'macos-13', python_architecture: 'x64' }
           - python_version: 'pypy-3.8'
