@@ -107,7 +107,7 @@ Bump version
 bump2version --verbose $CATEGORY
 ```
 
-This will set version to `major.minor.patch-alpha`. 
+This will set version to `major.minor.patch-alpha`.
 
 #### Release
 
