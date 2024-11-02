@@ -10,18 +10,59 @@ on:
       - 'master'
 
 jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v4
+      - name: 'Setup Rust'
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt,clippy
+      - name: 'Check Rust metadata'
+        run: >
+          cargo metadata --format-version=1 --no-deps
+          | jq --compact-output --raw-output '.packages[]'
+          | while read -r package; do
+              if [[ $(echo "$package" | jq --raw-output ".repository") != '${{ github.server_url }}/${{ github.repository }}' ]]; then
+                echo "Package $(echo "$package" | jq '.name') has invalid repository URL $(echo "$package" | jq '.repository')";
+                exit 1;
+              fi
+            done
+      - name: 'Setup Python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: 'Check Python metadata'
+        run: >
+          PROJECT_DESCRIPTION=$(python -c 'import json, pathlib, tomllib; print(json.dumps(tomllib.loads(pathlib.Path("pyproject.toml").read_text())))' | jq --raw-output '.project.description')
+
+          REPOSITORY_NAME=${GITHUB_REPOSITORY#"$GITHUB_REPOSITORY_OWNER"/}
+
+          MODULE_DOCSTRING=$(python -c "import ${REPOSITORY_NAME//-/_} as module; assert module.__doc__ is not None; print(module.__doc__)")
+
+          if [[ $PROJECT_DESCRIPTION != "$MODULE_DOCSTRING" ]]; then
+            echo "Project description should be equal to module docstring, but found \"$PROJECT_DESCRIPTION\" != \"$MODULE_DOCSTRING\".";
+            exit 1;
+          fi
+      - name: 'Install pre-commit'
+        run: python -m pip install -U pre-commit
+      - name: 'Run pre-commit'
+        run: pre-commit run --all-files
+
   test:
-    name: Test
+    name: 'Test'
     runs-on: ${{ matrix.platform.os }}
     strategy:
       fail-fast: false
       matrix:
-        python_version: [ '3.11', '3.12', '3.13' ]
+        python_version: [ '3.9', '3.10', '3.11', '3.12', '3.13' ]
         platform: [
           {
             os: 'macos-latest',
             python_architecture: 'x64',
-            rust_target: 'aarch64-apple-darwin'
+            rust_target: 'x86_64-apple-darwin'
           },
           {
             os: 'ubuntu-latest',
@@ -39,13 +80,20 @@ jobs:
             rust_target: 'i686-pc-windows-msvc'
           },
         ]
-        include:
-          - python_version: '3.8'
+        exclude:
+          - python_version: '3.9'
             platform: {
-              os: 'macos-13',
+              os: 'macos-latest',
               python_architecture: 'x64',
               rust_target: 'x86_64-apple-darwin'
             }
+          - python_version: '3.10'
+            platform: {
+              os: 'macos-latest',
+              python_architecture: 'x64',
+              rust_target: 'x86_64-apple-darwin'
+            }
+        include:
           - python_version: '3.9'
             platform: {
               os: 'macos-13',
@@ -58,12 +106,6 @@ jobs:
               python_architecture: 'x64',
               rust_target: 'x86_64-apple-darwin'
             }
-          - python_version: 'pypy-3.8'
-            platform: { os: 'macos-13', python_architecture: 'x64' }
-          - python_version: 'pypy-3.8'
-            platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
-          - python_version: 'pypy-3.8'
-            platform: { os: 'windows-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.9'
             platform: { os: 'macos-13', python_architecture: 'x64' }
           - python_version: 'pypy-3.9'
@@ -90,15 +132,6 @@ jobs:
           components: rustfmt
           target: ${{ matrix.platform.rust_target }}
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
-      - name: 'Check Rust metadata'
-        run: >
-          [[ $(cargo metadata --format-version=1 --no-deps | jq '.packages[0].repository')
-          == '"${{ github.server_url }}/${{ github.repository }}"' ]]
-        shell: bash
-        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
-      - name: 'Run Rust linter'
-        run: cargo fmt --check
-        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Run Rust doctests'
         run: rustup run nightly cargo test --doc --target=${{ matrix.platform.rust_target }}
         env:
@@ -111,7 +144,7 @@ jobs:
             -Zpanic_abort_tests -Cpanic=abort
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Install in editable mode with Rust extensions'
-        run: rustup run nightly python -m pip -v install -e .[tests]
+        run: rustup run nightly python -m pip -v install -e '.[tests]'
         env:
           CARGO_INCREMENTAL: 0
           RUSTFLAGS: >
@@ -119,12 +152,8 @@ jobs:
             -Zpanic_abort_tests -Cpanic=abort
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Install in editable mode'
-        run: python -m pip -v install -e .[tests]
+        run: python -m pip -v install -e '.[tests]'
         if: ${{ startsWith(matrix.python_version, 'pypy') }}
-      - name: 'Install MyPy'
-        run: python -m pip install -U mypy
-      - name: 'Run MyPy'
-        run: python -m mypy ${{ github.event.repository.name }}
       - name: 'Install Python coverage dependencies'
         run: python -m pip install --upgrade coverage[toml]
       - name: 'Run Python doctests'
@@ -146,14 +175,14 @@ jobs:
           --ignore "/*" -o coverage_rust.xml
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Upload PyPy coverage'
-        uses: codecov/codecov-action@v3.1.4
+        uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: false
           files: ./coverage_python.xml
         if: ${{ startsWith(matrix.python_version, 'pypy') }}
         continue-on-error: true
       - name: 'Upload СPython coverage'
-        uses: codecov/codecov-action@v3.1.4
+        uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: false
           files: ./coverage_python.xml,./coverage_rust.xml
@@ -191,8 +220,6 @@ jobs:
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v4
-        with:
-          submodules: true
       - name: 'Setup Python'
         uses: actions/setup-python@v5
       - name: 'Install packaging tools'
@@ -212,7 +239,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_tag: [ 'cp38', 'cp39', 'cp310', 'cp311', 'cp312' ]
+        python_tag: [ 'cp39', 'cp310', 'cp311', 'cp312', 'cp313' ]
         platform: [
           {
             architecture: 'arm64',
@@ -223,7 +250,7 @@ jobs:
           },
           {
             architecture: 'universal2',
-            os: 'macos-latest',
+            os: 'macos-13',
             python_architecture: 'x64',
             rust_target: 'aarch64-apple-darwin',
             tag: 'macosx_universal2'
@@ -302,12 +329,6 @@ jobs:
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: 'Setup Python'
-        uses: actions/setup-python@v5
-        with:
-          architecture: ${{ matrix.platform.python_architecture }}
       - name: 'Setup Rust'
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -345,7 +366,7 @@ jobs:
     needs: [ 'build-sdist', 'build-wheels' ]
     strategy:
       matrix:
-        python_version: [ '3.11', '3.12', '3.13' ]
+        python_version: [ '3.9', '3.10', '3.11', '3.12', '3.13' ]
         platform: [
           {
             os: 'macos-latest',
@@ -364,27 +385,24 @@ jobs:
             python_architecture: 'x86'
           },
         ]
+        exclude:
+          - python_version: '3.9'
+            platform: { os: 'macos-latest', python_architecture: 'x64' }
+          - python_version: '3.10'
+            platform: { os: 'macos-latest', python_architecture: 'x64' }
         include:
-          - python_version: '3.8'
-            platform: { os: 'macos-13', python_architecture: 'x64' }
           - python_version: '3.9'
             platform: { os: 'macos-13', python_architecture: 'x64' }
           - python_version: '3.10'
             platform: { os: 'macos-13', python_architecture: 'x64' }
-          - python_version: 'pypy-3.8'
-            platform: { os: 'macos-latest', python_architecture: 'x64' }
-          - python_version: 'pypy-3.8'
-            platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
-          - python_version: 'pypy-3.8'
-            platform: { os: 'windows-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.9'
-            platform: { os: 'macos-latest', python_architecture: 'x64' }
+            platform: { os: 'macos-13', python_architecture: 'x64' }
           - python_version: 'pypy-3.9'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.9'
             platform: { os: 'windows-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.10'
-            platform: { os: 'macos-latest', python_architecture: 'x64' }
+            platform: { os: 'macos-13', python_architecture: 'x64' }
           - python_version: 'pypy-3.10'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.10'
@@ -417,5 +435,5 @@ jobs:
       - name: 'Upload'
         uses: pypa/gh-action-pypi-publish@v1.11.0
         with:
-          packages_dir: dist
+          packages-dir: dist
           password: ${{ secrets.PYPI_API_TOKEN }}
