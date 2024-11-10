@@ -9,6 +9,10 @@ on:
     branches:
       - 'master'
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   check:
     name: Check
@@ -35,17 +39,15 @@ jobs:
         with:
           python-version: '3.13'
       - name: 'Check Python metadata'
-        run: >
+        run: |
           PROJECT_DESCRIPTION=$(python -c 'import json, pathlib, tomllib; print(json.dumps(tomllib.loads(pathlib.Path("pyproject.toml").read_text())))' | jq --raw-output '.project.description')
-
-          REPOSITORY_NAME=${GITHUB_REPOSITORY#"$GITHUB_REPOSITORY_OWNER"/}
-
           MODULE_DOCSTRING=$(python -c "import ${REPOSITORY_NAME//-/_} as module; assert module.__doc__ is not None; print(module.__doc__)")
-
           if [[ $PROJECT_DESCRIPTION != "$MODULE_DOCSTRING" ]]; then
             echo "Project description should be equal to module docstring, but found \"$PROJECT_DESCRIPTION\" != \"$MODULE_DOCSTRING\".";
             exit 1;
           fi
+        env:
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
       - name: 'Install pre-commit'
         run: python -m pip install -U pre-commit
       - name: 'Run pre-commit'
@@ -126,59 +128,58 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
           architecture: ${{ matrix.platform.python_architecture }}
-      - name: 'Setup Rust'
-        uses: dtolnay/rust-toolchain@nightly
+      - name: 'Setup nightly Rust'
+        uses: dtolnay/rust-toolchain@master
         with:
-          components: rustfmt
-          target: ${{ matrix.platform.rust_target }}
+          toolchain: nightly-${{ matrix.platform.rust_target }}
+          components: llvm-tools
+        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
+      - name: 'Setup stable Rust'
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable-${{ matrix.platform.rust_target }}
+          components: llvm-tools,rustfmt
+        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
+      - name: 'Install Rust coverage dependencies'
+        uses: taiki-e/install-action@cargo-llvm-cov
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Run Rust doctests'
-        run: rustup run nightly cargo test --doc --target=${{ matrix.platform.rust_target }}
+        run: |
+          eval "$(rustup run nightly-${{ matrix.platform.rust_target }} cargo llvm-cov show-env --export-prefix --doctests)"
+          rustup run nightly-${{ matrix.platform.rust_target }} cargo test --doc
         env:
-          CARGO_INCREMENTAL: 0
-          RUSTDOCFLAGS: >
-            -Zprofile -Ccodegen-units=1 -Copt-level=0 -Coverflow-checks=off
-            -Zpanic_abort_tests -Cpanic=abort
-          RUSTFLAGS: >
-            -Zprofile -Ccodegen-units=1 -Copt-level=0 -Coverflow-checks=off
-            -Zpanic_abort_tests -Cpanic=abort
-        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
-      - name: 'Install in editable mode with Rust extensions'
-        run: rustup run nightly python -m pip -v install -e '.[tests]'
-        env:
-          CARGO_INCREMENTAL: 0
-          RUSTFLAGS: >
-            -Zprofile -Ccodegen-units=1 -Copt-level=0 -Coverflow-checks=off
-            -Zpanic_abort_tests -Cpanic=abort
+          CARGO_INCREMENTAL: 1
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Install in editable mode'
-        run: python -m pip -v install -e '.[tests]'
-        if: ${{ startsWith(matrix.python_version, 'pypy') }}
+        run: |
+          ${{ !startsWith(matrix.python_version, 'pypy') && 'eval "$(cargo llvm-cov show-env --export-prefix)"' || '' }}
+          ${{ !startsWith(matrix.python_version, 'pypy') && 'CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=$CARGO_LLVM_COV_TARGET_DIR' || '' }} python -m pip -v install -e '.[tests]'
       - name: 'Install Python coverage dependencies'
         run: python -m pip install --upgrade coverage[toml]
       - name: 'Run Python doctests'
-        run: >
+        run: |
+          ${{ !startsWith(matrix.python_version, 'pypy') && 'eval "$(cargo llvm-cov show-env --export-prefix)"' || '' }}
           coverage run -m doctest README.md
-          && coverage run --append -m pytest --doctest-modules --ignore=tests
+          coverage run --append -m pytest --doctest-modules --ignore=tests
       - name: 'Run tests'
-        run: coverage run --append -m pytest
+        run: |
+          ${{ !startsWith(matrix.python_version, 'pypy') && 'eval "$(cargo llvm-cov show-env --export-prefix)"' || '' }}
+          coverage run --append -m pytest
         env:
           RUST_BACKTRACE: full
       - name: 'Collect Python coverage'
         run: coverage xml -o coverage_python.xml
-      - name: 'Install Rust coverage dependencies'
-        uses: taiki-e/install-action@grcov
-        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Collect Rust coverage'
-        run: >
-          grcov target -s . -t cobertura --llvm --branch --ignore-not-existing
-          --ignore "/*" -o coverage_rust.xml
+        run: |
+          eval "$(cargo llvm-cov show-env --export-prefix)"
+          rustup run nightly-${{ matrix.platform.rust_target }} cargo llvm-cov report --cobertura --branch --output-path coverage_rust.xml
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Upload PyPy coverage'
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: false
           files: ./coverage_python.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
         if: ${{ startsWith(matrix.python_version, 'pypy') }}
         continue-on-error: true
       - name: 'Upload СPython coverage'
@@ -186,6 +187,7 @@ jobs:
         with:
           fail_ci_if_error: false
           files: ./coverage_python.xml,./coverage_rust.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
         continue-on-error: true
 
@@ -222,20 +224,22 @@ jobs:
         uses: actions/checkout@v4
       - name: 'Setup Python'
         uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
       - name: 'Install packaging tools'
         run: python -m pip install -U build
       - name: 'Build sdist'
         run: python -m build --sdist
       - name: 'Upload sdist'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: dist-sdist
           path: dist
 
   build-wheels:
     name: 'Build wheels'
     runs-on: ${{ matrix.platform.os }}
-    #    needs: pre-deploy
+    needs: pre-deploy
     strategy:
       fail-fast: false
       matrix:
@@ -355,15 +359,15 @@ jobs:
           CIBW_BUILD_VERBOSITY: 1
           CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
       - name: 'Upload wheels'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: dist-wheels-${{ matrix.python_tag }}-${{ matrix.platform.tag }}
           path: wheelhouse/*.whl
 
   test-distributions:
-    name: Test distributions
+    name: 'Test distributions'
     runs-on: ${{ matrix.platform.os }}
-    needs: [ 'build-sdist', 'build-wheels' ]
+    needs: [ build-sdist, build-wheels ]
     strategy:
       matrix:
         python_version: [ '3.9', '3.10', '3.11', '3.12', '3.13' ]
@@ -414,12 +418,17 @@ jobs:
           python-version: ${{ matrix.python_version }}
           architecture: ${{ matrix.platform.python_architecture }}
       - name: 'Download distributions'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: dist
+          merge-multiple: true
           path: dist
+          pattern: dist-*
       - name: 'Install from distributions'
-        run: python -m pip install --find-links=dist --no-deps ${{ github.event.repository.name }}
+        run: >
+          python -m pip install --find-links=dist --no-deps
+          "${REPOSITORY_NAME//-/_}"
+        env:
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
 
   deploy-pypi:
     name: 'Deploy to PyPI'
@@ -428,10 +437,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Download distributions'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: dist
+          merge-multiple: true
           path: dist
+          pattern: dist-*
       - name: 'Upload'
         uses: pypa/gh-action-pypi-publish@v1.11.0
         with:
