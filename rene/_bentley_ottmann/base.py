@@ -3,32 +3,31 @@ from itertools import combinations
 
 import typing_extensions as te
 
-from rene import (Relation,
-                  hints)
-from rene._hints import (Orienteer,
-                         SegmentsIntersector)
+from rene import Relation, hints
+from rene._hints import Orienteer, SegmentsIntersector
+
 from .events_registry import EventsRegistry
 
 
 class Intersection(t.Generic[hints.Scalar]):
     @property
-    def end(self) -> hints.Point[hints.Scalar]:
+    def end(self, /) -> hints.Point[hints.Scalar]:
         return self._end
 
     @property
-    def first_segment_id(self) -> int:
+    def first_segment_id(self, /) -> int:
         return self._first_segment_id
 
     @property
-    def relation(self) -> Relation:
+    def relation(self, /) -> Relation:
         return self._relation
 
     @property
-    def second_segment_id(self) -> int:
+    def second_segment_id(self, /) -> int:
         return self._second_segment_id
 
     @property
-    def start(self) -> hints.Point[hints.Scalar]:
+    def start(self, /) -> hints.Point[hints.Scalar]:
         return self._start
 
     _end: hints.Point[hints.Scalar]
@@ -37,64 +36,69 @@ class Intersection(t.Generic[hints.Scalar]):
     _second_segment_id: int
     _start: hints.Point[hints.Scalar]
 
-    __slots__ = ('_end', '_first_segment_id', '_relation',
-                 '_second_segment_id', '_start')
+    __slots__ = (
+        "_end",
+        "_first_segment_id",
+        "_relation",
+        "_second_segment_id",
+        "_start",
+    )
 
-    def __new__(cls,
-                first_segment_id: int,
-                second_segment_id: int,
-                relation: Relation,
-                start: hints.Point[hints.Scalar],
-                end: hints.Point[hints.Scalar],
-                /) -> te.Self:
+    def __new__(
+        cls,
+        first_segment_id: int,
+        second_segment_id: int,
+        relation: Relation,
+        start: hints.Point[hints.Scalar],
+        end: hints.Point[hints.Scalar],
+        /,
+    ) -> te.Self:
         self = super().__new__(cls)
         (
-            self._end, self._first_segment_id, self._relation,
-            self._second_segment_id, self._start
-        ) = end, first_segment_id, relation, second_segment_id, start
+            self._end,
+            self._first_segment_id,
+            self._relation,
+            self._second_segment_id,
+            self._start,
+        ) = (end, first_segment_id, relation, second_segment_id, start)
         return self
 
 
 def sweep(
-        segments: t.Sequence[hints.Segment[hints.Scalar]],
-        orienteer: Orienteer[hints.Scalar],
-        segments_intersector: SegmentsIntersector[hints.Scalar],
-        /
+    segments: t.Sequence[hints.Segment[hints.Scalar]],
+    orienteer: Orienteer[hints.Scalar],
+    segments_intersector: SegmentsIntersector[hints.Scalar],
+    /,
 ) -> t.Iterable[Intersection[hints.Scalar]]:
     events_registry = EventsRegistry.from_segments(
-            segments, orienteer, segments_intersector,
-            unique=False
+        segments, orienteer, segments_intersector, unique=False
     )
     events = iter(events_registry)
     event = next(events)
     start = events_registry.to_event_start(event)
-    segments_ids_containing_start = [
-        events_registry.to_event_segment_id(event)
-    ]
+    segments_ids_containing_start = [events_registry.to_event_segment_id(event)]
     for event in events:
         event_start = events_registry.to_event_start(event)
         if event_start == start:
             segments_ids_containing_start.append(
-                    events_registry.to_event_segment_id(event)
+                events_registry.to_event_segment_id(event)
             )
         else:
             yield from segments_ids_containing_point_to_intersections(
-                    segments_ids_containing_start, start, events_registry
+                segments_ids_containing_start, start, events_registry
             )
             start = event_start
-            segments_ids_containing_start = [
-                events_registry.to_event_segment_id(event)
-            ]
+            segments_ids_containing_start = [events_registry.to_event_segment_id(event)]
     yield from segments_ids_containing_point_to_intersections(
-            segments_ids_containing_start, start, events_registry
+        segments_ids_containing_start, start, events_registry
     )
 
 
 def segments_ids_containing_point_to_intersections(
-        segments_ids: t.Sequence[int],
-        point: hints.Point[hints.Scalar],
-        events_registry: EventsRegistry[hints.Scalar],
-        /
+    segments_ids: t.Sequence[int],
+    point: hints.Point[hints.Scalar],
+    events_registry: EventsRegistry[hints.Scalar],
+    /,
 ) -> t.Iterable[Intersection[hints.Scalar]]:
     for first_segment_id, second_segment_id in combinations(segments_ids, 2):
         first_start = events_registry.to_segment_start(first_segment_id)
@@ -104,10 +108,13 @@ def segments_ids_containing_point_to_intersections(
         if first_segment_id == second_segment_id:
             start, end = first_start, first_end
             relation = Relation.EQUAL
-        elif not events_registry.are_collinear(first_segment_id,
-                                               second_segment_id):
-            if (first_start == point or first_end == point
-                    or second_start == point or second_end == point):
+        elif not events_registry.are_collinear(first_segment_id, second_segment_id):
+            if (
+                first_start == point
+                or first_end == point
+                or second_start == point
+                or second_end == point
+            ):
                 relation = Relation.TOUCH
             else:
                 relation = Relation.CROSS
@@ -140,5 +147,4 @@ def segments_ids_containing_point_to_intersections(
         else:
             relation = Relation.COMPOSITE
             start, end = second_start, second_end
-        yield Intersection(first_segment_id, second_segment_id, relation,
-                           start, end)
+        yield Intersection(first_segment_id, second_segment_id, relation, start, end)

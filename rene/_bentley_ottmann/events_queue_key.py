@@ -5,10 +5,9 @@ import typing as t
 import typing_extensions as te
 
 from rene._hints import Map
-from rene.hints import (Point,
-                        Scalar)
-from .event import (Event,
-                    is_event_left)
+from rene.hints import Point, Scalar
+
+from .event import Event, is_event_left
 
 
 class EventsQueueKey(t.Generic[Scalar]):
@@ -16,16 +15,21 @@ class EventsQueueKey(t.Generic[Scalar]):
     opposites: Map[Event, Event]
     event: Event
 
-    __slots__ = 'endpoints', 'event', 'opposites'
+    __slots__ = "endpoints", "event", "opposites"
 
-    def __new__(cls,
-                endpoints: Map[Event, Point[Scalar]],
-                opposites: Map[Event, Event],
-                event: Event,
-                /) -> te.Self:
+    def __new__(
+        cls,
+        endpoints: Map[Event, Point[Scalar]],
+        opposites: Map[Event, Event],
+        event: Event,
+        /,
+    ) -> te.Self:
         self = super().__new__(cls)
-        self.endpoints, self.event, self.opposites = (endpoints, event,
-                                                      opposites)
+        self.endpoints, self.event, self.opposites = (
+            endpoints,
+            event,
+            opposites,
+        )
         return self
 
     def __lt__(self, other: te.Self, /) -> bool:
@@ -33,8 +37,10 @@ class EventsQueueKey(t.Generic[Scalar]):
         Checks if the event should be processed before the other.
         """
         event, other_event = self.event, other.event
-        event_start, other_event_start = (self.endpoints[event],
-                                          self.endpoints[other_event])
+        event_start, other_event_start = (
+            self.endpoints[event],
+            self.endpoints[other_event],
+        )
         start_x, start_y = event_start.x, event_start.y
         other_start_x, other_start_y = other_event_start.x, other_event_start.y
         if start_x != other_start_x:
@@ -53,5 +59,7 @@ class EventsQueueKey(t.Generic[Scalar]):
         else:
             # same start,
             # both events are left endpoints or both are right endpoints
-            return (self.endpoints[self.opposites[event]]
-                    < self.endpoints[self.opposites[other_event]])
+            return (
+                self.endpoints[self.opposites[event]]
+                < self.endpoints[self.opposites[other_event]]
+            )

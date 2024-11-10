@@ -2,10 +2,9 @@ import typing as t
 
 import typing_extensions as te
 
-from rene import (Orientation,
-                  hints)
-from rene._hints import (Map,
-                         Orienteer)
+from rene import Orientation, hints
+from rene._hints import Map, Orienteer
+
 from .event import Event
 
 
@@ -16,20 +15,30 @@ class SweepLineKey(t.Generic[hints.Scalar]):
     opposites: Map[Event, Event]
     _orienteer: Orienteer[hints.Scalar]
 
-    __slots__ = ('endpoints', 'event', 'is_from_first_operand', 'opposites',
-                 '_orienteer')
+    __slots__ = (
+        "endpoints",
+        "event",
+        "is_from_first_operand",
+        "opposites",
+        "_orienteer",
+    )
 
-    def __new__(cls,
-                event: Event,
-                is_from_first_operand: bool,
-                endpoints: Map[Event, hints.Point[hints.Scalar]],
-                opposites: Map[Event, Event],
-                orienteer: Orienteer[hints.Scalar],
-                /) -> te.Self:
+    def __new__(
+        cls,
+        event: Event,
+        is_from_first_operand: bool,
+        endpoints: Map[Event, hints.Point[hints.Scalar]],
+        opposites: Map[Event, Event],
+        orienteer: Orienteer[hints.Scalar],
+        /,
+    ) -> te.Self:
         self = super().__new__(cls)
         (
-            self.endpoints, self.event, self.is_from_first_operand,
-            self.opposites, self._orienteer
+            self.endpoints,
+            self.event,
+            self.is_from_first_operand,
+            self.opposites,
+            self._orienteer,
         ) = endpoints, event, is_from_first_operand, opposites, orienteer
         return self
 
@@ -41,8 +50,10 @@ class SweepLineKey(t.Generic[hints.Scalar]):
         assert self.opposites is other.opposites
         event, other_event = self.event, other.event
         start, other_start = self.endpoints[event], self.endpoints[other_event]
-        end, other_end = (self.endpoints[self.opposites[event]],
-                          self.endpoints[self.opposites[other_event]])
+        end, other_end = (
+            self.endpoints[self.opposites[event]],
+            self.endpoints[self.opposites[other_event]],
+        )
         other_start_orientation = self._orienteer(start, end, other_start)
         other_end_orientation = self._orienteer(start, end, other_end)
         if other_start_orientation is other_end_orientation:

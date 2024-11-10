@@ -13,22 +13,21 @@ _Coordinate = t.Union[Fraction, Int, Rational, float, int]
 @te.final
 class Point(BasePoint[Fraction]):
     @property
-    def x(self) -> Fraction:
+    def x(self, /) -> Fraction:
         return self._x
 
     @property
-    def y(self) -> Fraction:
+    def y(self, /) -> Fraction:
         return self._y
 
     _x: Fraction
     _y: Fraction
 
-    __module__ = 'rene.exact'
-    __slots__ = '_x', '_y'
+    __module__ = "rene.exact"
+    __slots__ = "_x", "_y"
 
     def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
-        raise TypeError(f'type {cls.__qualname__!r} '
-                        'is not an acceptable base type')
+        raise TypeError(f"type {cls.__qualname__!r} " "is not an acceptable base type")
 
     def __new__(cls, x: _Coordinate, y: _Coordinate, /) -> te.Self:
         self = super().__new__(cls)

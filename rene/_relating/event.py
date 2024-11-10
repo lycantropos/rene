@@ -1,10 +1,9 @@
 import sys
 from typing import NewType
 
-from rene._utils import (is_even,
-                         is_odd)
+from rene._utils import is_even, is_odd
 
-Event = NewType('Event', int)
+Event = NewType("Event", int)
 
 UNDEFINED_EVENT = Event(sys.maxsize)
 

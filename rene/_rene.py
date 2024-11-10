@@ -8,10 +8,10 @@ MIN_MULTISEGMENT_SEGMENTS_COUNT = 2
 
 
 class Base(enum.Enum):
-    __module__ = 'rene'
+    __module__ = "rene"
 
-    def __repr__(self) -> str:
-        return f'{type(self).__qualname__}.{self.name}'
+    def __repr__(self, /) -> str:
+        return f"{type(self).__qualname__}.{self.name}"
 
 
 @te.final
@@ -40,6 +40,7 @@ class Relation(Base):
     Represents kinds of relations in which geometries can be.
     Order of members assumes that conditions for previous ones do not hold.
     """
+
     #: geometry is a strict subset of the other
     #: and interior/boundary of the geometry is a subset
     #: of interior/boundary of the other
@@ -82,12 +83,14 @@ class Relation(Base):
     WITHIN = 11
 
     @property
-    def complement(self) -> te.Self:
-        if (self is Relation.CROSS
-                or self is Relation.DISJOINT
-                or self is Relation.EQUAL
-                or self is Relation.OVERLAP
-                or self is Relation.TOUCH):
+    def complement(self, /) -> te.Self:
+        if (
+            self is Relation.CROSS
+            or self is Relation.DISJOINT
+            or self is Relation.EQUAL
+            or self is Relation.OVERLAP
+            or self is Relation.TOUCH
+        ):
             return self
         elif self is Relation.COMPONENT:
             return Relation.COMPOSITE

@@ -1,7 +1,4 @@
-from . import (difference,
-               intersection,
-               symmetric_difference,
-               union)
+from . import difference, intersection, symmetric_difference, union
 
 intersect_multipolygon_with_multipolygon = (
     intersection.intersect_multipolygon_with_multipolygon
@@ -9,12 +6,8 @@ intersect_multipolygon_with_multipolygon = (
 intersect_multipolygon_with_multisegmental = (
     intersection.intersect_multipolygon_with_multisegmental
 )
-intersect_multipolygon_with_polygon = (
-    intersection.intersect_multipolygon_with_polygon
-)
-intersect_multipolygon_with_segment = (
-    intersection.intersect_multipolygon_with_segment
-)
+intersect_multipolygon_with_polygon = intersection.intersect_multipolygon_with_polygon
+intersect_multipolygon_with_segment = intersection.intersect_multipolygon_with_segment
 intersect_multisegmental_with_multipolygon = (
     intersection.intersect_multisegmental_with_multipolygon
 )
@@ -27,17 +20,13 @@ intersect_multisegmental_with_polygon = (
 intersect_multisegmental_with_segment = (
     intersection.intersect_multisegmental_with_segment
 )
-intersect_polygon_with_multipolygon = (
-    intersection.intersect_polygon_with_multipolygon
-)
+intersect_polygon_with_multipolygon = intersection.intersect_polygon_with_multipolygon
 intersect_polygon_with_multisegmental = (
     intersection.intersect_polygon_with_multisegmental
 )
 intersect_polygon_with_polygon = intersection.intersect_polygon_with_polygon
 intersect_polygon_with_segment = intersection.intersect_polygon_with_segment
-intersect_segment_with_multipolygon = (
-    intersection.intersect_segment_with_multipolygon
-)
+intersect_segment_with_multipolygon = intersection.intersect_segment_with_multipolygon
 intersect_segment_with_multisegmental = (
     intersection.intersect_segment_with_multisegmental
 )
@@ -50,29 +39,17 @@ subtract_multipolygon_from_multipolygon = (
 subtract_multipolygon_from_multisegmental = (
     difference.subtract_multipolygon_from_multisegmental
 )
-subtract_multipolygon_from_polygon = (
-    difference.subtract_multipolygon_from_polygon
-)
-subtract_multipolygon_from_segment = (
-    difference.subtract_multipolygon_from_segment
-)
+subtract_multipolygon_from_polygon = difference.subtract_multipolygon_from_polygon
+subtract_multipolygon_from_segment = difference.subtract_multipolygon_from_segment
 subtract_multisegmental_from_multisegmental = (
     difference.subtract_multisegmental_from_multisegmental
 )
-subtract_multisegmental_from_segment = (
-    difference.subtract_multisegmental_from_segment
-)
-subtract_polygon_from_multipolygon = (
-    difference.subtract_polygon_from_multipolygon
-)
-subtract_polygon_from_multisegmental = (
-    difference.subtract_polygon_from_multisegmental
-)
+subtract_multisegmental_from_segment = difference.subtract_multisegmental_from_segment
+subtract_polygon_from_multipolygon = difference.subtract_polygon_from_multipolygon
+subtract_polygon_from_multisegmental = difference.subtract_polygon_from_multisegmental
 subtract_polygon_from_polygon = difference.subtract_polygon_from_polygon
 subtract_polygon_from_segment = difference.subtract_polygon_from_segment
-subtract_segment_from_multisegmental = (
-    difference.subtract_segment_from_multisegmental
-)
+subtract_segment_from_multisegmental = difference.subtract_segment_from_multisegmental
 subtract_segment_from_segment = difference.subtract_segment_from_segment
 
 symmetric_subtract_polygon_from_polygon = (
@@ -100,9 +77,7 @@ symmetric_subtract_multisegmental_from_multisegmental = (
     symmetric_difference.symmetric_subtract_multisegmental_from_multisegmental
 )
 
-unite_multipolygon_with_multipolygon = (
-    union.unite_multipolygon_with_multipolygon
-)
+unite_multipolygon_with_multipolygon = union.unite_multipolygon_with_multipolygon
 unite_multipolygon_with_polygon = union.unite_multipolygon_with_polygon
 unite_multisegmental_with_multisegmental = (
     union.unite_multisegmental_with_multisegmental

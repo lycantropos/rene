@@ -1,32 +1,33 @@
 from __future__ import annotations
 
 import typing as t
-from abc import (ABC,
-                 abstractmethod)
+from abc import ABC, abstractmethod
 
-from rene import (Location,
-                  hints)
+from rene import Location, hints
+
 from .edge import Edge
 
 
 class Node(ABC, t.Generic[hints.Scalar]):
     @abstractmethod
-    def locate(self,
-               point: hints.Point[hints.Scalar],
-               edges: t.Sequence[Edge[hints.Scalar]],
-               endpoints: t.Sequence[hints.Point[hints.Scalar]],
-               nodes: t.Sequence[Node[hints.Scalar]]) -> Location:
+    def locate(
+        self,
+        point: hints.Point[hints.Scalar],
+        edges: t.Sequence[Edge[hints.Scalar]],
+        endpoints: t.Sequence[hints.Point[hints.Scalar]],
+        nodes: t.Sequence[Node[hints.Scalar]],
+    ) -> Location:
         """
         Finds location of given point relative to the contour.
         """
 
     @abstractmethod
     def search_edge_node(
-            self,
-            edge: Edge[hints.Scalar],
-            edges: t.Sequence[Edge[hints.Scalar]],
-            endpoints: t.Sequence[hints.Point[hints.Scalar]],
-            nodes: t.Sequence[Node[hints.Scalar]]
+        self,
+        edge: Edge[hints.Scalar],
+        edges: t.Sequence[Edge[hints.Scalar]],
+        endpoints: t.Sequence[hints.Point[hints.Scalar]],
+        nodes: t.Sequence[Node[hints.Scalar]],
     ) -> Node[hints.Scalar]:
         """
         Recursive search for the trapezoid
