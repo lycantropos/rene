@@ -84,7 +84,7 @@ class BasePoint(ABC, t.Generic[hints.Scalar]):
         )
 
     def __repr__(self, /) -> str:
-        return f"{type(self).__qualname__}({self.x!r}, {self.y!r})"
+        return f'{type(self).__qualname__}({self.x!r}, {self.y!r})'
 
     def __str__(self, /) -> str:
-        return f"{type(self).__qualname__}({self.x}, {self.y})"
+        return f'{type(self).__qualname__}({self.x}, {self.y})'

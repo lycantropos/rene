@@ -42,13 +42,17 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
                 for index, contour_vertices in enumerate(contours_vertices)
             )
         ) + [
-            ContourVertex(index, len(contour_vertices) - 1, contour_vertices[-1])
+            ContourVertex(
+                index, len(contour_vertices) - 1, contour_vertices[-1]
+            )
             for index, contour_vertices in enumerate(contours_vertices)
         ]
         vertices.sort()
         polygon_vertices_positions: list[list[PolygonVertexPosition]] = []
         points: list[hints.Point[hints.Scalar]] = []
-        for point, same_point_vertices in groupby(vertices, key=attrgetter("point")):
+        for point, same_point_vertices in groupby(
+            vertices, key=attrgetter('point')
+        ):
             points.append(point)
             polygon_vertices_positions.append(
                 [
@@ -135,7 +139,9 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
         for edge in mesh.to_edges():
             vertex_start_index = mesh.to_start_index(edge)
             vertex_point = mesh.endpoints[vertex_start_index]
-            vertex_positions = self._polygon_vertices_positions[vertex_start_index]
+            vertex_positions = self._polygon_vertices_positions[
+                vertex_start_index
+            ]
             for vertex_position in vertex_positions:
                 contour_index, vertex_index = (
                     vertex_position.contour_index,
@@ -143,8 +149,12 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
                 )
                 contour_size = contours_sizes[contour_index]
                 next_vertex_index = (vertex_index + 1) % contour_size
-                constraint_index = to_constraint_index(vertex_index, next_vertex_index)
-                if not contours_constraints_flags[contour_index][constraint_index]:
+                constraint_index = to_constraint_index(
+                    vertex_index, next_vertex_index
+                )
+                if not contours_constraints_flags[contour_index][
+                    constraint_index
+                ]:
                     next_vertex_point = contours_vertices[contour_index][
                         next_vertex_index
                     ]
@@ -166,7 +176,9 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
                             crossings,
                             self._orienteer,
                         )
-                    contours_constraints_flags[contour_index][constraint_index] = True
+                    contours_constraints_flags[contour_index][
+                        constraint_index
+                    ] = True
 
     def cut(
         self, contours_vertices: list[t.Sequence[hints.Point[hints.Scalar]]], /
@@ -183,7 +195,10 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
                 self.delete_edge(edge)
 
     def delete_edge(self, edge: QuadEdge, /) -> None:
-        if edge == self.right_side or to_opposite_edge(edge) == self.right_side:
+        if (
+            edge == self.right_side
+            or to_opposite_edge(edge) == self.right_side
+        ):
             self._right_side = to_opposite_edge(
                 self.mesh.to_right_from_end(self.right_side)
             )
@@ -193,7 +208,9 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
 
     def to_boundary_points(self) -> list[hints.Point[hints.Scalar]]:
         edge_to_start = self.mesh.to_start
-        return [edge_to_start(edge) for edge in self.to_unique_boundary_edges()]
+        return [
+            edge_to_start(edge) for edge in self.to_unique_boundary_edges()
+        ]
 
     def to_unique_boundary_edges(self) -> list[QuadEdge]:
         if self:
@@ -229,14 +246,22 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
                 first_vertex < second_vertex
                 and first_vertex < third_vertex
                 and third_vertex
-                == mesh.to_end(mesh.to_right_from_start(to_opposite_edge(edge)))
-                and orient_point_to_edge(mesh, edge, third_vertex, self._orienteer)
+                == mesh.to_end(
+                    mesh.to_right_from_start(to_opposite_edge(edge))
+                )
+                and orient_point_to_edge(
+                    mesh, edge, third_vertex, self._orienteer
+                )
                 is Orientation.COUNTERCLOCKWISE
                 and not (
                     self._triangular_holes_indices
                     and are_triangular_hole_vertices(
-                        self._polygon_vertices_positions[mesh.to_start_index(edge)],
-                        self._polygon_vertices_positions[mesh.to_end_index(edge)],
+                        self._polygon_vertices_positions[
+                            mesh.to_start_index(edge)
+                        ],
+                        self._polygon_vertices_positions[
+                            mesh.to_end_index(edge)
+                        ],
                         self._polygon_vertices_positions[
                             mesh.to_end_index(mesh.to_left_from_start(edge))
                         ],
@@ -248,12 +273,12 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
         return result
 
     __slots__ = (
-        "_left_side",
-        "_mesh",
-        "_orienteer",
-        "_polygon_vertices_positions",
-        "_right_side",
-        "_triangular_holes_indices",
+        '_left_side',
+        '_mesh',
+        '_orienteer',
+        '_polygon_vertices_positions',
+        '_right_side',
+        '_triangular_holes_indices',
     )
 
     def __init__(
@@ -310,7 +335,9 @@ def angle_contains_point(
     )
 
 
-def are_polygon_edge_indices(first: int, second: int, contour_size: int, /) -> bool:
+def are_polygon_edge_indices(
+    first: int, second: int, contour_size: int, /
+) -> bool:
     return (
         abs(first - second) == 1
         or (first == 0 and second == contour_size - 1)
@@ -325,9 +352,15 @@ def are_triangular_hole_vertices(
     triangular_holes_indices: t.Container[int],
     /,
 ) -> bool:
-    first_contours_indices = [position.contour_index for position in first_positions]
-    second_contours_indices = [position.contour_index for position in second_positions]
-    third_contours_indices = [position.contour_index for position in third_positions]
+    first_contours_indices = [
+        position.contour_index for position in first_positions
+    ]
+    second_contours_indices = [
+        position.contour_index for position in second_positions
+    ]
+    third_contours_indices = [
+        position.contour_index for position in third_positions
+    ]
     return any(
         (
             contour_index != BORDER_CONTOUR_INDEX
@@ -396,9 +429,13 @@ def intersect_polygon_vertices_positions(
     with_border: bool,
 ) -> list[tuple[PolygonVertexPosition, PolygonVertexPosition]]:
     return list(
-        _intersect_polygon_vertices_positions(first, second, False, with_border)
+        _intersect_polygon_vertices_positions(
+            first, second, False, with_border
+        )
         if len(first) < len(second)
-        else _intersect_polygon_vertices_positions(second, first, True, with_border)
+        else _intersect_polygon_vertices_positions(
+            second, first, True, with_border
+        )
     )
 
 
@@ -416,7 +453,9 @@ def _intersect_polygon_vertices_positions(
                 second_position = next(
                     candidate
                     for candidate in second
-                    if (candidate.contour_index == first_position.contour_index)
+                    if (
+                        candidate.contour_index == first_position.contour_index
+                    )
                 )
             except StopIteration:
                 pass
@@ -463,7 +502,9 @@ def is_segment_inside_hole(
     hole_size = len(hole_vertices)
     start_vertex_index = start_position.index
     end_vertex_index = end_position.index
-    if are_polygon_edge_indices(start_vertex_index, end_vertex_index, hole_size):
+    if are_polygon_edge_indices(
+        start_vertex_index, end_vertex_index, hole_size
+    ):
         return False
     prior_to_start_point = hole_vertices[start_vertex_index - 1]
     prior_to_end_point = hole_vertices[end_vertex_index - 1]
@@ -472,7 +513,9 @@ def is_segment_inside_hole(
     start_angle_orientation = orienteer(
         start, prior_to_start_point, next_to_start_point
     )
-    end_angle_orientation = orienteer(end, prior_to_end_point, next_to_end_point)
+    end_angle_orientation = orienteer(
+        end, prior_to_end_point, next_to_end_point
+    )
     return (
         (end_angle_orientation is Orientation.COUNTERCLOCKWISE)
         is angle_contains_point(
@@ -504,7 +547,9 @@ def mouth_edge_to_incidents(
 ) -> tuple[QuadEdge, QuadEdge]:
     left_from_start = mesh.to_left_from_start(edge)
     assert (
-        orient_point_to_edge(mesh, edge, mesh.to_end(left_from_start), orienteer)
+        orient_point_to_edge(
+            mesh, edge, mesh.to_end(left_from_start), orienteer
+        )
         is Orientation.COUNTERCLOCKWISE
     )
     return left_from_start, mesh.to_right_from_end(left_from_start)
@@ -530,9 +575,9 @@ def to_contours_constraints_flags(
             if are_polygon_edge_indices(
                 start_index, end_index, contours_sizes[contour_index]
             ):
-                result[contour_index][to_constraint_index(start_index, end_index)] = (
-                    True
-                )
+                result[contour_index][
+                    to_constraint_index(start_index, end_index)
+                ] = True
     return result
 
 
@@ -687,7 +732,9 @@ def to_angle_containing_constraint_base(
     /,
 ) -> QuadEdge:
     if mesh.to_end(edge) != constraint_end:
-        orientation = orient_point_to_edge(mesh, edge, constraint_end, orienteer)
+        orientation = orient_point_to_edge(
+            mesh, edge, constraint_end, orienteer
+        )
         if orientation is Orientation.COUNTERCLOCKWISE:
             while True:
                 candidate = mesh.to_left_from_start(edge)
@@ -708,7 +755,9 @@ def to_angle_containing_constraint_base(
     return edge
 
 
-def to_constraint_index(first_vertex_index: int, second_vertex_index: int, /) -> int:
+def to_constraint_index(
+    first_vertex_index: int, second_vertex_index: int, /
+) -> int:
     return (
         max(first_vertex_index, second_vertex_index)
         if abs(second_vertex_index - first_vertex_index) == 1

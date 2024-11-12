@@ -16,11 +16,11 @@ class EventsQueueKey(t.Generic[hints.Scalar]):
     _orienteer: Orienteer[hints.Scalar]
 
     __slots__ = (
-        "endpoints",
-        "event",
-        "is_from_first_operand",
-        "opposites",
-        "_orienteer",
+        'endpoints',
+        'event',
+        'is_from_first_operand',
+        'opposites',
+        '_orienteer',
     )
 
     def __new__(
@@ -73,7 +73,10 @@ class EventsQueueKey(t.Generic[hints.Scalar]):
                 self.endpoints[self.opposites[other_event]],
             )
             if other_end_orientation is Orientation.COLLINEAR:
-                assert self.is_from_first_operand is not other.is_from_first_operand
+                assert (
+                    self.is_from_first_operand
+                    is not other.is_from_first_operand
+                )
                 return other.is_from_first_operand
             else:
                 return (

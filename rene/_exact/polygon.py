@@ -25,11 +25,13 @@ class Polygon(BasePolygon[Fraction]):
     _border: hints.Contour[Fraction]
     _holes: t.Sequence[hints.Contour[Fraction]]
 
-    __module__ = "rene.exact"
-    __slots__ = "_border", "_holes"
+    __module__ = 'rene.exact'
+    __slots__ = '_border', '_holes'
 
     def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
-        raise TypeError(f"type {cls.__qualname__!r} " "is not an acceptable base type")
+        raise TypeError(
+            f'type {cls.__qualname__!r} is not an acceptable base type'
+        )
 
     def __new__(
         cls,
@@ -61,24 +63,28 @@ class _PolygonHoles(t.Sequence[hints.Contour[Fraction]]):
         stop: int | None = None,
         /,
     ) -> int:
-        return self._holes.index(contour, start, *(() if stop is None else (stop,)))
+        return self._holes.index(
+            contour, start, *(() if stop is None else (stop,))
+        )
 
     _holes: t.Sequence[hints.Contour[Fraction]]
 
-    __module__ = "rene.exact"
-    __slots__ = ("_holes",)
+    __module__ = 'rene.exact'
+    __slots__ = ('_holes',)
 
     def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
-        raise TypeError(f"type {cls.__qualname__!r} " "is not an acceptable base type")
+        raise TypeError(
+            f'type {cls.__qualname__!r} is not an acceptable base type'
+        )
 
     def __new__(
         cls, holes: t.Sequence[hints.Contour[Fraction]], token: _Token, /
     ) -> te.Self:
         if token is not _TOKEN:
             raise ValueError(
-                f"{cls.__qualname__!r} is internal "
-                "and its instances should not be instantiated "
-                "outside of the library."
+                f'{cls.__qualname__!r} is internal '
+                'and its instances should not be instantiated '
+                'outside of the library.'
             )
         self = super().__new__(cls)
         self._holes = holes
@@ -103,7 +109,9 @@ class _PolygonHoles(t.Sequence[hints.Contour[Fraction]]):
     @t.overload
     def __getitem__(self, item: slice) -> te.Self: ...
 
-    def __getitem__(self, item: int | slice) -> hints.Contour[Fraction] | te.Self:
+    def __getitem__(
+        self, item: int | slice
+    ) -> hints.Contour[Fraction] | te.Self:
         return (
             _PolygonHoles(self._holes[item], _TOKEN)
             if type(item) is slice

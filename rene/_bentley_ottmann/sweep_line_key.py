@@ -14,7 +14,7 @@ class SweepLineKey(t.Generic[hints.Scalar]):
     event: Event
     _orienteer: Orienteer[hints.Scalar]
 
-    __slots__ = "endpoints", "event", "opposites", "_orienteer"
+    __slots__ = 'endpoints', 'event', 'opposites', '_orienteer'
 
     def __new__(
         cls,

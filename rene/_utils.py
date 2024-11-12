@@ -14,8 +14,8 @@ class Ordered(te.Protocol):
     def __lt__(self, other: te.Self, /) -> bool: ...
 
 
-_OrderedT = t.TypeVar("_OrderedT", bound=Ordered)
-_T = t.TypeVar("_T")
+_OrderedT = t.TypeVar('_OrderedT', bound=Ordered)
+_T = t.TypeVar('_T')
 
 
 def all_same(iterable: t.Iterable[t.Any]) -> bool:
@@ -217,7 +217,10 @@ def locate_point_in_region(
     point_y = point.y
     for edge in border.segments:
         end, start = edge.end, edge.start
-        if locate_point_in_segment(start, end, point, orienteer) is Location.BOUNDARY:
+        if (
+            locate_point_in_segment(start, end, point, orienteer)
+            is Location.BOUNDARY
+        ):
             return Location.BOUNDARY
         if (start.y > point_y) is not (end.y > point_y) and (
             (end.y > start.y)
@@ -347,7 +350,10 @@ def shrink_collinear_vertices(
             is not Orientation.COLLINEAR
         ):
             result.append(vertices[index])
-    if orienteer(result[-1], vertices[-1], result[0]) is not Orientation.COLLINEAR:
+    if (
+        orienteer(result[-1], vertices[-1], result[0])
+        is not Orientation.COLLINEAR
+    ):
         result.append(vertices[-1])
     return result
 
@@ -402,7 +408,9 @@ def to_boxes_ids_with_intersection(
     /,
 ) -> list[int]:
     return [
-        box_id for box_id, box in enumerate(boxes) if not box.disjoint_with(target_box)
+        box_id
+        for box_id, box in enumerate(boxes)
+        if not box.disjoint_with(target_box)
     ]
 
 
@@ -440,12 +448,16 @@ def to_oriented_segments(
     /,
 ) -> list[hints.Segment[hints.Scalar]]:
     return to_contour_segments(
-        vertices
-        if (
-            to_contour_orientation(vertices, to_arg_min(vertices), orienteer)
-            is target_orientation
-        )
-        else rotate_sequence(vertices),
+        (
+            vertices
+            if (
+                to_contour_orientation(
+                    vertices, to_arg_min(vertices), orienteer
+                )
+                is target_orientation
+            )
+            else rotate_sequence(vertices)
+        ),
         segment_cls,
     )
 
@@ -473,7 +485,7 @@ def validate_seed(
     else:
         return
     raise error_type(
-        "Seed should be an integer "
+        'Seed should be an integer '
         f'from range({0}, {_max_usize_value}), but got "{seed}".'
     )
 
@@ -486,7 +498,9 @@ def subtract_segments_overlap(
     /,
 ) -> tuple[hints.Point[hints.Scalar], hints.Point[hints.Scalar]]:
     minuend_start, minuend_end = to_sorted_pair(minuend_start, minuend_end)
-    subtrahend_start, subtrahend_end = to_sorted_pair(subtrahend_start, subtrahend_end)
+    subtrahend_start, subtrahend_end = to_sorted_pair(
+        subtrahend_start, subtrahend_end
+    )
     return (
         (subtrahend_end, minuend_end)
         if subtrahend_start < minuend_start < subtrahend_end

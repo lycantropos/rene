@@ -70,7 +70,7 @@ class BaseSegment(ABC, BaseCompound[hints.Scalar]):
         elif isinstance(other, context.empty_cls):
             return Relation.DISJOINT
         else:
-            raise TypeError(f"Unsupported type: {type(other)!r}.")
+            raise TypeError(f'Unsupported type: {type(other)!r}.')
 
     @t.overload
     def __and__(
@@ -112,7 +112,9 @@ class BaseSegment(ABC, BaseCompound[hints.Scalar]):
                 context.orient,
                 context.segment_cls,
             )
-            if isinstance(other, (context.contour_cls, context.multisegment_cls))
+            if isinstance(
+                other, (context.contour_cls, context.multisegment_cls)
+            )
             else (
                 intersect_segment_with_segment(
                     self,
@@ -206,7 +208,9 @@ class BaseSegment(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(other, (context.contour_cls, context.multisegment_cls))
+            if isinstance(
+                other, (context.contour_cls, context.multisegment_cls)
+            )
             else (
                 unite_segment_with_segment(
                     self,
@@ -217,15 +221,19 @@ class BaseSegment(ABC, BaseCompound[hints.Scalar]):
                     context.intersect_segments,
                 )
                 if isinstance(other, context.segment_cls)
-                else (self if isinstance(other, context.empty_cls) else NotImplemented)
+                else (
+                    self
+                    if isinstance(other, context.empty_cls)
+                    else NotImplemented
+                )
             )
         )
 
     def __repr__(self, /) -> str:
-        return f"{type(self).__qualname__}({self.start!r}, {self.end!r})"
+        return f'{type(self).__qualname__}({self.start!r}, {self.end!r})'
 
     def __str__(self, /) -> str:
-        return f"{type(self).__qualname__}({self.start}, {self.end})"
+        return f'{type(self).__qualname__}({self.start}, {self.end})'
 
     @t.overload
     def __sub__(self, other: hints.Empty[hints.Scalar], /) -> te.Self: ...
@@ -260,7 +268,9 @@ class BaseSegment(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(other, (context.contour_cls, context.multisegment_cls))
+            if isinstance(
+                other, (context.contour_cls, context.multisegment_cls)
+            )
             else (
                 subtract_segment_from_segment(
                     self,
@@ -272,7 +282,11 @@ class BaseSegment(ABC, BaseCompound[hints.Scalar]):
                     context.intersect_segments,
                 )
                 if isinstance(other, context.segment_cls)
-                else (self if isinstance(other, context.empty_cls) else NotImplemented)
+                else (
+                    self
+                    if isinstance(other, context.empty_cls)
+                    else NotImplemented
+                )
             )
         )
 
@@ -309,7 +323,9 @@ class BaseSegment(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(other, (context.contour_cls, context.multisegment_cls))
+            if isinstance(
+                other, (context.contour_cls, context.multisegment_cls)
+            )
             else (
                 symmetric_subtract_segment_from_segment(
                     self,
@@ -321,6 +337,10 @@ class BaseSegment(ABC, BaseCompound[hints.Scalar]):
                     context.intersect_segments,
                 )
                 if isinstance(other, context.segment_cls)
-                else (self if isinstance(other, context.empty_cls) else NotImplemented)
+                else (
+                    self
+                    if isinstance(other, context.empty_cls)
+                    else NotImplemented
+                )
             )
         )

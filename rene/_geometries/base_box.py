@@ -468,12 +468,12 @@ class BaseBox(ABC, t.Generic[hints.Scalar]):
 
     def __repr__(self, /) -> str:
         return (
-            f"{type(self).__qualname__}({self.min_x!r}, {self.max_x!r}, "
-            f"{self.min_y!r}, {self.max_y!r})"
+            f'{type(self).__qualname__}({self.min_x!r}, {self.max_x!r}, '
+            f'{self.min_y!r}, {self.max_y!r})'
         )
 
     def __str__(self, /) -> str:
         return (
-            f"{type(self).__qualname__}({self.min_x}, {self.max_x}, "
-            f"{self.min_y}, {self.max_y})"
+            f'{type(self).__qualname__}({self.min_x}, {self.max_x}, '
+            f'{self.min_y}, {self.max_y})'
         )

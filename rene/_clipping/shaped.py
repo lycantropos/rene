@@ -40,7 +40,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         _populate_with_segments(first, endpoints, have_interior_to_left)
         first_segments_count = len(have_interior_to_left)
         _populate_with_segments(second, endpoints, have_interior_to_left)
-        second_segments_count = len(have_interior_to_left) - first_segments_count
+        second_segments_count = (
+            len(have_interior_to_left) - first_segments_count
+        )
         self = cls(
             first_segments_count,
             second_segments_count,
@@ -60,7 +62,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         polygon_cls: type[hints.Polygon[hints.Scalar]],
         /,
     ) -> list[hints.Polygon[hints.Scalar]]:
-        events = [event for event in events if self._is_event_from_result(event)]
+        events = [
+            event for event in events if self._is_event_from_result(event)
+        ]
         if not events:
             return []
         events.sort(key=self._events_queue_data.key)
@@ -153,23 +157,23 @@ class Operation(ABC, t.Generic[hints.Scalar]):
     _sweep_line_data: KeyedSet[SweepLineKey[hints.Scalar], Event]
 
     __slots__ = (
-        "first_segments_count",
-        "second_segments_count",
-        "_are_from_result",
-        "_other_have_interior_to_left",
-        "_below_event_from_result",
-        "_current_endpoint_first_event",
-        "_current_endpoint_id",
-        "endpoints",
-        "_events_queue_data",
-        "have_interior_to_left",
-        "_opposites",
-        "_orienteer",
-        "_overlap_kinds",
-        "_segments_ids",
-        "_segments_intersector",
-        "_starts_ids",
-        "_sweep_line_data",
+        'first_segments_count',
+        'second_segments_count',
+        '_are_from_result',
+        '_other_have_interior_to_left',
+        '_below_event_from_result',
+        '_current_endpoint_first_event',
+        '_current_endpoint_id',
+        'endpoints',
+        '_events_queue_data',
+        'have_interior_to_left',
+        '_opposites',
+        '_orienteer',
+        '_overlap_kinds',
+        '_segments_ids',
+        '_segments_intersector',
+        '_starts_ids',
+        '_sweep_line_data',
     )
 
     def __init__(
@@ -211,17 +215,17 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         self._overlap_kinds = [OverlapKind.NONE] * segments_count
         self._segments_ids = list(range(segments_count))
         self._starts_ids: list[int] = [UNDEFINED_INDEX] * initial_events_count
-        self._events_queue_data: PriorityQueue[EventsQueueKey[hints.Scalar], Event] = (
-            PriorityQueue(
-                *map(Event, range(initial_events_count)),
-                key=lambda event: EventsQueueKey(
-                    event,
-                    self._is_event_from_first_operand(event),
-                    self.endpoints,
-                    self._opposites,
-                    self._orienteer,
-                ),
-            )
+        self._events_queue_data: PriorityQueue[
+            EventsQueueKey[hints.Scalar], Event
+        ] = PriorityQueue(
+            *map(Event, range(initial_events_count)),
+            key=lambda event: EventsQueueKey(
+                event,
+                self._is_event_from_first_operand(event),
+                self.endpoints,
+                self._opposites,
+                self._orienteer,
+            ),
         )
         self._sweep_line_data = red_black.set_(key=self._to_sweep_line_key)
 
@@ -264,7 +268,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                     below_event, event
                 ):
                     below_below_event = self._below(below_event)
-                    self._compute_left_event_fields(below_event, below_below_event)
+                    self._compute_left_event_fields(
+                        below_event, below_below_event
+                    )
                     self._compute_left_event_fields(event, below_event)
                 yield event
 
@@ -322,8 +328,8 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 )
                 else below_event
             )
-        self._are_from_result[event_position] = self._detect_if_left_event_from_result(
-            event
+        self._are_from_result[event_position] = (
+            self._detect_if_left_event_from_result(event)
         )
 
     def _compute_relations(
@@ -374,7 +380,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         ]
         return shrink_collinear_vertices(result, self._orienteer)
 
-    def _detect_intersection(self, below_event: Event, event: Event, /) -> bool:
+    def _detect_intersection(
+        self, below_event: Event, event: Event, /
+    ) -> bool:
         event_start = self.to_event_start(event)
         event_end = self.to_event_end(event)
         below_event_start = self.to_event_start(below_event)
@@ -398,8 +406,8 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                             else (event, below_event)
                         )
                         min_end = self.to_event_end(min_end_event)
-                        min_end_start_event, min_end_max_end_event = self._divide(
-                            max_end_event, min_end
+                        min_end_start_event, min_end_max_end_event = (
+                            self._divide(max_end_event, min_end)
                         )
                         self._push(min_end_start_event)
                         self._push(min_end_max_end_event)
@@ -413,10 +421,12 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                         ]
                         else OverlapKind.DIFFERENT_ORIENTATION
                     )
-                    self._overlap_kinds[left_event_to_position(below_event)] = (
+                    self._overlap_kinds[
+                        left_event_to_position(below_event)
+                    ] = overlap_kind
+                    self._overlap_kinds[left_event_to_position(event)] = (
                         overlap_kind
                     )
-                    self._overlap_kinds[left_event_to_position(event)] = overlap_kind
                     return True
                 elif event_end == below_event_end:
                     max_start_event, min_start_event = (
@@ -474,7 +484,10 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 if event_start < below_event_end < event_end:
                     point = below_event_end
                     self._divide_event_by_midpoint(event, point)
-            elif below_event_start_orientation is not below_event_end_orientation:
+            elif (
+                below_event_start_orientation
+                is not below_event_end_orientation
+            ):
                 cross_point = self._segments_intersector(
                     event_start, event_end, below_event_start, below_event_end
                 )
@@ -509,7 +522,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         ) is self._is_event_from_first_operand(mid_point_to_event_start_event)
         assert self._is_left_event_from_first_operand(
             event
-        ) is self._is_left_event_from_first_operand(mid_point_to_event_end_event)
+        ) is self._is_left_event_from_first_operand(
+            mid_point_to_event_end_event
+        )
         return mid_point_to_event_start_event, mid_point_to_event_end_event
 
     def _divide_event_by_mid_segment_event_endpoints(
@@ -542,7 +557,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         self._divide_event_by_midpoint(max_start_event, min_end)
         self._divide_event_by_midpoint(min_start_event, max_start)
 
-    def _events_to_connectivity(self, events: t.Sequence[Event], /) -> list[int]:
+    def _events_to_connectivity(
+        self, events: t.Sequence[Event], /
+    ) -> list[int]:
         events_count = len(events)
         result = [0] * events_count
         event_id = 0
@@ -569,23 +586,31 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                     right_start_event_id + 1, left_start_event_id - 1 + 1
                 )
                 result[left_start_event_id - 1] = (
-                    left_stop_event_id if has_left_events else right_start_event_id
+                    left_stop_event_id
+                    if has_left_events
+                    else right_start_event_id
                 )
             if has_left_events:
                 result[left_start_event_id] = (
-                    right_start_event_id if has_right_events else left_stop_event_id
+                    right_start_event_id
+                    if has_right_events
+                    else left_stop_event_id
                 )
-                result[left_start_event_id + 1 : left_stop_event_id + 1] = range(
-                    left_start_event_id, left_stop_event_id
+                result[left_start_event_id + 1 : left_stop_event_id + 1] = (
+                    range(left_start_event_id, left_stop_event_id)
                 )
         return result
 
     def _find(self, event: Event, /) -> Event | None:
         assert is_event_left(event)
-        candidate = self._sweep_line_data.tree.find(self._to_sweep_line_key(event))
+        candidate = self._sweep_line_data.tree.find(
+            self._to_sweep_line_key(event)
+        )
         return None if candidate is red_black.NIL else candidate.value
 
-    def _is_left_event_common_polyline_component(self, event: Event, /) -> bool:
+    def _is_left_event_common_polyline_component(
+        self, event: Event, /
+    ) -> bool:
         return (
             self._overlap_kinds[left_event_to_position(event)]
             is OverlapKind.DIFFERENT_ORIENTATION
@@ -598,10 +623,14 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         )
 
     def _is_event_from_first_operand(self, event: Event, /) -> bool:
-        return self._is_left_event_from_first_operand(self._to_left_event(event))
+        return self._is_left_event_from_first_operand(
+            self._to_left_event(event)
+        )
 
     def _is_event_from_result(self, event: Event, /) -> bool:
-        return self._are_from_result[left_event_to_position(self._to_left_event(event))]
+        return self._are_from_result[
+            left_event_to_position(self._to_left_event(event))
+        ]
 
     def _is_left_event_inside(self, event: Event, /) -> bool:
         event_position = left_event_to_position(event)
@@ -611,7 +640,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         )
 
     def _is_left_event_from_first_operand(self, event: Event, /) -> bool:
-        return self._left_event_to_segment_id(event) < self.first_segments_count
+        return (
+            self._left_event_to_segment_id(event) < self.first_segments_count
+        )
 
     def _is_left_event_outside(self, event: Event, /) -> bool:
         event_position = left_event_to_position(event)
@@ -622,7 +653,8 @@ class Operation(ABC, t.Generic[hints.Scalar]):
 
     def _is_left_event_overlapping(self, event: Event, /) -> bool:
         return (
-            self._overlap_kinds[left_event_to_position(event)] is not OverlapKind.NONE
+            self._overlap_kinds[left_event_to_position(event)]
+            is not OverlapKind.NONE
         )
 
     def _is_left_event_vertical(self, event: Event, /) -> bool:
@@ -654,13 +686,19 @@ class Operation(ABC, t.Generic[hints.Scalar]):
     ) -> None:
         for event in contour_events:
             are_events_processed[events_ids[event]] = True
-            are_events_processed[events_ids[self._to_opposite_event(event)]] = True
+            are_events_processed[
+                events_ids[self._to_opposite_event(event)]
+            ] = True
             if is_event_left(event):
                 are_from_in_to_out[events_ids[event]] = False
                 contours_ids[events_ids[event]] = contour_id
             else:
-                are_from_in_to_out[events_ids[self._to_opposite_event(event)]] = True
-                contours_ids[events_ids[self._to_opposite_event(event)]] = contour_id
+                are_from_in_to_out[
+                    events_ids[self._to_opposite_event(event)]
+                ] = True
+                contours_ids[events_ids[self._to_opposite_event(event)]] = (
+                    contour_id
+                )
 
     def _push(self, event: Event, /) -> None:
         self._events_queue_data.push(event)
@@ -691,7 +729,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 self._to_end_id(cursor)
             ]
             if previous_endpoint_position == UNDEFINED_INDEX:
-                visited_endpoints_positions[self._to_end_id(cursor)] = len(result)
+                visited_endpoints_positions[self._to_end_id(cursor)] = len(
+                    result
+                )
             else:
                 # vertices loop found, i.e. contour has self-intersection
                 assert previous_endpoint_position != 0
@@ -709,7 +749,8 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         for endpoint_id in visited_endpoints_ids:
             visited_endpoints_positions[endpoint_id] = UNDEFINED_INDEX
         assert all(
-            position == UNDEFINED_INDEX for position in visited_endpoints_positions
+            position == UNDEFINED_INDEX
+            for position in visited_endpoints_positions
         )
         return result
 
@@ -717,7 +758,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         return self._starts_ids[self._to_opposite_event(event)]
 
     def _to_left_event(self, event: Event, /) -> Event:
-        return event if is_event_left(event) else self._to_opposite_event(event)
+        return (
+            event if is_event_left(event) else self._to_opposite_event(event)
+        )
 
     def _to_opposite_event(self, event: Event, /) -> Event:
         return self._opposites[event]
@@ -725,7 +768,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
     def _to_start_id(self, event: Event, /) -> int:
         return self._starts_ids[event]
 
-    def _to_sweep_line_key(self, event: Event, /) -> SweepLineKey[hints.Scalar]:
+    def _to_sweep_line_key(
+        self, event: Event, /
+    ) -> SweepLineKey[hints.Scalar]:
         return SweepLineKey(
             event,
             self._is_left_event_from_first_operand(event),

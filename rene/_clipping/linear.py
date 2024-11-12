@@ -61,15 +61,15 @@ class Operation(ABC, t.Generic[hints.Scalar]):
     _sweep_line_data: KeyedSet[SweepLineKey[hints.Scalar], Event]
 
     __slots__ = (
-        "first_segments_count",
-        "second_segments_count",
-        "endpoints",
-        "_events_queue_data",
-        "_opposites",
-        "_orienteer",
-        "_segments_ids",
-        "_segments_intersector",
-        "_sweep_line_data",
+        'first_segments_count',
+        'second_segments_count',
+        'endpoints',
+        '_events_queue_data',
+        '_opposites',
+        '_orienteer',
+        '_segments_ids',
+        '_segments_intersector',
+        '_sweep_line_data',
     )
 
     def __init__(
@@ -101,17 +101,17 @@ class Operation(ABC, t.Generic[hints.Scalar]):
             for index in range(initial_events_count)
         ]
         self._segments_ids = list(range(segments_count))
-        self._events_queue_data: PriorityQueue[EventsQueueKey[hints.Scalar], Event] = (
-            PriorityQueue(
-                *map(Event, range(initial_events_count)),
-                key=lambda event: EventsQueueKey(
-                    event,
-                    self._is_event_from_first_operand(event),
-                    self.endpoints,
-                    self._opposites,
-                    self._orienteer,
-                ),
-            )
+        self._events_queue_data: PriorityQueue[
+            EventsQueueKey[hints.Scalar], Event
+        ] = PriorityQueue(
+            *map(Event, range(initial_events_count)),
+            key=lambda event: EventsQueueKey(
+                event,
+                self._is_event_from_first_operand(event),
+                self.endpoints,
+                self._opposites,
+                self._orienteer,
+            ),
         )
         self._sweep_line_data = red_black.set_(key=self._to_sweep_line_key)
 
@@ -163,7 +163,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         except ValueError:
             return None
 
-    def _detect_intersection(self, below_event: Event, event: Event, /) -> None:
+    def _detect_intersection(
+        self, below_event: Event, event: Event, /
+    ) -> None:
         event_start = self.to_event_start(event)
         event_end = self.to_event_end(event)
         below_event_start = self.to_event_start(below_event)
@@ -187,8 +189,8 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                             else (event, below_event)
                         )
                         min_end = self.to_event_end(min_end_event)
-                        min_end_start_event, min_end_max_end_event = self._divide(
-                            max_end_event, min_end
+                        min_end_start_event, min_end_max_end_event = (
+                            self._divide(max_end_event, min_end)
                         )
                         self._push(min_end_start_event)
                         self._push(min_end_max_end_event)
@@ -248,7 +250,10 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 if event_start < below_event_end < event_end:
                     point = below_event_end
                     self._divide_event_by_midpoint(event, point)
-            elif below_event_start_orientation is not below_event_end_orientation:
+            elif (
+                below_event_start_orientation
+                is not below_event_end_orientation
+            ):
                 cross_point = self._segments_intersector(
                     event_start, event_end, below_event_start, below_event_end
                 )
@@ -276,7 +281,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         ) is self._is_event_from_first_operand(mid_point_to_event_start_event)
         assert self._is_left_event_from_first_operand(
             event
-        ) is self._is_left_event_from_first_operand(mid_point_to_event_end_event)
+        ) is self._is_left_event_from_first_operand(
+            mid_point_to_event_end_event
+        )
         return mid_point_to_event_start_event, mid_point_to_event_end_event
 
     def _divide_event_by_mid_segment_event_endpoints(
@@ -311,14 +318,20 @@ class Operation(ABC, t.Generic[hints.Scalar]):
 
     def _find(self, event: Event, /) -> Event | None:
         assert is_event_left(event)
-        candidate = self._sweep_line_data.tree.find(self._to_sweep_line_key(event))
+        candidate = self._sweep_line_data.tree.find(
+            self._to_sweep_line_key(event)
+        )
         return None if candidate is red_black.NIL else candidate.value
 
     def _is_event_from_first_operand(self, event: Event, /) -> bool:
-        return self._is_left_event_from_first_operand(self._to_left_event(event))
+        return self._is_left_event_from_first_operand(
+            self._to_left_event(event)
+        )
 
     def _is_left_event_from_first_operand(self, event: Event, /) -> bool:
-        return self._left_event_to_segment_id(event) < self.first_segments_count
+        return (
+            self._left_event_to_segment_id(event) < self.first_segments_count
+        )
 
     def _left_event_to_segment_id(self, event: Event, /) -> int:
         return self._segments_ids[left_event_to_position(event)]
@@ -341,7 +354,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
     def _to_left_event(self, event: Event, /) -> Event:
         return event if is_event_left(event) else self.to_opposite_event(event)
 
-    def _to_sweep_line_key(self, event: Event, /) -> SweepLineKey[hints.Scalar]:
+    def _to_sweep_line_key(
+        self, event: Event, /
+    ) -> SweepLineKey[hints.Scalar]:
         return SweepLineKey(
             event,
             self._is_left_event_from_first_operand(event),

@@ -90,19 +90,19 @@ class Context(t.Generic[hints.Scalar]):
     _segments_intersection_scale: SegmentsIntersectionScale[hints.Scalar]
     _segments_intersector: SegmentsIntersector[hints.Scalar]
 
-    __module__ = "rene.exact"
+    __module__ = 'rene.exact'
     __slots__ = (
-        "_box_cls",
-        "_contour_cls",
-        "_empty_cls",
-        "_multipolygon_cls",
-        "_multisegment_cls",
-        "_orienteer",
-        "_point_cls",
-        "_polygon_cls",
-        "_segment_cls",
-        "_segments_intersection_scale",
-        "_segments_intersector",
+        '_box_cls',
+        '_contour_cls',
+        '_empty_cls',
+        '_multipolygon_cls',
+        '_multisegment_cls',
+        '_orienteer',
+        '_point_cls',
+        '_polygon_cls',
+        '_segment_cls',
+        '_segments_intersection_scale',
+        '_segments_intersector',
     )
 
     def __new__(

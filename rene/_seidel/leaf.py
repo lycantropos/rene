@@ -17,7 +17,11 @@ class Leaf(Node[hints.Scalar]):
         endpoints: t.Sequence[hints.Point[hints.Scalar]],
         nodes: t.Sequence[Node[hints.Scalar]],
     ) -> Location:
-        return Location.INTERIOR if self.trapezoid.is_component else Location.EXTERIOR
+        return (
+            Location.INTERIOR
+            if self.trapezoid.is_component
+            else Location.EXTERIOR
+        )
 
     def search_edge_node(
         self,
@@ -33,7 +37,7 @@ class Leaf(Node[hints.Scalar]):
 
     trapezoid: Trapezoid
 
-    __slots__ = ("trapezoid",)
+    __slots__ = ('trapezoid',)
 
     def __new__(
         cls,

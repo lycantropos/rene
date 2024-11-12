@@ -107,7 +107,7 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
         elif isinstance(other, context.empty_cls):
             return Relation.DISJOINT
         else:
-            raise TypeError(f"Unsupported type: {type(other)!r}.")
+            raise TypeError(f'Unsupported type: {type(other)!r}.')
 
     @t.overload
     def __and__(
@@ -146,7 +146,9 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(other, (context.contour_cls, context.multisegment_cls))
+            if isinstance(
+                other, (context.contour_cls, context.multisegment_cls)
+            )
             else (
                 intersect_multisegmental_with_segment(
                     self,
@@ -236,7 +238,9 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(other, (context.contour_cls, context.multisegment_cls))
+            if isinstance(
+                other, (context.contour_cls, context.multisegment_cls)
+            )
             else (
                 unite_multisegmental_with_segment(
                     self,
@@ -247,18 +251,22 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                     context.intersect_segments,
                 )
                 if isinstance(other, context.segment_cls)
-                else (self if isinstance(other, context.empty_cls) else NotImplemented)
+                else (
+                    self
+                    if isinstance(other, context.empty_cls)
+                    else NotImplemented
+                )
             )
         )
 
     def __repr__(self, /) -> str:
-        return f"{type(self).__qualname__}([{{}}])".format(
-            ", ".join(map(repr, self.segments))
+        return f'{type(self).__qualname__}([{{}}])'.format(
+            ', '.join(map(repr, self.segments))
         )
 
     def __str__(self, /) -> str:
-        return f"{type(self).__qualname__}([{{}}])".format(
-            ", ".join(map(str, self.segments))
+        return f'{type(self).__qualname__}([{{}}])'.format(
+            ', '.join(map(str, self.segments))
         )
 
     @t.overload
@@ -295,7 +303,9 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(other, (context.contour_cls, context.multisegment_cls))
+            if isinstance(
+                other, (context.contour_cls, context.multisegment_cls)
+            )
             else (
                 subtract_segment_from_multisegmental(
                     self,
@@ -372,7 +382,9 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(other, (context.contour_cls, context.multisegment_cls))
+            if isinstance(
+                other, (context.contour_cls, context.multisegment_cls)
+            )
             else (
                 symmetric_subtract_segment_from_multisegmental(
                     self,
@@ -384,6 +396,10 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                     context.intersect_segments,
                 )
                 if isinstance(other, context.segment_cls)
-                else (self if isinstance(other, context.empty_cls) else NotImplemented)
+                else (
+                    self
+                    if isinstance(other, context.empty_cls)
+                    else NotImplemented
+                )
             )
         )

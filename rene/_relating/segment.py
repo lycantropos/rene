@@ -27,7 +27,9 @@ def relate_to_contour(
     orienteer: Orienteer[hints.Scalar],
     /,
 ) -> Relation:
-    return relate_endpoints_to_contour(segment.start, segment.end, contour, orienteer)
+    return relate_endpoints_to_contour(
+        segment.start, segment.end, contour, orienteer
+    )
 
 
 def relate_to_multipolygon(
@@ -122,7 +124,9 @@ def relate_to_polygon(
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
 ) -> Relation:
-    relation_without_holes = relate_to_region(segment, polygon.border, False, orienteer)
+    relation_without_holes = relate_to_region(
+        segment, polygon.border, False, orienteer
+    )
     holes = polygon.holes
     if holes and (
         relation_without_holes is Relation.WITHIN
@@ -131,7 +135,9 @@ def relate_to_polygon(
         relation_with_holes = (
             relate_to_region(segment, holes[0], True, orienteer)
             if len(holes) == 1
-            else relate_to_multiregion(segment, holes, orienteer, segments_intersector)
+            else relate_to_multiregion(
+                segment, holes, orienteer, segments_intersector
+            )
         )
         if relation_with_holes is Relation.DISJOINT:
             return relation_without_holes

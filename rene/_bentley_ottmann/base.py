@@ -37,11 +37,11 @@ class Intersection(t.Generic[hints.Scalar]):
     _start: hints.Point[hints.Scalar]
 
     __slots__ = (
-        "_end",
-        "_first_segment_id",
-        "_relation",
-        "_second_segment_id",
-        "_start",
+        '_end',
+        '_first_segment_id',
+        '_relation',
+        '_second_segment_id',
+        '_start',
     )
 
     def __new__(
@@ -76,7 +76,9 @@ def sweep(
     events = iter(events_registry)
     event = next(events)
     start = events_registry.to_event_start(event)
-    segments_ids_containing_start = [events_registry.to_event_segment_id(event)]
+    segments_ids_containing_start = [
+        events_registry.to_event_segment_id(event)
+    ]
     for event in events:
         event_start = events_registry.to_event_start(event)
         if event_start == start:
@@ -88,7 +90,9 @@ def sweep(
                 segments_ids_containing_start, start, events_registry
             )
             start = event_start
-            segments_ids_containing_start = [events_registry.to_event_segment_id(event)]
+            segments_ids_containing_start = [
+                events_registry.to_event_segment_id(event)
+            ]
     yield from segments_ids_containing_point_to_intersections(
         segments_ids_containing_start, start, events_registry
     )
@@ -108,7 +112,9 @@ def segments_ids_containing_point_to_intersections(
         if first_segment_id == second_segment_id:
             start, end = first_start, first_end
             relation = Relation.EQUAL
-        elif not events_registry.are_collinear(first_segment_id, second_segment_id):
+        elif not events_registry.are_collinear(
+            first_segment_id, second_segment_id
+        ):
             if (
                 first_start == point
                 or first_end == point
@@ -147,4 +153,6 @@ def segments_ids_containing_point_to_intersections(
         else:
             relation = Relation.COMPOSITE
             start, end = second_start, second_end
-        yield Intersection(first_segment_id, second_segment_id, relation, start, end)
+        yield Intersection(
+            first_segment_id, second_segment_id, relation, start, end
+        )

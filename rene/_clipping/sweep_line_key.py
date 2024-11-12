@@ -16,11 +16,11 @@ class SweepLineKey(t.Generic[hints.Scalar]):
     _orienteer: Orienteer[hints.Scalar]
 
     __slots__ = (
-        "endpoints",
-        "event",
-        "is_from_first_operand",
-        "opposites",
-        "_orienteer",
+        'endpoints',
+        'event',
+        'is_from_first_operand',
+        'opposites',
+        '_orienteer',
     )
 
     def __new__(
@@ -39,7 +39,7 @@ class SweepLineKey(t.Generic[hints.Scalar]):
             self.is_from_first_operand,
             self.opposites,
             self._orienteer,
-        ) = endpoints, event, is_from_first_operand, opposites, orienteer
+        ) = (endpoints, event, is_from_first_operand, opposites, orienteer)
         return self
 
     def __lt__(self, other: te.Self, /) -> bool:

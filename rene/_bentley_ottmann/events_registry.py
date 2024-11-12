@@ -50,7 +50,9 @@ class EventsRegistry(t.Generic[hints.Scalar]):
     def unique(self, /) -> bool:
         return self._unique
 
-    def are_collinear(self, first_segment_id: int, second_segment_id: int, /) -> bool:
+    def are_collinear(
+        self, first_segment_id: int, second_segment_id: int, /
+    ) -> bool:
         return self._to_min_collinear_segment_id(
             first_segment_id
         ) == self._to_min_collinear_segment_id(second_segment_id)
@@ -69,19 +71,21 @@ class EventsRegistry(t.Generic[hints.Scalar]):
     def to_segment_end(self, segment_id: int, /) -> hints.Point[hints.Scalar]:
         return self.to_event_start(segment_id_to_right_event(segment_id))
 
-    def to_segment_start(self, segment_id: int, /) -> hints.Point[hints.Scalar]:
+    def to_segment_start(
+        self, segment_id: int, /
+    ) -> hints.Point[hints.Scalar]:
         return self.to_event_start(segment_id_to_left_event(segment_id))
 
     __slots__ = (
-        "_endpoints",
-        "_events_queue_data",
-        "_min_collinear_segments_ids",
-        "_opposites",
-        "_orienteer",
-        "_segments_ids",
-        "_segments_intersector",
-        "_sweep_line_data",
-        "_unique",
+        '_endpoints',
+        '_events_queue_data',
+        '_min_collinear_segments_ids',
+        '_opposites',
+        '_orienteer',
+        '_segments_ids',
+        '_segments_intersector',
+        '_sweep_line_data',
+        '_unique',
     )
 
     def __init__(
@@ -100,19 +104,23 @@ class EventsRegistry(t.Generic[hints.Scalar]):
         self._endpoints: list[hints.Point[hints.Scalar]] = []
         self._segments_ids: list[int] = []
         self._min_collinear_segments_ids: list[int] = []
-        self._events_queue_data: PriorityQueue[EventsQueueKey[hints.Scalar], Event] = (
-            PriorityQueue(
-                key=lambda event: EventsQueueKey(
-                    self._endpoints, self._opposites, event
-                )
+        self._events_queue_data: PriorityQueue[
+            EventsQueueKey[hints.Scalar], Event
+        ] = PriorityQueue(
+            key=lambda event: EventsQueueKey(
+                self._endpoints, self._opposites, event
             )
         )
         self._sweep_line_data: KeyedSet[SweepLineKey[hints.Scalar], Event] = (
             red_black.set_(key=self._event_to_sweep_line_key)
         )
 
-    def _event_to_sweep_line_key(self, event: Event, /) -> SweepLineKey[hints.Scalar]:
-        return SweepLineKey(self._endpoints, self._opposites, event, self._orienteer)
+    def _event_to_sweep_line_key(
+        self, event: Event, /
+    ) -> SweepLineKey[hints.Scalar]:
+        return SweepLineKey(
+            self._endpoints, self._opposites, event, self._orienteer
+        )
 
     def __bool__(self) -> bool:
         return bool(self._events_queue_data)
@@ -132,7 +140,9 @@ class EventsRegistry(t.Generic[hints.Scalar]):
                         self._detect_intersection(event, above_event)
                     yield event
                 else:
-                    self._merge_equal_segment_events(equal_segment_event, event)
+                    self._merge_equal_segment_events(
+                        equal_segment_event, event
+                    )
                     if not self.unique:
                         yield event
             else:
@@ -172,7 +182,9 @@ class EventsRegistry(t.Generic[hints.Scalar]):
         except ValueError:
             return None
 
-    def _detect_intersection(self, below_event: Event, event: Event, /) -> None:
+    def _detect_intersection(
+        self, below_event: Event, event: Event, /
+    ) -> None:
         event_start = self.to_event_start(event)
         event_end = self.to_event_end(event)
         below_event_start = self.to_event_start(below_event)
@@ -194,7 +206,9 @@ class EventsRegistry(t.Generic[hints.Scalar]):
                     )
                     self._remove(max_end_event)
                     min_end = self.to_event_end(min_end_event)
-                    _, min_end_max_end_event = self._divide(max_end_event, min_end)
+                    _, min_end_max_end_event = self._divide(
+                        max_end_event, min_end
+                    )
                     self._push(min_end_max_end_event)
                     self._merge_equal_segment_events(event, below_event)
                 elif event_end == below_event_end:
@@ -258,14 +272,19 @@ class EventsRegistry(t.Generic[hints.Scalar]):
                 if event_start < below_event_end < event_end:
                     point = below_event_end
                     self._divide_event_by_midpoint_checking_above(event, point)
-            elif below_event_start_orientation is not below_event_end_orientation:
+            elif (
+                below_event_start_orientation
+                is not below_event_end_orientation
+            ):
                 cross_point = self._segments_intersector(
                     event_start, event_end, below_event_start, below_event_end
                 )
                 assert event_start < cross_point < event_end
                 assert below_event_start < cross_point < below_event_end
                 self._divide_event_by_midpoint(below_event, cross_point)
-                self._divide_event_by_midpoint_checking_above(event, cross_point)
+                self._divide_event_by_midpoint_checking_above(
+                    event, cross_point
+                )
 
     def _divide(
         self, event: Event, mid_point: hints.Point[hints.Scalar], /
@@ -334,11 +353,13 @@ class EventsRegistry(t.Generic[hints.Scalar]):
         /,
     ) -> None:
         self._divide_event_by_midpoint(max_start_event, min_end)
-        (max_start_to_min_start_event, max_start_to_min_end_event) = self._divide(
-            min_start_event, max_start
+        (max_start_to_min_start_event, max_start_to_min_end_event) = (
+            self._divide(min_start_event, max_start)
         )
         self._push(max_start_to_min_start_event)
-        self._merge_equal_segment_events(max_start_event, max_start_to_min_end_event)
+        self._merge_equal_segment_events(
+            max_start_event, max_start_to_min_end_event
+        )
 
     def _find(self, event: Event, /) -> Event | None:
         assert is_event_left(event)
@@ -350,13 +371,21 @@ class EventsRegistry(t.Generic[hints.Scalar]):
             return (
                 candidate
                 if (
-                    (self.to_event_start(candidate) == self.to_event_start(event))
-                    and (self.to_event_end(candidate) == self.to_event_end(event))
+                    (
+                        self.to_event_start(candidate)
+                        == self.to_event_start(event)
+                    )
+                    and (
+                        self.to_event_end(candidate)
+                        == self.to_event_end(event)
+                    )
                 )
                 else None
             )
 
-    def _merge_equal_segment_events(self, first: Event, second: Event, /) -> None:
+    def _merge_equal_segment_events(
+        self, first: Event, second: Event, /
+    ) -> None:
         first_segment_id = self._to_left_event_segment_id(first)
         second_segment_id = self._to_left_event_segment_id(second)
         first_min_collinear_segment_id = self._min_collinear_segments_ids[
@@ -368,8 +397,12 @@ class EventsRegistry(t.Generic[hints.Scalar]):
         min_collinear_segment_id = min(
             first_min_collinear_segment_id, second_min_collinear_segment_id
         )
-        self._min_collinear_segments_ids[first_segment_id] = min_collinear_segment_id
-        self._min_collinear_segments_ids[second_segment_id] = min_collinear_segment_id
+        self._min_collinear_segments_ids[first_segment_id] = (
+            min_collinear_segment_id
+        )
+        self._min_collinear_segments_ids[second_segment_id] = (
+            min_collinear_segment_id
+        )
         self._min_collinear_segments_ids[first_min_collinear_segment_id] = (
             min_collinear_segment_id
         )

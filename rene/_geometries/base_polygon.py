@@ -77,7 +77,7 @@ class BasePolygon(ABC, BaseCompound[hints.Scalar]):
                 self, other, context.orient, context.intersect_segments
             )
         else:
-            raise TypeError(f"Unsupported type: {type(other)!r}.")
+            raise TypeError(f'Unsupported type: {type(other)!r}.')
 
     @t.overload
     def __and__(
@@ -222,18 +222,22 @@ class BasePolygon(ABC, BaseCompound[hints.Scalar]):
                     context.intersect_segments,
                 )
                 if isinstance(other, context.polygon_cls)
-                else (self if isinstance(other, context.empty_cls) else NotImplemented)
+                else (
+                    self
+                    if isinstance(other, context.empty_cls)
+                    else NotImplemented
+                )
             )
         )
 
     def __repr__(self, /) -> str:
-        return f"{type(self).__qualname__}({self.border!r}, [{{}}])".format(
-            ", ".join(map(repr, self.holes))
+        return f'{type(self).__qualname__}({self.border!r}, [{{}}])'.format(
+            ', '.join(map(repr, self.holes))
         )
 
     def __str__(self, /) -> str:
-        return f"{type(self).__qualname__}({self.border}, [{{}}])".format(
-            ", ".join(map(str, self.holes))
+        return f'{type(self).__qualname__}({self.border}, [{{}}])'.format(
+            ', '.join(map(str, self.holes))
         )
 
     @t.overload
@@ -281,7 +285,11 @@ class BasePolygon(ABC, BaseCompound[hints.Scalar]):
                     context.intersect_segments,
                 )
                 if isinstance(other, context.polygon_cls)
-                else (self if isinstance(other, context.empty_cls) else NotImplemented)
+                else (
+                    self
+                    if isinstance(other, context.empty_cls)
+                    else NotImplemented
+                )
             )
         )
 
@@ -330,6 +338,10 @@ class BasePolygon(ABC, BaseCompound[hints.Scalar]):
                     context.intersect_segments,
                 )
                 if isinstance(other, context.polygon_cls)
-                else (self if isinstance(other, context.empty_cls) else NotImplemented)
+                else (
+                    self
+                    if isinstance(other, context.empty_cls)
+                    else NotImplemented
+                )
             )
         )

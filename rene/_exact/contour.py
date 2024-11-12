@@ -24,18 +24,22 @@ class Contour(BaseContour[Fraction]):
     _segments: t.Sequence[hints.Segment[Fraction]]
     _vertices: t.Sequence[hints.Point[Fraction]]
 
-    __module__ = "rene.exact"
-    __slots__ = "_segments", "_vertices"
+    __module__ = 'rene.exact'
+    __slots__ = '_segments', '_vertices'
 
     def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
-        raise TypeError(f"type {cls.__qualname__!r} " "is not an acceptable base type")
+        raise TypeError(
+            f'type {cls.__qualname__!r} is not an acceptable base type'
+        )
 
-    def __new__(cls, vertices: t.Sequence[hints.Point[Fraction]], /) -> te.Self:
+    def __new__(
+        cls, vertices: t.Sequence[hints.Point[Fraction]], /
+    ) -> te.Self:
         if len(vertices) < MIN_CONTOUR_VERTICES_COUNT:
             raise ValueError(
-                "Contour should have at least "
-                f"{MIN_CONTOUR_VERTICES_COUNT} vertices, "
-                f"but found {len(vertices)}."
+                'Contour should have at least '
+                f'{MIN_CONTOUR_VERTICES_COUNT} vertices, '
+                f'but found {len(vertices)}.'
             )
         self = super().__new__(cls)
         self._vertices = tuple(vertices)
@@ -64,24 +68,28 @@ class _ContourSegments(t.Sequence[hints.Segment[Fraction]]):
         stop: int | None = None,
         /,
     ) -> int:
-        return self._segments.index(segment, start, *(() if stop is None else (stop,)))
+        return self._segments.index(
+            segment, start, *(() if stop is None else (stop,))
+        )
 
     _segments: t.Sequence[hints.Segment[Fraction]]
 
-    __module__ = "rene.exact"
-    __slots__ = ("_segments",)
+    __module__ = 'rene.exact'
+    __slots__ = ('_segments',)
 
     def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
-        raise TypeError(f"type {cls.__qualname__!r} " "is not an acceptable base type")
+        raise TypeError(
+            f'type {cls.__qualname__!r} is not an acceptable base type'
+        )
 
     def __new__(
         cls, segments: t.Sequence[hints.Segment[Fraction]], token: _Token, /
     ) -> te.Self:
         if token is not _TOKEN:
             raise ValueError(
-                f"{cls.__qualname__!r} is internal "
-                "and its instances should not be instantiated "
-                "outside of the library."
+                f'{cls.__qualname__!r} is internal '
+                'and its instances should not be instantiated '
+                'outside of the library.'
             )
         self = super().__new__(cls)
         self._segments = segments
@@ -106,7 +114,9 @@ class _ContourSegments(t.Sequence[hints.Segment[Fraction]]):
     @t.overload
     def __getitem__(self, item: slice) -> te.Self: ...
 
-    def __getitem__(self, item: int | slice) -> hints.Segment[Fraction] | te.Self:
+    def __getitem__(
+        self, item: int | slice
+    ) -> hints.Segment[Fraction] | te.Self:
         return (
             _ContourSegments(self._segments[item], _TOKEN)
             if type(item) is slice
@@ -132,24 +142,28 @@ class _ContourVertices(t.Sequence[hints.Point[Fraction]]):
         stop: int | None = None,
         /,
     ) -> int:
-        return self._vertices.index(point, start, *(() if stop is None else (stop,)))
+        return self._vertices.index(
+            point, start, *(() if stop is None else (stop,))
+        )
 
     _vertices: t.Sequence[hints.Point[Fraction]]
 
-    __module__ = "rene.exact"
-    __slots__ = ("_vertices",)
+    __module__ = 'rene.exact'
+    __slots__ = ('_vertices',)
 
     def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
-        raise TypeError(f"type {cls.__qualname__!r} " "is not an acceptable base type")
+        raise TypeError(
+            f'type {cls.__qualname__!r} is not an acceptable base type'
+        )
 
     def __new__(
         cls, vertices: t.Sequence[hints.Point[Fraction]], token: _Token, /
     ) -> te.Self:
         if token is not _TOKEN:
             raise ValueError(
-                f"{cls.__qualname__!r} is internal "
-                "and its instances should not be instantiated "
-                "outside of the library."
+                f'{cls.__qualname__!r} is internal '
+                'and its instances should not be instantiated '
+                'outside of the library.'
             )
         self = super().__new__(cls)
         self._vertices = vertices
@@ -174,7 +188,9 @@ class _ContourVertices(t.Sequence[hints.Point[Fraction]]):
     @t.overload
     def __getitem__(self, item: slice) -> te.Self: ...
 
-    def __getitem__(self, item: int | slice) -> hints.Point[Fraction] | te.Self:
+    def __getitem__(
+        self, item: int | slice
+    ) -> hints.Point[Fraction] | te.Self:
         return (
             _ContourVertices(self._vertices[item], _TOKEN)
             if type(item) is slice

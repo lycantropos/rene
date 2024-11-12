@@ -41,7 +41,9 @@ class ShapedUnion(shaped.Operation[hints.Scalar]):
         )
 
 
-_Multisegmental = t.Union[hints.Contour[hints.Scalar], hints.Multisegment[hints.Scalar]]
+_Multisegmental = t.Union[
+    hints.Contour[hints.Scalar], hints.Multisegment[hints.Scalar]
+]
 
 
 def unite_multipolygon_with_multipolygon(
@@ -60,7 +62,9 @@ def unite_multipolygon_with_multipolygon(
         second.bounding_box,
     )
     first_polygons, second_polygons = first.polygons, second.polygons
-    if do_boxes_have_no_common_continuum(first_bounding_box, second_bounding_box):
+    if do_boxes_have_no_common_continuum(
+        first_bounding_box, second_bounding_box
+    ):
         return multipolygon_cls([*first_polygons, *second_polygons])
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
     second_boxes = [polygon.bounding_box for polygon in second_polygons]
@@ -84,28 +88,39 @@ def unite_multipolygon_with_multipolygon(
         first_polygons[index] for index in first_common_continuum_polygons_ids
     ]
     second_common_continuum_polygons = [
-        second_polygons[index] for index in second_common_continuum_polygons_ids
+        second_polygons[index]
+        for index in second_common_continuum_polygons_ids
     ]
     operation = ShapedUnion.from_segments_iterables(
         chain.from_iterable(
-            polygon_to_correctly_oriented_segments(polygon, orienteer, segment_cls)
+            polygon_to_correctly_oriented_segments(
+                polygon, orienteer, segment_cls
+            )
             for polygon in first_common_continuum_polygons
         ),
         chain.from_iterable(
-            polygon_to_correctly_oriented_segments(polygon, orienteer, segment_cls)
+            polygon_to_correctly_oriented_segments(
+                polygon, orienteer, segment_cls
+            )
             for polygon in second_common_continuum_polygons
         ),
         orienteer,
         segments_intersector,
     )
-    polygons = operation.reduce_events(list(operation), contour_cls, polygon_cls)
+    polygons = operation.reduce_events(
+        list(operation), contour_cls, polygon_cls
+    )
     polygons.extend(
         first_polygons[index]
-        for index in flags_to_false_indices(do_first_boxes_have_common_continuum)
+        for index in flags_to_false_indices(
+            do_first_boxes_have_common_continuum
+        )
     )
     polygons.extend(
         second_polygons[index]
-        for index in flags_to_false_indices(do_second_boxes_have_common_continuum)
+        for index in flags_to_false_indices(
+            do_second_boxes_have_common_continuum
+        )
     )
     return collect_non_empty_polygons(polygons, multipolygon_cls)
 
@@ -126,7 +141,9 @@ def unite_multipolygon_with_polygon(
         second.bounding_box,
     )
     first_polygons = first.polygons
-    if do_boxes_have_no_common_continuum(first_bounding_box, second_bounding_box):
+    if do_boxes_have_no_common_continuum(
+        first_bounding_box, second_bounding_box
+    ):
         return multipolygon_cls([*first_polygons, second])
     first_boxes = [polygon.bounding_box for polygon in first_polygons]
     first_boxes_have_common_continuum = to_boxes_have_common_continuum(
@@ -142,14 +159,18 @@ def unite_multipolygon_with_polygon(
     ]
     operation = ShapedUnion.from_segments_iterables(
         chain.from_iterable(
-            polygon_to_correctly_oriented_segments(polygon, orienteer, segment_cls)
+            polygon_to_correctly_oriented_segments(
+                polygon, orienteer, segment_cls
+            )
             for polygon in first_common_continuum_polygons
         ),
         polygon_to_correctly_oriented_segments(second, orienteer, segment_cls),
         orienteer,
         segments_intersector,
     )
-    polygons = operation.reduce_events(list(operation), contour_cls, polygon_cls)
+    polygons = operation.reduce_events(
+        list(operation), contour_cls, polygon_cls
+    )
     polygons.extend(
         first_polygons[index]
         for index in flags_to_false_indices(first_boxes_have_common_continuum)
@@ -171,7 +192,9 @@ def unite_multisegmental_with_multisegmental(
         second.bounding_box,
     )
     first_segments, second_segments = first.segments, second.segments
-    if do_boxes_have_no_common_continuum(first_bounding_box, second_bounding_box):
+    if do_boxes_have_no_common_continuum(
+        first_bounding_box, second_bounding_box
+    ):
         return multisegment_cls([*first_segments, *second_segments])
     first_boxes = [segment.bounding_box for segment in first_segments]
     second_boxes = [segment.bounding_box for segment in second_segments]
@@ -195,7 +218,8 @@ def unite_multisegmental_with_multisegmental(
         first_segments[index] for index in first_common_continuum_segments_ids
     ]
     second_common_continuum_segments = [
-        second_segments[index] for index in second_common_continuum_segments_ids
+        second_segments[index]
+        for index in second_common_continuum_segments_ids
     ]
     operation = LinearUnion.from_segments_iterables(
         first_common_continuum_segments,
@@ -213,11 +237,15 @@ def unite_multisegmental_with_multisegmental(
     )
     segments.extend(
         first_segments[index]
-        for index in flags_to_false_indices(do_first_boxes_have_common_continuum)
+        for index in flags_to_false_indices(
+            do_first_boxes_have_common_continuum
+        )
     )
     segments.extend(
         second_segments[index]
-        for index in flags_to_false_indices(do_second_boxes_have_common_continuum)
+        for index in flags_to_false_indices(
+            do_second_boxes_have_common_continuum
+        )
     )
     return collect_non_empty_segments(segments, multisegment_cls)
 
@@ -236,7 +264,9 @@ def unite_multisegmental_with_segment(
         second.bounding_box,
     )
     first_segments = first.segments
-    if do_boxes_have_no_common_continuum(first_bounding_box, second_bounding_box):
+    if do_boxes_have_no_common_continuum(
+        first_bounding_box, second_bounding_box
+    ):
         return multisegment_cls([*first_segments, second])
     segments = []
     second_break_points = []
@@ -245,11 +275,15 @@ def unite_multisegmental_with_segment(
         if first_segment.bounding_box.disjoint_with(second_bounding_box):
             segments.append(first_segment)
             continue
-        first_start, first_end = to_sorted_pair(first_segment.start, first_segment.end)
+        first_start, first_end = to_sorted_pair(
+            first_segment.start, first_segment.end
+        )
         if second_start == first_start and second_end == first_end:
             segments.extend(first_segments[index + 1 :])
             break
-        first_start_orientation = orienteer(second_end, second_start, first_start)
+        first_start_orientation = orienteer(
+            second_end, second_start, first_start
+        )
         first_end_orientation = orienteer(second_end, second_start, first_end)
         if first_start_orientation is first_end_orientation:
             if first_start_orientation is Orientation.COLLINEAR:
@@ -277,8 +311,12 @@ def unite_multisegmental_with_segment(
             if second_start < first_end < second_end:
                 second_break_points.append(first_end)
         else:
-            second_start_orientation = orienteer(first_start, first_end, second_start)
-            second_end_orientation = orienteer(first_start, first_end, second_end)
+            second_start_orientation = orienteer(
+                first_start, first_end, second_start
+            )
+            second_end_orientation = orienteer(
+                first_start, first_end, second_end
+            )
             if second_start_orientation is Orientation.COLLINEAR:
                 if first_start < second_start < first_end:
                     segments.append(segment_cls(first_start, second_start))
@@ -326,7 +364,9 @@ def unite_polygon_with_multipolygon(
         second.bounding_box,
     )
     second_polygons = second.polygons
-    if do_boxes_have_no_common_continuum(first_bounding_box, second_bounding_box):
+    if do_boxes_have_no_common_continuum(
+        first_bounding_box, second_bounding_box
+    ):
         return multipolygon_cls([first, *second_polygons])
     second_boxes = [polygon.bounding_box for polygon in second_polygons]
     do_second_boxes_have_common_continuum = to_boxes_have_common_continuum(
@@ -338,21 +378,28 @@ def unite_polygon_with_multipolygon(
     if not second_common_continuum_polygons_ids:
         return multipolygon_cls([first, *second_polygons])
     second_common_continuum_polygons = [
-        second_polygons[index] for index in second_common_continuum_polygons_ids
+        second_polygons[index]
+        for index in second_common_continuum_polygons_ids
     ]
     operation = ShapedUnion.from_segments_iterables(
         polygon_to_correctly_oriented_segments(first, orienteer, segment_cls),
         chain.from_iterable(
-            polygon_to_correctly_oriented_segments(polygon, orienteer, segment_cls)
+            polygon_to_correctly_oriented_segments(
+                polygon, orienteer, segment_cls
+            )
             for polygon in second_common_continuum_polygons
         ),
         orienteer,
         segments_intersector,
     )
-    polygons = operation.reduce_events(list(operation), contour_cls, polygon_cls)
+    polygons = operation.reduce_events(
+        list(operation), contour_cls, polygon_cls
+    )
     polygons.extend(
         second_polygons[index]
-        for index in flags_to_false_indices(do_second_boxes_have_common_continuum)
+        for index in flags_to_false_indices(
+            do_second_boxes_have_common_continuum
+        )
     )
     return collect_non_empty_polygons(polygons, multipolygon_cls)
 
@@ -372,7 +419,9 @@ def unite_polygon_with_polygon(
         first.bounding_box,
         second.bounding_box,
     )
-    if do_boxes_have_no_common_continuum(first_bounding_box, second_bounding_box):
+    if do_boxes_have_no_common_continuum(
+        first_bounding_box, second_bounding_box
+    ):
         return multipolygon_cls([first, second])
     operation = ShapedUnion.from_segments_iterables(
         polygon_to_correctly_oriented_segments(first, orienteer, segment_cls),
@@ -400,7 +449,9 @@ def unite_segment_with_multisegmental(
         second.bounding_box,
     )
     second_segments = second.segments
-    if do_boxes_have_no_common_continuum(first_bounding_box, second_bounding_box):
+    if do_boxes_have_no_common_continuum(
+        first_bounding_box, second_bounding_box
+    ):
         return multisegment_cls([first, *second_segments])
     segments = []
     first_break_points = []
@@ -415,7 +466,9 @@ def unite_segment_with_multisegmental(
         if first_start == second_start and first_end == second_end:
             segments.extend(second_segments[index + 1 :])
             break
-        second_start_orientation = orienteer(first_end, first_start, second_start)
+        second_start_orientation = orienteer(
+            first_end, first_start, second_start
+        )
         second_end_orientation = orienteer(first_end, first_start, second_end)
         if second_start_orientation is second_end_orientation:
             if second_start_orientation is Orientation.COLLINEAR:
@@ -443,8 +496,12 @@ def unite_segment_with_multisegmental(
             if first_start < second_end < first_end:
                 first_break_points.append(second_end)
         else:
-            first_start_orientation = orienteer(second_start, second_end, first_start)
-            first_end_orientation = orienteer(second_start, second_end, first_end)
+            first_start_orientation = orienteer(
+                second_start, second_end, first_start
+            )
+            first_end_orientation = orienteer(
+                second_start, second_end, first_end
+            )
             if first_start_orientation is Orientation.COLLINEAR:
                 if second_start < first_start < second_end:
                     segments.append(segment_cls(second_start, first_start))
@@ -496,7 +553,9 @@ def unite_segment_with_segment(
         and second_end_orientation is not Orientation.COLLINEAR
         and second_start_orientation is not second_end_orientation
     ):
-        first_start_orientation = orienteer(second_start, second_end, first_start)
+        first_start_orientation = orienteer(
+            second_start, second_end, first_start
+        )
         first_end_orientation = orienteer(second_start, second_end, first_end)
         if (
             first_start_orientation is not Orientation.COLLINEAR
@@ -520,5 +579,7 @@ def unite_segment_with_segment(
         and second_start <= first_end
         and first_start <= second_end
     ):
-        return segment_cls(min(first_start, second_start), max(first_end, second_end))
+        return segment_cls(
+            min(first_start, second_start), max(first_end, second_end)
+        )
     return multisegment_cls([first, second])

@@ -20,18 +20,22 @@ class Multipolygon(BaseMultipolygon[Fraction]):
     _context: t.ClassVar[Context[Fraction]]
     _polygons: t.Sequence[hints.Polygon[Fraction]]
 
-    __module__ = "rene.exact"
-    __slots__ = ("_polygons",)
+    __module__ = 'rene.exact'
+    __slots__ = ('_polygons',)
 
     def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
-        raise TypeError(f"type {cls.__qualname__!r} " "is not an acceptable base type")
+        raise TypeError(
+            f'type {cls.__qualname__!r} is not an acceptable base type'
+        )
 
-    def __new__(cls, polygons: t.Sequence[hints.Polygon[Fraction]], /) -> te.Self:
+    def __new__(
+        cls, polygons: t.Sequence[hints.Polygon[Fraction]], /
+    ) -> te.Self:
         if len(polygons) < MIN_MULTIPOLYGON_POLYGONS_COUNT:
             raise ValueError(
-                "Multipolygon should have at least "
-                f"{MIN_MULTIPOLYGON_POLYGONS_COUNT} polygons, "
-                f"but found {len(polygons)}."
+                'Multipolygon should have at least '
+                f'{MIN_MULTIPOLYGON_POLYGONS_COUNT} polygons, '
+                f'but found {len(polygons)}.'
             )
         self = super().__new__(cls)
         self._polygons = tuple(polygons)
@@ -57,24 +61,28 @@ class _MultipolygonPolygons(t.Sequence[hints.Polygon[Fraction]]):
         stop: int | None = None,
         /,
     ) -> int:
-        return self._polygons.index(polygon, start, *(() if stop is None else (stop,)))
+        return self._polygons.index(
+            polygon, start, *(() if stop is None else (stop,))
+        )
 
     _polygons: t.Sequence[hints.Polygon[Fraction]]
 
-    __module__ = "rene.exact"
-    __slots__ = ("_polygons",)
+    __module__ = 'rene.exact'
+    __slots__ = ('_polygons',)
 
     def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
-        raise TypeError(f"type {cls.__qualname__!r} " "is not an acceptable base type")
+        raise TypeError(
+            f'type {cls.__qualname__!r} is not an acceptable base type'
+        )
 
     def __new__(
         cls, polygons: t.Sequence[hints.Polygon[Fraction]], token: _Token, /
     ) -> te.Self:
         if token is not _TOKEN:
             raise ValueError(
-                f"{cls.__qualname__!r} is internal "
-                "and its instances should not be instantiated "
-                "outside of the library."
+                f'{cls.__qualname__!r} is internal '
+                'and its instances should not be instantiated '
+                'outside of the library.'
             )
         self = super().__new__(cls)
         self._polygons = polygons
@@ -99,7 +107,9 @@ class _MultipolygonPolygons(t.Sequence[hints.Polygon[Fraction]]):
     @t.overload
     def __getitem__(self, item: slice) -> te.Self: ...
 
-    def __getitem__(self, item: int | slice) -> hints.Polygon[Fraction] | te.Self:
+    def __getitem__(
+        self, item: int | slice
+    ) -> hints.Polygon[Fraction] | te.Self:
         return (
             _MultipolygonPolygons(self._polygons[item], _TOKEN)
             if type(item) is slice

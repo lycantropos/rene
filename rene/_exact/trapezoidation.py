@@ -48,7 +48,9 @@ class Trapezoidation:
             else seeder()
         )
         validate_seed(seed)
-        return cls(_RawTrapezoidation.from_polygon(polygon, seed, cls._context.orient))
+        return cls(
+            _RawTrapezoidation.from_polygon(polygon, seed, cls._context.orient)
+        )
 
     @property
     def height(self, /) -> int:
@@ -60,11 +62,13 @@ class Trapezoidation:
     _context: t.ClassVar[Context[Fraction]]
     _raw: _RawTrapezoidation[Fraction]
 
-    __module__ = "rene.exact"
-    __slots__ = ("_raw",)
+    __module__ = 'rene.exact'
+    __slots__ = ('_raw',)
 
     def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
-        raise TypeError(f"type {cls.__qualname__!r} " "is not an acceptable base type")
+        raise TypeError(
+            f'type {cls.__qualname__!r} is not an acceptable base type'
+        )
 
     def __new__(cls, raw: _RawTrapezoidation[Fraction], /) -> te.Self:
         self = super().__new__(cls)

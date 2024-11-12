@@ -25,7 +25,9 @@ class XNode(Node[hints.Scalar]):
             nodes[self.left_node_index].locate(point, edges, endpoints, nodes)
             if point < endpoints[self.point_index]
             else (
-                nodes[self.right_node_index].locate(point, edges, endpoints, nodes)
+                nodes[self.right_node_index].locate(
+                    point, edges, endpoints, nodes
+                )
                 if endpoints[self.point_index] < point
                 else Location.BOUNDARY
             )
@@ -40,9 +42,12 @@ class XNode(Node[hints.Scalar]):
         /,
     ) -> Node[hints.Scalar]:
         return nodes[
-            self.left_node_index
-            if endpoints[edge.left_point_index] < endpoints[self.point_index]
-            else self.right_node_index
+            (
+                self.left_node_index
+                if endpoints[edge.left_point_index]
+                < endpoints[self.point_index]
+                else self.right_node_index
+            )
         ]
 
     def to_height(self, nodes: t.Sequence[Node[hints.Scalar]], /) -> int:
@@ -54,7 +59,7 @@ class XNode(Node[hints.Scalar]):
             + 1
         )
 
-    __slots__ = "left_node_index", "point_index", "right_node_index"
+    __slots__ = 'left_node_index', 'point_index', 'right_node_index'
 
     def __new__(
         cls, point_index: int, left_node_index: int, right_node_index: int, /

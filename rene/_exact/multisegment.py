@@ -20,18 +20,22 @@ class Multisegment(BaseMultisegment[Fraction]):
     _context: t.ClassVar[Context[Fraction]]
     _segments: t.Sequence[hints.Segment[Fraction]]
 
-    __module__ = "rene.exact"
-    __slots__ = ("_segments",)
+    __module__ = 'rene.exact'
+    __slots__ = ('_segments',)
 
     def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
-        raise TypeError(f"type {cls.__qualname__!r} " "is not an acceptable base type")
+        raise TypeError(
+            f'type {cls.__qualname__!r} is not an acceptable base type'
+        )
 
-    def __new__(cls, segments: t.Sequence[hints.Segment[Fraction]], /) -> te.Self:
+    def __new__(
+        cls, segments: t.Sequence[hints.Segment[Fraction]], /
+    ) -> te.Self:
         if len(segments) < MIN_MULTISEGMENT_SEGMENTS_COUNT:
             raise ValueError(
-                "Multisegment should have at least "
-                f"{MIN_MULTISEGMENT_SEGMENTS_COUNT} segments, "
-                f"but found {len(segments)}."
+                'Multisegment should have at least '
+                f'{MIN_MULTISEGMENT_SEGMENTS_COUNT} segments, '
+                f'but found {len(segments)}.'
             )
         self = super().__new__(cls)
         self._segments = tuple(segments)
@@ -57,24 +61,28 @@ class _MultisegmentSegments(t.Sequence[hints.Segment[Fraction]]):
         stop: int | None = None,
         /,
     ) -> int:
-        return self._segments.index(segment, start, *(() if stop is None else (stop,)))
+        return self._segments.index(
+            segment, start, *(() if stop is None else (stop,))
+        )
 
     _segments: t.Sequence[hints.Segment[Fraction]]
 
-    __module__ = "rene.exact"
-    __slots__ = ("_segments",)
+    __module__ = 'rene.exact'
+    __slots__ = ('_segments',)
 
     def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
-        raise TypeError(f"type {cls.__qualname__!r} " "is not an acceptable base type")
+        raise TypeError(
+            f'type {cls.__qualname__!r} is not an acceptable base type'
+        )
 
     def __new__(
         cls, segments: t.Sequence[hints.Segment[Fraction]], token: _Token, /
     ) -> te.Self:
         if token is not _TOKEN:
             raise ValueError(
-                f"{cls.__qualname__!r} is internal "
-                "and its instances should not be instantiated "
-                "outside of the library."
+                f'{cls.__qualname__!r} is internal '
+                'and its instances should not be instantiated '
+                'outside of the library.'
             )
         self = super().__new__(cls)
         self._segments = segments
@@ -99,7 +107,9 @@ class _MultisegmentSegments(t.Sequence[hints.Segment[Fraction]]):
     @t.overload
     def __getitem__(self, item: slice) -> te.Self: ...
 
-    def __getitem__(self, item: int | slice) -> hints.Segment[Fraction] | te.Self:
+    def __getitem__(
+        self, item: int | slice
+    ) -> hints.Segment[Fraction] | te.Self:
         return (
             _MultisegmentSegments(self._segments[item], _TOKEN)
             if type(item) is slice

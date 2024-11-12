@@ -63,8 +63,8 @@ class _Scalar(Protocol):
     def __truediv__(self, other: Self, /) -> Self: ...
 
 
-Scalar = TypeVar("Scalar", bound=_Scalar)
-Scalar_co = TypeVar("Scalar_co", bound=_Scalar, covariant=True)
+Scalar = TypeVar('Scalar', bound=_Scalar)
+Scalar_co = TypeVar('Scalar_co', bound=_Scalar, covariant=True)
 
 
 class _SelfComparable(Protocol):
@@ -130,10 +130,14 @@ class Empty(_SelfComparable, Protocol[Scalar]):
     def __or__(self, other: Contour[Scalar], /) -> Contour[Scalar]: ...
 
     @overload
-    def __or__(self, other: Multipolygon[Scalar], /) -> Multipolygon[Scalar]: ...
+    def __or__(
+        self, other: Multipolygon[Scalar], /
+    ) -> Multipolygon[Scalar]: ...
 
     @overload
-    def __or__(self, other: Multisegment[Scalar], /) -> Multisegment[Scalar]: ...
+    def __or__(
+        self, other: Multisegment[Scalar], /
+    ) -> Multisegment[Scalar]: ...
 
     @overload
     def __or__(self, other: Polygon[Scalar], /) -> Polygon[Scalar]: ...
@@ -165,10 +169,14 @@ class Empty(_SelfComparable, Protocol[Scalar]):
     def __xor__(self, other: Contour[Scalar], /) -> Contour[Scalar]: ...
 
     @overload
-    def __xor__(self, other: Multipolygon[Scalar], /) -> Multipolygon[Scalar]: ...
+    def __xor__(
+        self, other: Multipolygon[Scalar], /
+    ) -> Multipolygon[Scalar]: ...
 
     @overload
-    def __xor__(self, other: Multisegment[Scalar], /) -> Multisegment[Scalar]: ...
+    def __xor__(
+        self, other: Multisegment[Scalar], /
+    ) -> Multisegment[Scalar]: ...
 
     @overload
     def __xor__(self, other: Polygon[Scalar], /) -> Polygon[Scalar]: ...
@@ -258,7 +266,9 @@ class Segment(_SelfComparable, Protocol[Scalar]):
     ) -> Empty[Scalar] | Multisegment[Scalar] | Segment[Scalar]: ...
 
     @overload
-    def __and__(self, other: Segment[Scalar], /) -> Empty[Scalar] | Segment[Scalar]: ...
+    def __and__(
+        self, other: Segment[Scalar], /
+    ) -> Empty[Scalar] | Segment[Scalar]: ...
 
     def __contains__(self, point: Point[Scalar], /) -> bool: ...
 
@@ -299,7 +309,7 @@ class Segment(_SelfComparable, Protocol[Scalar]):
     ) -> Empty[Scalar] | Multisegment[Scalar] | Segment[Scalar]: ...
 
 
-_Segmental_co = TypeVar("_Segmental_co", bound=Segment[Any], covariant=True)
+_Segmental_co = TypeVar('_Segmental_co', bound=Segment[Any], covariant=True)
 
 
 class Multisegmental(Protocol[_Segmental_co]):
@@ -307,7 +317,9 @@ class Multisegmental(Protocol[_Segmental_co]):
     def segments(self, /) -> Sequence[_Segmental_co]: ...
 
 
-class Contour(_SelfComparable, Multisegmental[Segment[Scalar]], Protocol[Scalar]):
+class Contour(
+    _SelfComparable, Multisegmental[Segment[Scalar]], Protocol[Scalar]
+):
     @property
     def bounding_box(self, /) -> Box[Scalar]: ...
 
@@ -380,7 +392,9 @@ class Contour(_SelfComparable, Multisegmental[Segment[Scalar]], Protocol[Scalar]
     ) -> Empty[Scalar] | Multisegment[Scalar] | Segment[Scalar]: ...
 
 
-class Multisegment(_SelfComparable, Multisegmental[Segment[Scalar]], Protocol[Scalar]):
+class Multisegment(
+    _SelfComparable, Multisegmental[Segment[Scalar]], Protocol[Scalar]
+):
     @property
     def bounding_box(self, /) -> Box[Scalar]: ...
 

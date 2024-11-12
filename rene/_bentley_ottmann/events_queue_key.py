@@ -15,7 +15,7 @@ class EventsQueueKey(t.Generic[Scalar]):
     opposites: Map[Event, Event]
     event: Event
 
-    __slots__ = "endpoints", "event", "opposites"
+    __slots__ = 'endpoints', 'event', 'opposites'
 
     def __new__(
         cls,

@@ -59,7 +59,9 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
     def orientation(self, /) -> Orientation:
         vertices = self.vertices
         min_vertex_index = to_arg_min(vertices)
-        return to_contour_orientation(vertices, min_vertex_index, self._context.orient)
+        return to_contour_orientation(
+            vertices, min_vertex_index, self._context.orient
+        )
 
     @property
     @abstractmethod
@@ -70,7 +72,9 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
     def vertices(self) -> t.Sequence[hints.Point[hints.Scalar]]: ...
 
     def is_valid(self) -> bool:
-        if not are_contour_vertices_non_degenerate(self.vertices, self._context.orient):
+        if not are_contour_vertices_non_degenerate(
+            self.vertices, self._context.orient
+        ):
             return False
         segments = self.segments
         if len(segments) < MIN_CONTOUR_VERTICES_COUNT:
@@ -88,7 +92,8 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
         return (
             Location.EXTERIOR
             if all(
-                segment.locate(point) is Location.EXTERIOR for segment in self.segments
+                segment.locate(point) is Location.EXTERIOR
+                for segment in self.segments
             )
             else Location.BOUNDARY
         )
@@ -120,7 +125,7 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
         elif isinstance(other, context.empty_cls):
             return Relation.DISJOINT
         else:
-            raise TypeError(f"Unsupported type: {type(other)!r}.")
+            raise TypeError(f'Unsupported type: {type(other)!r}.')
 
     @t.overload
     def __and__(
@@ -159,7 +164,9 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(other, (context.contour_cls, context.multisegment_cls))
+            if isinstance(
+                other, (context.contour_cls, context.multisegment_cls)
+            )
             else (
                 intersect_multisegmental_with_segment(
                     self,
@@ -232,7 +239,9 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                 *vertices[:min_vertex_index:-1],
             )
             if (
-                to_contour_orientation(vertices, min_vertex_index, self._context.orient)
+                to_contour_orientation(
+                    vertices, min_vertex_index, self._context.orient
+                )
                 is Orientation.CLOCKWISE
             )
             else (*vertices[min_vertex_index:], *vertices[:min_vertex_index])
@@ -267,7 +276,9 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(other, (context.contour_cls, context.multisegment_cls))
+            if isinstance(
+                other, (context.contour_cls, context.multisegment_cls)
+            )
             else (
                 unite_multisegmental_with_segment(
                     self,
@@ -278,18 +289,22 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                     context.intersect_segments,
                 )
                 if isinstance(other, context.segment_cls)
-                else (self if isinstance(other, context.empty_cls) else NotImplemented)
+                else (
+                    self
+                    if isinstance(other, context.empty_cls)
+                    else NotImplemented
+                )
             )
         )
 
     def __repr__(self, /) -> str:
-        return f"{type(self).__qualname__}([{{}}])".format(
-            ", ".join(map(repr, self.vertices))
+        return f'{type(self).__qualname__}([{{}}])'.format(
+            ', '.join(map(repr, self.vertices))
         )
 
     def __str__(self, /) -> str:
-        return f"{type(self).__qualname__}([{{}}])".format(
-            ", ".join(map(str, self.vertices))
+        return f'{type(self).__qualname__}([{{}}])'.format(
+            ', '.join(map(str, self.vertices))
         )
 
     @t.overload
@@ -327,7 +342,9 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(other, (context.contour_cls, context.multisegment_cls))
+            if isinstance(
+                other, (context.contour_cls, context.multisegment_cls)
+            )
             else (
                 subtract_segment_from_multisegmental(
                     self,
@@ -404,7 +421,9 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(other, (context.contour_cls, context.multisegment_cls))
+            if isinstance(
+                other, (context.contour_cls, context.multisegment_cls)
+            )
             else (
                 symmetric_subtract_segment_from_multisegmental(
                     self,
@@ -416,7 +435,11 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                     context.intersect_segments,
                 )
                 if isinstance(other, context.segment_cls)
-                else (self if isinstance(other, context.empty_cls) else NotImplemented)
+                else (
+                    self
+                    if isinstance(other, context.empty_cls)
+                    else NotImplemented
+                )
             )
         )
 
@@ -461,7 +484,10 @@ def _neighbour_segments_vertices_touch(
         )
     )
     neighbour_segments_intersection = (
-        abs(intersection.first_segment_id - intersection.second_segment_id) == 1
+        (
+            abs(intersection.first_segment_id - intersection.second_segment_id)
+            == 1
+        )
         or (
             intersection.first_segment_id == len(segments) - 1
             and intersection.second_segment_id == 0

@@ -107,7 +107,9 @@ if TYPE_CHECKING:
 
         def __and__(
             self,
-            other: (Empty | Multipolygon | Multisegment | Polygon | Segment | Self),
+            other: (
+                Empty | Multipolygon | Multisegment | Polygon | Segment | Self
+            ),
             /,
         ) -> Empty | Multisegment | Segment: ...
 
@@ -172,7 +174,14 @@ if TYPE_CHECKING:
 
         def __and__(
             self,
-            other: (Contour | Multipolygon | Multisegment | Polygon | Segment | Self),
+            other: (
+                Contour
+                | Multipolygon
+                | Multisegment
+                | Polygon
+                | Segment
+                | Self
+            ),
             /,
         ) -> Self: ...
 
@@ -208,9 +217,18 @@ if TYPE_CHECKING:
 
         def __or__(
             self,
-            other: (Contour | Multipolygon | Multisegment | Polygon | Segment | Self),
+            other: (
+                Contour
+                | Multipolygon
+                | Multisegment
+                | Polygon
+                | Segment
+                | Self
+            ),
             /,
-        ) -> Contour | Multipolygon | Multisegment | Polygon | Segment | Self: ...
+        ) -> (
+            Contour | Multipolygon | Multisegment | Polygon | Segment | Self
+        ): ...
 
         def __repr__(self, /) -> str: ...
 
@@ -218,7 +236,14 @@ if TYPE_CHECKING:
 
         def __sub__(
             self,
-            other: (Contour | Multipolygon | Multisegment | Polygon | Segment | Self),
+            other: (
+                Contour
+                | Multipolygon
+                | Multisegment
+                | Polygon
+                | Segment
+                | Self
+            ),
             /,
         ) -> Self: ...
 
@@ -242,9 +267,18 @@ if TYPE_CHECKING:
 
         def __xor__(
             self,
-            other: (Contour | Multipolygon | Multisegment | Polygon | Segment | Self),
+            other: (
+                Contour
+                | Multipolygon
+                | Multisegment
+                | Polygon
+                | Segment
+                | Self
+            ),
             /,
-        ) -> Contour | Multipolygon | Multisegment | Polygon | Segment | Self: ...
+        ) -> (
+            Contour | Multipolygon | Multisegment | Polygon | Segment | Self
+        ): ...
 
     class Multipolygon:
         @property
@@ -263,7 +297,9 @@ if TYPE_CHECKING:
         def __and__(self, other: Empty, /) -> Empty: ...
 
         @overload
-        def __and__(self, other: Polygon | Self, /) -> Empty | Polygon | Self: ...
+        def __and__(
+            self, other: Polygon | Self, /
+        ) -> Empty | Polygon | Self: ...
 
         @overload
         def __and__(
@@ -294,7 +330,9 @@ if TYPE_CHECKING:
         @overload
         def __or__(self, other: Polygon | Self, /) -> Polygon | Self: ...
 
-        def __or__(self, other: Empty | Polygon | Self, /) -> Polygon | Self: ...
+        def __or__(
+            self, other: Empty | Polygon | Self, /
+        ) -> Polygon | Self: ...
 
         def __repr__(self, /) -> str: ...
 
@@ -302,7 +340,9 @@ if TYPE_CHECKING:
         def __sub__(self, other: Empty, /) -> Self: ...
 
         @overload
-        def __sub__(self, other: Polygon | Self, /) -> Empty | Polygon | Self: ...
+        def __sub__(
+            self, other: Polygon | Self, /
+        ) -> Empty | Polygon | Self: ...
 
         def __sub__(
             self, other: Empty | Polygon | Self, /
@@ -314,7 +354,9 @@ if TYPE_CHECKING:
         def __xor__(self, other: Empty, /) -> Self: ...
 
         @overload
-        def __xor__(self, other: Polygon | Self, /) -> Empty | Polygon | Self: ...
+        def __xor__(
+            self, other: Polygon | Self, /
+        ) -> Empty | Polygon | Self: ...
 
         def __xor__(
             self, other: Empty | Polygon | Self, /
@@ -365,7 +407,9 @@ if TYPE_CHECKING:
         def __or__(self, other: Empty, /) -> Self: ...
 
         @overload
-        def __or__(self, other: Contour | Segment | Self, /) -> Segment | Self: ...
+        def __or__(
+            self, other: Contour | Segment | Self, /
+        ) -> Segment | Self: ...
 
         def __or__(
             self, other: Contour | Empty | Segment | Self, /
@@ -444,7 +488,9 @@ if TYPE_CHECKING:
 
         def relate_to(self, other: _Compound, /) -> _Relation: ...
 
-        def __new__(cls, border: Contour, holes: Sequence[Contour], /) -> Self: ...
+        def __new__(
+            cls, border: Contour, holes: Sequence[Contour], /
+        ) -> Self: ...
 
         @overload
         def __and__(self, other: Empty, /) -> Empty: ...
@@ -461,7 +507,9 @@ if TYPE_CHECKING:
 
         def __and__(
             self,
-            other: (Contour | Empty | Multipolygon | Multisegment | Segment | Self),
+            other: (
+                Contour | Empty | Multipolygon | Multisegment | Segment | Self
+            ),
             /,
         ) -> Empty | Multipolygon | Multisegment | Segment | Self: ...
 
@@ -481,7 +529,9 @@ if TYPE_CHECKING:
         def __or__(self, other: Empty, /) -> Self: ...
 
         @overload
-        def __or__(self, other: Multipolygon | Self, /) -> Multipolygon | Self: ...
+        def __or__(
+            self, other: Multipolygon | Self, /
+        ) -> Multipolygon | Self: ...
 
         def __or__(
             self, other: Empty | Multipolygon | Self, /
@@ -544,7 +594,9 @@ if TYPE_CHECKING:
 
         def __and__(
             self,
-            other: (Contour | Empty | Multipolygon | Multisegment | Polygon | Self),
+            other: (
+                Contour | Empty | Multipolygon | Multisegment | Polygon | Self
+            ),
             /,
         ) -> Empty | Multisegment | Self: ...
 
@@ -645,7 +697,9 @@ if TYPE_CHECKING:
 
         def __contains__(self, point: Point, /) -> bool: ...
 
-    _Compound = Union[Contour, Empty, Multisegment, Multipolygon, Polygon, Segment]
+    _Compound = Union[
+        Contour, Empty, Multisegment, Multipolygon, Polygon, Segment
+    ]
 else:
     try:
         from . import _cexact
@@ -677,7 +731,9 @@ else:
         from .hints import Seeder as _Seeder
 
         Box = _cexact.Box
-        ConstrainedDelaunayTriangulation = _cexact.ConstrainedDelaunayTriangulation
+        ConstrainedDelaunayTriangulation = (
+            _cexact.ConstrainedDelaunayTriangulation
+        )
         Contour = _cexact.Contour
         DelaunayTriangulation = _cexact.DelaunayTriangulation
         Empty = _cexact.Empty
@@ -704,7 +760,9 @@ else:
                     else seeder()
                 )
                 _validate_seed(seed)
-                return cls(_RawTrapezoidation.from_multisegment(multisegment, seed))
+                return cls(
+                    _RawTrapezoidation.from_multisegment(multisegment, seed)
+                )
 
             @classmethod
             def from_polygon(
@@ -727,11 +785,12 @@ else:
 
             _raw: _RawTrapezoidation
 
-            __slots__ = ("_raw",)
+            __slots__ = ('_raw',)
 
             def __init_subclass__(cls, /, **_kwargs: _t.Any) -> _t.NoReturn:
                 raise TypeError(
-                    f"type {cls.__qualname__!r} " "is not an acceptable base type"
+                    f'type {cls.__qualname__!r} '
+                    'is not an acceptable base type'
                 )
 
             def __new__(cls, raw: _RawTrapezoidation, /) -> _te.Self:

@@ -21,12 +21,16 @@ class YNode(Node[hints.Scalar]):
         nodes: t.Sequence[Node[hints.Scalar]],
         /,
     ) -> Location:
-        point_orientation = edges[self.edge_index].orientation_of(point, endpoints)
+        point_orientation = edges[self.edge_index].orientation_of(
+            point, endpoints
+        )
         return (
             nodes[self.above_node_index].locate(point, edges, endpoints, nodes)
             if point_orientation is Orientation.COUNTERCLOCKWISE
             else (
-                nodes[self.below_node_index].locate(point, edges, endpoints, nodes)
+                nodes[self.below_node_index].locate(
+                    point, edges, endpoints, nodes
+                )
                 if point_orientation is Orientation.CLOCKWISE
                 else Location.BOUNDARY
             )
@@ -41,9 +45,11 @@ class YNode(Node[hints.Scalar]):
         /,
     ) -> Node[hints.Scalar]:
         return nodes[
-            self.above_node_index
-            if edges[self.edge_index].is_under(edge, endpoints)
-            else self.below_node_index
+            (
+                self.above_node_index
+                if edges[self.edge_index].is_under(edge, endpoints)
+                else self.below_node_index
+            )
         ]
 
     def to_height(self, nodes: t.Sequence[Node[hints.Scalar]], /) -> int:
@@ -55,7 +61,7 @@ class YNode(Node[hints.Scalar]):
             + 1
         )
 
-    __slots__ = "above_node_index", "below_node_index", "edge_index"
+    __slots__ = 'above_node_index', 'below_node_index', 'edge_index'
 
     def __new__(
         cls, edge_index: int, below_node_index: int, above_node_index: int, /

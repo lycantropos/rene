@@ -26,11 +26,15 @@ class Mesh(t.Generic[hints.Scalar]):
     starts_indices: list[int]
 
     @classmethod
-    def from_points(cls, endpoints: list[hints.Point[hints.Scalar]], /) -> te.Self:
+    def from_points(
+        cls, endpoints: list[hints.Point[hints.Scalar]], /
+    ) -> te.Self:
         return cls(endpoints, [], [])
 
     def connect_edges(self, first: QuadEdge, second: QuadEdge, /) -> QuadEdge:
-        result = self.create_edge(self.to_end_index(first), self.to_start_index(second))
+        result = self.create_edge(
+            self.to_end_index(first), self.to_start_index(second)
+        )
         self.splice_edges(result, self.to_left_from_end(first))
         self.splice_edges(to_opposite_edge(result), second)
         return result
@@ -56,7 +60,9 @@ class Mesh(t.Generic[hints.Scalar]):
     def delete_edge(self, edge: QuadEdge, /) -> None:
         self.splice_edges(edge, self.to_right_from_start(edge))
         opposite_edge = to_opposite_edge(edge)
-        self.splice_edges(opposite_edge, self.to_right_from_start(opposite_edge))
+        self.splice_edges(
+            opposite_edge, self.to_right_from_start(opposite_edge)
+        )
 
     def splice_edges(self, first: QuadEdge, second: QuadEdge, /) -> None:
         alpha = to_rotated_edge(self.to_left_from_start(first))
@@ -92,7 +98,9 @@ class Mesh(t.Generic[hints.Scalar]):
             QuadEdge(index) for index in range(0, len(self.left_from_start), 2)
         ]
         return [
-            candidate for candidate in candidates if not self.is_deleted_edge(candidate)
+            candidate
+            for candidate in candidates
+            if not self.is_deleted_edge(candidate)
         ]
 
     def to_end(self, edge: QuadEdge, /) -> hints.Point[hints.Scalar]:
@@ -145,10 +153,12 @@ class Mesh(t.Generic[hints.Scalar]):
             QuadEdge(index) for index in range(0, len(self.left_from_start), 4)
         ]
         return [
-            candidate for candidate in candidates if not self.is_deleted_edge(candidate)
+            candidate
+            for candidate in candidates
+            if not self.is_deleted_edge(candidate)
         ]
 
-    __slots__ = "endpoints", "left_from_start", "starts_indices"
+    __slots__ = 'endpoints', 'left_from_start', 'starts_indices'
 
     def __bool__(self) -> bool:
         return bool(self.left_from_start)
@@ -199,7 +209,9 @@ def build_base_edge(
             break
     return (
         first_right_side,
-        mesh.connect_edges(to_opposite_edge(second_left_side), first_right_side),
+        mesh.connect_edges(
+            to_opposite_edge(second_left_side), first_right_side
+        ),
         second_left_side,
     )
 
@@ -363,7 +375,9 @@ def merge(
     )
     right_side = (
         base_edge
-        if (mesh.to_start(second_left_side) == mesh.to_start(second_right_side))
+        if (
+            mesh.to_start(second_left_side) == mesh.to_start(second_right_side)
+        )
         else second_right_side
     )
     return left_side, right_side
@@ -415,7 +429,9 @@ def rise_bubble(
                     to_opposite_edge(left_candidate),
                 )
         elif right_candidate is not None:
-            base_edge = mesh.connect_edges(right_candidate, to_opposite_edge(base_edge))
+            base_edge = mesh.connect_edges(
+                right_candidate, to_opposite_edge(base_edge)
+            )
         else:
             break
 

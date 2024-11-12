@@ -26,7 +26,7 @@ class Trapezoidation(t.Generic[hints.Scalar]):
         orienteer: Orienteer[hints.Scalar],
         /,
     ) -> te.Self:
-        assert seed >= 0, f"Seed should be non-negative, but got {seed}."
+        assert seed >= 0, f'Seed should be non-negative, but got {seed}.'
         endpoints: list[hints.Point[hints.Scalar]] = []
         edges: list[Edge[hints.Scalar]] = []
         for segment in multisegment.segments:
@@ -38,10 +38,14 @@ class Trapezoidation(t.Generic[hints.Scalar]):
             edges.append(
                 Edge.from_endpoints(start_index, end_index, False, orienteer)
                 if start < end
-                else Edge.from_endpoints(end_index, start_index, False, orienteer)
+                else Edge.from_endpoints(
+                    end_index, start_index, False, orienteer
+                )
             )
         permute(edges, seed)
-        return cls._from_box(multisegment.bounding_box, edges, endpoints, orienteer)
+        return cls._from_box(
+            multisegment.bounding_box, edges, endpoints, orienteer
+        )
 
     @classmethod
     def from_polygon(
@@ -72,7 +76,9 @@ class Trapezoidation(t.Generic[hints.Scalar]):
         return self._root.to_height(self._nodes)
 
     def locate(self, point: hints.Point[hints.Scalar], /) -> Location:
-        return self._root.locate(point, self._edges, self._endpoints, self._nodes)
+        return self._root.locate(
+            point, self._edges, self._endpoints, self._nodes
+        )
 
     @classmethod
     def _from_box(
@@ -104,7 +110,7 @@ class Trapezoidation(t.Generic[hints.Scalar]):
     _endpoints: t.Sequence[hints.Point[hints.Scalar]]
     _nodes: t.Sequence[Node[hints.Scalar]]
 
-    __slots__ = "_edges", "_endpoints", "_nodes"
+    __slots__ = '_edges', '_endpoints', '_nodes'
 
     def __new__(
         cls,
@@ -131,7 +137,9 @@ def _add_edge(
     nodes: list[Node[hints.Scalar]],
     /,
 ) -> None:
-    trapezoids = _find_intersecting_trapezoids(edge_index, edges, endpoints, nodes)
+    trapezoids = _find_intersecting_trapezoids(
+        edge_index, edges, endpoints, nodes
+    )
     if len(trapezoids) == 1:
         _add_edge_to_single_trapezoid(
             edge_index, trapezoids[0], edges, endpoints, nodes
@@ -191,7 +199,10 @@ def _add_edge_to_first_trapezoid(
         edge_index, below.leaf_index, above.leaf_index, nodes
     )
     # set pairs of trapezoid neighbours
-    if endpoints[edge.left_point_index] == endpoints[trapezoid.left_point_index]:
+    if (
+        endpoints[edge.left_point_index]
+        == endpoints[trapezoid.left_point_index]
+    ):
         _maybe_set_as_upper_left(above, trapezoid.upper_left_node_index, nodes)
         _maybe_set_as_lower_left(below, trapezoid.lower_left_node_index, nodes)
     else:
@@ -262,9 +273,16 @@ def _add_edge_to_last_trapezoid(
         edge_index, below.leaf_index, above.leaf_index, nodes
     )
     # set pairs of trapezoid neighbours
-    if endpoints[edge.right_point_index] == endpoints[trapezoid.right_point_index]:
-        _maybe_set_as_upper_right(above, trapezoid.upper_right_node_index, nodes)
-        _maybe_set_as_lower_right(below, trapezoid.lower_right_node_index, nodes)
+    if (
+        endpoints[edge.right_point_index]
+        == endpoints[trapezoid.right_point_index]
+    ):
+        _maybe_set_as_upper_right(
+            above, trapezoid.upper_right_node_index, nodes
+        )
+        _maybe_set_as_lower_right(
+            below, trapezoid.lower_right_node_index, nodes
+        )
     else:
         right = _create_trapezoid(
             edge.right_point_index,
@@ -274,8 +292,12 @@ def _add_edge_to_last_trapezoid(
             edges,
             nodes,
         )
-        _maybe_set_as_lower_right(right, trapezoid.lower_right_node_index, nodes)
-        _maybe_set_as_upper_right(right, trapezoid.upper_right_node_index, nodes)
+        _maybe_set_as_lower_right(
+            right, trapezoid.lower_right_node_index, nodes
+        )
+        _maybe_set_as_upper_right(
+            right, trapezoid.upper_right_node_index, nodes
+        )
         right.set_as_lower_left(below)
         right.set_as_upper_left(above)
         replacement_node_index = _create_x_node(
@@ -363,9 +385,16 @@ def _add_edge_to_single_trapezoid(
     replacement_node_index = _create_y_node(
         edge_index, below.leaf_index, above.leaf_index, nodes
     )
-    if endpoints[edge.right_point_index] == endpoints[trapezoid.right_point_index]:
-        _maybe_set_as_upper_right(above, trapezoid.upper_right_node_index, nodes)
-        _maybe_set_as_lower_right(below, trapezoid.lower_right_node_index, nodes)
+    if (
+        endpoints[edge.right_point_index]
+        == endpoints[trapezoid.right_point_index]
+    ):
+        _maybe_set_as_upper_right(
+            above, trapezoid.upper_right_node_index, nodes
+        )
+        _maybe_set_as_lower_right(
+            below, trapezoid.lower_right_node_index, nodes
+        )
     else:
         right = _create_trapezoid(
             edge.right_point_index,
@@ -375,8 +404,12 @@ def _add_edge_to_single_trapezoid(
             edges,
             nodes,
         )
-        _maybe_set_as_lower_right(right, trapezoid.lower_right_node_index, nodes)
-        _maybe_set_as_upper_right(right, trapezoid.upper_right_node_index, nodes)
+        _maybe_set_as_lower_right(
+            right, trapezoid.lower_right_node_index, nodes
+        )
+        _maybe_set_as_upper_right(
+            right, trapezoid.upper_right_node_index, nodes
+        )
         right.set_as_lower_left(below)
         right.set_as_upper_left(above)
         replacement_node_index = _create_x_node(
@@ -385,7 +418,10 @@ def _add_edge_to_single_trapezoid(
             right.leaf_index,
             nodes,
         )
-    if endpoints[edge.left_point_index] == endpoints[trapezoid.left_point_index]:
+    if (
+        endpoints[edge.left_point_index]
+        == endpoints[trapezoid.left_point_index]
+    ):
         _maybe_set_as_upper_left(above, trapezoid.upper_left_node_index, nodes)
         _maybe_set_as_lower_left(below, trapezoid.lower_left_node_index, nodes)
     else:
@@ -532,22 +568,32 @@ def _find_intersecting_trapezoids(
     right = endpoints[edge.right_point_index]
     while endpoints[trapezoid.right_point_index] < right:
         candidate_index = (
-            (trapezoid.upper_right_node_index or trapezoid.lower_right_node_index)
+            (
+                trapezoid.upper_right_node_index
+                or trapezoid.lower_right_node_index
+            )
             if (
-                edge.orientation_of(endpoints[trapezoid.right_point_index], endpoints)
+                edge.orientation_of(
+                    endpoints[trapezoid.right_point_index], endpoints
+                )
                 is Orientation.CLOCKWISE
             )
-            else (trapezoid.lower_right_node_index or trapezoid.upper_right_node_index)
+            else (
+                trapezoid.lower_right_node_index
+                or trapezoid.upper_right_node_index
+            )
         )
         assert (
             candidate_index is not None
-        ), "Expected neighbour trapezoid, but none found."
+        ), 'Expected neighbour trapezoid, but none found.'
         trapezoid = _get_trapezoid(candidate_index, nodes)
         result.append(trapezoid)
     return result
 
 
-def _get_trapezoid(index: int, nodes: t.Sequence[Node[hints.Scalar]], /) -> Trapezoid:
+def _get_trapezoid(
+    index: int, nodes: t.Sequence[Node[hints.Scalar]], /
+) -> Trapezoid:
     node = nodes[index]
     assert isinstance(node, Leaf), node
     return node.trapezoid
@@ -619,7 +665,9 @@ def _populate_from_contour(
     first_start = start = contour_vertices[0]
     first_start_index = start_index = len(endpoints)
     endpoints.extend(contour_vertices)
-    for end_index, end in enumerate(contour_vertices[1:], start=first_start_index + 1):
+    for end_index, end in enumerate(
+        contour_vertices[1:], start=first_start_index + 1
+    ):
         edges.append(
             Edge.from_endpoints(
                 start_index,

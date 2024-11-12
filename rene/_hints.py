@@ -6,8 +6,8 @@ import typing_extensions as te
 
 from rene import Orientation, hints
 
-_Key = t.TypeVar("_Key", contravariant=True)
-_Value = t.TypeVar("_Value", covariant=True)
+_Key = t.TypeVar('_Key', contravariant=True)
+_Value = t.TypeVar('_Value', covariant=True)
 
 
 class Map(te.Protocol[_Key, _Value]):

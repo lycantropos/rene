@@ -21,7 +21,9 @@ class Edge(t.Generic[hints.Scalar]):
         interior_to_left: bool,
         orienteer: Orienteer[hints.Scalar],
     ) -> te.Self:
-        return cls(left_point_index, right_point_index, interior_to_left, orienteer)
+        return cls(
+            left_point_index, right_point_index, interior_to_left, orienteer
+        )
 
     def orientation_of(
         self,
@@ -37,10 +39,10 @@ class Edge(t.Generic[hints.Scalar]):
     _orienteer: Orienteer[hints.Scalar]
 
     __slots__ = (
-        "interior_to_left",
-        "left_point_index",
-        "right_point_index",
-        "_orienteer",
+        'interior_to_left',
+        'left_point_index',
+        'right_point_index',
+        '_orienteer',
     )
 
     def __new__(
@@ -57,7 +59,7 @@ class Edge(t.Generic[hints.Scalar]):
             self.left_point_index,
             self.right_point_index,
             self._orienteer,
-        ) = interior_to_left, left_point_index, right_point_index, orienteer
+        ) = (interior_to_left, left_point_index, right_point_index, orienteer)
         return self
 
     def is_under(

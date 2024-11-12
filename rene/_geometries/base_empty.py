@@ -6,7 +6,7 @@ from rene import Location, Relation, hints
 
 from .base_compound import BaseCompound
 
-_CompoundT = t.TypeVar("_CompoundT", bound=hints.Compound[t.Any])
+_CompoundT = t.TypeVar('_CompoundT', bound=hints.Compound[t.Any])
 
 
 class BaseEmpty(BaseCompound[hints.Scalar]):
@@ -26,7 +26,9 @@ class BaseEmpty(BaseCompound[hints.Scalar]):
                 context.segment_cls,
             ),
         ):
-            raise TypeError("Expected compound geometry, " f"but got {type(other)}.")
+            raise TypeError(
+                f'Expected compound geometry, but got {type(other)}.'
+            )
         return (
             Relation.EQUAL
             if isinstance(other, context.empty_cls)
@@ -97,7 +99,7 @@ class BaseEmpty(BaseCompound[hints.Scalar]):
         )
 
     def __repr__(self, /) -> str:
-        return f"{type(self).__qualname__}()"
+        return f'{type(self).__qualname__}()'
 
     @t.overload
     def __sub__(self, other: _CompoundT, /) -> te.Self: ...

@@ -29,7 +29,9 @@ def relate_to_contour(
         multisegment,
         contour,
         lambda start, end, contour_segments: (
-            relate_segment_to_contour_segments(start, end, contour_segments, orienteer)
+            relate_segment_to_contour_segments(
+                start, end, contour_segments, orienteer
+            )
         ),
         lambda start, end, multisegment_segments: (
             relate_segment_to_multisegment_segments(

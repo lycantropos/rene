@@ -17,7 +17,9 @@ from .event import Event, is_event_left, is_event_right, left_event_to_position
 from .events_queue_key import EventsQueueKey
 from .sweep_line_key import SweepLineKey
 
-SegmentEndpoints = t.Tuple[hints.Point[hints.Scalar], hints.Point[hints.Scalar]]
+SegmentEndpoints = t.Tuple[
+    hints.Point[hints.Scalar], hints.Point[hints.Scalar]
+]
 
 
 class Operation(ABC, t.Generic[hints.Scalar]):
@@ -32,9 +34,12 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         /,
     ) -> te.Self: ...
 
-    def has_border_intersection(self, same_start_events: list[Event], /) -> bool:
+    def has_border_intersection(
+        self, same_start_events: list[Event], /
+    ) -> bool:
         return not all_same(
-            self._is_event_from_first_operand(event) for event in same_start_events
+            self._is_event_from_first_operand(event)
+            for event in same_start_events
         )
 
     @abstractmethod
@@ -44,7 +49,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         return self._other_have_interior_to_left[left_event_to_position(event)]
 
     def is_left_event_outside(self, event: Event, /) -> bool:
-        return not self._other_have_interior_to_left[left_event_to_position(event)]
+        return not self._other_have_interior_to_left[
+            left_event_to_position(event)
+        ]
 
     def is_event_inside(self, event: Event, /) -> bool:
         return self.is_left_event_inside(self._to_left_event(event))
@@ -86,8 +93,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                     break
                 if start.x > min_max_x:
                     if self.is_event_from_linear(event):
-                        if state.linear_is_subset_of_shaped and self.is_event_outside(
-                            event
+                        if (
+                            state.linear_is_subset_of_shaped
+                            and self.is_event_outside(event)
                         ):
                             state.linear_is_subset_of_shaped = False
                         if (
@@ -144,17 +152,17 @@ class Operation(ABC, t.Generic[hints.Scalar]):
     _sweep_line_data: KeyedSet[SweepLineKey[hints.Scalar], Event]
 
     __slots__ = (
-        "endpoints",
-        "first_segments_count",
-        "have_interior_to_left",
-        "second_segments_count",
-        "_events_queue_data",
-        "_opposites",
-        "_orienteer",
-        "_other_have_interior_to_left",
-        "_segments_intersector",
-        "_segments_ids",
-        "_sweep_line_data",
+        'endpoints',
+        'first_segments_count',
+        'have_interior_to_left',
+        'second_segments_count',
+        '_events_queue_data',
+        '_opposites',
+        '_orienteer',
+        '_other_have_interior_to_left',
+        '_segments_intersector',
+        '_segments_ids',
+        '_sweep_line_data',
     )
 
     def __init__(
@@ -190,17 +198,17 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         ]
         self._other_have_interior_to_left = [False] * segments_count
         self._segments_ids = list(range(segments_count))
-        self._events_queue_data: PriorityQueue[EventsQueueKey[hints.Scalar], Event] = (
-            PriorityQueue(
-                *map(Event, range(initial_events_count)),
-                key=lambda event: EventsQueueKey(
-                    event,
-                    self._is_event_from_first_operand(event),
-                    self.endpoints,
-                    self._opposites,
-                    self._orienteer,
-                ),
-            )
+        self._events_queue_data: PriorityQueue[
+            EventsQueueKey[hints.Scalar], Event
+        ] = PriorityQueue(
+            *map(Event, range(initial_events_count)),
+            key=lambda event: EventsQueueKey(
+                event,
+                self._is_event_from_first_operand(event),
+                self.endpoints,
+                self._opposites,
+                self._orienteer,
+            ),
         )
         self._sweep_line_data = red_black.set_(key=self._to_sweep_line_key)
 
@@ -229,8 +237,12 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         self, event: Event, below_event: Event | None, /
     ) -> None:
         if below_event is not None:
-            self._other_have_interior_to_left[left_event_to_position(event)] = (
-                self._other_have_interior_to_left[left_event_to_position(below_event)]
+            self._other_have_interior_to_left[
+                left_event_to_position(event)
+            ] = (
+                self._other_have_interior_to_left[
+                    left_event_to_position(below_event)
+                ]
                 if (
                     self._is_left_event_from_first_operand(event)
                     is self._is_left_event_from_first_operand(below_event)
@@ -240,7 +252,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 ]
             )
 
-    def _detect_intersection(self, below_event: Event, event: Event, /) -> bool:
+    def _detect_intersection(
+        self, below_event: Event, event: Event, /
+    ) -> bool:
         event_start = self.to_event_start(event)
         event_end = self.to_event_end(event)
         below_event_start = self.to_event_start(below_event)
@@ -264,8 +278,8 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                             else (event, below_event)
                         )
                         min_end = self.to_event_end(min_end_event)
-                        min_end_start_event, min_end_max_end_event = self._divide(
-                            max_end_event, min_end
+                        min_end_start_event, min_end_max_end_event = (
+                            self._divide(max_end_event, min_end)
                         )
                         self._push(min_end_start_event)
                         self._push(min_end_max_end_event)
@@ -326,7 +340,10 @@ class Operation(ABC, t.Generic[hints.Scalar]):
                 if event_start < below_event_end < event_end:
                     point = below_event_end
                     self._divide_event_by_midpoint(event, point)
-            elif below_event_start_orientation is not below_event_end_orientation:
+            elif (
+                below_event_start_orientation
+                is not below_event_end_orientation
+            ):
                 cross_point = self._segments_intersector(
                     event_start, event_end, below_event_start, below_event_end
                 )
@@ -356,7 +373,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         ) is self._is_event_from_first_operand(mid_point_to_event_start_event)
         assert self._is_left_event_from_first_operand(
             event
-        ) is self._is_left_event_from_first_operand(mid_point_to_event_end_event)
+        ) is self._is_left_event_from_first_operand(
+            mid_point_to_event_end_event
+        )
         return mid_point_to_event_start_event, mid_point_to_event_end_event
 
     def _divide_event_by_mid_segment_event_endpoints(
@@ -391,15 +410,21 @@ class Operation(ABC, t.Generic[hints.Scalar]):
 
     def _find(self, event: Event, /) -> Event | None:
         assert is_event_left(event)
-        candidate = self._sweep_line_data.tree.find(self._to_sweep_line_key(event))
+        candidate = self._sweep_line_data.tree.find(
+            self._to_sweep_line_key(event)
+        )
         return None if candidate is red_black.NIL else candidate.value
 
     def _is_event_from_first_operand(self, event: Event, /) -> bool:
-        return self._is_left_event_from_first_operand(self._to_left_event(event))
+        return self._is_left_event_from_first_operand(
+            self._to_left_event(event)
+        )
 
     def _is_left_event_from_first_operand(self, event: Event, /) -> bool:
         assert is_event_left(event), event
-        return self._left_event_to_segment_id(event) < self.first_segments_count
+        return (
+            self._left_event_to_segment_id(event) < self.first_segments_count
+        )
 
     def _left_event_to_segment_id(self, event: Event, /) -> int:
         return self._segments_ids[left_event_to_position(event)]
@@ -444,12 +469,16 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         self._sweep_line_data.remove(event)
 
     def _to_left_event(self, event: Event, /) -> Event:
-        return event if is_event_left(event) else self._to_opposite_event(event)
+        return (
+            event if is_event_left(event) else self._to_opposite_event(event)
+        )
 
     def _to_opposite_event(self, event: Event, /) -> Event:
         return self._opposites[event]
 
-    def _to_sweep_line_key(self, event: Event, /) -> SweepLineKey[hints.Scalar]:
+    def _to_sweep_line_key(
+        self, event: Event, /
+    ) -> SweepLineKey[hints.Scalar]:
         return SweepLineKey(
             event,
             self._is_left_event_from_first_operand(event),
@@ -473,8 +502,12 @@ class LinearShapedOperation(Operation[hints.Scalar]):
         have_interior_to_left: list[bool] = []
         _populate_with_linear_segments(first, endpoints, have_interior_to_left)
         first_segments_count = len(have_interior_to_left)
-        _populate_with_shaped_segments(second, endpoints, have_interior_to_left)
-        second_segments_count = len(have_interior_to_left) - first_segments_count
+        _populate_with_shaped_segments(
+            second, endpoints, have_interior_to_left
+        )
+        second_segments_count = (
+            len(have_interior_to_left) - first_segments_count
+        )
         return cls(
             first_segments_count,
             second_segments_count,
@@ -502,8 +535,12 @@ class ShapedLinearOperation(Operation[hints.Scalar]):
         have_interior_to_left: list[bool] = []
         _populate_with_shaped_segments(first, endpoints, have_interior_to_left)
         first_segments_count = len(have_interior_to_left)
-        _populate_with_linear_segments(second, endpoints, have_interior_to_left)
-        second_segments_count = len(have_interior_to_left) - first_segments_count
+        _populate_with_linear_segments(
+            second, endpoints, have_interior_to_left
+        )
+        second_segments_count = (
+            len(have_interior_to_left) - first_segments_count
+        )
         return cls(
             first_segments_count,
             second_segments_count,
@@ -514,7 +551,9 @@ class ShapedLinearOperation(Operation[hints.Scalar]):
         )
 
     def is_event_from_linear(self, event: Event, /) -> bool:
-        return not self._is_left_event_from_first_operand(self._to_left_event(event))
+        return not self._is_left_event_from_first_operand(
+            self._to_left_event(event)
+        )
 
 
 class RelationState(t.Generic[hints.Scalar]):
@@ -550,19 +589,22 @@ class RelationState(t.Generic[hints.Scalar]):
                     self.shaped_border_is_subset_of_linear = False
         elif operation.is_event_from_linear(same_start_events[0]):
             assert all(
-                operation.is_event_from_linear(event) for event in same_start_events
+                operation.is_event_from_linear(event)
+                for event in same_start_events
             )
             if self.linear_is_subset_of_shaped and operation.is_event_outside(
                 same_start_events[0]
             ):
                 self.linear_is_subset_of_shaped = False
-            if not self.linear_intersects_shaped_interior and operation.is_event_inside(
-                same_start_events[0]
+            if (
+                not self.linear_intersects_shaped_interior
+                and operation.is_event_inside(same_start_events[0])
             ):
                 self.linear_intersects_shaped_interior = True
         elif self.shaped_border_is_subset_of_linear:
             assert all(
-                not operation.is_event_from_linear(event) for event in same_start_events
+                not operation.is_event_from_linear(event)
+                for event in same_start_events
             )
             self.shaped_border_is_subset_of_linear = False
 
@@ -572,10 +614,10 @@ class RelationState(t.Generic[hints.Scalar]):
     shaped_border_is_subset_of_linear: bool
 
     __slots__ = (
-        "linear_intersects_shaped_interior",
-        "linear_is_subset_of_shaped",
-        "linear_intersects_shaped_border",
-        "shaped_border_is_subset_of_linear",
+        'linear_intersects_shaped_interior',
+        'linear_is_subset_of_shaped',
+        'linear_intersects_shaped_border',
+        'shaped_border_is_subset_of_linear',
     )
 
     def __init__(

@@ -27,11 +27,15 @@ def orient(
     second_ray_point: hints.Point[Fraction],
     /,
 ) -> Orientation:
-    raw = to_sign(cross_multiply(vertex, first_ray_point, vertex, second_ray_point))
+    raw = to_sign(
+        cross_multiply(vertex, first_ray_point, vertex, second_ray_point)
+    )
     return (
         Orientation.COLLINEAR
         if raw == 0
-        else (Orientation.COUNTERCLOCKWISE if raw > 0 else Orientation.CLOCKWISE)
+        else (
+            Orientation.COUNTERCLOCKWISE if raw > 0 else Orientation.CLOCKWISE
+        )
     )
 
 

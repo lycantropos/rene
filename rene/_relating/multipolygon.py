@@ -187,7 +187,9 @@ def relate_to_segment(
     ).to_relation(True, min_max_x)
 
 
-_Multisegmental = t.Union[hints.Contour[hints.Scalar], hints.Multisegment[hints.Scalar]]
+_Multisegmental = t.Union[
+    hints.Contour[hints.Scalar], hints.Multisegment[hints.Scalar]
+]
 
 
 def relate_to_multisegmental(
@@ -204,14 +206,18 @@ def relate_to_multisegmental(
     if multipolygon_bounding_box.disjoint_with(multisegmental_bounding_box):
         return Relation.DISJOINT
     multisegmental_segments = multisegmental.segments
-    multisegmental_boxes = [segment.bounding_box for segment in multisegmental_segments]
+    multisegmental_boxes = [
+        segment.bounding_box for segment in multisegmental_segments
+    ]
     intersecting_segments_ids = to_boxes_ids_with_intersection(
         multisegmental_boxes, multipolygon_bounding_box
     )
     if not intersecting_segments_ids:
         return Relation.DISJOINT
     elif len(intersecting_segments_ids) == 1:
-        intersecting_segment = multisegmental_segments[intersecting_segments_ids[0]]
+        intersecting_segment = multisegmental_segments[
+            intersecting_segments_ids[0]
+        ]
         relation = relate_to_segment(
             multipolygon, intersecting_segment, orienteer, segments_intersector
         )
@@ -220,12 +226,17 @@ def relate_to_multisegmental(
             if relation is Relation.COMPONENT
             else (
                 Relation.CROSS
-                if (relation is Relation.ENCLOSED or relation is Relation.WITHIN)
+                if (
+                    relation is Relation.ENCLOSED
+                    or relation is Relation.WITHIN
+                )
                 else relation
             )
         )
     multipolygon_polygons = multipolygon.polygons
-    multipolygon_boxes = [polygon.bounding_box for polygon in multipolygon_polygons]
+    multipolygon_boxes = [
+        polygon.bounding_box for polygon in multipolygon_polygons
+    ]
     intersecting_polygons_ids = to_boxes_ids_with_intersection(
         multipolygon_boxes, multisegmental_bounding_box
     )

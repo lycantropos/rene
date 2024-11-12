@@ -72,8 +72,12 @@ class DelaunayTriangulation(t.Generic[hints.Scalar]):
                 first_vertex < second_vertex
                 and first_vertex < third_vertex
                 and third_vertex
-                == mesh.to_end(mesh.to_right_from_start(to_opposite_edge(edge)))
-                and orient_point_to_edge(mesh, edge, third_vertex, self._orienteer)
+                == mesh.to_end(
+                    mesh.to_right_from_start(to_opposite_edge(edge))
+                )
+                and orient_point_to_edge(
+                    mesh, edge, third_vertex, self._orienteer
+                )
                 is Orientation.COUNTERCLOCKWISE
             ):
                 result.append((first_vertex, second_vertex, third_vertex))
@@ -84,7 +88,7 @@ class DelaunayTriangulation(t.Generic[hints.Scalar]):
     _orienteer: Orienteer[hints.Scalar]
     _right_side: QuadEdge
 
-    __slots__ = "_left_side", "_mesh", "_orienteer", "_right_side"
+    __slots__ = '_left_side', '_mesh', '_orienteer', '_right_side'
 
     def __new__(
         cls,

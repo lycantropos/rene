@@ -8,10 +8,10 @@ MIN_MULTISEGMENT_SEGMENTS_COUNT = 2
 
 
 class Base(enum.Enum):
-    __module__ = "rene"
+    __module__ = 'rene'
 
     def __repr__(self, /) -> str:
-        return f"{type(self).__qualname__}.{self.name}"
+        return f'{type(self).__qualname__}.{self.name}'
 
 
 @te.final

@@ -81,7 +81,8 @@ def relate_to_contour_segments(
         and start != first_contour_segment.start != end
         and start != first_contour_segment.end != end
         and (
-            orienteer(start, end, first_contour_segment.start) is Orientation.COLLINEAR
+            orienteer(start, end, first_contour_segment.start)
+            is Orientation.COLLINEAR
         )
     ):
         assert last_touched_edge_start is not None
@@ -128,7 +129,9 @@ def relate_to_multisegment_segments(
     is_segment_superset = has_no_touch = has_no_cross = has_no_overlap = True
     clockwise_middle_touch_scales: list[hints.Scalar] = []
     counterclockwise_middle_touch_scales: list[hints.Scalar] = []
-    components: list[tuple[hints.Point[hints.Scalar], hints.Point[hints.Scalar]]] = []
+    components: list[
+        tuple[hints.Point[hints.Scalar], hints.Point[hints.Scalar]]
+    ] = []
     if start > end:
         start, end = end, start
     original_start, original_end = start, end
@@ -150,12 +153,16 @@ def relate_to_multisegment_segments(
             if has_no_overlap:
                 has_no_overlap = False
             if start in (multisegment_segment_start, multisegment_segment_end):
-                start = max(multisegment_segment_start, multisegment_segment_end)
+                start = max(
+                    multisegment_segment_start, multisegment_segment_end
+                )
             elif end in (multisegment_segment_start, multisegment_segment_end):
                 end = min(multisegment_segment_start, multisegment_segment_end)
             else:
                 components.append(
-                    to_sorted_pair(multisegment_segment_start, multisegment_segment_end)
+                    to_sorted_pair(
+                        multisegment_segment_start, multisegment_segment_end
+                    )
                 )
         elif relation is Relation.OVERLAP:
             if is_segment_superset:
@@ -267,13 +274,17 @@ def relate_to_multisegment_segments(
                     for _, component_end in components
                 )
             )
-            else (Relation.COMPOSITE if is_segment_superset else Relation.OVERLAP)
+            else (
+                Relation.COMPOSITE if is_segment_superset else Relation.OVERLAP
+            )
         )
     else:
         return (
             (Relation.EQUAL if is_segment_superset else Relation.COMPONENT)
             if start == end
-            else (Relation.COMPOSITE if is_segment_superset else Relation.OVERLAP)
+            else (
+                Relation.COMPOSITE if is_segment_superset else Relation.OVERLAP
+            )
         )
 
 
@@ -331,7 +342,9 @@ def relate_to_segment_endpoints(
         else:
             return Relation.DISJOINT
     else:
-        first_start_orientation = orienteer(second_start, second_end, first_start)
+        first_start_orientation = orienteer(
+            second_start, second_end, first_start
+        )
         first_end_orientation = orienteer(second_start, second_end, first_end)
         if first_start_orientation is first_end_orientation:
             assert first_start_orientation is not Orientation.COLLINEAR
@@ -359,13 +372,17 @@ def relate_to_region(
     /,
 ) -> Relation:
     edges = border.segments
-    relation_with_border = _relate_to_region_border(start, end, edges, orienteer)
+    relation_with_border = _relate_to_region_border(
+        start, end, edges, orienteer
+    )
     if (
         relation_with_border is Relation.CROSS
         or relation_with_border is Relation.COMPONENT
     ):
         return relation_with_border
-    start_index, start_location = _locate_point_in_region(edges, start, orienteer)
+    start_index, start_location = _locate_point_in_region(
+        edges, start, orienteer
+    )
     if relation_with_border is Relation.DISJOINT:
         return (
             Relation.DISJOINT
@@ -378,7 +395,9 @@ def relate_to_region(
         return Relation.ENCLOSED
     else:
         assert start_index is not None
-        end_index, end_location = _locate_point_in_region(edges, end, orienteer)
+        end_index, end_location = _locate_point_in_region(
+            edges, end, orienteer
+        )
         if end_location is Location.EXTERIOR:
             return Relation.TOUCH
         elif end_location is Location.INTERIOR:
@@ -399,10 +418,17 @@ def relate_to_region(
                     if reverse_orientation
                     else edges[start_index - 1].start
                 )
-                if orienteer(prev_start, edge_start, edge_end) is border_orientation:
+                if (
+                    orienteer(prev_start, edge_start, edge_end)
+                    is border_orientation
+                ):
                     if (
-                        orienteer(edge_start, prev_start, end) is border_orientation
-                    ) or (orienteer(edge_end, edge_start, end) is border_orientation):
+                        orienteer(edge_start, prev_start, end)
+                        is border_orientation
+                    ) or (
+                        orienteer(edge_end, edge_start, end)
+                        is border_orientation
+                    ):
                         return Relation.TOUCH
                 elif (
                     orienteer(edge_start, prev_start, end)
@@ -417,10 +443,17 @@ def relate_to_region(
                     else edges[(start_index + 1) % len(edges)].end
                 )
                 if (
-                    orienteer(edge_start, edge_end, next_end) is border_orientation
+                    orienteer(edge_start, edge_end, next_end)
+                    is border_orientation
                 ) and (
-                    (orienteer(edge_end, edge_start, end) is border_orientation)
-                    or (orienteer(next_end, edge_end, end) is border_orientation)
+                    (
+                        orienteer(edge_end, edge_start, end)
+                        is border_orientation
+                    )
+                    or (
+                        orienteer(next_end, edge_end, end)
+                        is border_orientation
+                    )
                     or (
                         orienteer(edge_end, edge_start, end)
                         is orienteer(next_end, edge_end, end)
@@ -438,10 +471,17 @@ def relate_to_region(
                     if reverse_orientation
                     else edges[end_index - 1].start
                 )
-                if orienteer(prev_start, edge_start, edge_end) is border_orientation:
+                if (
+                    orienteer(prev_start, edge_start, edge_end)
+                    is border_orientation
+                ):
                     if (
-                        orienteer(edge_start, prev_start, start) is border_orientation
-                    ) or (orienteer(edge_end, edge_start, start) is border_orientation):
+                        orienteer(edge_start, prev_start, start)
+                        is border_orientation
+                    ) or (
+                        orienteer(edge_end, edge_start, start)
+                        is border_orientation
+                    ):
                         return Relation.TOUCH
                 elif (
                     orienteer(edge_start, prev_start, start)
@@ -455,10 +495,17 @@ def relate_to_region(
                     if reverse_orientation
                     else edges[(end_index + 1) % len(edges)].end
                 )
-                if orienteer(edge_start, edge_end, next_end) is border_orientation:
+                if (
+                    orienteer(edge_start, edge_end, next_end)
+                    is border_orientation
+                ):
                     if (
-                        orienteer(edge_end, edge_start, start) is border_orientation
-                    ) or (orienteer(next_end, edge_end, start) is border_orientation):
+                        orienteer(edge_end, edge_start, start)
+                        is border_orientation
+                    ) or (
+                        orienteer(next_end, edge_end, start)
+                        is border_orientation
+                    ):
                         return Relation.TOUCH
                 elif (
                     orienteer(edge_end, edge_start, start)
@@ -514,7 +561,10 @@ def _relate_to_region_border(
                     and start != edge_end
                     and end != edge_start
                     and end != edge_end
-                    and (orienteer(start, end, edge_start) is Orientation.COLLINEAR)
+                    and (
+                        orienteer(start, end, edge_start)
+                        is Orientation.COLLINEAR
+                    )
                     and point_vertex_line_divides_angle(
                         start,
                         edge_start,
@@ -540,7 +590,10 @@ def _relate_to_region_border(
             and start != first_edge_end
             and end != first_edge_start
             and end != first_edge_end
-            and (orienteer(start, end, first_edge_start) is Orientation.COLLINEAR)
+            and (
+                orienteer(start, end, first_edge_start)
+                is Orientation.COLLINEAR
+            )
             and point_vertex_line_divides_angle(
                 start,
                 first_edge_start,
@@ -567,7 +620,10 @@ def _locate_point_in_region(
     point_y = point.y
     for index, edge in enumerate(edges):
         start, end = edge.start, edge.end
-        if locate_point_in_segment(start, end, point, orienteer) is Location.BOUNDARY:
+        if (
+            locate_point_in_segment(start, end, point, orienteer)
+            is Location.BOUNDARY
+        ):
             return index, Location.BOUNDARY
         if (start.y > point_y) is not (end.y > point_y) and (
             (end.y > start.y)
