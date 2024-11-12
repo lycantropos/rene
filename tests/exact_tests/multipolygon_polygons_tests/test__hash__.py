@@ -4,6 +4,7 @@ from hypothesis import given
 
 from rene.exact import Polygon
 from tests.utils import implication
+
 from . import strategies
 
 
@@ -15,6 +16,7 @@ def test_determinism(polygons: t.Sequence[Polygon]) -> None:
 
 
 @given(strategies.multipolygons_polygons, strategies.multipolygons_polygons)
-def test_preserving_equality(first: t.Sequence[Polygon],
-                             second: t.Sequence[Polygon]) -> None:
+def test_preserving_equality(
+    first: t.Sequence[Polygon], second: t.Sequence[Polygon]
+) -> None:
     assert implication(first == second, hash(first) == hash(second))

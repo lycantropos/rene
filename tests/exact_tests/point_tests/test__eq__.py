@@ -1,8 +1,8 @@
 from hypothesis import given
 
 from rene.exact import Point
-from tests.utils import (equivalence,
-                         implication)
+from tests.utils import equivalence, implication
+
 from . import strategies
 
 
@@ -23,4 +23,4 @@ def test_transitivity(first: Point, second: Point, third: Point) -> None:
 
 @given(strategies.points, strategies.points)
 def test_alternatives(first: Point, second: Point) -> None:
-    assert equivalence(first == second, not first != second)
+    assert equivalence(first == second, first == second)

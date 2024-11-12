@@ -1,9 +1,9 @@
 from hypothesis import given
 
 from rene import Location
-from rene.exact import (Segment,
-                        Point)
+from rene.exact import Point, Segment
 from tests.utils import equivalence
+
 from . import strategies
 
 

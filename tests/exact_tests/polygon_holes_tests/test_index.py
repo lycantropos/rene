@@ -4,12 +4,14 @@ import pytest
 from hypothesis import given
 
 from rene.exact import Contour
+
 from . import strategies
 
 
 @given(strategies.polygons_holes, strategies.contours)
-def test_basic_default_range(holes: t.Sequence[Contour],
-                             contour: Contour) -> None:
+def test_basic_default_range(
+    holes: t.Sequence[Contour], contour: Contour
+) -> None:
     try:
         result = holes.index(contour)
     except ValueError:
@@ -20,12 +22,15 @@ def test_basic_default_range(holes: t.Sequence[Contour],
         assert holes[result] == contour
 
 
-@given(strategies.polygons_holes, strategies.contours,
-       strategies.indices, strategies.indices)
-def test_basic_custom_range(holes: t.Sequence[Contour],
-                            contour: Contour,
-                            start: int,
-                            stop: int) -> None:
+@given(
+    strategies.polygons_holes,
+    strategies.contours,
+    strategies.indices,
+    strategies.indices,
+)
+def test_basic_custom_range(
+    holes: t.Sequence[Contour], contour: Contour, start: int, stop: int
+) -> None:
     try:
         result = holes.index(contour, start, stop)
     except ValueError:
@@ -37,9 +42,9 @@ def test_basic_custom_range(holes: t.Sequence[Contour],
 
 
 @given(strategies.polygons_holes, strategies.contours)
-def test_alternatives_default_range(holes: t.Sequence[Contour],
-                                    contour: Contour) -> None:
-
+def test_alternatives_default_range(
+    holes: t.Sequence[Contour], contour: Contour
+) -> None:
     try:
         result = holes.index(contour)
     except ValueError:
@@ -52,13 +57,15 @@ def test_alternatives_default_range(holes: t.Sequence[Contour],
         assert result == tuple(holes).index(contour)
 
 
-@given(strategies.polygons_holes, strategies.contours,
-       strategies.indices, strategies.indices)
-def test_alternatives_custom_range(holes: t.Sequence[Contour],
-                                   contour: Contour,
-                                   start: int,
-                                   stop: int) -> None:
-
+@given(
+    strategies.polygons_holes,
+    strategies.contours,
+    strategies.indices,
+    strategies.indices,
+)
+def test_alternatives_custom_range(
+    holes: t.Sequence[Contour], contour: Contour, start: int, stop: int
+) -> None:
     try:
         result = holes.index(contour, start, stop)
     except ValueError:

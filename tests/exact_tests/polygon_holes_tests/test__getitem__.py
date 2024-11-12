@@ -5,6 +5,7 @@ from hypothesis import given
 
 from rene.exact import Contour
 from tests.utils import implication
+
 from . import strategies
 
 
@@ -26,8 +27,9 @@ def test_basic_slice(holes: t.Sequence[Contour], item: slice) -> None:
 
 
 @given(strategies.polygons_holes, strategies.slices)
-def test_slice_commutativity_with_list(holes: t.Sequence[Contour],
-                                       item: slice) -> None:
+def test_slice_commutativity_with_list(
+    holes: t.Sequence[Contour], item: slice
+) -> None:
     assert list(holes[item]) == list(holes)[item]
 
 
@@ -46,11 +48,13 @@ def test_reversed(holes: t.Sequence[Contour]) -> None:
     assert implication(result == holes, len(result) < 2)
     assert implication(len(result) == 0, result == holes)
     assert len(result) == len(holes)
-    assert [contour
-            for index, (contour, reversed_contour) in (
-                enumerate(zip(result, reversed(holes)))
-            )
-            if contour != reversed_contour] == []
+    assert [
+        contour
+        for index, (contour, reversed_contour) in (
+            enumerate(zip(result, reversed(holes)))
+        )
+        if contour != reversed_contour
+    ] == []
 
 
 @given(strategies.polygons_holes)
@@ -61,9 +65,9 @@ def test_reversed_idempotence(holes: t.Sequence[Contour]) -> None:
 
 
 @given(strategies.polygons_holes, strategies.slices, strategies.slices)
-def test_consecutive_slicing(holes: t.Sequence[Contour],
-                             item: slice,
-                             next_item: slice) -> None:
+def test_consecutive_slicing(
+    holes: t.Sequence[Contour], item: slice, next_item: slice
+) -> None:
     result = holes[item]
     next_result = result[next_item]
 

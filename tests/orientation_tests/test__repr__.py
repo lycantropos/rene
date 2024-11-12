@@ -1,6 +1,7 @@
 from hypothesis import given
 
 from rene import Orientation
+
 from . import strategies
 
 

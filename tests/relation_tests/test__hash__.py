@@ -2,6 +2,7 @@ from hypothesis import given
 
 from rene import Relation
 from tests.utils import implication
+
 from . import strategies
 
 

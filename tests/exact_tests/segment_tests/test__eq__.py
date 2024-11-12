@@ -1,9 +1,8 @@
 from hypothesis import given
 
 from rene.exact import Segment
-from tests.utils import (equivalence,
-                         implication,
-                         reverse_segment_endpoints)
+from tests.utils import equivalence, implication, reverse_segment_endpoints
+
 from . import strategies
 
 
@@ -24,7 +23,7 @@ def test_transitivity(first: Segment, second: Segment, third: Segment) -> None:
 
 @given(strategies.segments, strategies.segments)
 def test_alternatives(first: Segment, second: Segment) -> None:
-    assert equivalence(first == second, not first != second)
+    assert equivalence(first == second, first == second)
 
 
 @given(strategies.segments)

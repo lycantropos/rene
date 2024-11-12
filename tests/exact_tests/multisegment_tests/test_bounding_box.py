@@ -1,10 +1,12 @@
 from hypothesis import given
 
-from rene.exact import (Box,
-                        Multisegment)
-from tests.utils import (is_multisegment_inside_box,
-                         reverse_box_coordinates,
-                         reverse_multisegment_coordinates)
+from rene.exact import Box, Multisegment
+from tests.utils import (
+    is_multisegment_inside_box,
+    reverse_box_coordinates,
+    reverse_multisegment_coordinates,
+)
+
 from . import strategies
 
 
@@ -24,5 +26,7 @@ def test_relations(multisegment: Multisegment) -> None:
 
 @given(strategies.multisegments)
 def test_reversals(multisegment: Multisegment) -> None:
-    assert (reverse_box_coordinates(multisegment.bounding_box)
-            == reverse_multisegment_coordinates(multisegment).bounding_box)
+    assert (
+        reverse_box_coordinates(multisegment.bounding_box)
+        == reverse_multisegment_coordinates(multisegment).bounding_box
+    )

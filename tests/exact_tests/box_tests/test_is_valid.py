@@ -1,6 +1,7 @@
 from hypothesis import given
 
 from rene.exact import Box
+
 from . import strategies
 
 

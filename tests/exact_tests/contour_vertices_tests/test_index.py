@@ -4,12 +4,14 @@ import pytest
 from hypothesis import given
 
 from rene.exact import Point
+
 from . import strategies
 
 
 @given(strategies.contours_vertices, strategies.points)
-def test_basic_default_range(vertices: t.Sequence[Point],
-                             point: Point) -> None:
+def test_basic_default_range(
+    vertices: t.Sequence[Point], point: Point
+) -> None:
     try:
         result = vertices.index(point)
     except ValueError:
@@ -20,12 +22,15 @@ def test_basic_default_range(vertices: t.Sequence[Point],
         assert vertices[result] == point
 
 
-@given(strategies.contours_vertices, strategies.points,
-       strategies.indices, strategies.indices)
-def test_basic_custom_range(vertices: t.Sequence[Point],
-                            point: Point,
-                            start: int,
-                            stop: int) -> None:
+@given(
+    strategies.contours_vertices,
+    strategies.points,
+    strategies.indices,
+    strategies.indices,
+)
+def test_basic_custom_range(
+    vertices: t.Sequence[Point], point: Point, start: int, stop: int
+) -> None:
     try:
         result = vertices.index(point, start, stop)
     except ValueError:
@@ -37,9 +42,9 @@ def test_basic_custom_range(vertices: t.Sequence[Point],
 
 
 @given(strategies.contours_vertices, strategies.points)
-def test_alternatives_default_range(vertices: t.Sequence[Point],
-                                    point: Point) -> None:
-
+def test_alternatives_default_range(
+    vertices: t.Sequence[Point], point: Point
+) -> None:
     try:
         result = vertices.index(point)
     except ValueError:
@@ -52,13 +57,15 @@ def test_alternatives_default_range(vertices: t.Sequence[Point],
         assert result == tuple(vertices).index(point)
 
 
-@given(strategies.contours_vertices, strategies.points,
-       strategies.indices, strategies.indices)
-def test_alternatives_custom_range(vertices: t.Sequence[Point],
-                                   point: Point,
-                                   start: int,
-                                   stop: int) -> None:
-
+@given(
+    strategies.contours_vertices,
+    strategies.points,
+    strategies.indices,
+    strategies.indices,
+)
+def test_alternatives_custom_range(
+    vertices: t.Sequence[Point], point: Point, start: int, stop: int
+) -> None:
     try:
         result = vertices.index(point, start, stop)
     except ValueError:

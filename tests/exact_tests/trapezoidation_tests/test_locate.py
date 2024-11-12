@@ -1,8 +1,8 @@
 from hypothesis import given
 
 from rene import Location
-from rene.exact import (Point,
-                        Trapezoidation)
+from rene.exact import Point, Trapezoidation
+
 from . import strategies
 
 

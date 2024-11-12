@@ -1,11 +1,13 @@
 from hypothesis import given
 
 from rene import Location
-from rene.exact import (Point,
-                        Segment)
-from tests.utils import (reverse_point_coordinates,
-                         reverse_segment_coordinates,
-                         reverse_segment_endpoints)
+from rene.exact import Point, Segment
+from tests.utils import (
+    reverse_point_coordinates,
+    reverse_segment_coordinates,
+    reverse_segment_endpoints,
+)
+
 from . import strategies
 
 
@@ -24,9 +26,9 @@ def test_endpoints(segment: Segment) -> None:
 
 @given(strategies.segments, strategies.points)
 def test_reversals(segment: Segment, point: Point) -> None:
-    assert (segment.locate(point)
-            is reverse_segment_endpoints(segment).locate(point))
-    assert (segment.locate(point)
-            is reverse_segment_coordinates(segment).locate(
-                    reverse_point_coordinates(point)
-            ))
+    assert segment.locate(point) is reverse_segment_endpoints(segment).locate(
+        point
+    )
+    assert segment.locate(point) is reverse_segment_coordinates(
+        segment
+    ).locate(reverse_point_coordinates(point))

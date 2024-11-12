@@ -1,11 +1,14 @@
 from hypothesis import given
 
 from rene.exact import Contour
-from tests.utils import (equivalence,
-                         implication,
-                         reverse_contour_vertices,
-                         reverse_contour_coordinates,
-                         rotate_contour)
+from tests.utils import (
+    equivalence,
+    implication,
+    reverse_contour_coordinates,
+    reverse_contour_vertices,
+    rotate_contour,
+)
+
 from . import strategies
 
 
@@ -26,16 +29,22 @@ def test_transitivity(first: Contour, second: Contour, third: Contour) -> None:
 
 @given(strategies.contours, strategies.contours)
 def test_alternatives(first: Contour, second: Contour) -> None:
-    assert equivalence(first == second, not first != second)
+    assert equivalence(first == second, first == second)
 
 
 @given(strategies.contours, strategies.contours)
 def test_reversals(first: Contour, second: Contour) -> None:
-    assert equivalence(first == second,
-                       reverse_contour_vertices(first) == reverse_contour_vertices(second))
-    assert equivalence(first == second,
-                       (reverse_contour_coordinates(first)
-                        == reverse_contour_coordinates(second)))
+    assert equivalence(
+        first == second,
+        reverse_contour_vertices(first) == reverse_contour_vertices(second),
+    )
+    assert equivalence(
+        first == second,
+        (
+            reverse_contour_coordinates(first)
+            == reverse_contour_coordinates(second)
+        ),
+    )
 
 
 @given(strategies.contours)

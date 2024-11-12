@@ -4,6 +4,7 @@ from collections import abc
 from hypothesis import given
 
 from rene.exact import Segment
+
 from . import strategies
 
 
@@ -25,8 +26,9 @@ def test_basic_slice(segments: t.Sequence[Segment], item: slice) -> None:
 
 
 @given(strategies.multisegments_segments, strategies.slices)
-def test_slice_commutativity_with_list(segments: t.Sequence[Segment],
-                                       item: slice) -> None:
+def test_slice_commutativity_with_list(
+    segments: t.Sequence[Segment], item: slice
+) -> None:
     assert list(segments[item]) == list(segments)[item]
 
 
@@ -44,11 +46,13 @@ def test_reversed(segments: t.Sequence[Segment]) -> None:
 
     assert result != segments
     assert len(result) == len(segments)
-    assert [segment
-            for index, (segment, reversed_segment) in (
-                enumerate(zip(result, reversed(segments)))
-            )
-            if segment != reversed_segment] == []
+    assert [
+        segment
+        for index, (segment, reversed_segment) in (
+            enumerate(zip(result, reversed(segments)))
+        )
+        if segment != reversed_segment
+    ] == []
 
 
 @given(strategies.multisegments_segments)
@@ -59,9 +63,9 @@ def test_reversed_idempotence(segments: t.Sequence[Segment]) -> None:
 
 
 @given(strategies.multisegments_segments, strategies.slices, strategies.slices)
-def test_consecutive_slicing(segments: t.Sequence[Segment],
-                             item: slice,
-                             next_item: slice) -> None:
+def test_consecutive_slicing(
+    segments: t.Sequence[Segment], item: slice, next_item: slice
+) -> None:
     result = segments[item]
     next_result = result[next_item]
 

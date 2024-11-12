@@ -4,6 +4,7 @@ from collections import abc
 from hypothesis import given
 
 from rene.exact import Polygon
+
 from . import strategies
 
 
@@ -25,8 +26,9 @@ def test_basic_slice(polygons: t.Sequence[Polygon], item: slice) -> None:
 
 
 @given(strategies.multipolygons_polygons, strategies.slices)
-def test_slice_commutativity_with_list(polygons: t.Sequence[Polygon],
-                                       item: slice) -> None:
+def test_slice_commutativity_with_list(
+    polygons: t.Sequence[Polygon], item: slice
+) -> None:
     assert list(polygons[item]) == list(polygons)[item]
 
 
@@ -44,11 +46,13 @@ def test_reversed(polygons: t.Sequence[Polygon]) -> None:
 
     assert result != polygons
     assert len(result) == len(polygons)
-    assert [polygon
-            for index, (polygon, reversed_polygon) in (
-                enumerate(zip(result, reversed(polygons)))
-            )
-            if polygon != reversed_polygon] == []
+    assert [
+        polygon
+        for index, (polygon, reversed_polygon) in (
+            enumerate(zip(result, reversed(polygons)))
+        )
+        if polygon != reversed_polygon
+    ] == []
 
 
 @given(strategies.multipolygons_polygons)
@@ -59,9 +63,9 @@ def test_reversed_idempotence(polygons: t.Sequence[Polygon]) -> None:
 
 
 @given(strategies.multipolygons_polygons, strategies.slices, strategies.slices)
-def test_consecutive_slicing(polygons: t.Sequence[Polygon],
-                             item: slice,
-                             next_item: slice) -> None:
+def test_consecutive_slicing(
+    polygons: t.Sequence[Polygon], item: slice, next_item: slice
+) -> None:
     result = polygons[item]
     next_result = result[next_item]
 

@@ -4,6 +4,7 @@ from hypothesis import given
 
 from rene.exact import Segment
 from tests.utils import implication
+
 from . import strategies
 
 
@@ -15,6 +16,7 @@ def test_determinism(segments: t.Sequence[Segment]) -> None:
 
 
 @given(strategies.multisegments_segments, strategies.multisegments_segments)
-def test_preserving_equality(first: t.Sequence[Segment],
-                             second: t.Sequence[Segment]) -> None:
+def test_preserving_equality(
+    first: t.Sequence[Segment], second: t.Sequence[Segment]
+) -> None:
     assert implication(first == second, hash(first) == hash(second))

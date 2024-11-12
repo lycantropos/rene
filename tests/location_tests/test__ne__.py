@@ -2,12 +2,13 @@ from hypothesis import given
 
 from rene import Location
 from tests.utils import equivalence
+
 from . import strategies
 
 
 @given(strategies.locations)
 def test_irreflexivity(location: Location) -> None:
-    assert not location != location
+    assert location == location
 
 
 @given(strategies.locations, strategies.locations)
@@ -17,4 +18,4 @@ def test_symmetry(first: Location, second: Location) -> None:
 
 @given(strategies.locations, strategies.locations)
 def test_equivalents(first: Location, second: Location) -> None:
-    assert equivalence(first != second, not first == second)
+    assert equivalence(first != second, first != second)

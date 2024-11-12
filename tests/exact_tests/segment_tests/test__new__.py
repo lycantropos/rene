@@ -2,8 +2,8 @@ from typing import Tuple
 
 from hypothesis import given
 
-from rene.exact import (Point,
-                        Segment)
+from rene.exact import Point, Segment
+
 from . import strategies
 
 

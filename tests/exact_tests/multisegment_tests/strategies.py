@@ -8,10 +8,9 @@ points = _strategies.points
 non_zero_integers = _strategies.non_zero_integers
 multisegments_segments = _strategies.multisegments_segments
 multisegments_like_segments = strategies.lists(
-        _strategies.segments,
-        unique=True,
-        min_size=MIN_MULTISEGMENT_SEGMENTS_COUNT
+    _strategies.segments, unique=True, min_size=MIN_MULTISEGMENT_SEGMENTS_COUNT
 )
-multisegments_like = strategies.builds(Multisegment,
-                                       multisegments_like_segments)
+multisegments_like = strategies.builds(
+    Multisegment, multisegments_like_segments
+)
 multisegments = _strategies.multisegments

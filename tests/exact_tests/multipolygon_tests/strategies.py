@@ -8,24 +8,31 @@ points = _strategies.points
 non_zero_integers = _strategies.non_zero_integers
 multipolygons_polygons = _strategies.multipolygons_polygons
 multipolygons_like_polygons = strategies.lists(
-        _strategies.polygons,
-        unique=True,
-        min_size=MIN_MULTIPOLYGON_POLYGONS_COUNT
+    _strategies.polygons, unique=True, min_size=MIN_MULTIPOLYGON_POLYGONS_COUNT
 )
 invalid_count_multipolygons_polygons = strategies.lists(
-        _strategies.polygons,
-        unique=True,
-        max_size=MIN_MULTIPOLYGON_POLYGONS_COUNT - 1
+    _strategies.polygons,
+    unique=True,
+    max_size=MIN_MULTIPOLYGON_POLYGONS_COUNT - 1,
 )
-multipolygons_like = strategies.builds(Multipolygon,
-                                       multipolygons_like_polygons)
+multipolygons_like = strategies.builds(
+    Multipolygon, multipolygons_like_polygons
+)
 multipolygons = _strategies.multipolygons
 compounds = (
-        _strategies.empty_geometries | _strategies.segments
-        | _strategies.multisegments | _strategies.contours | multipolygons
-        | _strategies.polygons
+    _strategies.empty_geometries
+    | _strategies.segments
+    | _strategies.multisegments
+    | _strategies.contours
+    | multipolygons
+    | _strategies.polygons
 )
-maybe_linear_compounds = (_strategies.empty_geometries | _strategies.segments
-                          | _strategies.multisegments | _strategies.contours)
-maybe_shaped_compounds = (_strategies.empty_geometries | _strategies.polygons
-                          | multipolygons)
+maybe_linear_compounds = (
+    _strategies.empty_geometries
+    | _strategies.segments
+    | _strategies.multisegments
+    | _strategies.contours
+)
+maybe_shaped_compounds = (
+    _strategies.empty_geometries | _strategies.polygons | multipolygons
+)

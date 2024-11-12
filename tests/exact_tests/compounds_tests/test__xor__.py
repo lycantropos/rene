@@ -1,14 +1,16 @@
 from hypothesis import given
 
 from rene.exact import Empty
-from tests.exact_tests.hints import (ClosedCompoundsPairT,
-                                     ClosedCompoundsTripletT,
-                                     ClosedIdempotentCompoundsPairT,
-                                     Compound,
-                                     CompoundT,
-                                     MaybeShapedCompound)
-from tests.utils import (implication,
-                         reverse_compound_coordinates)
+from tests.exact_tests.hints import (
+    ClosedCompoundsPairT,
+    ClosedCompoundsTripletT,
+    ClosedIdempotentCompoundsPairT,
+    Compound,
+    CompoundT,
+    MaybeShapedCompound,
+)
+from tests.utils import implication, reverse_compound_coordinates
+
 from . import strategies
 
 
@@ -54,11 +56,16 @@ def test_associativity(triplet: ClosedCompoundsTripletT) -> None:
     assert (first ^ second) ^ third == first ^ (second ^ third)
 
 
-@given(strategies.maybe_shaped_compounds, strategies.maybe_shaped_compounds,
-       strategies.maybe_shaped_compounds)
-def test_repeated(first: MaybeShapedCompound,
-                  second: MaybeShapedCompound,
-                  third: MaybeShapedCompound) -> None:
+@given(
+    strategies.maybe_shaped_compounds,
+    strategies.maybe_shaped_compounds,
+    strategies.maybe_shaped_compounds,
+)
+def test_repeated(
+    first: MaybeShapedCompound,
+    second: MaybeShapedCompound,
+    third: MaybeShapedCompound,
+) -> None:
     assert (first ^ second) ^ (second ^ third) == first ^ third
 
 
@@ -79,6 +86,6 @@ def test_reversals(pair: ClosedCompoundsPairT) -> None:
     result = first ^ second
 
     assert result == reverse_compound_coordinates(
-            reverse_compound_coordinates(first)
-            ^ reverse_compound_coordinates(second)
+        reverse_compound_coordinates(first)
+        ^ reverse_compound_coordinates(second)
     )

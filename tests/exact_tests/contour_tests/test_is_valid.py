@@ -1,10 +1,13 @@
 from hypothesis import given
 
 from rene.exact import Contour
-from tests.utils import (equivalence,
-                         reverse_contour_vertices,
-                         reverse_contour_coordinates,
-                         rotate_contour)
+from tests.utils import (
+    equivalence,
+    reverse_contour_coordinates,
+    reverse_contour_vertices,
+    rotate_contour,
+)
+
 from . import strategies
 
 
@@ -15,16 +18,20 @@ def test_basic(contour: Contour) -> None:
 
 @given(strategies.contours)
 def test_reversals(contour: Contour) -> None:
-    assert equivalence(contour.is_valid(),
-                       reverse_contour_coordinates(contour).is_valid())
+    assert equivalence(
+        contour.is_valid(), reverse_contour_coordinates(contour).is_valid()
+    )
 
 
 @given(strategies.contours, strategies.non_zero_integers)
 def test_vertices_rotations(contour: Contour, offset: int) -> None:
-    assert equivalence(contour.is_valid(),
-                       rotate_contour(contour, offset).is_valid())
+    assert equivalence(
+        contour.is_valid(), rotate_contour(contour, offset).is_valid()
+    )
 
 
 @given(strategies.contours)
 def test_vertices_reversal(contour: Contour) -> None:
-    assert equivalence(contour.is_valid(), reverse_contour_vertices(contour).is_valid())
+    assert equivalence(
+        contour.is_valid(), reverse_contour_vertices(contour).is_valid()
+    )

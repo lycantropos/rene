@@ -3,9 +3,9 @@ from typing import Sequence
 import pytest
 from hypothesis import given
 
-from rene.exact import (Contour,
-                        Point)
+from rene.exact import Contour, Point
 from tests.utils import are_sequences_equivalent
+
 from . import strategies
 
 

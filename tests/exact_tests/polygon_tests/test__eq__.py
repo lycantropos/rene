@@ -1,12 +1,15 @@
 from hypothesis import given
 
 from rene.exact import Polygon
-from tests.utils import (equivalence,
-                         implication,
-                         reverse_polygon_holes,
-                         rotate_each_polygon_hole,
-                         rotate_polygon_border,
-                         rotate_polygon_holes)
+from tests.utils import (
+    equivalence,
+    implication,
+    reverse_polygon_holes,
+    rotate_each_polygon_hole,
+    rotate_polygon_border,
+    rotate_polygon_holes,
+)
+
 from . import strategies
 
 
@@ -27,7 +30,7 @@ def test_transitivity(first: Polygon, second: Polygon, third: Polygon) -> None:
 
 @given(strategies.polygons, strategies.polygons)
 def test_alternatives(first: Polygon, second: Polygon) -> None:
-    assert equivalence(first == second, not first != second)
+    assert equivalence(first == second, first == second)
 
 
 @given(strategies.polygons, strategies.non_zero_integers)

@@ -1,10 +1,12 @@
 from hypothesis import given
 
-from rene.exact import (Box,
-                        Segment)
-from tests.utils import (is_segment_inside_box,
-                         reverse_box_coordinates,
-                         reverse_segment_coordinates)
+from rene.exact import Box, Segment
+from tests.utils import (
+    is_segment_inside_box,
+    reverse_box_coordinates,
+    reverse_segment_coordinates,
+)
+
 from . import strategies
 
 
@@ -24,5 +26,7 @@ def test_relations(segment: Segment) -> None:
 
 @given(strategies.segments)
 def test_reversals(segment: Segment) -> None:
-    assert (reverse_box_coordinates(segment.bounding_box)
-            == reverse_segment_coordinates(segment).bounding_box)
+    assert (
+        reverse_box_coordinates(segment.bounding_box)
+        == reverse_segment_coordinates(segment).bounding_box
+    )

@@ -1,7 +1,7 @@
 from hypothesis import given
 
-from rene.exact import (ConstrainedDelaunayTriangulation,
-                        Polygon)
+from rene.exact import ConstrainedDelaunayTriangulation, Polygon
+
 from . import strategies
 
 

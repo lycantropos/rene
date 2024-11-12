@@ -2,6 +2,7 @@ from hypothesis import given
 
 from rene.exact import Polygon
 from tests.utils import implication
+
 from . import strategies
 
 

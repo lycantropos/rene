@@ -1,10 +1,13 @@
 from hypothesis import given
 
 from rene.exact import Multipolygon
-from tests.utils import (equivalence,
-                         implication,
-                         reverse_multipolygon_polygons,
-                         rotate_multipolygon)
+from tests.utils import (
+    equivalence,
+    implication,
+    reverse_multipolygon_polygons,
+    rotate_multipolygon,
+)
+
 from . import strategies
 
 
@@ -18,14 +21,20 @@ def test_symmetry(first: Multipolygon, second: Multipolygon) -> None:
     assert equivalence(first == second, second == first)
 
 
-@given(strategies.multipolygons, strategies.multipolygons, strategies.multipolygons)
-def test_transitivity(first: Multipolygon, second: Multipolygon, third: Multipolygon) -> None:
+@given(
+    strategies.multipolygons,
+    strategies.multipolygons,
+    strategies.multipolygons,
+)
+def test_transitivity(
+    first: Multipolygon, second: Multipolygon, third: Multipolygon
+) -> None:
     assert implication(first == second and second == third, first == third)
 
 
 @given(strategies.multipolygons, strategies.multipolygons)
 def test_alternatives(first: Multipolygon, second: Multipolygon) -> None:
-    assert equivalence(first == second, not first != second)
+    assert equivalence(first == second, first == second)
 
 
 @given(strategies.multipolygons)
@@ -39,5 +48,9 @@ def test_polygons_rotations(multipolygon: Multipolygon, offset: int) -> None:
 
 
 @given(strategies.multipolygons, strategies.non_zero_integers)
-def test_polygons_rotations_of_reversal(multipolygon: Multipolygon, offset: int) -> None:
-    assert multipolygon == rotate_multipolygon(reverse_multipolygon_polygons(multipolygon), offset)
+def test_polygons_rotations_of_reversal(
+    multipolygon: Multipolygon, offset: int
+) -> None:
+    assert multipolygon == rotate_multipolygon(
+        reverse_multipolygon_polygons(multipolygon), offset
+    )

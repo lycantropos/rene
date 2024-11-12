@@ -3,6 +3,7 @@ from hypothesis import given
 from rene import Orientation
 from rene.exact import Contour
 from tests.utils import rotate_contour
+
 from . import strategies
 
 

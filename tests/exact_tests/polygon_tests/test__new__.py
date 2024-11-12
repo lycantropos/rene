@@ -1,11 +1,10 @@
-from typing import (Sequence,
-                    Tuple)
+from typing import Sequence, Tuple
 
 from hypothesis import given
 
-from rene.exact import (Contour,
-                        Polygon)
+from rene.exact import Contour, Polygon
 from tests.utils import are_sequences_equivalent
+
 from . import strategies
 
 

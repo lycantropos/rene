@@ -2,6 +2,7 @@ from hypothesis import given
 
 from rene.exact import Multisegment
 from tests.utils import implication
+
 from . import strategies
 
 
@@ -13,5 +14,7 @@ def test_determinism(multisegment: Multisegment) -> None:
 
 
 @given(strategies.multisegments, strategies.multisegments)
-def test_preserving_equality(first: Multisegment, second: Multisegment) -> None:
+def test_preserving_equality(
+    first: Multisegment, second: Multisegment
+) -> None:
     assert implication(first == second, hash(first) == hash(second))

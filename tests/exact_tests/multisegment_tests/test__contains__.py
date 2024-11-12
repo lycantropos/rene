@@ -1,9 +1,9 @@
 from hypothesis import given
 
 from rene import Location
-from rene.exact import (Multisegment,
-                        Point)
+from rene.exact import Multisegment, Point
 from tests.utils import equivalence
+
 from . import strategies
 
 
@@ -18,5 +18,6 @@ def test_basic(multisegment: Multisegment, point: Point) -> None:
 def test_alternatives(multisegment: Multisegment, point: Point) -> None:
     result = point in multisegment
 
-    assert equivalence(result,
-                       multisegment.locate(point) is not Location.EXTERIOR)
+    assert equivalence(
+        result, multisegment.locate(point) is not Location.EXTERIOR
+    )

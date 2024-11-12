@@ -1,12 +1,14 @@
 from hypothesis import given
 
 from rene.exact import Empty
-from tests.exact_tests.hints import (ClosedCompoundsPairT,
-                                     ClosedCompoundsTripletT,
-                                     CompoundT,
-                                     MaybeShapedCompound)
-from tests.utils import (equivalence,
-                         reverse_compound_coordinates)
+from tests.exact_tests.hints import (
+    ClosedCompoundsPairT,
+    ClosedCompoundsTripletT,
+    CompoundT,
+    MaybeShapedCompound,
+)
+from tests.utils import equivalence, reverse_compound_coordinates
+
 from . import strategies
 
 
@@ -18,18 +20,24 @@ def test_self_inverse(compound: CompoundT) -> None:
 
 
 @given(strategies.maybe_shaped_compounds, strategies.maybe_shaped_compounds)
-def test_commutative_case(first: MaybeShapedCompound,
-                          second: MaybeShapedCompound) -> None:
+def test_commutative_case(
+    first: MaybeShapedCompound, second: MaybeShapedCompound
+) -> None:
     result = first - second
 
     assert equivalence(result == second - first, first == second)
 
 
-@given(strategies.maybe_shaped_compounds, strategies.maybe_shaped_compounds,
-       strategies.maybe_shaped_compounds)
-def test_difference_subtrahend(first: MaybeShapedCompound,
-                               second: MaybeShapedCompound,
-                               third: MaybeShapedCompound) -> None:
+@given(
+    strategies.maybe_shaped_compounds,
+    strategies.maybe_shaped_compounds,
+    strategies.maybe_shaped_compounds,
+)
+def test_difference_subtrahend(
+    first: MaybeShapedCompound,
+    second: MaybeShapedCompound,
+    third: MaybeShapedCompound,
+) -> None:
     assert first - (second - third) == (first - second) | (first & third)
 
 
@@ -40,19 +48,29 @@ def test_intersection_minuend(triplet: ClosedCompoundsTripletT) -> None:
     assert (first & second) - third == first & (second - third)
 
 
-@given(strategies.maybe_shaped_compounds, strategies.maybe_shaped_compounds,
-       strategies.maybe_shaped_compounds)
-def test_intersection_subtrahend(first: MaybeShapedCompound,
-                                 second: MaybeShapedCompound,
-                                 third: MaybeShapedCompound) -> None:
+@given(
+    strategies.maybe_shaped_compounds,
+    strategies.maybe_shaped_compounds,
+    strategies.maybe_shaped_compounds,
+)
+def test_intersection_subtrahend(
+    first: MaybeShapedCompound,
+    second: MaybeShapedCompound,
+    third: MaybeShapedCompound,
+) -> None:
     assert first - (second & third) == (first - second) | (first - third)
 
 
-@given(strategies.maybe_shaped_compounds, strategies.maybe_shaped_compounds,
-       strategies.maybe_shaped_compounds)
-def test_union_subtrahend(first: MaybeShapedCompound,
-                          second: MaybeShapedCompound,
-                          third: MaybeShapedCompound) -> None:
+@given(
+    strategies.maybe_shaped_compounds,
+    strategies.maybe_shaped_compounds,
+    strategies.maybe_shaped_compounds,
+)
+def test_union_subtrahend(
+    first: MaybeShapedCompound,
+    second: MaybeShapedCompound,
+    third: MaybeShapedCompound,
+) -> None:
     assert first - (second | third) == (first - second) & (first - third)
 
 
@@ -63,6 +81,6 @@ def test_reversals(pair: ClosedCompoundsPairT) -> None:
     result = first - second
 
     assert result == reverse_compound_coordinates(
-            reverse_compound_coordinates(first)
-            - reverse_compound_coordinates(second)
+        reverse_compound_coordinates(first)
+        - reverse_compound_coordinates(second)
     )

@@ -2,6 +2,7 @@ from hypothesis import given
 
 from rene.exact import Segment
 from tests.utils import implication
+
 from . import strategies
 
 

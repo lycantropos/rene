@@ -3,6 +3,7 @@ from rithm.fraction import Fraction
 
 from rene.exact import Point
 from tests.hints import Scalar
+
 from . import strategies
 
 

@@ -4,12 +4,14 @@ import pytest
 from hypothesis import given
 
 from rene.exact import Segment
+
 from . import strategies
 
 
 @given(strategies.contours_segments, strategies.segments)
-def test_basic_default_range(segments: t.Sequence[Segment],
-                             segment: Segment) -> None:
+def test_basic_default_range(
+    segments: t.Sequence[Segment], segment: Segment
+) -> None:
     try:
         result = segments.index(segment)
     except ValueError:
@@ -20,12 +22,15 @@ def test_basic_default_range(segments: t.Sequence[Segment],
         assert segments[result] == segment
 
 
-@given(strategies.contours_segments, strategies.segments,
-       strategies.indices, strategies.indices)
-def test_basic_custom_range(segments: t.Sequence[Segment],
-                            segment: Segment,
-                            start: int,
-                            stop: int) -> None:
+@given(
+    strategies.contours_segments,
+    strategies.segments,
+    strategies.indices,
+    strategies.indices,
+)
+def test_basic_custom_range(
+    segments: t.Sequence[Segment], segment: Segment, start: int, stop: int
+) -> None:
     try:
         result = segments.index(segment, start, stop)
     except ValueError:
@@ -37,9 +42,9 @@ def test_basic_custom_range(segments: t.Sequence[Segment],
 
 
 @given(strategies.contours_segments, strategies.segments)
-def test_alternatives_default_range(segments: t.Sequence[Segment],
-                                    segment: Segment) -> None:
-
+def test_alternatives_default_range(
+    segments: t.Sequence[Segment], segment: Segment
+) -> None:
     try:
         result = segments.index(segment)
     except ValueError:
@@ -52,13 +57,15 @@ def test_alternatives_default_range(segments: t.Sequence[Segment],
         assert result == tuple(segments).index(segment)
 
 
-@given(strategies.contours_segments, strategies.segments,
-       strategies.indices, strategies.indices)
-def test_alternatives_custom_range(segments: t.Sequence[Segment],
-                                   segment: Segment,
-                                   start: int,
-                                   stop: int) -> None:
-
+@given(
+    strategies.contours_segments,
+    strategies.segments,
+    strategies.indices,
+    strategies.indices,
+)
+def test_alternatives_custom_range(
+    segments: t.Sequence[Segment], segment: Segment, start: int, stop: int
+) -> None:
     try:
         result = segments.index(segment, start, stop)
     except ValueError:

@@ -2,6 +2,7 @@ from hypothesis import given
 
 from rene.exact import Multipolygon
 from tests.utils import implication
+
 from . import strategies
 
 
@@ -13,6 +14,7 @@ def test_determinism(multipolygon: Multipolygon) -> None:
 
 
 @given(strategies.multipolygons, strategies.multipolygons)
-def test_preserving_equality(first: Multipolygon,
-                             second: Multipolygon) -> None:
+def test_preserving_equality(
+    first: Multipolygon, second: Multipolygon
+) -> None:
     assert implication(first == second, hash(first) == hash(second))

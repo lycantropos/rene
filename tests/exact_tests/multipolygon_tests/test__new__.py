@@ -3,9 +3,9 @@ from typing import Sequence
 import pytest
 from hypothesis import given
 
-from rene.exact import (Multipolygon,
-                        Polygon)
+from rene.exact import Multipolygon, Polygon
 from tests.utils import are_sequences_equivalent
+
 from . import strategies
 
 

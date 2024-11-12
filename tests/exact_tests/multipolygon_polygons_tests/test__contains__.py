@@ -4,6 +4,7 @@ from hypothesis import given
 
 from rene.exact import Polygon
 from tests.utils import equivalence
+
 from . import strategies
 
 

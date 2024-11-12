@@ -4,6 +4,7 @@ from hypothesis import given
 
 from rene.exact import Box
 from tests.hints import Scalar
+
 from . import strategies
 
 

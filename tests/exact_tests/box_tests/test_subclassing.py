@@ -5,11 +5,13 @@ import pytest
 from hypothesis import given
 
 from rene.exact import Box
+
 from . import strategies
 
 
 def test_static() -> None:
     with pytest.raises(TypeError):
+
         class Subclass(Box):
             pass
 

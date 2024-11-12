@@ -2,8 +2,8 @@ from collections import abc
 
 from hypothesis import given
 
-from rene.exact import (Contour,
-                        Polygon)
+from rene.exact import Contour, Polygon
+
 from . import strategies
 
 

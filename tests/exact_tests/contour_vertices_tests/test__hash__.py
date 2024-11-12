@@ -4,6 +4,7 @@ from hypothesis import given
 
 from rene.exact import Point
 from tests.utils import implication
+
 from . import strategies
 
 
@@ -15,6 +16,7 @@ def test_determinism(vertices: t.Sequence[Point]) -> None:
 
 
 @given(strategies.contours_vertices, strategies.contours_vertices)
-def test_preserving_equality(first: t.Sequence[Point],
-                             second: t.Sequence[Point]) -> None:
+def test_preserving_equality(
+    first: t.Sequence[Point], second: t.Sequence[Point]
+) -> None:
     assert implication(first == second, hash(first) == hash(second))

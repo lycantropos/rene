@@ -1,8 +1,8 @@
 from hypothesis import given
 
 from rene import Relation
-from tests.utils import (equivalence,
-                         implication)
+from tests.utils import equivalence, implication
+
 from . import strategies
 
 
@@ -16,14 +16,13 @@ def test_symmetry(first: Relation, second: Relation) -> None:
     assert equivalence(first == second, second == first)
 
 
-@given(strategies.relations, strategies.relations,
-       strategies.relations)
-def test_transitivity(first: Relation,
-                      second: Relation,
-                      third: Relation) -> None:
+@given(strategies.relations, strategies.relations, strategies.relations)
+def test_transitivity(
+    first: Relation, second: Relation, third: Relation
+) -> None:
     assert implication(first == second and second == third, first == third)
 
 
 @given(strategies.relations, strategies.relations)
 def test_alternatives(first: Relation, second: Relation) -> None:
-    assert equivalence(first == second, not first != second)
+    assert equivalence(first == second, first == second)

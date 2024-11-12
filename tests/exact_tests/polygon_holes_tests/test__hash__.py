@@ -4,6 +4,7 @@ from hypothesis import given
 
 from rene.exact import Contour
 from tests.utils import implication
+
 from . import strategies
 
 
@@ -15,6 +16,7 @@ def test_determinism(holes: t.Sequence[Contour]) -> None:
 
 
 @given(strategies.polygons_holes, strategies.polygons_holes)
-def test_preserving_equality(first: t.Sequence[Contour],
-                             second: t.Sequence[Contour]) -> None:
+def test_preserving_equality(
+    first: t.Sequence[Contour], second: t.Sequence[Contour]
+) -> None:
     assert implication(first == second, hash(first) == hash(second))

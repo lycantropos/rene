@@ -1,10 +1,9 @@
 from hypothesis import given
 
-from rene.exact import (Empty,
-                        Multipolygon,
-                        Polygon)
+from rene.exact import Empty, Multipolygon, Polygon
 from tests.exact_tests.hints import MaybeShapedCompound
 from tests.utils import reverse_polygon_holes
+
 from . import strategies
 
 

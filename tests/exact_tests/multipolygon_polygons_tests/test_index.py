@@ -4,12 +4,14 @@ import pytest
 from hypothesis import given
 
 from rene.exact import Polygon
+
 from . import strategies
 
 
 @given(strategies.multipolygons_polygons, strategies.polygons)
-def test_basic_default_range(polygons: t.Sequence[Polygon],
-                             polygon: Polygon) -> None:
+def test_basic_default_range(
+    polygons: t.Sequence[Polygon], polygon: Polygon
+) -> None:
     try:
         result = polygons.index(polygon)
     except ValueError:
@@ -20,12 +22,15 @@ def test_basic_default_range(polygons: t.Sequence[Polygon],
         assert polygons[result] == polygon
 
 
-@given(strategies.multipolygons_polygons, strategies.polygons,
-       strategies.indices, strategies.indices)
-def test_basic_custom_range(polygons: t.Sequence[Polygon],
-                            polygon: Polygon,
-                            start: int,
-                            stop: int) -> None:
+@given(
+    strategies.multipolygons_polygons,
+    strategies.polygons,
+    strategies.indices,
+    strategies.indices,
+)
+def test_basic_custom_range(
+    polygons: t.Sequence[Polygon], polygon: Polygon, start: int, stop: int
+) -> None:
     try:
         result = polygons.index(polygon, start, stop)
     except ValueError:
@@ -37,9 +42,9 @@ def test_basic_custom_range(polygons: t.Sequence[Polygon],
 
 
 @given(strategies.multipolygons_polygons, strategies.polygons)
-def test_alternatives_default_range(polygons: t.Sequence[Polygon],
-                                    polygon: Polygon) -> None:
-
+def test_alternatives_default_range(
+    polygons: t.Sequence[Polygon], polygon: Polygon
+) -> None:
     try:
         result = polygons.index(polygon)
     except ValueError:
@@ -52,13 +57,15 @@ def test_alternatives_default_range(polygons: t.Sequence[Polygon],
         assert result == tuple(polygons).index(polygon)
 
 
-@given(strategies.multipolygons_polygons, strategies.polygons,
-       strategies.indices, strategies.indices)
-def test_alternatives_custom_range(polygons: t.Sequence[Polygon],
-                                   polygon: Polygon,
-                                   start: int,
-                                   stop: int) -> None:
-
+@given(
+    strategies.multipolygons_polygons,
+    strategies.polygons,
+    strategies.indices,
+    strategies.indices,
+)
+def test_alternatives_custom_range(
+    polygons: t.Sequence[Polygon], polygon: Polygon, start: int, stop: int
+) -> None:
     try:
         result = polygons.index(polygon, start, stop)
     except ValueError:
