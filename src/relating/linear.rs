@@ -25,8 +25,10 @@ use super::utils::all_equal;
 
 pub(crate) struct Operation<Point> {
     first_segments_count: usize,
+    #[allow(clippy::box_collection)]
     endpoints: Box<Vec<Point>>,
     events_queue_data: BinaryHeap<Reverse<EventsQueueKey<Point>>>,
+    #[allow(clippy::box_collection)]
     opposites: Box<Vec<Event>>,
     segments_ids: Vec<usize>,
     sweep_line_data: BTreeSet<SweepLineKey<Point>>,

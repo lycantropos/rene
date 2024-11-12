@@ -33,9 +33,11 @@ pub(crate) struct Operation<Point, const KIND: u8> {
     below_event_from_result: Vec<Event>,
     current_endpoint_first_event: Event,
     current_endpoint_id: usize,
+    #[allow(clippy::box_collection)]
     endpoints: Box<Vec<Point>>,
     events_queue_data: BinaryHeap<Reverse<EventsQueueKey<Point>>>,
     have_interior_to_left: Vec<bool>,
+    #[allow(clippy::box_collection)]
     opposites: Box<Vec<Event>>,
     other_have_interior_to_left: Vec<bool>,
     overlap_kinds: Vec<OverlapKind>,
@@ -460,6 +462,7 @@ impl<Point, const KIND: u8> Operation<Point, KIND> {
             self.detect_if_left_event_from_result(event);
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn compute_relations(
         &self,
         event: Event,

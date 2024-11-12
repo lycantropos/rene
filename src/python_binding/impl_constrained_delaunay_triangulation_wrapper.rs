@@ -1,19 +1,16 @@
-macro_rules! impl_delaunay_triangulation_wrapper {
+macro_rules! impl_constrained_delaunay_triangulation_wrapper {
     () => {
-        #[pyo3::prelude::pymethods]
-        impl PyDelaunayTriangulation {
+        #[pyo3::pymethods]
+        impl PyConstrainedDelaunayTriangulation {
             #[classmethod]
-            #[pyo3(signature = (points, /))]
-            fn from_points(
-                _: &pyo3::types::PyType,
-                points: &pyo3::types::PySequence,
-            ) -> pyo3::PyResult<Self> {
-                Ok(PyDelaunayTriangulation(DelaunayTriangulation::from(
-                    super::conversion::extract_from_py_sequence::<
-                        Point,
-                        PyPoint,
-                    >(points)?,
-                )))
+            #[pyo3(signature = (polygon, /))]
+            fn from_polygon(
+                _: &pyo3::Bound<'_, pyo3::types::PyType>,
+                polygon: &PyPolygon,
+            ) -> Self {
+                PyConstrainedDelaunayTriangulation(
+                    ConstrainedDelaunayTriangulation::from(&polygon.0),
+                )
             }
 
             #[getter]
@@ -31,7 +28,7 @@ macro_rules! impl_delaunay_triangulation_wrapper {
             #[getter]
             fn triangles(&self) -> Vec<Contour> {
                 self.0
-                    .iter_triangles_vertices()
+                    .to_triangles_vertices()
                     .map(|(first, second, third)| {
                         Contour::from([
                             first.clone(),
@@ -49,4 +46,4 @@ macro_rules! impl_delaunay_triangulation_wrapper {
     };
 }
 
-pub(super) use impl_delaunay_triangulation_wrapper;
+pub(super) use impl_constrained_delaunay_triangulation_wrapper;

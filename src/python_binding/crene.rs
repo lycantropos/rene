@@ -3,8 +3,8 @@ use pyo3::sync::GILOnceCell;
 use pyo3::type_object::PyTypeInfo;
 use pyo3::types::{PyModule, PyTuple};
 use pyo3::{
-    intern, pyclass, pymethods, pymodule, IntoPy, Py, PyAny, PyCell, PyObject,
-    PyResult, Python, ToPyObject,
+    intern, pyclass, pymethods, pymodule, Bound, IntoPy, Py, PyAny, PyObject,
+    PyResult, Python,
 };
 
 use crate::constants::{
@@ -18,7 +18,8 @@ use crate::relatable::Relation;
 use super::traits::TryToPyAny;
 
 #[pymodule]
-fn _crene(_py: Python, module: &PyModule) -> PyResult<()> {
+fn _crene(_py: Python<'_>, module: &Bound<'_, PyModule>) -> PyResult<()> {
+    use pyo3::types::PyModuleMethods;
     module.add_class::<PyLocation>()?;
     module.add_class::<PyOrientation>()?;
     module.add_class::<PyRelation>()?;
@@ -34,24 +35,13 @@ fn _crene(_py: Python, module: &PyModule) -> PyResult<()> {
     Ok(())
 }
 
-impl IntoPy<PyObject> for Relation {
-    fn into_py(self, py: Python<'_>) -> PyObject {
-        IntoPy::into_py(PyRelation(self), py)
-    }
-}
-
-impl ToPyObject for Relation {
-    fn to_object(&self, py: Python<'_>) -> PyObject {
-        IntoPy::into_py(*self, py)
-    }
-}
-
 impl TryToPyAny for Location {
-    fn try_to_py_any(self, py: Python) -> PyResult<&PyAny> {
+    fn try_to_py_any(self, py: Python<'_>) -> PyResult<Bound<'_, PyAny>> {
+        use pyo3::types::PyAnyMethods;
         static LOCATION_CLS: GILOnceCell<PyObject> = GILOnceCell::new();
         LOCATION_CLS
             .get_or_try_init(py, || {
-                py.import("rene")?
+                py.import_bound("rene")?
                     .getattr(intern!(py, "Location"))
                     .map(|value| IntoPy::into_py(value, py))
             })?
@@ -63,16 +53,17 @@ impl TryToPyAny for Location {
                     Location::Interior => intern!(py, "INTERIOR"),
                 },
             )
-            .map(|value| value.into_ref(py))
+            .map(|value| value.into_bound(py))
     }
 }
 
 impl TryToPyAny for Orientation {
-    fn try_to_py_any(self, py: Python) -> PyResult<&PyAny> {
+    fn try_to_py_any(self, py: Python<'_>) -> PyResult<Bound<'_, PyAny>> {
+        use pyo3::types::PyAnyMethods;
         static ORIENTATION_CLS: GILOnceCell<PyObject> = GILOnceCell::new();
         ORIENTATION_CLS
             .get_or_try_init(py, || {
-                py.import("rene")?
+                py.import_bound("rene")?
                     .getattr(intern!(py, "Orientation"))
                     .map(|value| IntoPy::into_py(value, py))
             })?
@@ -90,16 +81,17 @@ impl TryToPyAny for Orientation {
                     }
                 },
             )
-            .map(|value| value.into_ref(py))
+            .map(|value| value.into_bound(py))
     }
 }
 
 impl TryToPyAny for Relation {
-    fn try_to_py_any(self, py: Python) -> PyResult<&PyAny> {
+    fn try_to_py_any(self, py: Python<'_>) -> PyResult<Bound<'_, PyAny>> {
+        use pyo3::types::PyAnyMethods;
         static RELATION_CLS: GILOnceCell<PyObject> = GILOnceCell::new();
         RELATION_CLS
             .get_or_try_init(py, || {
-                py.import("rene")?
+                py.import_bound("rene")?
                     .getattr(intern!(py, "Relation"))
                     .map(|value| IntoPy::into_py(value, py))
             })?
@@ -119,7 +111,7 @@ impl TryToPyAny for Relation {
                     Relation::Within => intern!(py, "WITHIN"),
                 },
             )
-            .map(|value| value.into_ref(py))
+            .map(|value| value.into_bound(py))
     }
 }
 
@@ -143,7 +135,7 @@ impl PyLocation {
     #[classattr]
     const INTERIOR: PyLocation = PyLocation(Location::Interior);
 
-    fn __repr__(&self, _py: Python) -> String {
+    fn __repr__(&self, _py: Python<'_>) -> String {
         format!(
             "{}.{}",
             Self::NAME,
@@ -185,63 +177,64 @@ impl PyOrientation {
 #[pymethods]
 impl PyRelation {
     #[classattr]
-    fn COMPONENT(py: Python) -> Py<PyRelation> {
+    fn COMPONENT(py: Python<'_>) -> Py<PyRelation> {
         to_py_relation_values(py)[0].clone_ref(py)
     }
 
     #[classattr]
-    fn COMPOSITE(py: Python) -> Py<PyRelation> {
+    fn COMPOSITE(py: Python<'_>) -> Py<PyRelation> {
         to_py_relation_values(py)[1].clone_ref(py)
     }
 
     #[classattr]
-    fn COVER(py: Python) -> Py<PyRelation> {
+    fn COVER(py: Python<'_>) -> Py<PyRelation> {
         to_py_relation_values(py)[2].clone_ref(py)
     }
 
     #[classattr]
-    fn CROSS(py: Python) -> Py<PyRelation> {
+    fn CROSS(py: Python<'_>) -> Py<PyRelation> {
         to_py_relation_values(py)[3].clone_ref(py)
     }
 
     #[classattr]
-    fn DISJOINT(py: Python) -> Py<PyRelation> {
+    fn DISJOINT(py: Python<'_>) -> Py<PyRelation> {
         to_py_relation_values(py)[4].clone_ref(py)
     }
 
     #[classattr]
-    fn ENCLOSED(py: Python) -> Py<PyRelation> {
+    fn ENCLOSED(py: Python<'_>) -> Py<PyRelation> {
         to_py_relation_values(py)[5].clone_ref(py)
     }
 
     #[classattr]
-    fn ENCLOSES(py: Python) -> Py<PyRelation> {
+    fn ENCLOSES(py: Python<'_>) -> Py<PyRelation> {
         to_py_relation_values(py)[6].clone_ref(py)
     }
 
     #[classattr]
-    fn EQUAL(py: Python) -> Py<PyRelation> {
+    fn EQUAL(py: Python<'_>) -> Py<PyRelation> {
         to_py_relation_values(py)[7].clone_ref(py)
     }
 
     #[classattr]
-    fn OVERLAP(py: Python) -> Py<PyRelation> {
+    fn OVERLAP(py: Python<'_>) -> Py<PyRelation> {
         to_py_relation_values(py)[8].clone_ref(py)
     }
 
     #[classattr]
-    fn TOUCH(py: Python) -> Py<PyRelation> {
+    fn TOUCH(py: Python<'_>) -> Py<PyRelation> {
         to_py_relation_values(py)[9].clone_ref(py)
     }
 
     #[classattr]
-    fn WITHIN(py: Python) -> Py<PyRelation> {
+    fn WITHIN(py: Python<'_>) -> Py<PyRelation> {
         to_py_relation_values(py)[10].clone_ref(py)
     }
 
     #[new]
     #[pyo3(signature = (value, /))]
-    fn new(value: &PyAny, py: Python) -> PyResult<Py<Self>> {
+    fn new(value: &Bound<'_, PyAny>, py: Python<'_>) -> PyResult<Py<Self>> {
+        use pyo3::types::PyAnyMethods;
         let values = to_py_relation_values(py);
         match value.extract::<usize>() {
             Ok(value) if 1 <= value && value <= values.len() => {
@@ -256,7 +249,7 @@ impl PyRelation {
     }
 
     #[getter]
-    fn complement(&self, py: Python) -> Py<PyRelation> {
+    fn complement(&self, py: Python<'_>) -> Py<PyRelation> {
         match self.0 {
             Relation::Component => Self::COMPOSITE(py),
             Relation::Composite => Self::COMPONENT(py),
@@ -289,8 +282,8 @@ impl PyRelation {
         }
     }
 
-    fn __getnewargs__<'a>(&self, py: Python<'a>) -> &'a PyTuple {
-        PyTuple::new(py, [self.value()])
+    fn __getnewargs__<'py>(&self, py: Python<'py>) -> Bound<'py, PyTuple> {
+        PyTuple::new_bound(py, [self.value()])
     }
 
     fn __repr__(&self) -> String {
@@ -314,35 +307,33 @@ impl PyRelation {
     }
 }
 
-fn to_py_relation_values(py: Python) -> &[Py<PyRelation>; 11] {
+fn to_py_relation_values(py: Python<'_>) -> &[Py<PyRelation>; 11] {
     static VALUES: GILOnceCell<[Py<PyRelation>; 11]> = GILOnceCell::new();
     VALUES.get_or_init(py, || {
         [
-            PyCell::new(py, PyRelation(Relation::Component))
+            Bound::new(py, PyRelation(Relation::Component))
                 .unwrap()
                 .into(),
-            PyCell::new(py, PyRelation(Relation::Composite))
+            Bound::new(py, PyRelation(Relation::Composite))
                 .unwrap()
                 .into(),
-            PyCell::new(py, PyRelation(Relation::Cover)).unwrap().into(),
-            PyCell::new(py, PyRelation(Relation::Cross)).unwrap().into(),
-            PyCell::new(py, PyRelation(Relation::Disjoint))
+            Bound::new(py, PyRelation(Relation::Cover)).unwrap().into(),
+            Bound::new(py, PyRelation(Relation::Cross)).unwrap().into(),
+            Bound::new(py, PyRelation(Relation::Disjoint))
                 .unwrap()
                 .into(),
-            PyCell::new(py, PyRelation(Relation::Enclosed))
+            Bound::new(py, PyRelation(Relation::Enclosed))
                 .unwrap()
                 .into(),
-            PyCell::new(py, PyRelation(Relation::Encloses))
+            Bound::new(py, PyRelation(Relation::Encloses))
                 .unwrap()
                 .into(),
-            PyCell::new(py, PyRelation(Relation::Equal)).unwrap().into(),
-            PyCell::new(py, PyRelation(Relation::Overlap))
+            Bound::new(py, PyRelation(Relation::Equal)).unwrap().into(),
+            Bound::new(py, PyRelation(Relation::Overlap))
                 .unwrap()
                 .into(),
-            PyCell::new(py, PyRelation(Relation::Touch)).unwrap().into(),
-            PyCell::new(py, PyRelation(Relation::Within))
-                .unwrap()
-                .into(),
+            Bound::new(py, PyRelation(Relation::Touch)).unwrap().into(),
+            Bound::new(py, PyRelation(Relation::Within)).unwrap().into(),
         ]
     })
 }

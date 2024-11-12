@@ -19,9 +19,11 @@ use super::sweep_line_key::SweepLineKey;
 
 pub(crate) struct Operation<Point> {
     first_segments_count: usize,
+    #[allow(clippy::box_collection)]
     endpoints: Box<Vec<Point>>,
     events_queue_data: BinaryHeap<Reverse<EventsQueueKey<Point>>>,
     have_interior_to_left: Vec<bool>,
+    #[allow(clippy::box_collection)]
     opposites: Box<Vec<Event>>,
     other_have_interior_to_left: Vec<bool>,
     overlap_kinds: Vec<OverlapKind>,
@@ -163,23 +165,19 @@ impl<Point> Operation<Point> {
                 } else {
                     Relation::Composite
                 }
-            } else {
-                if state.has_continuous_intersection {
-                    Relation::Overlap
-                } else {
-                    Relation::Touch
-                }
-            }
-        } else {
-            if state.second_is_subset {
-                Relation::Cover
-            } else if state.first_is_subset {
-                Relation::Within
             } else if state.has_continuous_intersection {
                 Relation::Overlap
             } else {
-                Relation::Disjoint
+                Relation::Touch
             }
+        } else if state.second_is_subset {
+            Relation::Cover
+        } else if state.first_is_subset {
+            Relation::Within
+        } else if state.has_continuous_intersection {
+            Relation::Overlap
+        } else {
+            Relation::Disjoint
         }
     }
 }

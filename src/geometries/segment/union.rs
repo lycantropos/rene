@@ -182,7 +182,7 @@ where
     let mut break_points = vec![];
     let (start, end) = to_sorted_pair(segment.endpoints());
     for (index, other_segment) in other_segments.iter().enumerate() {
-        if other_segment.to_bounding_box().disjoint_with(&bounding_box) {
+        if other_segment.to_bounding_box().disjoint_with(bounding_box) {
             result.push(other_segment.clone());
             continue;
         }

@@ -27,10 +27,12 @@ pub(crate) struct Operation<Point, const FIRST_IS_LINEAR: bool, const KIND: u8>
 {
     first_segments_count: usize,
     are_from_result: Vec<bool>,
+    #[allow(clippy::box_collection)]
     endpoints: Box<Vec<Point>>,
     events_queue_data: BinaryHeap<Reverse<EventsQueueKey<Point>>>,
     have_interior_to_left: Vec<bool>,
     have_overlap: Vec<bool>,
+    #[allow(clippy::box_collection)]
     opposites: Box<Vec<Event>>,
     other_have_interior_to_left: Vec<bool>,
     segments_ids: Vec<usize>,

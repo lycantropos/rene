@@ -12,7 +12,7 @@ impl<'a, T> SliceSequence<'a, T> {
     }
 }
 
-impl<'a, T> Index<usize> for SliceSequence<'a, T> {
+impl<T> Index<usize> for SliceSequence<'_, T> {
     type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -29,19 +29,20 @@ impl<'a, T> IntoIterator for SliceSequence<'a, T> {
     }
 }
 
-impl<'a, T> Iterable for SliceSequence<'a, T> {
+impl<T> Iterable for SliceSequence<'_, T> {
     type Item = T;
-    type Output<'b> = std::slice::Iter<'b, T>
+    type Output<'a>
+        = std::slice::Iter<'a, T>
     where
-        Self: 'b,
-        T: 'b;
+        Self: 'a,
+        T: 'a;
 
     fn iter(&self) -> Self::Output<'_> {
         self.slice.iter()
     }
 }
 
-impl<'a, T> Lengthsome for SliceSequence<'a, T> {
+impl<T> Lengthsome for SliceSequence<'_, T> {
     type Output = usize;
 
     fn len(&self) -> Self::Output {
@@ -49,13 +50,13 @@ impl<'a, T> Lengthsome for SliceSequence<'a, T> {
     }
 }
 
-impl<'a, T: PartialEq> PartialEq for SliceSequence<'a, T> {
+impl<T: PartialEq> PartialEq for SliceSequence<'_, T> {
     fn eq(&self, other: &Self) -> bool {
         std::ptr::eq(self.slice, other.slice) || self.slice.eq(other.slice)
     }
 }
 
-impl<'a, T: Eq> Eq for SliceSequence<'a, T> {}
+impl<T: Eq> Eq for SliceSequence<'_, T> {}
 
 impl<'a, T> Sequence for SliceSequence<'a, T> {
     type IndexItem = T;

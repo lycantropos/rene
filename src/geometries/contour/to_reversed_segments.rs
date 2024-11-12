@@ -3,7 +3,7 @@ use crate::operations::ToReversedSegments;
 
 use super::types::Contour;
 
-impl<'a, Scalar> ToReversedSegments for &'a Contour<Scalar>
+impl<Scalar> ToReversedSegments for &'_ Contour<Scalar>
 where
     Point<Scalar>: Clone,
 {

@@ -5,12 +5,12 @@ use crate::traits::{Elemental, Multisegmental, Segmental};
 
 use super::types::Polygon;
 
-impl<'a, Scalar: PartialOrd> Locatable<&Point<Scalar>> for &'a Polygon<Scalar>
+impl<Scalar: PartialOrd> Locatable<&Point<Scalar>> for &'_ Polygon<Scalar>
 where
-    for<'b> &'b Contour<Scalar>:
+    for<'a> &'a Contour<Scalar>:
         Multisegmental<IndexSegment = Segment<Scalar>>,
-    for<'b> &'b Point<Scalar>: Elemental<Coordinate = &'b Scalar> + Orient,
-    for<'b> &'b Segment<Scalar>: Segmental<Endpoint = &'b Point<Scalar>>,
+    for<'a> &'a Point<Scalar>: Elemental<Coordinate = &'a Scalar> + Orient,
+    for<'a> &'a Segment<Scalar>: Segmental<Endpoint = &'a Point<Scalar>>,
 {
     fn locate(self, point: &Point<Scalar>) -> Location {
         let location_without_holes =

@@ -22,7 +22,7 @@ impl Node {
     {
         match self {
             Self::Leaf { trapezoid } => Some(trapezoid),
-            Self::XNode {
+            Self::X {
                 left_node_index,
                 right_node_index,
                 point_index,
@@ -35,7 +35,7 @@ impl Node {
                     Ordering::Equal => None,
                 },
             ),
-            Self::YNode {
+            Self::Y {
                 above_node_index,
                 below_node_index,
                 edge_index,

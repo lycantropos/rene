@@ -1,5 +1,4 @@
 mod bentley_ottmann;
-mod binding;
 pub mod bounded;
 mod clipping;
 mod constants;
@@ -9,6 +8,7 @@ mod iteration;
 pub mod locatable;
 mod operations;
 pub mod oriented;
+mod python_binding;
 pub mod relatable;
 mod relating;
 mod seidel;

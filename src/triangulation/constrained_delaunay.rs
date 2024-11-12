@@ -58,7 +58,7 @@ struct PolygonEndpoint<'a, Endpoint> {
     point: &'a Endpoint,
 }
 
-impl<'a, Endpoint: PartialEq> PartialEq for PolygonEndpoint<'a, Endpoint> {
+impl<Endpoint: PartialEq> PartialEq for PolygonEndpoint<'_, Endpoint> {
     fn eq(&self, other: &Self) -> bool {
         debug_assert!(self.point.eq(other.point));
         self.contour_index.eq(&other.contour_index)
@@ -66,7 +66,7 @@ impl<'a, Endpoint: PartialEq> PartialEq for PolygonEndpoint<'a, Endpoint> {
     }
 }
 
-impl<'a, Endpoint: PartialOrd> PartialOrd for PolygonEndpoint<'a, Endpoint> {
+impl<Endpoint: PartialOrd> PartialOrd for PolygonEndpoint<'_, Endpoint> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(match self.point.partial_cmp(other.point)? {
             Ordering::Equal => self.contour_index.cmp(&other.contour_index),
@@ -75,9 +75,9 @@ impl<'a, Endpoint: PartialOrd> PartialOrd for PolygonEndpoint<'a, Endpoint> {
     }
 }
 
-impl<'a, Endpoint: Eq> Eq for PolygonEndpoint<'a, Endpoint> {}
+impl<Endpoint: Eq> Eq for PolygonEndpoint<'_, Endpoint> {}
 
-impl<'a, Endpoint: Ord> Ord for PolygonEndpoint<'a, Endpoint> {
+impl<Endpoint: Ord> Ord for PolygonEndpoint<'_, Endpoint> {
     fn cmp(&self, other: &Self) -> Ordering {
         match self.point.cmp(other.point) {
             Ordering::Equal => self.contour_index.cmp(&other.contour_index),

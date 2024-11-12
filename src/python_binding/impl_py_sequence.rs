@@ -13,7 +13,7 @@ macro_rules! impl_py_sequence {
             ) -> super::generic_iterator::GenericIterator<
                 std::iter::Take<
                     std::iter::StepBy<
-                        std::iter::Skip<std::slice::Iter<$value_type>>,
+                        std::iter::Skip<std::slice::Iter<'_, $value_type>>,
                     >,
                 >,
             > {
@@ -56,7 +56,7 @@ macro_rules! impl_py_sequence {
             }
         }
 
-        #[pyo3::prelude::pymethods]
+        #[pyo3::pymethods]
         impl $py_sequence {
             #[pyo3(signature = ($value_name, /))]
             fn count(&self, $value_name: &$py_value_type) -> usize {
@@ -69,10 +69,11 @@ macro_rules! impl_py_sequence {
             fn index(
                 &self,
                 $value_name: &$py_value_type,
-                start: Option<&pyo3::types::PyLong>,
-                stop: Option<&pyo3::types::PyLong>,
-                py: pyo3::Python,
-            ) -> pyo3::prelude::PyResult<usize> {
+                start: Option<&pyo3::Bound<'_, pyo3::types::PyLong>>,
+                stop: Option<&pyo3::Bound<'_, pyo3::types::PyLong>>,
+                py: pyo3::Python<'_>,
+            ) -> pyo3::PyResult<usize> {
+                use pyo3::types::PyAnyMethods;
                 match {
                     let elements_count = self.len();
                     let start = super::slicing::normalize_index_start(start, elements_count);
@@ -92,12 +93,12 @@ macro_rules! impl_py_sequence {
                         stringify!($values_method),
                         match start {
                             Some(start) => start.repr()?,
-                            None => pyo3::intern!(py, "0"),
+                            None => pyo3::intern!(py, "0").clone(),
                         },
                         match stop {
                             Some(stop) => stop.repr()?,
                             None =>
-                                pyo3::types::PyString::new(py, &self.len().to_string()),
+                                pyo3::types::PyString::new_bound(py, &self.len().to_string()),
                         }
                     ))),
                 }
@@ -109,15 +110,16 @@ macro_rules! impl_py_sequence {
 
             fn __getitem__(
                 &self,
-                item: &pyo3::PyAny,
-                py: pyo3::Python,
-            ) -> pyo3::prelude::PyResult<pyo3::PyObject> {
-                if item.is_instance(<pyo3::types::PySlice as pyo3::type_object::PyTypeInfo>::type_object(py))? {
+                item: &pyo3::Bound<'_, pyo3::PyAny>,
+                py: pyo3::Python<'_>,
+            ) -> pyo3::PyResult<pyo3::PyObject> {
+                use pyo3::types::PyAnyMethods;
+                if item.is_instance(&<pyo3::types::PySlice as pyo3::type_object::PyTypeInfo>::type_object_bound(py))? {
                     let (start, stop, step) = super::slicing::to_next_slice_indices(
                         self.start,
                         self.step,
                         self.len(),
-                        item.extract::<&pyo3::types::PySlice>()?,
+                        item.extract::<pyo3::Bound<'_, pyo3::types::PySlice>>()?,
                     )?;
                     Ok(pyo3::IntoPy::into_py(
                         Self {
@@ -136,7 +138,11 @@ macro_rules! impl_py_sequence {
                     } else {
                         let index = super::slicing::py_long_to_valid_index(
                             unsafe {
-                                <pyo3::types::PyLong as pyo3::FromPyPointer>::from_owned_ptr(item.py(), maybe_index)
+                                pyo3::Bound::<'_, pyo3::PyAny>::from_owned_ptr(
+                                    item.py(),
+                                    maybe_index,
+                                )
+                                .extract::<pyo3::Bound<'_, pyo3::types::PyLong>>()?
                             },
                             self.len(),
                         )?;
@@ -151,8 +157,14 @@ macro_rules! impl_py_sequence {
                 }
             }
 
-            fn __hash__(&self, py: pyo3::Python) -> pyo3::prelude::PyResult<pyo3::ffi::Py_hash_t> {
-                <pyo3::types::PyTuple>::new(py, self.iter().collect::<Vec<_>>()).hash()
+            fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
+                pyo3::types::PyAnyMethods::hash(
+                    <pyo3::types::PyTuple>::new_bound(
+                        py,
+                        self.iter().collect::<Vec<_>>(),
+                    )
+                    .as_ref()
+                )
             }
 
             fn __len__(&self) -> usize {
@@ -161,12 +173,13 @@ macro_rules! impl_py_sequence {
 
             fn __richcmp__(
                 &self,
-                other: &pyo3::PyAny,
+                other: &pyo3::Bound<'_, pyo3::PyAny>,
                 op: pyo3::basic::CompareOp,
-            ) -> pyo3::prelude::PyResult<pyo3::PyObject> {
+            ) -> pyo3::PyResult<pyo3::PyObject> {
+                use pyo3::types::PyAnyMethods;
                 let py = other.py();
-                if other.is_instance(<Self as pyo3::type_object::PyTypeInfo>::type_object(py))? {
-                    let other = other.extract::<pyo3::PyRef<Self>>()?;
+                if other.is_instance(&<Self as pyo3::type_object::PyTypeInfo>::type_object_bound(py))? {
+                    let other = other.extract::<pyo3::Bound<'_, Self>>()?.borrow();
                     match op {
                         pyo3::basic::CompareOp::Eq => {
                             Ok(pyo3::IntoPy::into_py(self.iter().eq(other.iter()), py))

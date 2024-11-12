@@ -7,12 +7,12 @@ pub(crate) enum Node {
     Leaf {
         trapezoid: Trapezoid,
     },
-    XNode {
+    X {
         point_index: usize,
         left_node_index: usize,
         right_node_index: usize,
     },
-    YNode {
+    Y {
         edge_index: usize,
         below_node_index: usize,
         above_node_index: usize,
@@ -51,7 +51,7 @@ impl Node {
         nodes: &mut Vec<Self>,
     ) -> usize {
         let result = nodes.len();
-        let node = Self::XNode {
+        let node = Self::X {
             point_index,
             left_node_index,
             right_node_index,
@@ -67,7 +67,7 @@ impl Node {
         nodes: &mut Vec<Self>,
     ) -> usize {
         let result = nodes.len();
-        let node = Self::YNode {
+        let node = Self::Y {
             edge_index,
             below_node_index,
             above_node_index,
@@ -79,7 +79,7 @@ impl Node {
     pub(super) fn height(&self, nodes: &[Self]) -> usize {
         match self {
             Self::Leaf { .. } => 0,
-            Self::XNode {
+            Self::X {
                 left_node_index,
                 right_node_index,
                 ..
@@ -89,7 +89,7 @@ impl Node {
                     .max(nodes[*right_node_index].height(nodes))
                     + 1
             }
-            Self::YNode {
+            Self::Y {
                 above_node_index,
                 below_node_index,
                 ..
@@ -128,7 +128,7 @@ impl Node {
     {
         match self {
             Self::Leaf { trapezoid } => trapezoid,
-            Self::XNode {
+            Self::X {
                 left_node_index,
                 right_node_index,
                 point_index,
@@ -140,7 +140,7 @@ impl Node {
                 *right_node_index
             }]
             .search_intersecting_trapezoid(edge, edges, endpoints, nodes),
-            Self::YNode {
+            Self::Y {
                 above_node_index,
                 below_node_index,
                 edge_index,

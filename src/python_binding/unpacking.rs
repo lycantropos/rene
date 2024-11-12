@@ -4,7 +4,7 @@ pub(super) fn unpack_maybe_empty_polygons<
     Polygon: pyo3::IntoPy<pyo3::PyObject>,
 >(
     polygons: Vec<Polygon>,
-    py: pyo3::Python,
+    py: pyo3::Python<'_>,
 ) -> pyo3::PyObject {
     match polygons.len() {
         0 => pyo3::IntoPy::into_py(Empty::default(), py),
@@ -22,7 +22,7 @@ pub(super) fn unpack_maybe_empty_segments<
     Segment: pyo3::IntoPy<pyo3::PyObject>,
 >(
     segments: Vec<Segment>,
-    py: pyo3::Python,
+    py: pyo3::Python<'_>,
 ) -> pyo3::PyObject {
     match segments.len() {
         0 => pyo3::IntoPy::into_py(Empty::default(), py),
@@ -39,7 +39,7 @@ pub(super) fn unpack_non_empty_polygons<
     Polygon: pyo3::IntoPy<pyo3::PyObject>,
 >(
     polygons: Vec<Polygon>,
-    py: pyo3::Python,
+    py: pyo3::Python<'_>,
 ) -> pyo3::PyObject {
     match polygons.len() {
         0 => unreachable!("Expected to be non-empty."),
@@ -56,7 +56,7 @@ pub(super) fn unpack_non_empty_segments<
     Segment: pyo3::IntoPy<pyo3::PyObject>,
 >(
     segments: Vec<Segment>,
-    py: pyo3::Python,
+    py: pyo3::Python<'_>,
 ) -> pyo3::PyObject {
     match segments.len() {
         0 => unreachable!("Expected to be non-empty."),

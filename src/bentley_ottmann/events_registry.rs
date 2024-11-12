@@ -15,9 +15,11 @@ use super::events_queue_key::EventsQueueKey;
 use super::sweep_line_key::SweepLineKey;
 
 pub(crate) struct EventsRegistry<Point, const UNIQUE: bool> {
+    #[allow(clippy::box_collection)]
     endpoints: Box<Vec<Point>>,
     events_queue_data: BinaryHeap<Reverse<EventsQueueKey<Point>>>,
     min_collinear_segments_ids: Vec<usize>,
+    #[allow(clippy::box_collection)]
     opposites: Box<Vec<Event>>,
     segments_ids: Vec<usize>,
     sweep_line_data: BTreeSet<SweepLineKey<Point>>,

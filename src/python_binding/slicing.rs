@@ -1,12 +1,11 @@
-use std::ffi::c_long;
-
 use pyo3::exceptions::{PyIndexError, PyOverflowError};
 use pyo3::PyErr;
 
 pub(super) fn py_long_to_valid_index(
-    value: &pyo3::types::PyLong,
+    value: pyo3::Bound<'_, pyo3::types::PyLong>,
     elements_count: usize,
-) -> pyo3::prelude::PyResult<usize> {
+) -> pyo3::PyResult<usize> {
+    use pyo3::types::PyAnyMethods;
     if let Ok(index) = value.extract::<isize>() {
         let elements_count = elements_count as isize;
         if !(-elements_count <= index && index < elements_count) {
@@ -32,9 +31,10 @@ pub(super) fn py_long_to_valid_index(
 }
 
 pub(super) fn normalize_index_start(
-    start: Option<&pyo3::types::PyLong>,
+    start: Option<&pyo3::Bound<'_, pyo3::types::PyLong>>,
     elements_count: usize,
 ) -> usize {
+    use pyo3::types::PyAnyMethods;
     start
         .map(|value| {
             value
@@ -52,9 +52,10 @@ pub(super) fn normalize_index_start(
 }
 
 pub(super) fn normalize_index_stop(
-    start: Option<&pyo3::types::PyLong>,
+    start: Option<&pyo3::Bound<'_, pyo3::types::PyLong>>,
     elements_count: usize,
 ) -> usize {
+    use pyo3::types::PyAnyMethods;
     start
         .map(|value| {
             value
@@ -75,9 +76,10 @@ pub(super) fn to_next_slice_indices(
     start: isize,
     step: isize,
     length: usize,
-    slice: &pyo3::types::PySlice,
+    slice: pyo3::Bound<'_, pyo3::types::PySlice>,
 ) -> Result<(isize, isize, isize), PyErr> {
-    let indices = slice.indices(length as c_long)?;
+    use pyo3::types::PySliceMethods;
+    let indices = slice.indices(length as isize)?;
     let result_step = try_multiply_isizes(step, indices.step)?;
     let result_start =
         try_sum_isizes(start, try_multiply_isizes(step, indices.start)?)?;
@@ -86,10 +88,7 @@ pub(super) fn to_next_slice_indices(
     Ok((result_start, result_stop, result_step))
 }
 
-fn try_multiply_isizes(
-    first: isize,
-    second: isize,
-) -> pyo3::prelude::PyResult<isize> {
+fn try_multiply_isizes(first: isize, second: isize) -> pyo3::PyResult<isize> {
     if let (result, false) = first.overflowing_mul(second) {
         Ok(result)
     } else {
@@ -103,10 +102,7 @@ fn try_multiply_isizes(
     }
 }
 
-fn try_sum_isizes(
-    first: isize,
-    second: isize,
-) -> pyo3::prelude::PyResult<isize> {
+fn try_sum_isizes(first: isize, second: isize) -> pyo3::PyResult<isize> {
     if let (result, false) = first.overflowing_add(second) {
         Ok(result)
     } else {

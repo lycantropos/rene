@@ -50,14 +50,7 @@ where
     for<'a> &'a Point: Orient,
 {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(compare_events(
-            self.event,
-            other.event,
-            self.is_from_first_operand,
-            other.is_from_first_operand,
-            self.get_endpoints(),
-            self.get_opposites(),
-        ))
+        Some(self.cmp(other))
     }
 }
 

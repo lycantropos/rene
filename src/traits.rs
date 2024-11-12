@@ -10,6 +10,8 @@ pub trait Iterable {
     fn iter(&self) -> Self::Output<'_>;
 }
 
+// we only need `len`, for `is_empty` we can make a separate trait
+#[allow(clippy::len_without_is_empty)]
 pub trait Lengthsome {
     type Output;
 
@@ -28,7 +30,8 @@ pub trait Sequence:
 
 impl<T> Iterable for Vec<T> {
     type Item = T;
-    type Output<'a> = std::slice::Iter<'a, T>
+    type Output<'a>
+        = std::slice::Iter<'a, T>
     where
         Self: 'a,
         T: 'a;

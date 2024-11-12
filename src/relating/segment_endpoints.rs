@@ -101,25 +101,25 @@ where
             debug_assert!(last_touched_edge_index.is_some());
             last_touched_edge_index.unwrap_unchecked()
         } == index
-    {
-        if first_contour_segment_start.ne(start)
-            && first_contour_segment_start.ne(end)
-            && first_contour_segment_end.ne(start)
-            && first_contour_segment_end.ne(end)
-            && start.orient(end, first_contour_segment_start)
-                == Orientation::Collinear
-            && point_vertex_line_divides_angle(
-                start,
-                first_contour_segment_start,
-                first_contour_segment_end,
-                unsafe {
-                    debug_assert!(last_touched_edge_start.is_some());
-                    &last_touched_edge_start.unwrap_unchecked()
-                },
-            )
-        {
-            has_no_cross = false
+        && {
+            first_contour_segment_start.ne(start)
+                && first_contour_segment_start.ne(end)
+                && first_contour_segment_end.ne(start)
+                && first_contour_segment_end.ne(end)
+                && start.orient(end, first_contour_segment_start)
+                    == Orientation::Collinear
+                && point_vertex_line_divides_angle(
+                    start,
+                    first_contour_segment_start,
+                    first_contour_segment_end,
+                    unsafe {
+                        debug_assert!(last_touched_edge_start.is_some());
+                        &last_touched_edge_start.unwrap_unchecked()
+                    },
+                )
         }
+    {
+        has_no_cross = false
     }
     if has_no_cross {
         if has_no_touch {

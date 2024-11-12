@@ -42,12 +42,7 @@ impl<Point: Eq> Eq for EventsQueueKey<Point> {}
 
 impl<Point: Ord> PartialOrd for EventsQueueKey<Point> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(compare_events(
-            self.event,
-            other.event,
-            self.get_endpoints(),
-            self.get_opposites(),
-        ))
+        Some(self.cmp(other))
     }
 }
 

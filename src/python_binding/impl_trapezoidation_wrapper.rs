@@ -1,11 +1,11 @@
 macro_rules! impl_trapezoidation_wrapper {
     () => {
-        #[pyo3::prelude::pymethods]
+        #[pyo3::pymethods]
         impl PyTrapezoidation {
             #[classmethod]
             #[pyo3(signature = (multisegment, seed, /))]
             fn from_multisegment(
-                _: &pyo3::types::PyType,
+                _: &pyo3::Bound<'_, pyo3::types::PyType>,
                 multisegment: &PyMultisegment,
                 seed: usize,
             ) -> Self {
@@ -18,7 +18,7 @@ macro_rules! impl_trapezoidation_wrapper {
             #[classmethod]
             #[pyo3(signature = (polygon, seed, /))]
             fn from_polygon(
-                _: &pyo3::types::PyType,
+                _: &pyo3::Bound<'_, pyo3::types::PyType>,
                 polygon: &PyPolygon,
                 seed: usize,
             ) -> Self {
@@ -36,19 +36,22 @@ macro_rules! impl_trapezoidation_wrapper {
             }
 
             #[pyo3(signature = (point, /))]
-            fn locate<'a>(
+            fn locate<'py>(
                 &self,
-                point: &PyPoint,
-                py: pyo3::Python<'a>,
-            ) -> pyo3::PyResult<&'a pyo3::PyAny> {
+                point: &pyo3::Bound<'_, PyPoint>,
+                py: pyo3::Python<'py>,
+            ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::PyAny>> {
                 TryToPyAny::try_to_py_any(
-                    crate::locatable::Locatable::locate(&self.0, &point.0),
+                    crate::locatable::Locatable::locate(
+                        &self.0,
+                        &point.borrow().0,
+                    ),
                     py,
                 )
             }
 
-            fn __contains__(&self, point: &PyPoint) -> bool {
-                crate::locatable::Locatable::locate(&self.0, &point.0)
+            fn __contains__(&self, point: &pyo3::Bound<'_, PyPoint>) -> bool {
+                crate::locatable::Locatable::locate(&self.0, &point.borrow().0)
                     != crate::locatable::Location::Exterior
             }
         }

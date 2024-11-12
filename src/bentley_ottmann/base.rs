@@ -9,8 +9,6 @@ use crate::traits::{
     Segmental,
 };
 
-use super::event::{is_event_left, Event};
-use super::events_registry::EventsRegistry;
 use super::sweep::{Intersection, Sweep};
 
 pub(crate) fn is_contour_valid<Contour, Point: Ord, Scalar, Segment>(
@@ -92,28 +90,4 @@ where
         })
         && Sweep::from(&segments)
             .all(|intersection| intersection.relation == Relation::Touch)
-}
-
-pub(crate) fn to_unique_non_crossing_or_overlapping_segments<
-    Point: Clone,
-    Segment: From<(Point, Point)>,
->(
-    segments: &[Segment],
-) -> Vec<Segment>
-where
-    Segment: Segmental<Endpoint = Point>,
-    for<'a> EventsRegistry<Point, true>:
-        From<&'a [Segment]> + Iterator<Item = Event>,
-{
-    let mut result = Vec::with_capacity(segments.len());
-    let mut events_registry = EventsRegistry::<Point, true>::from(segments);
-    while let Some(event) = events_registry.next() {
-        if !is_event_left(event) {
-            result.push(Segment::from((
-                events_registry.get_event_start(event).clone(),
-                events_registry.get_event_end(event).clone(),
-            )));
-        }
-    }
-    result
 }

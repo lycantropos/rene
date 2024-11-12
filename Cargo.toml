@@ -12,19 +12,19 @@ name = "rene"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-rithm = "^14.1.0"
+rithm = "^14.4.0"
 
 [dependencies.traiter]
 version = "^4.0.0"
 features = ["numbers"]
 
 [dependencies.pyo3]
-version = "^0.20.0"
+version = "^0.22.6"
 features = ["extension-module"]
 
 [dependencies.pyo3-ffi]
-version = "^0.20.0"
+version = "^0.22.6"
 features = ["extension-module"]
 
 [build-dependencies]
-pyo3-build-config = "^0.20.0"
+pyo3-build-config = "^0.22.6"

@@ -1,7 +1,4 @@
-pub(crate) use base::{
-    is_contour_valid, is_multisegment_valid,
-    to_unique_non_crossing_or_overlapping_segments,
-};
+pub(crate) use base::{is_contour_valid, is_multisegment_valid};
 
 mod base;
 mod event;

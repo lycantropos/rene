@@ -1,8 +1,7 @@
+use rithm::{big_int, fraction};
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 use std::ops::{Add, Mul, Sub};
-
-use rithm::{big_int, fraction};
 use traiter::numbers::{Endianness, FromBytes, Sign, Signed, ToBytes, Zero};
 
 use crate::locatable::Location;
@@ -29,11 +28,12 @@ use super::impl_trapezoidation_wrapper::impl_trapezoidation_wrapper;
 use super::reference;
 use super::traits::{TryFromPyAny, TryToPyAny};
 
-#[pyo3::prelude::pymodule]
+#[pyo3::pymodule]
 fn _cexact(
-    py: pyo3::Python,
-    module: &pyo3::types::PyModule,
+    py: pyo3::Python<'_>,
+    module: &pyo3::Bound<'_, pyo3::types::PyModule>,
 ) -> pyo3::PyResult<()> {
+    use pyo3::types::PyModuleMethods;
     module.add_class::<PyBox>()?;
     module.add_class::<PyConstrainedDelaunayTriangulation>()?;
     module.add_class::<PyContour>()?;
@@ -204,16 +204,17 @@ const UNDEFINED_DIVISION_ERROR_MESSAGE: &str =
 
 impl TryFromPyAny for Fraction {
     fn try_from_py_any(
-        value: &pyo3::PyAny,
-        py: pyo3::Python,
+        value: &pyo3::Bound<'_, pyo3::PyAny>,
+        py: pyo3::Python<'_>,
     ) -> pyo3::PyResult<Self> {
-        if value.is_instance(<pyo3::types::PyFloat as pyo3::type_object::PyTypeInfo>::type_object(py))? {
-                Fraction::try_from(value.extract::<f64>()?).map_err(|reason| {
-                    match reason {
+        use pyo3::types::PyAnyMethods;
+        if value.is_instance(&<pyo3::types::PyFloat as pyo3::type_object::PyTypeInfo>::type_object_bound(py))? {
+                Fraction::try_from(value.extract::<f64>()?).map_err(|error| {
+                    match error {
                         fraction::FromFloatConstructionError::Infinity => {
-                            pyo3::exceptions::PyOverflowError::new_err(reason.to_string())
+                            pyo3::exceptions::PyOverflowError::new_err(error.to_string())
                         }
-                        _ => pyo3::exceptions::PyValueError::new_err(reason.to_string()),
+                        _ => pyo3::exceptions::PyValueError::new_err(error.to_string()),
                     }
                 })
             } else {
@@ -249,16 +250,17 @@ impl TryToPyAny for &Fraction {
     fn try_to_py_any(
         self,
         py: pyo3::Python<'_>,
-    ) -> pyo3::PyResult<&'_ pyo3::PyAny> {
+    ) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::PyAny>> {
+        use pyo3::types::PyAnyMethods;
         static FRACTION_CLS: pyo3::sync::GILOnceCell<pyo3::PyObject> =
             pyo3::sync::GILOnceCell::new();
         FRACTION_CLS
             .get_or_try_init(py, || {
-                py.import("rithm.fraction")?
+                py.import_bound("rithm.fraction")?
                     .getattr(pyo3::intern!(py, "Fraction"))
                     .map(|value| pyo3::IntoPy::into_py(value, py))
             })?
-            .call(
+            .call_bound(
                 py,
                 (
                     big_int_to_py_long(self.numerator()),
@@ -266,7 +268,7 @@ impl TryToPyAny for &Fraction {
                 ),
                 None,
             )
-            .map(|value| value.into_ref(py))
+            .map(|value| value.into_bound(py))
     }
 }
 
@@ -368,53 +370,50 @@ type Polygon = crate::geometries::Polygon<Fraction>;
 type Segment = crate::geometries::Segment<Fraction>;
 type Trapezoidation = crate::seidel::Trapezoidation<Point>;
 
-#[pyo3::prelude::pyclass(name = "Box", module = "rene.exact")]
+#[pyo3::pyclass(name = "Box", module = "rene.exact")]
 #[derive(Clone)]
 struct PyBox(Box);
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     name = "ConstrainedDelaunayTriangulation",
     module = "rene.exact"
 )]
 #[derive(Clone)]
 struct PyConstrainedDelaunayTriangulation(ConstrainedDelaunayTriangulation);
 
-#[pyo3::prelude::pyclass(name = "Contour", module = "rene.exact")]
+#[pyo3::pyclass(name = "Contour", module = "rene.exact")]
 #[derive(Clone)]
 struct PyContour(Contour);
 
-#[pyo3::prelude::pyclass(
-    name = "DelaunayTriangulation",
-    module = "rene.exact"
-)]
+#[pyo3::pyclass(name = "DelaunayTriangulation", module = "rene.exact")]
 #[derive(Clone)]
 struct PyDelaunayTriangulation(DelaunayTriangulation);
 
-#[pyo3::prelude::pyclass(name = "Empty", module = "rene.exact")]
+#[pyo3::pyclass(name = "Empty", module = "rene.exact")]
 #[derive(Clone)]
 struct PyEmpty(Empty);
 
-#[pyo3::prelude::pyclass(name = "Multipolygon", module = "rene.exact")]
+#[pyo3::pyclass(name = "Multipolygon", module = "rene.exact")]
 #[derive(Clone)]
 struct PyMultipolygon(Multipolygon);
 
-#[pyo3::prelude::pyclass(name = "Multisegment", module = "rene.exact")]
+#[pyo3::pyclass(name = "Multisegment", module = "rene.exact")]
 #[derive(Clone)]
 struct PyMultisegment(Multisegment);
 
-#[pyo3::prelude::pyclass(name = "Polygon", module = "rene.exact")]
+#[pyo3::pyclass(name = "Polygon", module = "rene.exact")]
 #[derive(Clone)]
 struct PyPolygon(Polygon);
 
-#[pyo3::prelude::pyclass(name = "Point", module = "rene.exact")]
+#[pyo3::pyclass(name = "Point", module = "rene.exact")]
 #[derive(Clone)]
 struct PyPoint(Point);
 
-#[pyo3::prelude::pyclass(name = "Segment", module = "rene.exact")]
+#[pyo3::pyclass(name = "Segment", module = "rene.exact")]
 #[derive(Clone)]
 struct PySegment(Segment);
 
-#[pyo3::prelude::pyclass(name = "Trapezoidation", module = "rene.exact")]
+#[pyo3::pyclass(name = "Trapezoidation", module = "rene.exact")]
 #[derive(Clone)]
 struct PyTrapezoidation(Trapezoidation);
 
@@ -435,11 +434,7 @@ type PyMultisegmentReference = reference::Reference<PyMultisegment>;
 type PyMultipolygonReference = reference::Reference<PyMultipolygon>;
 type PyPolygonReference = reference::Reference<PyPolygon>;
 
-#[pyo3::prelude::pyclass(
-    module = "rene.exact",
-    name = "_ContourSegments",
-    sequence
-)]
+#[pyo3::pyclass(module = "rene.exact", name = "_ContourSegments", sequence)]
 struct PyContourSegments {
     contour: PyContourReference,
     start: isize,
@@ -447,11 +442,7 @@ struct PyContourSegments {
     step: isize,
 }
 
-#[pyo3::prelude::pyclass(
-    module = "rene.exact",
-    name = "_ContourVertices",
-    sequence
-)]
+#[pyo3::pyclass(module = "rene.exact", name = "_ContourVertices", sequence)]
 struct PyContourVertices {
     contour: PyContourReference,
     start: isize,
@@ -459,7 +450,7 @@ struct PyContourVertices {
     step: isize,
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     module = "rene.exact",
     name = "_MultisegmentSegments",
     sequence
@@ -471,7 +462,7 @@ struct PyMultisegmentSegments {
     step: isize,
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     module = "rene.exact",
     name = "_MultipolygonPolygons",
     sequence
@@ -483,11 +474,7 @@ struct PyMultipolygonPolygons {
     step: isize,
 }
 
-#[pyo3::prelude::pyclass(
-    module = "rene.exact",
-    name = "_PolygonHoles",
-    sequence
-)]
+#[pyo3::pyclass(module = "rene.exact", name = "_PolygonHoles", sequence)]
 struct PyPolygonHoles {
     polygon: PyPolygonReference,
     start: isize,
@@ -541,8 +528,10 @@ fn big_int_to_py_long(value: &BigInt) -> pyo3::PyObject {
     })
 }
 
-fn try_py_integral_to_big_int(value: &pyo3::PyAny) -> pyo3::PyResult<BigInt> {
-    let ptr = pyo3::AsPyPointer::as_ptr(value);
+fn try_py_integral_to_big_int(
+    value: pyo3::Bound<'_, pyo3::PyAny>,
+) -> pyo3::PyResult<BigInt> {
+    let ptr = value.as_ptr();
     let py = value.py();
     unsafe {
         let ptr = pyo3::ffi::PyNumber_Long(ptr);
