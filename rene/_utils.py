@@ -6,11 +6,13 @@ from typing import Any, TYPE_CHECKING, TypeVar
 
 from typing_extensions import Protocol, Self
 
-from rene import Location, MIN_CONTOUR_VERTICES_COUNT, Orientation, hints
+from rene.constants import MIN_CONTOUR_VERTICES_COUNT
+from rene.enums import Location, Orientation
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, MutableSequence, Sequence
 
+    from rene import hints
     from rene._hints import Orienteer
 
 

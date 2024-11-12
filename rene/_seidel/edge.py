@@ -4,7 +4,8 @@ from typing import Generic, TYPE_CHECKING
 
 from typing_extensions import Self
 
-from rene import Orientation, hints
+from rene import hints
+from rene.enums import Orientation
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

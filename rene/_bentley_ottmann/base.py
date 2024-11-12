@@ -4,8 +4,9 @@ from typing import Generic
 
 from typing_extensions import Self
 
-from rene import Relation, hints
+from rene import hints
 from rene._hints import Orienteer, SegmentsIntersector
+from rene.enums import Relation
 
 from .events_registry import EventsRegistry
 

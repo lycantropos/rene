@@ -1,9 +1,10 @@
 import typing as t
 from itertools import chain
 
-from rene import Relation, hints
+from rene import hints
 from rene._hints import Orienteer, SegmentsIntersector
 from rene._utils import to_boxes_ids_with_intersection
+from rene.enums import Relation
 
 from . import linear, mixed
 from .segment import (

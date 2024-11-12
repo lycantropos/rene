@@ -5,7 +5,8 @@ from typing import Any, Generic, overload
 
 from typing_extensions import Self
 
-from rene import Relation, hints
+from rene import hints
+from rene.enums import Relation
 
 
 class BaseBox(ABC, Generic[hints.Scalar]):

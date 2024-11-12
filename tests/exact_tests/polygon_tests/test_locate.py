@@ -1,6 +1,6 @@
 from hypothesis import given
 
-from rene import Location
+from rene.enums import Location
 from rene.exact import Point, Polygon
 from tests.utils import reverse_polygon_holes
 

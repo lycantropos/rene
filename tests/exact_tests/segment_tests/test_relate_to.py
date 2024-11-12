@@ -1,6 +1,6 @@
 from hypothesis import given
 
-from rene import Relation
+from rene.enums import Relation
 from rene.exact import Segment
 from tests.exact_tests.hints import Compound
 from tests.utils import (

@@ -2,8 +2,8 @@ from collections.abc import Sequence
 
 from hypothesis import given
 
-from rene import MIN_CONTOUR_VERTICES_COUNT
 from rene._exact import orient
+from rene.constants import MIN_CONTOUR_VERTICES_COUNT
 from rene.exact import Contour, DelaunayTriangulation, Point
 from tests.utils import (
     is_contour_triangular,

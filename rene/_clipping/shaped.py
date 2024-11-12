@@ -8,8 +8,9 @@ from dendroid import red_black
 from prioq.base import PriorityQueue
 from typing_extensions import Self
 
-from rene import Orientation, hints
+from rene import hints
 from rene._utils import is_even, is_odd, shrink_collinear_vertices
+from rene.enums import Orientation
 
 from .constants import UNDEFINED_INDEX
 from .event import (

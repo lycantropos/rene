@@ -1,6 +1,8 @@
 from hypothesis import strategies as _st
 
-from rene import MIN_CONTOUR_VERTICES_COUNT as _MIN_CONTOUR_VERTICES_COUNT
+from rene.constants import (
+    MIN_CONTOUR_VERTICES_COUNT as _MIN_CONTOUR_VERTICES_COUNT,
+)
 from rene.exact import Contour as _Contour
 from tests.exact_tests import strategies as _strategies
 

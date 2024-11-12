@@ -5,7 +5,7 @@ from typing import Any, TYPE_CHECKING, overload
 
 from typing_extensions import Self
 
-from rene import Location, Relation, hints
+from rene import hints
 from rene._clipping import (
     intersect_polygon_with_multipolygon,
     intersect_polygon_with_multisegmental,
@@ -20,6 +20,7 @@ from rene._clipping import (
 )
 from rene._relating import polygon
 from rene._utils import locate_point_in_region
+from rene.enums import Location, Relation
 
 from .base_compound import BaseCompound
 

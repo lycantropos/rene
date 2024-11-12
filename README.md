@@ -68,7 +68,7 @@ True
 ...  == [Contour([Point(0, 0), Point(4, 0), Point(0, 4)]),
 ...      Contour([Point(0, 4), Point(4, 0), Point(4, 4)])])
 True
->>> from rene import Location
+>>> from rene.enums import Location
 >>> from rene.exact import Trapezoidation
 >>> trapezoidation = Trapezoidation.from_polygon(square)
 >>> all(vertex in trapezoidation for vertex in square.border.vertices)

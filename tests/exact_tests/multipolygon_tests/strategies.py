@@ -1,6 +1,6 @@
 from hypothesis import strategies
 
-from rene import MIN_MULTIPOLYGON_POLYGONS_COUNT
+from rene.constants import MIN_MULTIPOLYGON_POLYGONS_COUNT
 from rene.exact import Multipolygon
 from tests.exact_tests import strategies as _strategies
 

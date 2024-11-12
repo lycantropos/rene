@@ -2,7 +2,8 @@ from typing import Any, TypeVar, overload
 
 from typing_extensions import Self
 
-from rene import Location, Relation, hints
+from rene import hints
+from rene.enums import Location, Relation
 
 from .base_compound import BaseCompound
 

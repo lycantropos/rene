@@ -7,9 +7,10 @@ from typing import Generic, TYPE_CHECKING
 
 from typing_extensions import Self
 
-from rene import Location, Orientation, Relation, hints
+from rene import hints
 from rene._relating import segment_endpoints
 from rene._utils import locate_point_in_point_point_point_circle
+from rene.enums import Location, Orientation, Relation
 
 from .mesh import Mesh, build_delaunay_triangulation, orient_point_to_edge
 from .quad_edge import QuadEdge, UNDEFINED_EDGE, to_opposite_edge

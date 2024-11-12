@@ -4,7 +4,7 @@ from typing import Generic, TYPE_CHECKING
 
 from typing_extensions import Self
 
-from rene import Orientation, hints
+from rene import hints
 
 if TYPE_CHECKING:
     from rene._hints import (
@@ -12,6 +12,7 @@ if TYPE_CHECKING:
         SegmentsIntersectionScale,
         SegmentsIntersector,
     )
+    from rene.enums import Orientation
 
 
 class Context(Generic[hints.Scalar]):

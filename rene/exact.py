@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from rithm.fraction import Fraction as _Fraction
     from typing_extensions import Self, final
 
-    from rene import (
+    from rene.enums import (
         Location as _Location,
         Orientation as _Orientation,
         Relation as _Relation,

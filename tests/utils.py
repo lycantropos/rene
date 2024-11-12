@@ -4,8 +4,10 @@ from typing import Any, Callable, TypeVar
 
 from hypothesis import strategies as _st
 
-from rene import Location, MIN_CONTOUR_VERTICES_COUNT, Orientation, exact
+from rene import exact
 from rene._utils import deduplicate, locate_point_in_point_point_point_circle
+from rene.constants import MIN_CONTOUR_VERTICES_COUNT
+from rene.enums import Location, Orientation
 
 _BoxT = TypeVar('_BoxT', bound=exact.Box)
 _ContourT = TypeVar('_ContourT', bound=exact.Contour)

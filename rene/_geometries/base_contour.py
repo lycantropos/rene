@@ -5,13 +5,7 @@ from typing import Any, TYPE_CHECKING, overload
 
 from typing_extensions import Self
 
-from rene import (
-    Location,
-    MIN_CONTOUR_VERTICES_COUNT,
-    Orientation,
-    Relation,
-    hints,
-)
+from rene import hints
 from rene._bentley_ottmann.base import Intersection, sweep
 from rene._clipping import (
     intersect_multisegmental_with_multipolygon,
@@ -33,6 +27,8 @@ from rene._utils import (
     to_arg_min,
     to_contour_orientation,
 )
+from rene.constants import MIN_CONTOUR_VERTICES_COUNT
+from rene.enums import Location, Orientation, Relation
 
 from .base_compound import BaseCompound
 

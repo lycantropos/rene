@@ -3,8 +3,8 @@ from __future__ import annotations
 import typing as t
 from itertools import chain
 
-from rene import Relation, hints
 from rene._utils import to_boxes_ids_with_intersection
+from rene.enums import Relation
 
 from . import mixed
 from .segment_endpoints import (
@@ -16,6 +16,7 @@ from .segment_endpoints import (
 from .utils import polygon_to_segments
 
 if t.TYPE_CHECKING:
+    from rene import hints
     from rene._hints import (
         Orienteer,
         SegmentsIntersectionScale,

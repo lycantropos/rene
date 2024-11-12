@@ -1,6 +1,6 @@
 from hypothesis import strategies
 
-from rene import Relation
+from rene.enums import Relation
 
 relations = strategies.sampled_from(
     [

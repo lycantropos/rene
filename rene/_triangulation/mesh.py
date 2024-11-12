@@ -4,12 +4,13 @@ from typing import Generic, TYPE_CHECKING
 
 from typing_extensions import Self
 
-from rene import Location, Orientation, hints
+from rene import hints
 from rene._utils import (
     ceil_log2,
     is_even,
     locate_point_in_point_point_point_circle,
 )
+from rene.enums import Location, Orientation
 
 from .quad_edge import (
     QuadEdge,

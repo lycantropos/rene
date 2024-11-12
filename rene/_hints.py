@@ -4,7 +4,8 @@ from typing import Callable, TypeVar
 
 from typing_extensions import Protocol
 
-from rene import Orientation, hints
+from rene import hints
+from rene.enums import Orientation
 
 _Key = TypeVar('_Key', contravariant=True)
 _Value = TypeVar('_Value', covariant=True)

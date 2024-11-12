@@ -3,9 +3,11 @@ from __future__ import annotations
 import typing as t
 from abc import ABC, abstractmethod
 
-from rene import Location, hints
+from rene import hints
 
 if t.TYPE_CHECKING:
+    from rene.enums import Location
+
     from .edge import Edge
 
 

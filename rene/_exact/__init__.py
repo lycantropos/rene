@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from rene import Orientation, hints
 from rene._context import Context
 from rene._utils import cross_multiply, to_sign
+from rene.enums import Orientation
 
 from .box import Box
 from .contour import Contour
@@ -22,6 +22,8 @@ from .triangulation import (
 
 if TYPE_CHECKING:
     from rithm.fraction import Fraction
+
+    from rene import hints
 
 
 def orient(

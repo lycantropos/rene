@@ -5,7 +5,7 @@ from typing import Any, ClassVar, TYPE_CHECKING, overload
 
 from typing_extensions import Self
 
-from rene import Location, Relation, hints
+from rene import hints
 from rene._clipping import (
     intersect_multipolygon_with_multipolygon,
     intersect_multipolygon_with_multisegmental,
@@ -19,6 +19,7 @@ from rene._clipping import (
     unite_multipolygon_with_polygon,
 )
 from rene._relating import multipolygon
+from rene.enums import Location, Relation
 
 from .base_compound import BaseCompound
 

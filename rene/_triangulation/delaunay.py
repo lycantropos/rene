@@ -4,8 +4,9 @@ from typing import Generic, TYPE_CHECKING
 
 from typing_extensions import Self
 
-from rene import Orientation, hints
+from rene import hints
 from rene._utils import deduplicate
+from rene.enums import Orientation
 
 from .mesh import Mesh, build_delaunay_triangulation, orient_point_to_edge
 from .quad_edge import QuadEdge, to_opposite_edge

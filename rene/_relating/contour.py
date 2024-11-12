@@ -1,9 +1,10 @@
-from rene import Relation, hints
+from rene import hints
 from rene._hints import (
     Orienteer,
     SegmentsIntersectionScale,
     SegmentsIntersector,
 )
+from rene.enums import Relation
 
 from .multisegmental import (
     relate_to_multipolygon as relate_multisegmental_to_multipolygon,

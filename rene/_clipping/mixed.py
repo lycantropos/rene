@@ -7,8 +7,9 @@ from dendroid import red_black
 from prioq.base import PriorityQueue
 from typing_extensions import Self
 
-from rene import Orientation, hints
+from rene import hints
 from rene._utils import is_even
+from rene.enums import Orientation
 
 from .event import Event, is_event_left, is_event_right, left_event_to_position
 from .events_queue_key import EventsQueueKey

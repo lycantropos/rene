@@ -5,7 +5,7 @@ from typing import Any, overload
 
 from typing_extensions import Self
 
-from rene import Location, Relation, hints
+from rene import hints
 from rene._clipping import (
     intersect_segment_with_multipolygon,
     intersect_segment_with_multisegmental,
@@ -21,6 +21,7 @@ from rene._clipping import (
 from rene._geometries.base_compound import BaseCompound
 from rene._relating import segment
 from rene._utils import locate_point_in_segment
+from rene.enums import Location, Relation
 
 
 class BaseSegment(ABC, BaseCompound[hints.Scalar]):

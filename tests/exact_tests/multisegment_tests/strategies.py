@@ -1,6 +1,6 @@
 from hypothesis import strategies
 
-from rene import MIN_MULTISEGMENT_SEGMENTS_COUNT
+from rene.constants import MIN_MULTISEGMENT_SEGMENTS_COUNT
 from rene.exact import Multisegment
 from tests.exact_tests import strategies as _strategies
 

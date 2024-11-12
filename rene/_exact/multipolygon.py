@@ -7,8 +7,9 @@ from typing import Any, ClassVar, NoReturn, TYPE_CHECKING, overload
 from rithm.fraction import Fraction
 from typing_extensions import Self, final
 
-from rene import MIN_MULTIPOLYGON_POLYGONS_COUNT, hints
+from rene import hints
 from rene._geometries.base_multipolygon import BaseMultipolygon
+from rene.constants import MIN_MULTIPOLYGON_POLYGONS_COUNT
 
 if TYPE_CHECKING:
     from rene._context import Context

@@ -115,13 +115,13 @@ impl TryToPyAny for Relation {
     }
 }
 
-#[pyclass(name = "Location", module = "rene")]
+#[pyclass(name = "Location", module = "rene.enums")]
 struct PyLocation(Location);
 
-#[pyclass(name = "Orientation", module = "rene")]
+#[pyclass(name = "Orientation", module = "rene.enums")]
 struct PyOrientation(Orientation);
 
-#[pyclass(name = "Relation", module = "rene")]
+#[pyclass(name = "Relation", module = "rene.enums")]
 struct PyRelation(Relation);
 
 #[pymethods]

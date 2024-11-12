@@ -4,7 +4,6 @@ from typing import Any, NoReturn, TYPE_CHECKING
 
 from typing_extensions import Self, final
 
-from rene import MIN_CONTOUR_VERTICES_COUNT, hints
 from rene._triangulation.constrained_delaunay import (
     ConstrainedDelaunayTriangulation as _RawConstrainedDelaunayTriangulation,
 )
@@ -12,12 +11,14 @@ from rene._triangulation.delaunay import (
     DelaunayTriangulation as _RawDelaunayTriangulation,
 )
 from rene._utils import shrink_collinear_vertices
+from rene.constants import MIN_CONTOUR_VERTICES_COUNT
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from rithm.fraction import Fraction
 
+    from rene import hints
     from rene._context import Context
 
 

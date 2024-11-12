@@ -2,15 +2,16 @@ from __future__ import annotations
 
 import typing as t
 
-from rene import Location, Orientation, Relation, hints
 from rene._utils import (
     locate_point_in_segment,
     point_vertex_line_divides_angle,
     subtract_segments_overlap,
     to_sorted_pair,
 )
+from rene.enums import Location, Orientation, Relation
 
 if t.TYPE_CHECKING:
+    from rene import hints
     from rene._hints import Orienteer, SegmentsIntersectionScale
 
 

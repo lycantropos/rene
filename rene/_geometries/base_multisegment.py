@@ -5,7 +5,7 @@ from typing import Any, TYPE_CHECKING, overload
 
 from typing_extensions import Self
 
-from rene import Location, Relation, hints
+from rene import hints
 from rene._bentley_ottmann.base import sweep
 from rene._clipping import (
     intersect_multisegmental_with_multipolygon,
@@ -22,6 +22,7 @@ from rene._clipping import (
     unite_multisegmental_with_segment,
 )
 from rene._relating import multisegment
+from rene.enums import Location, Relation
 
 from .base_compound import BaseCompound
 

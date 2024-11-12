@@ -1,6 +1,6 @@
 from hypothesis import given
 
-from rene import Location
+from rene.enums import Location
 from rene.exact import Multisegment, Point
 from tests.utils import equivalence
 

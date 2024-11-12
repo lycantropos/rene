@@ -11,8 +11,9 @@ from rene._utils import polygon_to_segments_count, validate_seed
 if TYPE_CHECKING:
     from rithm.fraction import Fraction
 
-    from rene import Location, hints
+    from rene import hints
     from rene._context import Context
+    from rene.enums import Location
 
 
 @final

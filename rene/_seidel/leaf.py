@@ -2,7 +2,8 @@ from collections.abc import Sequence
 
 from typing_extensions import Self
 
-from rene import Location, hints
+from rene import hints
+from rene.enums import Location
 
 from .edge import Edge
 from .node import Node

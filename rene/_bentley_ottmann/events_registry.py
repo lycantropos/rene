@@ -5,8 +5,9 @@ from typing import Generic, TYPE_CHECKING
 from dendroid import red_black
 from prioq.base import PriorityQueue
 
-from rene import Orientation, hints
+from rene import hints
 from rene._utils import to_sorted_pair
+from rene.enums import Orientation
 
 from .event import (
     Event,

@@ -1,6 +1,6 @@
 from hypothesis import given
 
-from rene import Relation
+from rene.enums import Relation
 
 from . import strategies
 

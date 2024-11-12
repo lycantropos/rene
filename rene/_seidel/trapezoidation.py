@@ -5,8 +5,9 @@ from typing import Generic, TYPE_CHECKING
 
 from typing_extensions import Self
 
-from rene import Location, Orientation, hints
+from rene import hints
 from rene._utils import permute, to_arg_min, to_contour_orientation
+from rene.enums import Location, Orientation
 
 from .edge import Edge
 from .leaf import Leaf

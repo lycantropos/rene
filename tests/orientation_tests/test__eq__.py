@@ -1,6 +1,6 @@
 from hypothesis import given
 
-from rene import Orientation
+from rene.enums import Orientation
 from tests.utils import equivalence, implication
 
 from . import strategies

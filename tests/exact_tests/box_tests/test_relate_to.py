@@ -1,6 +1,6 @@
 from hypothesis import given
 
-from rene import Relation
+from rene.enums import Relation
 from rene.exact import Box
 from tests.utils import reverse_box_coordinates
 

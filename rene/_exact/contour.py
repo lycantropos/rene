@@ -7,9 +7,10 @@ from typing import Any, NoReturn, overload
 from rithm.fraction import Fraction
 from typing_extensions import Self, final
 
-from rene import MIN_CONTOUR_VERTICES_COUNT, hints
+from rene import hints
 from rene._geometries.base_contour import BaseContour
 from rene._utils import to_contour_segments
+from rene.constants import MIN_CONTOUR_VERTICES_COUNT
 
 
 @final

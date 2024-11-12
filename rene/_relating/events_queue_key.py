@@ -2,8 +2,9 @@ from typing import Generic
 
 from typing_extensions import Self
 
-from rene import Orientation, hints
+from rene import hints
 from rene._hints import Map, Orienteer
+from rene.enums import Orientation
 
 from .event import Event, is_event_left
 

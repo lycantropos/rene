@@ -1,6 +1,6 @@
 from hypothesis import given
 
-from rene import Orientation
+from rene.enums import Orientation
 
 from . import strategies
 

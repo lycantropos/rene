@@ -3,7 +3,7 @@ from typing import Any
 import pytest
 from hypothesis import given
 
-from rene import Location
+from rene.enums import Location
 from rene.exact import Multisegment, Trapezoidation
 from rene.hints import Seeder
 

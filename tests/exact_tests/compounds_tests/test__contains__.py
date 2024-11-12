@@ -1,6 +1,6 @@
 from hypothesis import given
 
-from rene import Location
+from rene.enums import Location
 from rene.exact import Point
 from tests.exact_tests.hints import Compound
 from tests.utils import (

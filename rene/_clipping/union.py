@@ -1,7 +1,7 @@
 from itertools import chain, groupby
 from typing import Union
 
-from rene import Orientation, hints
+from rene import hints
 from rene._hints import Orienteer, SegmentsIntersector
 from rene._utils import (
     collect_non_empty_polygons,
@@ -13,6 +13,7 @@ from rene._utils import (
     to_boxes_have_common_continuum,
     to_sorted_pair,
 )
+from rene.enums import Orientation
 
 from . import linear, shaped
 from .event import Event, is_event_right
