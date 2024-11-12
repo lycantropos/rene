@@ -5,7 +5,8 @@ from abc import ABC, abstractmethod
 
 from rene import Location, hints
 
-from .edge import Edge
+if t.TYPE_CHECKING:
+    from .edge import Edge
 
 
 class Node(ABC, t.Generic[hints.Scalar]):

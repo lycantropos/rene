@@ -1,21 +1,25 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 from itertools import repeat
-from typing import Generic
+from typing import Generic, TYPE_CHECKING
 
 from typing_extensions import Self
 
 from rene import Location, Orientation, hints
-from rene._hints import Orienteer
 from rene._utils import permute, to_arg_min, to_contour_orientation
 
 from .edge import Edge
 from .leaf import Leaf
-from .node import Node
-from .trapezoid import Trapezoid
 from .x_node import XNode
 from .y_node import YNode
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from rene._hints import Orienteer
+
+    from .node import Node
+    from .trapezoid import Trapezoid
 
 
 class Trapezoidation(Generic[hints.Scalar]):

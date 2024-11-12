@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 import sys
-from collections.abc import Iterable, MutableSequence, Sequence
 from itertools import groupby
-from typing import Any, TypeVar
+from typing import Any, TYPE_CHECKING, TypeVar
 
 from typing_extensions import Protocol, Self
 
 from rene import Location, MIN_CONTOUR_VERTICES_COUNT, Orientation, hints
-from rene._hints import Orienteer
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, MutableSequence, Sequence
+
+    from rene._hints import Orienteer
 
 
 class Ordered(Protocol):

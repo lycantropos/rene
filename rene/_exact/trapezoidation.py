@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import random
-from typing import Any, ClassVar, NoReturn
+from typing import Any, ClassVar, NoReturn, TYPE_CHECKING
 
-from rithm.fraction import Fraction
 from typing_extensions import Self, final
 
-from rene import Location, hints
-from rene._context import Context
 from rene._seidel.trapezoidation import Trapezoidation as _RawTrapezoidation
 from rene._utils import polygon_to_segments_count, validate_seed
+
+if TYPE_CHECKING:
+    from rithm.fraction import Fraction
+
+    from rene import Location, hints
+    from rene._context import Context
 
 
 @final

@@ -3,7 +3,8 @@ from __future__ import annotations
 import typing as t
 from itertools import chain
 
-from rene import hints
+if t.TYPE_CHECKING:
+    from rene import hints
 
 
 def polygon_to_segments(

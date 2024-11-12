@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from rithm.fraction import Fraction
+from typing import TYPE_CHECKING
 
 from rene import Orientation, hints
 from rene._context import Context
@@ -19,6 +19,9 @@ from .triangulation import (
     ConstrainedDelaunayTriangulation,
     DelaunayTriangulation,
 )
+
+if TYPE_CHECKING:
+    from rithm.fraction import Fraction
 
 
 def orient(

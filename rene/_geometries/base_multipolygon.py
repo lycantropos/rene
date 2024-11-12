@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
-from typing import Any, ClassVar, overload
+from typing import Any, ClassVar, TYPE_CHECKING, overload
 
 from typing_extensions import Self
 
@@ -19,10 +18,14 @@ from rene._clipping import (
     unite_multipolygon_with_multipolygon,
     unite_multipolygon_with_polygon,
 )
-from rene._context import Context
 from rene._relating import multipolygon
 
 from .base_compound import BaseCompound
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from rene._context import Context
 
 
 class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):

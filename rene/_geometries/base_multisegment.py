@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
-from typing import Any, overload
+from typing import Any, TYPE_CHECKING, overload
 
 from typing_extensions import Self
 
@@ -25,6 +24,9 @@ from rene._clipping import (
 from rene._relating import multisegment
 
 from .base_compound import BaseCompound
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):

@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
-from typing import Any, overload
+from typing import Any, TYPE_CHECKING, overload
 
 from typing_extensions import Self
 
@@ -23,6 +22,9 @@ from rene._relating import polygon
 from rene._utils import locate_point_in_region
 
 from .base_compound import BaseCompound
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class BasePolygon(ABC, BaseCompound[hints.Scalar]):

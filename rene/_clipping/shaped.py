@@ -2,16 +2,13 @@ from __future__ import annotations
 
 import enum
 from abc import ABC, abstractmethod
-from collections.abc import Iterable, Iterator, Sequence
-from typing import Generic
+from typing import Generic, TYPE_CHECKING
 
 from dendroid import red_black
-from dendroid.hints import KeyedSet
 from prioq.base import PriorityQueue
 from typing_extensions import Self
 
 from rene import Orientation, hints
-from rene._hints import Orienteer, SegmentsIntersector
 from rene._utils import is_even, is_odd, shrink_collinear_vertices
 
 from .constants import UNDEFINED_INDEX
@@ -24,6 +21,13 @@ from .event import (
 )
 from .events_queue_key import EventsQueueKey
 from .sweep_line_key import SweepLineKey
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Iterator, Sequence
+
+    from dendroid.hints import KeyedSet
+
+    from rene._hints import Orienteer, SegmentsIntersector
 
 
 class Operation(ABC, Generic[hints.Scalar]):

@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-from typing import Any, ClassVar, NoReturn
+from typing import Any, ClassVar, NoReturn, TYPE_CHECKING
 
 from rithm.fraction import Fraction
 from typing_extensions import Self, final
 
-from rene import hints
-from rene._context import Context
 from rene._geometries.base_segment import BaseSegment
+
+if TYPE_CHECKING:
+    from rene import hints
+    from rene._context import Context
 
 
 @final

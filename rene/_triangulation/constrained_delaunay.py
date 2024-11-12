@@ -1,21 +1,24 @@
 from __future__ import annotations
 
 from collections import deque
-from collections.abc import Container, Iterable, Sequence
 from itertools import chain, groupby
 from operator import attrgetter
-from typing import Generic
+from typing import Generic, TYPE_CHECKING
 
 from typing_extensions import Self
 
 from rene import Location, Orientation, Relation, hints
-from rene._hints import Orienteer
 from rene._relating import segment_endpoints
 from rene._utils import locate_point_in_point_point_point_circle
 
 from .mesh import Mesh, build_delaunay_triangulation, orient_point_to_edge
 from .quad_edge import QuadEdge, UNDEFINED_EDGE, to_opposite_edge
 from .vertices import ContourVertex, PolygonVertexPosition
+
+if TYPE_CHECKING:
+    from collections.abc import Container, Iterable, Sequence
+
+    from rene._hints import Orienteer
 
 BORDER_CONTOUR_INDEX = 0
 

@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
-from typing import Generic
+from typing import Generic, TYPE_CHECKING
 
 from typing_extensions import Self
 
 from rene import Location, Orientation, hints
-from rene._hints import Orienteer
 from rene._utils import (
     ceil_log2,
     is_even,
@@ -19,6 +17,11 @@ from .quad_edge import (
     to_opposite_edge,
     to_rotated_edge,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from rene._hints import Orienteer
 
 
 class Mesh(Generic[hints.Scalar]):

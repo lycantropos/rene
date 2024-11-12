@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
-from typing import Generic
+from typing import Generic, TYPE_CHECKING
 
 from dendroid import red_black
-from dendroid.hints import KeyedSet
 from prioq.base import PriorityQueue
 
 from rene import Orientation, hints
-from rene._hints import Orienteer, SegmentsIntersector
 from rene._utils import to_sorted_pair
 
 from .event import (
@@ -19,6 +16,13 @@ from .event import (
 )
 from .events_queue_key import EventsQueueKey
 from .sweep_line_key import SweepLineKey
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator, Sequence
+
+    from dendroid.hints import KeyedSet
+
+    from rene._hints import Orienteer, SegmentsIntersector
 
 
 class EventsRegistry(Generic[hints.Scalar]):

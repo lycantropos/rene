@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-from typing import Generic
+from typing import Generic, TYPE_CHECKING
 
 from typing_extensions import Self
 
-from rene._hints import Map
 from rene.hints import Point, Scalar
 
 from .event import Event, is_event_left
+
+if TYPE_CHECKING:
+    from rene._hints import Map
 
 
 class EventsQueueKey(Generic[Scalar]):

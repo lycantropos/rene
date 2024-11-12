@@ -1,22 +1,26 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Iterable, Sequence
 from itertools import chain, groupby
-from typing import Generic
+from typing import Generic, TYPE_CHECKING
 
 from dendroid import red_black
-from dendroid.hints import KeyedSet
 from prioq.base import PriorityQueue
 from typing_extensions import Self
 
 from rene import Orientation, Relation, hints
-from rene._hints import Orienteer, SegmentsIntersector
 from rene._utils import all_same, is_even
 
 from .event import Event, is_event_left, is_event_right, left_event_to_position
 from .events_queue_key import EventsQueueKey
 from .sweep_line_key import SweepLineKey
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
+
+    from dendroid.hints import KeyedSet
+
+    from rene._hints import Orienteer, SegmentsIntersector
 
 SegmentEndpoints = tuple[hints.Point[hints.Scalar], hints.Point[hints.Scalar]]
 

@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import enum
 from collections.abc import Sequence
-from typing import Any, ClassVar, NoReturn, overload
+from typing import Any, ClassVar, NoReturn, TYPE_CHECKING, overload
 
 from rithm.fraction import Fraction
 from typing_extensions import Self, final
 
 from rene import hints
-from rene._context import Context
 from rene._geometries.base_polygon import BasePolygon
+
+if TYPE_CHECKING:
+    from rene._context import Context
 
 
 @final

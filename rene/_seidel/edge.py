@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import Generic
+from typing import Generic, TYPE_CHECKING
 
 from typing_extensions import Self
 
 from rene import Orientation, hints
-from rene._hints import Orienteer
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from rene._hints import Orienteer
 
 
 class Edge(Generic[hints.Scalar]):

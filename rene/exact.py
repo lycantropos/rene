@@ -729,7 +729,6 @@ else:
             polygon_to_segments_count as _polygon_to_segments_count,
             validate_seed as _validate_seed,
         )
-        from .hints import Seeder as _Seeder
 
         Box = _cexact.Box
         ConstrainedDelaunayTriangulation = (

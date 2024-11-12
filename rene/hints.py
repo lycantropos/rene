@@ -1,15 +1,17 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import Any, Callable, TypeVar, Union, overload
+from typing import Any, Callable, TYPE_CHECKING, TypeVar, Union, overload
 
 from typing_extensions import Protocol, Self
 
-from rene import (
-    Location as _Location,
-    Orientation as _Orientation,
-    Relation as _Relation,
-)
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from rene import (
+        Location as _Location,
+        Orientation as _Orientation,
+        Relation as _Relation,
+    )
 
 
 class _Scalar(Protocol):

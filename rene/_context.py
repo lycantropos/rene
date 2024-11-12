@@ -1,15 +1,17 @@
 from __future__ import annotations
 
-from typing import Generic
+from typing import Generic, TYPE_CHECKING
 
 from typing_extensions import Self
 
 from rene import Orientation, hints
-from rene._hints import (
-    Orienteer,
-    SegmentsIntersectionScale,
-    SegmentsIntersector,
-)
+
+if TYPE_CHECKING:
+    from rene._hints import (
+        Orienteer,
+        SegmentsIntersectionScale,
+        SegmentsIntersector,
+    )
 
 
 class Context(Generic[hints.Scalar]):
