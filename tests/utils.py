@@ -3,10 +3,10 @@ from typing import Any, Callable, Iterable, List, Sequence, Tuple, TypeVar
 
 from hypothesis import strategies as _st
 
-from rene import Location, MIN_CONTOUR_VERTICES_COUNT, Orientation, exact, f64
+from rene import Location, MIN_CONTOUR_VERTICES_COUNT, Orientation, exact
 from rene._utils import deduplicate, locate_point_in_point_point_point_circle
 
-_BoxT = TypeVar('_BoxT', exact.Box, f64.Box)
+_BoxT = TypeVar('_BoxT', bound=exact.Box)
 _ContourT = TypeVar('_ContourT', bound=exact.Contour)
 _EmptyT = TypeVar('_EmptyT', bound=exact.Empty)
 _MultipolygonT = TypeVar('_MultipolygonT', bound=exact.Multipolygon)
