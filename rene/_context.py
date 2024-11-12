@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import typing as t
+from typing import Generic
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import Orientation, hints
 from rene._hints import (
@@ -12,7 +12,7 @@ from rene._hints import (
 )
 
 
-class Context(t.Generic[hints.Scalar]):
+class Context(Generic[hints.Scalar]):
     @property
     def box_cls(self, /) -> type[hints.Box[hints.Scalar]]:
         return self._box_cls
@@ -119,7 +119,7 @@ class Context(t.Generic[hints.Scalar]):
         segment_cls: type[hints.Segment[hints.Scalar]],
         segments_intersection_scale: SegmentsIntersectionScale[hints.Scalar],
         segments_intersector: SegmentsIntersector[hints.Scalar],
-    ) -> te.Self:
+    ) -> Self:
         self = super().__new__(cls)
         (
             self._box_cls,

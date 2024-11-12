@@ -1,6 +1,6 @@
-import typing as t
+from collections.abc import Sequence
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import Location, hints
 
@@ -13,9 +13,9 @@ class Leaf(Node[hints.Scalar]):
     def locate(
         self,
         point: hints.Point[hints.Scalar],
-        edges: t.Sequence[Edge[hints.Scalar]],
-        endpoints: t.Sequence[hints.Point[hints.Scalar]],
-        nodes: t.Sequence[Node[hints.Scalar]],
+        edges: Sequence[Edge[hints.Scalar]],
+        endpoints: Sequence[hints.Point[hints.Scalar]],
+        nodes: Sequence[Node[hints.Scalar]],
     ) -> Location:
         return (
             Location.INTERIOR
@@ -26,13 +26,13 @@ class Leaf(Node[hints.Scalar]):
     def search_edge_node(
         self,
         edge: Edge[hints.Scalar],
-        edges: t.Sequence[Edge[hints.Scalar]],
-        endpoints: t.Sequence[hints.Point[hints.Scalar]],
-        nodes: t.Sequence[Node[hints.Scalar]],
-    ) -> te.Self:
+        edges: Sequence[Edge[hints.Scalar]],
+        endpoints: Sequence[hints.Point[hints.Scalar]],
+        nodes: Sequence[Node[hints.Scalar]],
+    ) -> Self:
         return self
 
-    def to_height(self, nodes: t.Sequence[Node[hints.Scalar]]) -> int:
+    def to_height(self, nodes: Sequence[Node[hints.Scalar]]) -> int:
         return 0
 
     trapezoid: Trapezoid
@@ -47,7 +47,7 @@ class Leaf(Node[hints.Scalar]):
         below_edge_index: int,
         above_edge_index: int,
         index: int,
-    ) -> te.Self:
+    ) -> Self:
         self = super().__new__(cls)
         self.trapezoid = Trapezoid(
             is_component,

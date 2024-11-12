@@ -1,6 +1,6 @@
-import typing as t
+from collections.abc import Sequence
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import Location, hints
 
@@ -16,9 +16,9 @@ class XNode(Node[hints.Scalar]):
     def locate(
         self,
         point: hints.Point[hints.Scalar],
-        edges: t.Sequence[Edge[hints.Scalar]],
-        endpoints: t.Sequence[hints.Point[hints.Scalar]],
-        nodes: t.Sequence[Node[hints.Scalar]],
+        edges: Sequence[Edge[hints.Scalar]],
+        endpoints: Sequence[hints.Point[hints.Scalar]],
+        nodes: Sequence[Node[hints.Scalar]],
         /,
     ) -> Location:
         return (
@@ -36,9 +36,9 @@ class XNode(Node[hints.Scalar]):
     def search_edge_node(
         self,
         edge: Edge[hints.Scalar],
-        edges: t.Sequence[Edge[hints.Scalar]],
-        endpoints: t.Sequence[hints.Point[hints.Scalar]],
-        nodes: t.Sequence[Node[hints.Scalar]],
+        edges: Sequence[Edge[hints.Scalar]],
+        endpoints: Sequence[hints.Point[hints.Scalar]],
+        nodes: Sequence[Node[hints.Scalar]],
         /,
     ) -> Node[hints.Scalar]:
         return nodes[
@@ -50,7 +50,7 @@ class XNode(Node[hints.Scalar]):
             )
         ]
 
-    def to_height(self, nodes: t.Sequence[Node[hints.Scalar]], /) -> int:
+    def to_height(self, nodes: Sequence[Node[hints.Scalar]], /) -> int:
         return (
             max(
                 nodes[self.left_node_index].to_height(nodes),
@@ -63,7 +63,7 @@ class XNode(Node[hints.Scalar]):
 
     def __new__(
         cls, point_index: int, left_node_index: int, right_node_index: int, /
-    ) -> te.Self:
+    ) -> Self:
         self = super().__new__(cls)
         self.left_node_index, self.point_index, self.right_node_index = (
             left_node_index,

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import typing as t
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
+from typing import Any, overload
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import Location, Relation, hints
 from rene._bentley_ottmann.base import sweep
@@ -29,7 +30,7 @@ from .base_compound import BaseCompound
 class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
     @property
     @abstractmethod
-    def segments(self) -> t.Sequence[hints.Segment[hints.Scalar]]: ...
+    def segments(self) -> Sequence[hints.Segment[hints.Scalar]]: ...
 
     @property
     def bounding_box(self, /) -> hints.Box[hints.Scalar]:
@@ -109,12 +110,12 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
         else:
             raise TypeError(f'Unsupported type: {type(other)!r}.')
 
-    @t.overload
+    @overload
     def __and__(
         self, other: hints.Empty[hints.Scalar], /
     ) -> hints.Empty[hints.Scalar]: ...
 
-    @t.overload
+    @overload
     def __and__(
         self,
         other: (
@@ -131,10 +132,10 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
         | hints.Segment[hints.Scalar]
     ): ...
 
-    @t.overload
-    def __and__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __and__(self, other: Any, /) -> Any: ...
 
-    def __and__(self, other: t.Any, /) -> t.Any:
+    def __and__(self, other: Any, /) -> Any:
         context = self._context
         return (
             intersect_multisegmental_with_multisegmental(
@@ -194,13 +195,13 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
     def __contains__(self, point: hints.Point[hints.Scalar], /) -> bool:
         return self.locate(point) is not Location.EXTERIOR
 
-    @t.overload
-    def __eq__(self, other: te.Self, /) -> bool: ...
+    @overload
+    def __eq__(self, other: Self, /) -> bool: ...
 
-    @t.overload
-    def __eq__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __eq__(self, other: Any, /) -> Any: ...
 
-    def __eq__(self, other: t.Any, /) -> t.Any:
+    def __eq__(self, other: Any, /) -> Any:
         return (
             frozenset(self.segments) == frozenset(other.segments)
             if isinstance(other, type(self))
@@ -210,10 +211,10 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
     def __hash__(self, /) -> int:
         return hash(frozenset(self.segments))
 
-    @t.overload
-    def __or__(self, other: hints.Empty[hints.Scalar], /) -> te.Self: ...
+    @overload
+    def __or__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
 
-    @t.overload
+    @overload
     def __or__(
         self,
         other: (
@@ -224,10 +225,10 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
         /,
     ) -> hints.Multisegment[hints.Scalar] | hints.Segment[hints.Scalar]: ...
 
-    @t.overload
-    def __or__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __or__(self, other: Any, /) -> Any: ...
 
-    def __or__(self, other: t.Any, /) -> t.Any:
+    def __or__(self, other: Any, /) -> Any:
         context = self._context
         return (
             unite_multisegmental_with_multisegmental(
@@ -269,10 +270,10 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
             ', '.join(map(str, self.segments))
         )
 
-    @t.overload
-    def __sub__(self, other: hints.Empty[hints.Scalar], /) -> te.Self: ...
+    @overload
+    def __sub__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
 
-    @t.overload
+    @overload
     def __sub__(
         self,
         other: (
@@ -288,10 +289,10 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
         | hints.Segment[hints.Scalar]
     ): ...
 
-    @t.overload
-    def __sub__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __sub__(self, other: Any, /) -> Any: ...
 
-    def __sub__(self, other: t.Any, /) -> t.Any:
+    def __sub__(self, other: Any, /) -> Any:
         context = self._context
         return (
             subtract_multisegmental_from_multisegmental(
@@ -349,10 +350,10 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
             )
         )
 
-    @t.overload
-    def __xor__(self, other: hints.Empty[hints.Scalar], /) -> te.Self: ...
+    @overload
+    def __xor__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
 
-    @t.overload
+    @overload
     def __xor__(
         self,
         other: (
@@ -367,10 +368,10 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
         | hints.Segment[hints.Scalar]
     ): ...
 
-    @t.overload
-    def __xor__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __xor__(self, other: Any, /) -> Any: ...
 
-    def __xor__(self, other: t.Any, /) -> t.Any:
+    def __xor__(self, other: Any, /) -> Any:
         context = self._context
         return (
             symmetric_subtract_multisegmental_from_multisegmental(

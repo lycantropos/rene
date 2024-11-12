@@ -1,5 +1,5 @@
-import typing as t
 from collections import abc
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -9,7 +9,7 @@ from . import strategies
 
 
 @given(strategies.multipolygons_polygons, strategies.indices)
-def test_basic_index(polygons: t.Sequence[Polygon], item: int) -> None:
+def test_basic_index(polygons: Sequence[Polygon], item: int) -> None:
     try:
         result = polygons[item]
     except IndexError:
@@ -19,7 +19,7 @@ def test_basic_index(polygons: t.Sequence[Polygon], item: int) -> None:
 
 
 @given(strategies.multipolygons_polygons, strategies.slices)
-def test_basic_slice(polygons: t.Sequence[Polygon], item: slice) -> None:
+def test_basic_slice(polygons: Sequence[Polygon], item: slice) -> None:
     result = polygons[item]
 
     assert isinstance(result, abc.Sequence)
@@ -27,13 +27,13 @@ def test_basic_slice(polygons: t.Sequence[Polygon], item: slice) -> None:
 
 @given(strategies.multipolygons_polygons, strategies.slices)
 def test_slice_commutativity_with_list(
-    polygons: t.Sequence[Polygon], item: slice
+    polygons: Sequence[Polygon], item: slice
 ) -> None:
     assert list(polygons[item]) == list(polygons)[item]
 
 
 @given(strategies.multipolygons_polygons)
-def test_shallow_copy(polygons: t.Sequence[Polygon]) -> None:
+def test_shallow_copy(polygons: Sequence[Polygon]) -> None:
     result = polygons[::]
 
     assert result is not polygons
@@ -41,7 +41,7 @@ def test_shallow_copy(polygons: t.Sequence[Polygon]) -> None:
 
 
 @given(strategies.multipolygons_polygons)
-def test_reversed(polygons: t.Sequence[Polygon]) -> None:
+def test_reversed(polygons: Sequence[Polygon]) -> None:
     result = polygons[::-1]
 
     assert result != polygons
@@ -56,7 +56,7 @@ def test_reversed(polygons: t.Sequence[Polygon]) -> None:
 
 
 @given(strategies.multipolygons_polygons)
-def test_reversed_idempotence(polygons: t.Sequence[Polygon]) -> None:
+def test_reversed_idempotence(polygons: Sequence[Polygon]) -> None:
     result = polygons[::-1]
 
     assert result[::-1] == polygons
@@ -64,7 +64,7 @@ def test_reversed_idempotence(polygons: t.Sequence[Polygon]) -> None:
 
 @given(strategies.multipolygons_polygons, strategies.slices, strategies.slices)
 def test_consecutive_slicing(
-    polygons: t.Sequence[Polygon], item: slice, next_item: slice
+    polygons: Sequence[Polygon], item: slice, next_item: slice
 ) -> None:
     result = polygons[item]
     next_result = result[next_item]

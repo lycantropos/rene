@@ -1,5 +1,5 @@
-import typing as t
 from collections import abc
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -9,7 +9,7 @@ from . import strategies
 
 
 @given(strategies.multisegments_segments, strategies.indices)
-def test_basic_index(segments: t.Sequence[Segment], item: int) -> None:
+def test_basic_index(segments: Sequence[Segment], item: int) -> None:
     try:
         result = segments[item]
     except IndexError:
@@ -19,7 +19,7 @@ def test_basic_index(segments: t.Sequence[Segment], item: int) -> None:
 
 
 @given(strategies.multisegments_segments, strategies.slices)
-def test_basic_slice(segments: t.Sequence[Segment], item: slice) -> None:
+def test_basic_slice(segments: Sequence[Segment], item: slice) -> None:
     result = segments[item]
 
     assert isinstance(result, abc.Sequence)
@@ -27,13 +27,13 @@ def test_basic_slice(segments: t.Sequence[Segment], item: slice) -> None:
 
 @given(strategies.multisegments_segments, strategies.slices)
 def test_slice_commutativity_with_list(
-    segments: t.Sequence[Segment], item: slice
+    segments: Sequence[Segment], item: slice
 ) -> None:
     assert list(segments[item]) == list(segments)[item]
 
 
 @given(strategies.multisegments_segments)
-def test_shallow_copy(segments: t.Sequence[Segment]) -> None:
+def test_shallow_copy(segments: Sequence[Segment]) -> None:
     result = segments[::]
 
     assert result is not segments
@@ -41,7 +41,7 @@ def test_shallow_copy(segments: t.Sequence[Segment]) -> None:
 
 
 @given(strategies.multisegments_segments)
-def test_reversed(segments: t.Sequence[Segment]) -> None:
+def test_reversed(segments: Sequence[Segment]) -> None:
     result = segments[::-1]
 
     assert result != segments
@@ -56,7 +56,7 @@ def test_reversed(segments: t.Sequence[Segment]) -> None:
 
 
 @given(strategies.multisegments_segments)
-def test_reversed_idempotence(segments: t.Sequence[Segment]) -> None:
+def test_reversed_idempotence(segments: Sequence[Segment]) -> None:
     result = segments[::-1]
 
     assert result[::-1] == segments
@@ -64,7 +64,7 @@ def test_reversed_idempotence(segments: t.Sequence[Segment]) -> None:
 
 @given(strategies.multisegments_segments, strategies.slices, strategies.slices)
 def test_consecutive_slicing(
-    segments: t.Sequence[Segment], item: slice, next_item: slice
+    segments: Sequence[Segment], item: slice, next_item: slice
 ) -> None:
     result = segments[item]
     next_result = result[next_item]

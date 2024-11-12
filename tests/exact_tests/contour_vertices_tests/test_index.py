@@ -1,4 +1,4 @@
-import typing as t
+from collections.abc import Sequence
 
 import pytest
 from hypothesis import given
@@ -9,9 +9,7 @@ from . import strategies
 
 
 @given(strategies.contours_vertices, strategies.points)
-def test_basic_default_range(
-    vertices: t.Sequence[Point], point: Point
-) -> None:
+def test_basic_default_range(vertices: Sequence[Point], point: Point) -> None:
     try:
         result = vertices.index(point)
     except ValueError:
@@ -29,7 +27,7 @@ def test_basic_default_range(
     strategies.indices,
 )
 def test_basic_custom_range(
-    vertices: t.Sequence[Point], point: Point, start: int, stop: int
+    vertices: Sequence[Point], point: Point, start: int, stop: int
 ) -> None:
     try:
         result = vertices.index(point, start, stop)
@@ -43,7 +41,7 @@ def test_basic_custom_range(
 
 @given(strategies.contours_vertices, strategies.points)
 def test_alternatives_default_range(
-    vertices: t.Sequence[Point], point: Point
+    vertices: Sequence[Point], point: Point
 ) -> None:
     try:
         result = vertices.index(point)
@@ -64,7 +62,7 @@ def test_alternatives_default_range(
     strategies.indices,
 )
 def test_alternatives_custom_range(
-    vertices: t.Sequence[Point], point: Point, start: int, stop: int
+    vertices: Sequence[Point], point: Point, start: int, stop: int
 ) -> None:
     try:
         result = vertices.index(point, start, stop)

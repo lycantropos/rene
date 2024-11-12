@@ -1,4 +1,4 @@
-import typing as t
+from collections.abc import Sequence
 
 import pytest
 from hypothesis import given
@@ -10,7 +10,7 @@ from . import strategies
 
 @given(strategies.multisegments_segments, strategies.segments)
 def test_basic_default_range(
-    segments: t.Sequence[Segment], segment: Segment
+    segments: Sequence[Segment], segment: Segment
 ) -> None:
     try:
         result = segments.index(segment)
@@ -29,7 +29,7 @@ def test_basic_default_range(
     strategies.indices,
 )
 def test_basic_custom_range(
-    segments: t.Sequence[Segment], segment: Segment, start: int, stop: int
+    segments: Sequence[Segment], segment: Segment, start: int, stop: int
 ) -> None:
     try:
         result = segments.index(segment, start, stop)
@@ -43,7 +43,7 @@ def test_basic_custom_range(
 
 @given(strategies.multisegments_segments, strategies.segments)
 def test_alternatives_default_range(
-    segments: t.Sequence[Segment], segment: Segment
+    segments: Sequence[Segment], segment: Segment
 ) -> None:
     try:
         result = segments.index(segment)
@@ -64,7 +64,7 @@ def test_alternatives_default_range(
     strategies.indices,
 )
 def test_alternatives_custom_range(
-    segments: t.Sequence[Segment], segment: Segment, start: int, stop: int
+    segments: Sequence[Segment], segment: Segment, start: int, stop: int
 ) -> None:
     try:
         result = segments.index(segment, start, stop)

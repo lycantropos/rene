@@ -1,4 +1,4 @@
-import typing as t
+from typing import Any
 
 from hypothesis import strategies as _st
 
@@ -22,11 +22,11 @@ maybe_linear_compounds = empty_geometries | linear_compounds
 idempotent_maybe_linear_compounds = (
     empty_geometries | idempotent_linear_compounds
 )
-_closed_compounds_strategies: _st.SearchStrategy[_st.SearchStrategy[t.Any]] = (
+_closed_compounds_strategies: _st.SearchStrategy[_st.SearchStrategy[Any]] = (
     _st.sampled_from([maybe_linear_compounds, maybe_shaped_compounds])
 )
 _closed_idempotent_compounds_strategies: _st.SearchStrategy[
-    _st.SearchStrategy[t.Any]
+    _st.SearchStrategy[Any]
 ] = _st.sampled_from(
     [idempotent_maybe_linear_compounds, maybe_shaped_compounds]
 )

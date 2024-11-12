@@ -1,4 +1,4 @@
-from typing import Sequence, Tuple
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -9,7 +9,7 @@ from . import strategies
 
 
 @given(strategies.polygons_components)
-def test_basic(components: Tuple[Contour, Sequence[Contour]]) -> None:
+def test_basic(components: tuple[Contour, Sequence[Contour]]) -> None:
     border, holes = components
 
     result = Polygon(border, holes)

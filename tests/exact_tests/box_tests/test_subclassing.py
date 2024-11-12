@@ -1,5 +1,5 @@
 import types
-import typing as t
+from typing import Any
 
 import pytest
 from hypothesis import given
@@ -17,7 +17,7 @@ def test_static() -> None:
 
 
 @given(strategies.strings, strategies.string_key_dictionaries)
-def test_dynamic(name: str, members: t.Dict[str, t.Any]) -> None:
+def test_dynamic(name: str, members: dict[str, Any]) -> None:
     with pytest.raises(TypeError):
         type(name, (Box,), members)
     with pytest.raises(TypeError):

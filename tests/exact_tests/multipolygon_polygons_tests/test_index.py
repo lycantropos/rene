@@ -1,4 +1,4 @@
-import typing as t
+from collections.abc import Sequence
 
 import pytest
 from hypothesis import given
@@ -10,7 +10,7 @@ from . import strategies
 
 @given(strategies.multipolygons_polygons, strategies.polygons)
 def test_basic_default_range(
-    polygons: t.Sequence[Polygon], polygon: Polygon
+    polygons: Sequence[Polygon], polygon: Polygon
 ) -> None:
     try:
         result = polygons.index(polygon)
@@ -29,7 +29,7 @@ def test_basic_default_range(
     strategies.indices,
 )
 def test_basic_custom_range(
-    polygons: t.Sequence[Polygon], polygon: Polygon, start: int, stop: int
+    polygons: Sequence[Polygon], polygon: Polygon, start: int, stop: int
 ) -> None:
     try:
         result = polygons.index(polygon, start, stop)
@@ -43,7 +43,7 @@ def test_basic_custom_range(
 
 @given(strategies.multipolygons_polygons, strategies.polygons)
 def test_alternatives_default_range(
-    polygons: t.Sequence[Polygon], polygon: Polygon
+    polygons: Sequence[Polygon], polygon: Polygon
 ) -> None:
     try:
         result = polygons.index(polygon)
@@ -64,7 +64,7 @@ def test_alternatives_default_range(
     strategies.indices,
 )
 def test_alternatives_custom_range(
-    polygons: t.Sequence[Polygon], polygon: Polygon, start: int, stop: int
+    polygons: Sequence[Polygon], polygon: Polygon, start: int, stop: int
 ) -> None:
     try:
         result = polygons.index(polygon, start, stop)

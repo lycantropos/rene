@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import random
-import typing as t
+from typing import Any, ClassVar, NoReturn
 
-import typing_extensions as te
 from rithm.fraction import Fraction
+from typing_extensions import Self, final
 
 from rene import Location, hints
 from rene._context import Context
@@ -12,7 +12,7 @@ from rene._seidel.trapezoidation import Trapezoidation as _RawTrapezoidation
 from rene._utils import polygon_to_segments_count, validate_seed
 
 
-@te.final
+@final
 class Trapezoidation:
     @classmethod
     def from_multisegment(
@@ -21,7 +21,7 @@ class Trapezoidation:
         /,
         *,
         seeder: hints.Seeder | None = None,
-    ) -> te.Self:
+    ) -> Self:
         seed = (
             random.randint(0, len(multisegment.segments))
             if seeder is None
@@ -41,7 +41,7 @@ class Trapezoidation:
         /,
         *,
         seeder: hints.Seeder | None = None,
-    ) -> te.Self:
+    ) -> Self:
         seed = (
             random.randint(0, polygon_to_segments_count(polygon))
             if seeder is None
@@ -59,18 +59,18 @@ class Trapezoidation:
     def locate(self, point: hints.Point[Fraction], /) -> Location:
         return self._raw.locate(point)
 
-    _context: t.ClassVar[Context[Fraction]]
+    _context: ClassVar[Context[Fraction]]
     _raw: _RawTrapezoidation[Fraction]
 
     __module__ = 'rene.exact'
     __slots__ = ('_raw',)
 
-    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
 
-    def __new__(cls, raw: _RawTrapezoidation[Fraction], /) -> te.Self:
+    def __new__(cls, raw: _RawTrapezoidation[Fraction], /) -> Self:
         self = super().__new__(cls)
         self._raw = raw
         return self

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import typing as t
+from collections.abc import Iterable
+from typing import Generic
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import Location, Orientation, hints
 from rene._hints import Orienteer
@@ -20,7 +21,7 @@ from .quad_edge import (
 )
 
 
-class Mesh(t.Generic[hints.Scalar]):
+class Mesh(Generic[hints.Scalar]):
     endpoints: list[hints.Point[hints.Scalar]]
     left_from_start: list[QuadEdge]
     starts_indices: list[int]
@@ -28,7 +29,7 @@ class Mesh(t.Generic[hints.Scalar]):
     @classmethod
     def from_points(
         cls, endpoints: list[hints.Point[hints.Scalar]], /
-    ) -> te.Self:
+    ) -> Self:
         return cls(endpoints, [], [])
 
     def connect_edges(self, first: QuadEdge, second: QuadEdge, /) -> QuadEdge:
@@ -93,7 +94,7 @@ class Mesh(t.Generic[hints.Scalar]):
         assert self.to_start(edge) == self.to_end(side)
         assert self.to_end(edge) == self.to_end(opposite_side)
 
-    def to_edges(self) -> t.Iterable[QuadEdge]:
+    def to_edges(self) -> Iterable[QuadEdge]:
         candidates = [
             QuadEdge(index) for index in range(0, len(self.left_from_start), 2)
         ]
@@ -148,7 +149,7 @@ class Mesh(t.Generic[hints.Scalar]):
         assert is_even(edge)
         return self.starts_indices[edge // 2]
 
-    def to_unique_edges(self) -> t.Iterable[QuadEdge]:
+    def to_unique_edges(self) -> Iterable[QuadEdge]:
         candidates = [
             QuadEdge(index) for index in range(0, len(self.left_from_start), 4)
         ]

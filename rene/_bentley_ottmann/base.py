@@ -1,7 +1,8 @@
-import typing as t
+from collections.abc import Iterable, Sequence
 from itertools import combinations
+from typing import Generic
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import Relation, hints
 from rene._hints import Orienteer, SegmentsIntersector
@@ -9,7 +10,7 @@ from rene._hints import Orienteer, SegmentsIntersector
 from .events_registry import EventsRegistry
 
 
-class Intersection(t.Generic[hints.Scalar]):
+class Intersection(Generic[hints.Scalar]):
     @property
     def end(self, /) -> hints.Point[hints.Scalar]:
         return self._end
@@ -52,7 +53,7 @@ class Intersection(t.Generic[hints.Scalar]):
         start: hints.Point[hints.Scalar],
         end: hints.Point[hints.Scalar],
         /,
-    ) -> te.Self:
+    ) -> Self:
         self = super().__new__(cls)
         (
             self._end,
@@ -65,11 +66,11 @@ class Intersection(t.Generic[hints.Scalar]):
 
 
 def sweep(
-    segments: t.Sequence[hints.Segment[hints.Scalar]],
+    segments: Sequence[hints.Segment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Iterable[Intersection[hints.Scalar]]:
+) -> Iterable[Intersection[hints.Scalar]]:
     events_registry = EventsRegistry.from_segments(
         segments, orienteer, segments_intersector, unique=False
     )
@@ -99,11 +100,11 @@ def sweep(
 
 
 def segments_ids_containing_point_to_intersections(
-    segments_ids: t.Sequence[int],
+    segments_ids: Sequence[int],
     point: hints.Point[hints.Scalar],
     events_registry: EventsRegistry[hints.Scalar],
     /,
-) -> t.Iterable[Intersection[hints.Scalar]]:
+) -> Iterable[Intersection[hints.Scalar]]:
     for first_segment_id, second_segment_id in combinations(segments_ids, 2):
         first_start = events_registry.to_segment_start(first_segment_id)
         first_end = events_registry.to_segment_end(first_segment_id)

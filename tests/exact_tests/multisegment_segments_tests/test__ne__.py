@@ -1,4 +1,4 @@
-import typing as t
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -9,19 +9,17 @@ from . import strategies
 
 
 @given(strategies.multisegments_segments)
-def test_irreflexivity(segments: t.Sequence[Segment]) -> None:
+def test_irreflexivity(segments: Sequence[Segment]) -> None:
     assert segments == segments
 
 
 @given(strategies.multisegments_segments, strategies.multisegments_segments)
-def test_symmetry(
-    first: t.Sequence[Segment], second: t.Sequence[Segment]
-) -> None:
+def test_symmetry(first: Sequence[Segment], second: Sequence[Segment]) -> None:
     assert equivalence(first != second, second != first)
 
 
 @given(strategies.multisegments_segments, strategies.multisegments_segments)
 def test_equivalents(
-    first: t.Sequence[Segment], second: t.Sequence[Segment]
+    first: Sequence[Segment], second: Sequence[Segment]
 ) -> None:
     assert equivalence(first != second, first != second)

@@ -1,6 +1,6 @@
-import typing as t
+from typing import Generic
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import Orientation, hints
 from rene._hints import Map, Orienteer
@@ -8,7 +8,7 @@ from rene._hints import Map, Orienteer
 from .event import Event, is_event_left
 
 
-class EventsQueueKey(t.Generic[hints.Scalar]):
+class EventsQueueKey(Generic[hints.Scalar]):
     event: Event
     is_from_first_operand: bool
     endpoints: Map[Event, hints.Point[hints.Scalar]]
@@ -31,7 +31,7 @@ class EventsQueueKey(t.Generic[hints.Scalar]):
         opposites: Map[Event, Event],
         orienteer: Orienteer[hints.Scalar],
         /,
-    ) -> te.Self:
+    ) -> Self:
         self = super().__new__(cls)
         (
             self.endpoints,
@@ -39,10 +39,10 @@ class EventsQueueKey(t.Generic[hints.Scalar]):
             self.is_from_first_operand,
             self.opposites,
             self._orienteer,
-        ) = endpoints, event, is_from_first_operand, opposites, orienteer
+        ) = (endpoints, event, is_from_first_operand, opposites, orienteer)
         return self
 
-    def __lt__(self, other: te.Self, /) -> bool:
+    def __lt__(self, other: Self, /) -> bool:
         """
         Checks if the event should be processed before the other.
         """

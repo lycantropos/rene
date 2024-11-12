@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import typing as t
+from typing import Generic
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene._hints import Map
 from rene.hints import Point, Scalar
@@ -10,7 +10,7 @@ from rene.hints import Point, Scalar
 from .event import Event, is_event_left
 
 
-class EventsQueueKey(t.Generic[Scalar]):
+class EventsQueueKey(Generic[Scalar]):
     endpoints: Map[Event, Point[Scalar]]
     opposites: Map[Event, Event]
     event: Event
@@ -23,7 +23,7 @@ class EventsQueueKey(t.Generic[Scalar]):
         opposites: Map[Event, Event],
         event: Event,
         /,
-    ) -> te.Self:
+    ) -> Self:
         self = super().__new__(cls)
         self.endpoints, self.event, self.opposites = (
             endpoints,
@@ -32,7 +32,7 @@ class EventsQueueKey(t.Generic[Scalar]):
         )
         return self
 
-    def __lt__(self, other: te.Self, /) -> bool:
+    def __lt__(self, other: Self, /) -> bool:
         """
         Checks if the event should be processed before the other.
         """

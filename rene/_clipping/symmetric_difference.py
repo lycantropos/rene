@@ -1,5 +1,5 @@
-import typing as t
 from itertools import chain, groupby
+from typing import Union
 
 from rene import Orientation, hints
 from rene._hints import Orienteer, SegmentsIntersector
@@ -22,10 +22,10 @@ from .utils import has_two_or_more_elements
 class LinearSymmetricDifference(linear.Operation[hints.Scalar]):
     def reduce_events(
         self,
-        events: t.List[Event],
-        segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        events: list[Event],
+        segment_cls: type[hints.Segment[hints.Scalar]],
         /,
-    ) -> t.List[hints.Segment[hints.Scalar]]:
+    ) -> list[hints.Segment[hints.Scalar]]:
         return [
             segment_cls(start, end)
             for (start, end), equal_segment_events in groupby(
@@ -40,7 +40,7 @@ class ShapedSymmetricDifference(shaped.Operation[hints.Scalar]):
         return not self._is_left_event_overlapping(event)
 
 
-_Multisegmental = t.Union[
+_Multisegmental = Union[
     hints.Contour[hints.Scalar], hints.Multisegment[hints.Scalar]
 ]
 
@@ -48,15 +48,15 @@ _Multisegmental = t.Union[
 def symmetric_subtract_polygon_from_polygon(
     minuend: hints.Polygon[hints.Scalar],
     subtrahend: hints.Polygon[hints.Scalar],
-    contour_cls: t.Type[hints.Contour[hints.Scalar]],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+    contour_cls: type[hints.Contour[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    polygon_cls: type[hints.Polygon[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multipolygon[hints.Scalar],
     hints.Polygon[hints.Scalar],
@@ -89,15 +89,15 @@ def symmetric_subtract_polygon_from_polygon(
 def symmetric_subtract_polygon_from_multipolygon(
     minuend: hints.Multipolygon[hints.Scalar],
     subtrahend: hints.Polygon[hints.Scalar],
-    contour_cls: t.Type[hints.Contour[hints.Scalar]],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+    contour_cls: type[hints.Contour[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    polygon_cls: type[hints.Polygon[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multipolygon[hints.Scalar],
     hints.Polygon[hints.Scalar],
@@ -152,15 +152,15 @@ def symmetric_subtract_polygon_from_multipolygon(
 def symmetric_subtract_multipolygon_from_polygon(
     minuend: hints.Polygon[hints.Scalar],
     subtrahend: hints.Multipolygon[hints.Scalar],
-    contour_cls: t.Type[hints.Contour[hints.Scalar]],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+    contour_cls: type[hints.Contour[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    polygon_cls: type[hints.Polygon[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multipolygon[hints.Scalar],
     hints.Polygon[hints.Scalar],
@@ -217,15 +217,15 @@ def symmetric_subtract_multipolygon_from_polygon(
 def symmetric_subtract_multipolygon_from_multipolygon(
     minuend: hints.Multipolygon[hints.Scalar],
     subtrahend: hints.Multipolygon[hints.Scalar],
-    contour_cls: t.Type[hints.Contour[hints.Scalar]],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+    contour_cls: type[hints.Contour[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    polygon_cls: type[hints.Polygon[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multipolygon[hints.Scalar],
     hints.Polygon[hints.Scalar],
@@ -307,13 +307,13 @@ def symmetric_subtract_multipolygon_from_multipolygon(
 def symmetric_subtract_segment_from_segment(
     minuend: hints.Segment[hints.Scalar],
     subtrahend: hints.Segment[hints.Scalar],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multisegment[hints.Scalar],
     hints.Segment[hints.Scalar],
@@ -382,13 +382,13 @@ def symmetric_subtract_segment_from_segment(
 def symmetric_subtract_multisegmental_from_segment(
     minuend: hints.Segment[hints.Scalar],
     subtrahend: _Multisegmental[hints.Scalar],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multisegment[hints.Scalar],
     hints.Segment[hints.Scalar],
@@ -443,13 +443,13 @@ def symmetric_subtract_multisegmental_from_segment(
 def symmetric_subtract_segment_from_multisegmental(
     minuend: _Multisegmental[hints.Scalar],
     subtrahend: hints.Segment[hints.Scalar],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multisegment[hints.Scalar],
     hints.Segment[hints.Scalar],
@@ -502,13 +502,13 @@ def symmetric_subtract_segment_from_multisegmental(
 def symmetric_subtract_multisegmental_from_multisegmental(
     minuend: _Multisegmental[hints.Scalar],
     subtrahend: _Multisegmental[hints.Scalar],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multisegment[hints.Scalar],
     hints.Segment[hints.Scalar],

@@ -1,4 +1,4 @@
-import typing as t
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -9,12 +9,12 @@ from . import strategies
 
 
 @given(strategies.contours_vertices)
-def test_reflexivity(vertices: t.Sequence[Point]) -> None:
+def test_reflexivity(vertices: Sequence[Point]) -> None:
     assert vertices == vertices
 
 
 @given(strategies.contours_vertices, strategies.contours_vertices)
-def test_symmetry(first: t.Sequence[Point], second: t.Sequence[Point]) -> None:
+def test_symmetry(first: Sequence[Point], second: Sequence[Point]) -> None:
     assert equivalence(first == second, second == first)
 
 
@@ -24,24 +24,18 @@ def test_symmetry(first: t.Sequence[Point], second: t.Sequence[Point]) -> None:
     strategies.contours_vertices,
 )
 def test_transitivity(
-    first: t.Sequence[Point],
-    second: t.Sequence[Point],
-    third: t.Sequence[Point],
+    first: Sequence[Point], second: Sequence[Point], third: Sequence[Point]
 ) -> None:
     assert implication(first == second and second == third, first == third)
 
 
 @given(strategies.contours_vertices, strategies.contours_vertices)
-def test_alternatives(
-    first: t.Sequence[Point], second: t.Sequence[Point]
-) -> None:
+def test_alternatives(first: Sequence[Point], second: Sequence[Point]) -> None:
     assert equivalence(first == second, first == second)
 
 
 @given(strategies.contours_vertices, strategies.contours_vertices)
-def test_reversals(
-    first: t.Sequence[Point], second: t.Sequence[Point]
-) -> None:
+def test_reversals(first: Sequence[Point], second: Sequence[Point]) -> None:
     assert equivalence(
         first == second, reverse_sequence(first) == reverse_sequence(second)
     )

@@ -1,4 +1,4 @@
-import typing as t
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -9,7 +9,7 @@ from . import strategies
 
 
 @given(strategies.multisegments_segments)
-def test_determinism(segments: t.Sequence[Segment]) -> None:
+def test_determinism(segments: Sequence[Segment]) -> None:
     result = hash(segments)
 
     assert result == hash(segments)
@@ -17,6 +17,6 @@ def test_determinism(segments: t.Sequence[Segment]) -> None:
 
 @given(strategies.multisegments_segments, strategies.multisegments_segments)
 def test_preserving_equality(
-    first: t.Sequence[Segment], second: t.Sequence[Segment]
+    first: Sequence[Segment], second: Sequence[Segment]
 ) -> None:
     assert implication(first == second, hash(first) == hash(second))

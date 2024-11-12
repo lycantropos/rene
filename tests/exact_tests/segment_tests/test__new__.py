@@ -1,5 +1,3 @@
-from typing import Tuple
-
 from hypothesis import given
 
 from rene.exact import Point, Segment
@@ -8,7 +6,7 @@ from . import strategies
 
 
 @given(strategies.segments_endpoints)
-def test_basic(endpoints: Tuple[Point, Point]) -> None:
+def test_basic(endpoints: tuple[Point, Point]) -> None:
     start, end = endpoints
 
     result = Segment(start, end)

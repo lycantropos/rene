@@ -1,6 +1,6 @@
-import typing as t
+from collections.abc import Sequence
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import Location, Orientation, hints
 
@@ -16,9 +16,9 @@ class YNode(Node[hints.Scalar]):
     def locate(
         self,
         point: hints.Point[hints.Scalar],
-        edges: t.Sequence[Edge[hints.Scalar]],
-        endpoints: t.Sequence[hints.Point[hints.Scalar]],
-        nodes: t.Sequence[Node[hints.Scalar]],
+        edges: Sequence[Edge[hints.Scalar]],
+        endpoints: Sequence[hints.Point[hints.Scalar]],
+        nodes: Sequence[Node[hints.Scalar]],
         /,
     ) -> Location:
         point_orientation = edges[self.edge_index].orientation_of(
@@ -39,9 +39,9 @@ class YNode(Node[hints.Scalar]):
     def search_edge_node(
         self,
         edge: Edge[hints.Scalar],
-        edges: t.Sequence[Edge[hints.Scalar]],
-        endpoints: t.Sequence[hints.Point[hints.Scalar]],
-        nodes: t.Sequence[Node[hints.Scalar]],
+        edges: Sequence[Edge[hints.Scalar]],
+        endpoints: Sequence[hints.Point[hints.Scalar]],
+        nodes: Sequence[Node[hints.Scalar]],
         /,
     ) -> Node[hints.Scalar]:
         return nodes[
@@ -52,7 +52,7 @@ class YNode(Node[hints.Scalar]):
             )
         ]
 
-    def to_height(self, nodes: t.Sequence[Node[hints.Scalar]], /) -> int:
+    def to_height(self, nodes: Sequence[Node[hints.Scalar]], /) -> int:
         return (
             max(
                 nodes[self.below_node_index].to_height(nodes),
@@ -65,7 +65,7 @@ class YNode(Node[hints.Scalar]):
 
     def __new__(
         cls, edge_index: int, below_node_index: int, above_node_index: int, /
-    ) -> te.Self:
+    ) -> Self:
         self = super().__new__(cls)
         self.above_node_index, self.below_node_index, self.edge_index = (
             above_node_index,

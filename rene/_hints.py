@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-import typing as t
+from typing import Callable, TypeVar
 
-import typing_extensions as te
+from typing_extensions import Protocol
 
 from rene import Orientation, hints
 
-_Key = t.TypeVar('_Key', contravariant=True)
-_Value = t.TypeVar('_Value', covariant=True)
+_Key = TypeVar('_Key', contravariant=True)
+_Value = TypeVar('_Value', covariant=True)
 
 
-class Map(te.Protocol[_Key, _Value]):
+class Map(Protocol[_Key, _Value]):
     def __getitem__(self, key: _Key, /) -> _Value: ...
 
 
-Orienteer = t.Callable[
+Orienteer = Callable[
     [
         hints.Point[hints.Scalar],
         hints.Point[hints.Scalar],
@@ -22,7 +22,7 @@ Orienteer = t.Callable[
     ],
     Orientation,
 ]
-SegmentsIntersector = t.Callable[
+SegmentsIntersector = Callable[
     [
         hints.Point[hints.Scalar],
         hints.Point[hints.Scalar],
@@ -31,7 +31,7 @@ SegmentsIntersector = t.Callable[
     ],
     hints.Point[hints.Scalar],
 ]
-SegmentsIntersectionScale = t.Callable[
+SegmentsIntersectionScale = Callable[
     [
         hints.Point[hints.Scalar],
         hints.Point[hints.Scalar],

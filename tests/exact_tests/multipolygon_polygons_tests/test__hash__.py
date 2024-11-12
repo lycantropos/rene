@@ -1,4 +1,4 @@
-import typing as t
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -9,7 +9,7 @@ from . import strategies
 
 
 @given(strategies.multipolygons_polygons)
-def test_determinism(polygons: t.Sequence[Polygon]) -> None:
+def test_determinism(polygons: Sequence[Polygon]) -> None:
     result = hash(polygons)
 
     assert result == hash(polygons)
@@ -17,6 +17,6 @@ def test_determinism(polygons: t.Sequence[Polygon]) -> None:
 
 @given(strategies.multipolygons_polygons, strategies.multipolygons_polygons)
 def test_preserving_equality(
-    first: t.Sequence[Polygon], second: t.Sequence[Polygon]
+    first: Sequence[Polygon], second: Sequence[Polygon]
 ) -> None:
     assert implication(first == second, hash(first) == hash(second))

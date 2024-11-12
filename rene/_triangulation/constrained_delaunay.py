@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-import typing as t
 from collections import deque
+from collections.abc import Container, Iterable, Sequence
 from itertools import chain, groupby
 from operator import attrgetter
+from typing import Generic
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import Location, Orientation, Relation, hints
 from rene._hints import Orienteer
@@ -19,14 +20,14 @@ from .vertices import ContourVertex, PolygonVertexPosition
 BORDER_CONTOUR_INDEX = 0
 
 
-class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
+class ConstrainedDelaunayTriangulation(Generic[hints.Scalar]):
     @classmethod
     def from_polygon(
         cls,
         polygon: hints.Polygon[hints.Scalar],
         orienteer: Orienteer[hints.Scalar],
         /,
-    ) -> te.Self:
+    ) -> Self:
         contours_vertices = [
             polygon.border.vertices,
             *[hole.vertices for hole in polygon.holes],
@@ -129,7 +130,7 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
     def constrain(
         self,
         contours_sizes: list[int],
-        contours_vertices: list[t.Sequence[hints.Point[hints.Scalar]]],
+        contours_vertices: list[Sequence[hints.Point[hints.Scalar]]],
         /,
     ) -> None:
         mesh = self.mesh
@@ -181,7 +182,7 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
                     ] = True
 
     def cut(
-        self, contours_vertices: list[t.Sequence[hints.Point[hints.Scalar]]], /
+        self, contours_vertices: list[Sequence[hints.Point[hints.Scalar]]], /
     ) -> None:
         mesh = self.mesh
         for edge in mesh.to_unique_edges():
@@ -287,7 +288,7 @@ class ConstrainedDelaunayTriangulation(t.Generic[hints.Scalar]):
         right_side: QuadEdge,
         mesh: Mesh[hints.Scalar],
         polygon_vertices_positions: list[list[PolygonVertexPosition]],
-        triangular_holes_indices: t.Container[int],
+        triangular_holes_indices: Container[int],
         orienteer: Orienteer[hints.Scalar],
         /,
     ) -> None:
@@ -349,7 +350,7 @@ def are_triangular_hole_vertices(
     first_positions: list[PolygonVertexPosition],
     second_positions: list[PolygonVertexPosition],
     third_positions: list[PolygonVertexPosition],
-    triangular_holes_indices: t.Container[int],
+    triangular_holes_indices: Container[int],
     /,
 ) -> bool:
     first_contours_indices = [
@@ -445,7 +446,7 @@ def _intersect_polygon_vertices_positions(
     reverse: bool,
     with_border: bool,
     /,
-) -> t.Iterable[tuple[PolygonVertexPosition, PolygonVertexPosition]]:
+) -> Iterable[tuple[PolygonVertexPosition, PolygonVertexPosition]]:
     assert len(first) <= len(second)
     for first_position in first:
         if with_border or first_position.contour_index != BORDER_CONTOUR_INDEX:
@@ -470,7 +471,7 @@ def _intersect_polygon_vertices_positions(
 def is_edge_inside_hole(
     mesh: Mesh[hints.Scalar],
     edge: QuadEdge,
-    contours_vertices: list[t.Sequence[hints.Point[hints.Scalar]]],
+    contours_vertices: list[Sequence[hints.Point[hints.Scalar]]],
     polygon_vertices_positions: list[list[PolygonVertexPosition]],
     orienteer: Orienteer[hints.Scalar],
     /,
@@ -493,7 +494,7 @@ def is_segment_inside_hole(
     end: hints.Point[hints.Scalar],
     start_position: PolygonVertexPosition,
     end_position: PolygonVertexPosition,
-    contours_vertices: list[t.Sequence[hints.Point[hints.Scalar]]],
+    contours_vertices: list[Sequence[hints.Point[hints.Scalar]]],
     orienteer: Orienteer[hints.Scalar],
     /,
 ) -> bool:

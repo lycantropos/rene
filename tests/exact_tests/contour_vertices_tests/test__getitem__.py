@@ -1,5 +1,5 @@
-import typing as t
 from collections import abc
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -9,7 +9,7 @@ from . import strategies
 
 
 @given(strategies.contours_vertices, strategies.indices)
-def test_basic_index(vertices: t.Sequence[Point], item: int) -> None:
+def test_basic_index(vertices: Sequence[Point], item: int) -> None:
     try:
         result = vertices[item]
     except IndexError:
@@ -19,7 +19,7 @@ def test_basic_index(vertices: t.Sequence[Point], item: int) -> None:
 
 
 @given(strategies.contours_vertices, strategies.slices)
-def test_basic_slice(vertices: t.Sequence[Point], item: slice) -> None:
+def test_basic_slice(vertices: Sequence[Point], item: slice) -> None:
     result = vertices[item]
 
     assert isinstance(result, abc.Sequence)
@@ -27,13 +27,13 @@ def test_basic_slice(vertices: t.Sequence[Point], item: slice) -> None:
 
 @given(strategies.contours_vertices, strategies.slices)
 def test_slice_commutativity_with_list(
-    vertices: t.Sequence[Point], item: slice
+    vertices: Sequence[Point], item: slice
 ) -> None:
     assert list(vertices[item]) == list(vertices)[item]
 
 
 @given(strategies.contours_vertices)
-def test_shallow_copy(vertices: t.Sequence[Point]) -> None:
+def test_shallow_copy(vertices: Sequence[Point]) -> None:
     result = vertices[::]
 
     assert result is not vertices
@@ -41,7 +41,7 @@ def test_shallow_copy(vertices: t.Sequence[Point]) -> None:
 
 
 @given(strategies.contours_vertices)
-def test_reversed(vertices: t.Sequence[Point]) -> None:
+def test_reversed(vertices: Sequence[Point]) -> None:
     result = vertices[::-1]
 
     assert result != vertices
@@ -56,7 +56,7 @@ def test_reversed(vertices: t.Sequence[Point]) -> None:
 
 
 @given(strategies.contours_vertices)
-def test_reversed_idempotence(vertices: t.Sequence[Point]) -> None:
+def test_reversed_idempotence(vertices: Sequence[Point]) -> None:
     result = vertices[::-1]
 
     assert result[::-1] == vertices
@@ -64,7 +64,7 @@ def test_reversed_idempotence(vertices: t.Sequence[Point]) -> None:
 
 @given(strategies.contours_vertices, strategies.slices, strategies.slices)
 def test_consecutive_slicing(
-    vertices: t.Sequence[Point], item: slice, next_item: slice
+    vertices: Sequence[Point], item: slice, next_item: slice
 ) -> None:
     result = vertices[item]
     next_result = result[next_item]

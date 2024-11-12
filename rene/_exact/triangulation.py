@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import typing as t
+from collections.abc import Sequence
+from typing import Any, NoReturn
 
-import typing_extensions as te
 from rithm.fraction import Fraction
+from typing_extensions import Self, final
 
 from rene import MIN_CONTOUR_VERTICES_COUNT, hints
 from rene._context import Context
@@ -16,10 +17,10 @@ from rene._triangulation.delaunay import (
 from rene._utils import shrink_collinear_vertices
 
 
-@te.final
+@final
 class ConstrainedDelaunayTriangulation:
     @classmethod
-    def from_polygon(cls, polygon: hints.Polygon[Fraction], /) -> te.Self:
+    def from_polygon(cls, polygon: hints.Polygon[Fraction], /) -> Self:
         return cls(
             _RawConstrainedDelaunayTriangulation.from_polygon(
                 polygon, cls._context.orient
@@ -38,7 +39,7 @@ class ConstrainedDelaunayTriangulation:
         )
 
     @property
-    def triangles(self, /) -> t.Sequence[hints.Contour[Fraction]]:
+    def triangles(self, /) -> Sequence[hints.Contour[Fraction]]:
         contour_cls = self._context.contour_cls
         return [
             contour_cls(vertices)
@@ -51,14 +52,14 @@ class ConstrainedDelaunayTriangulation:
     __module__ = 'rene.exact'
     __slots__ = ('_raw',)
 
-    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
 
     def __new__(
         cls, raw: _RawConstrainedDelaunayTriangulation[Fraction], /
-    ) -> te.Self:
+    ) -> Self:
         self = super().__new__(cls)
         self._raw = raw
         return self
@@ -69,9 +70,7 @@ class ConstrainedDelaunayTriangulation:
 
 class DelaunayTriangulation:
     @classmethod
-    def from_points(
-        cls, points: t.Sequence[hints.Point[Fraction]], /
-    ) -> te.Self:
+    def from_points(cls, points: Sequence[hints.Point[Fraction]], /) -> Self:
         return cls(
             _RawDelaunayTriangulation.from_points(points, cls._context.orient)
         )
@@ -88,7 +87,7 @@ class DelaunayTriangulation:
         )
 
     @property
-    def triangles(self, /) -> t.Sequence[hints.Contour[Fraction]]:
+    def triangles(self, /) -> Sequence[hints.Contour[Fraction]]:
         contour_cls = self._context.contour_cls
         return [
             contour_cls(vertices)
@@ -101,12 +100,12 @@ class DelaunayTriangulation:
     __module__ = 'rene.exact'
     __slots__ = ('_raw',)
 
-    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
 
-    def __new__(cls, raw: _RawDelaunayTriangulation[Fraction], /) -> te.Self:
+    def __new__(cls, raw: _RawDelaunayTriangulation[Fraction], /) -> Self:
         self = super().__new__(cls)
         self._raw = raw
         return self

@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-import typing as t
 from abc import ABC, abstractmethod
+from typing import Any, Generic, overload
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import Relation, hints
 
 
-class BaseBox(ABC, t.Generic[hints.Scalar]):
+class BaseBox(ABC, Generic[hints.Scalar]):
     @property
     @abstractmethod
     def max_x(self) -> hints.Scalar: ...
@@ -25,7 +25,7 @@ class BaseBox(ABC, t.Generic[hints.Scalar]):
     @abstractmethod
     def min_y(self) -> hints.Scalar: ...
 
-    def covers(self, other: te.Self, /) -> bool:
+    def covers(self, other: Self, /) -> bool:
         return (
             other.max_x < self.max_x
             and other.max_y < self.max_y
@@ -33,7 +33,7 @@ class BaseBox(ABC, t.Generic[hints.Scalar]):
             and self.min_y < other.min_y
         )
 
-    def disjoint_with(self, other: te.Self, /) -> bool:
+    def disjoint_with(self, other: Self, /) -> bool:
         return (
             self.max_x < other.min_x
             or self.max_y < other.min_y
@@ -41,7 +41,7 @@ class BaseBox(ABC, t.Generic[hints.Scalar]):
             or other.max_y < self.min_y
         )
 
-    def enclosed_by(self, other: te.Self, /) -> bool:
+    def enclosed_by(self, other: Self, /) -> bool:
         return (
             2
             <= (
@@ -69,7 +69,7 @@ class BaseBox(ABC, t.Generic[hints.Scalar]):
             <= 8
         )
 
-    def encloses(self, other: te.Self, /) -> bool:
+    def encloses(self, other: Self, /) -> bool:
         return (
             2
             <= (
@@ -97,7 +97,7 @@ class BaseBox(ABC, t.Generic[hints.Scalar]):
             <= 8
         )
 
-    def equals_to(self, other: te.Self, /) -> bool:
+    def equals_to(self, other: Self, /) -> bool:
         return (
             self.min_x == other.min_x
             and self.max_x == other.max_x
@@ -108,7 +108,7 @@ class BaseBox(ABC, t.Generic[hints.Scalar]):
     def is_valid(self) -> bool:
         return self.min_x <= self.max_x and self.min_y <= self.max_y
 
-    def overlaps(self, other: te.Self, /) -> bool:
+    def overlaps(self, other: Self, /) -> bool:
         if not (
             self.min_x < other.max_x
             and other.min_x < self.max_x
@@ -137,7 +137,7 @@ class BaseBox(ABC, t.Generic[hints.Scalar]):
                 self.min_y < other.min_y and self.max_y < other.max_y
             )
 
-    def relate_to(self, other: te.Self, /) -> Relation:
+    def relate_to(self, other: Self, /) -> Relation:
         if self.max_x == other.max_x:
             if self.min_x == other.min_x:
                 if self.max_y == other.max_y:
@@ -428,7 +428,7 @@ class BaseBox(ABC, t.Generic[hints.Scalar]):
                 assert self.max_x < other.min_x
                 return Relation.DISJOINT
 
-    def touches(self, other: te.Self, /) -> bool:
+    def touches(self, other: Self, /) -> bool:
         return (
             (self.min_x == other.max_x or self.max_x == other.min_x)
             and (self.min_y <= other.max_y and other.min_y <= self.max_y)
@@ -437,7 +437,7 @@ class BaseBox(ABC, t.Generic[hints.Scalar]):
             and (self.min_y == other.max_y or other.min_y == self.max_y)
         )
 
-    def within(self, other: te.Self, /) -> bool:
+    def within(self, other: Self, /) -> bool:
         return (
             self.max_x < other.max_x
             and self.max_y < other.max_y
@@ -445,13 +445,13 @@ class BaseBox(ABC, t.Generic[hints.Scalar]):
             and other.min_y < self.min_y
         )
 
-    @t.overload
-    def __eq__(self, other: te.Self, /) -> bool: ...
+    @overload
+    def __eq__(self, other: Self, /) -> bool: ...
 
-    @t.overload
-    def __eq__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __eq__(self, other: Any, /) -> Any: ...
 
-    def __eq__(self, other: t.Any, /) -> t.Any:
+    def __eq__(self, other: Any, /) -> Any:
         return (
             (
                 self.min_x == other.min_x

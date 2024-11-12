@@ -1,4 +1,4 @@
-import typing as t
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -9,14 +9,12 @@ from . import strategies
 
 
 @given(strategies.contours_segments)
-def test_reflexivity(segments: t.Sequence[Segment]) -> None:
+def test_reflexivity(segments: Sequence[Segment]) -> None:
     assert segments == segments
 
 
 @given(strategies.contours_segments, strategies.contours_segments)
-def test_symmetry(
-    first: t.Sequence[Segment], second: t.Sequence[Segment]
-) -> None:
+def test_symmetry(first: Sequence[Segment], second: Sequence[Segment]) -> None:
     assert equivalence(first == second, second == first)
 
 
@@ -26,23 +24,23 @@ def test_symmetry(
     strategies.contours_segments,
 )
 def test_transitivity(
-    first: t.Sequence[Segment],
-    second: t.Sequence[Segment],
-    third: t.Sequence[Segment],
+    first: Sequence[Segment],
+    second: Sequence[Segment],
+    third: Sequence[Segment],
 ) -> None:
     assert implication(first == second and second == third, first == third)
 
 
 @given(strategies.contours_segments, strategies.contours_segments)
 def test_alternatives(
-    first: t.Sequence[Segment], second: t.Sequence[Segment]
+    first: Sequence[Segment], second: Sequence[Segment]
 ) -> None:
     assert equivalence(first == second, first == second)
 
 
 @given(strategies.contours_segments, strategies.contours_segments)
 def test_reversals(
-    first: t.Sequence[Segment], second: t.Sequence[Segment]
+    first: Sequence[Segment], second: Sequence[Segment]
 ) -> None:
     assert equivalence(
         first == second, reverse_sequence(first) == reverse_sequence(second)

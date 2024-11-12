@@ -1,4 +1,4 @@
-import typing as t
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -9,7 +9,7 @@ from . import strategies
 
 
 @given(strategies.multipolygons_polygons, strategies.polygons)
-def test_basic(polygons: t.Sequence[Polygon], polygon: Polygon) -> None:
+def test_basic(polygons: Sequence[Polygon], polygon: Polygon) -> None:
     result = polygons.count(polygon)
 
     assert isinstance(result, int)
@@ -18,7 +18,7 @@ def test_basic(polygons: t.Sequence[Polygon], polygon: Polygon) -> None:
 
 
 @given(strategies.multipolygons_polygons, strategies.polygons)
-def test_alternatives(polygons: t.Sequence[Polygon], polygon: Polygon) -> None:
+def test_alternatives(polygons: Sequence[Polygon], polygon: Polygon) -> None:
     result = polygons.count(polygon)
 
     assert result == list(polygons).count(polygon)

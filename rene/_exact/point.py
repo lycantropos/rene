@@ -1,16 +1,16 @@
-import typing as t
 from numbers import Rational
+from typing import Any, NoReturn, Union
 
-import typing_extensions as te
 from rithm.fraction import Fraction
 from rithm.integer import Int
+from typing_extensions import Self, final
 
 from rene._geometries.base_point import BasePoint
 
-_Coordinate = t.Union[Fraction, Int, Rational, float, int]
+_Coordinate = Union[Fraction, Int, Rational, float, int]
 
 
-@te.final
+@final
 class Point(BasePoint[Fraction]):
     @property
     def x(self, /) -> Fraction:
@@ -26,12 +26,12 @@ class Point(BasePoint[Fraction]):
     __module__ = 'rene.exact'
     __slots__ = '_x', '_y'
 
-    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
 
-    def __new__(cls, x: _Coordinate, y: _Coordinate, /) -> te.Self:
+    def __new__(cls, x: _Coordinate, y: _Coordinate, /) -> Self:
         self = super().__new__(cls)
         self._x, self._y = Fraction(x), Fraction(y)
         return self

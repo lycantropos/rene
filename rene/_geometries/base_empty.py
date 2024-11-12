@@ -1,12 +1,12 @@
-import typing as t
+from typing import Any, TypeVar, overload
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import Location, Relation, hints
 
 from .base_compound import BaseCompound
 
-_CompoundT = t.TypeVar('_CompoundT', bound=hints.Compound[t.Any])
+_CompoundT = TypeVar('_CompoundT', bound=hints.Compound[Any])
 
 
 class BaseEmpty(BaseCompound[hints.Scalar]):
@@ -35,13 +35,13 @@ class BaseEmpty(BaseCompound[hints.Scalar]):
             else Relation.DISJOINT
         )
 
-    @t.overload
-    def __and__(self, other: hints.Compound[hints.Scalar], /) -> te.Self: ...
+    @overload
+    def __and__(self, other: hints.Compound[hints.Scalar], /) -> Self: ...
 
-    @t.overload
-    def __and__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __and__(self, other: Any, /) -> Any: ...
 
-    def __and__(self, other: t.Any, /) -> t.Any:
+    def __and__(self, other: Any, /) -> Any:
         context = self._context
         return (
             self
@@ -62,25 +62,25 @@ class BaseEmpty(BaseCompound[hints.Scalar]):
     def __contains__(self, point: hints.Point[hints.Scalar], /) -> bool:
         return False
 
-    @t.overload
-    def __eq__(self, other: te.Self, /) -> bool: ...
+    @overload
+    def __eq__(self, other: Self, /) -> bool: ...
 
-    @t.overload
-    def __eq__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __eq__(self, other: Any, /) -> Any: ...
 
-    def __eq__(self, other: t.Any, /) -> t.Any:
+    def __eq__(self, other: Any, /) -> Any:
         return True if isinstance(other, type(self)) else NotImplemented
 
     def __hash__(self, /) -> int:
         return 0
 
-    @t.overload
+    @overload
     def __or__(self, other: _CompoundT, /) -> _CompoundT: ...
 
-    @t.overload
-    def __or__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __or__(self, other: Any, /) -> Any: ...
 
-    def __or__(self, other: t.Any, /) -> t.Any:
+    def __or__(self, other: Any, /) -> Any:
         context = self._context
         return (
             other
@@ -101,13 +101,13 @@ class BaseEmpty(BaseCompound[hints.Scalar]):
     def __repr__(self, /) -> str:
         return f'{type(self).__qualname__}()'
 
-    @t.overload
-    def __sub__(self, other: _CompoundT, /) -> te.Self: ...
+    @overload
+    def __sub__(self, other: _CompoundT, /) -> Self: ...
 
-    @t.overload
-    def __sub__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __sub__(self, other: Any, /) -> Any: ...
 
-    def __sub__(self, other: t.Any, /) -> t.Any:
+    def __sub__(self, other: Any, /) -> Any:
         context = self._context
         return (
             self
@@ -125,16 +125,16 @@ class BaseEmpty(BaseCompound[hints.Scalar]):
             else NotImplemented
         )
 
-    @t.overload
-    def __xor__(self, other: te.Self, /) -> te.Self: ...
+    @overload
+    def __xor__(self, other: Self, /) -> Self: ...
 
-    @t.overload
+    @overload
     def __xor__(self, other: _CompoundT, /) -> _CompoundT: ...
 
-    @t.overload
-    def __xor__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __xor__(self, other: Any, /) -> Any: ...
 
-    def __xor__(self, other: t.Any, /) -> t.Any:
+    def __xor__(self, other: Any, /) -> Any:
         context = self._context
         return (
             other

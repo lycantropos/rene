@@ -1,4 +1,4 @@
-import typing as t
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -9,7 +9,7 @@ from . import strategies
 
 
 @given(strategies.polygons_holes, strategies.contours)
-def test_basic(holes: t.Sequence[Contour], contour: Contour) -> None:
+def test_basic(holes: Sequence[Contour], contour: Contour) -> None:
     result = holes.count(contour)
 
     assert isinstance(result, int)
@@ -18,7 +18,7 @@ def test_basic(holes: t.Sequence[Contour], contour: Contour) -> None:
 
 
 @given(strategies.polygons_holes, strategies.contours)
-def test_alternatives(holes: t.Sequence[Contour], contour: Contour) -> None:
+def test_alternatives(holes: Sequence[Contour], contour: Contour) -> None:
     result = holes.count(contour)
 
     assert result == list(holes).count(contour)

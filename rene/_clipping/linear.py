@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import typing as t
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Iterator
+from typing import Generic
 
-import typing_extensions as te
 from dendroid import red_black
 from dendroid.hints import KeyedSet
 from prioq.base import PriorityQueue
+from typing_extensions import Self
 
 from rene import Orientation, hints
 from rene._hints import Orienteer, SegmentsIntersector
@@ -17,16 +18,16 @@ from .events_queue_key import EventsQueueKey
 from .sweep_line_key import SweepLineKey
 
 
-class Operation(ABC, t.Generic[hints.Scalar]):
+class Operation(ABC, Generic[hints.Scalar]):
     @classmethod
     def from_segments_iterables(
         cls,
-        first: t.Iterable[hints.Segment[hints.Scalar]],
-        second: t.Iterable[hints.Segment[hints.Scalar]],
+        first: Iterable[hints.Segment[hints.Scalar]],
+        second: Iterable[hints.Segment[hints.Scalar]],
         orienteer: Orienteer[hints.Scalar],
         segments_intersector: SegmentsIntersector[hints.Scalar],
         /,
-    ) -> te.Self:
+    ) -> Self:
         endpoints: list[hints.Point[hints.Scalar]] = []
         _populate_with_segments(first, endpoints)
         first_segments_count = len(endpoints) >> 1
@@ -118,7 +119,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
     def __bool__(self) -> bool:
         return bool(self._events_queue_data)
 
-    def __iter__(self) -> t.Iterator[Event]:
+    def __iter__(self) -> Iterator[Event]:
         while self:
             event = self._pop()
             if is_event_right(event):
@@ -367,7 +368,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
 
 
 def _populate_with_segments(
-    segments: t.Iterable[hints.Segment[hints.Scalar]],
+    segments: Iterable[hints.Segment[hints.Scalar]],
     endpoints: list[hints.Point[hints.Scalar]],
     /,
 ) -> None:

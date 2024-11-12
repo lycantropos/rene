@@ -1,12 +1,12 @@
-import typing as t
 from abc import ABC, abstractmethod
+from typing import Any, Generic, overload
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import hints
 
 
-class BasePoint(ABC, t.Generic[hints.Scalar]):
+class BasePoint(ABC, Generic[hints.Scalar]):
     @property
     @abstractmethod
     def x(self) -> hints.Scalar: ...
@@ -15,39 +15,39 @@ class BasePoint(ABC, t.Generic[hints.Scalar]):
     @abstractmethod
     def y(self) -> hints.Scalar: ...
 
-    @t.overload
-    def __eq__(self, other: te.Self, /) -> bool: ...
+    @overload
+    def __eq__(self, other: Self, /) -> bool: ...
 
-    @t.overload
-    def __eq__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __eq__(self, other: Any, /) -> Any: ...
 
-    def __eq__(self, other: t.Any, /) -> t.Any:
+    def __eq__(self, other: Any, /) -> Any:
         return (
             self.x == other.x and self.y == other.y
             if isinstance(other, type(self))
             else NotImplemented
         )
 
-    @t.overload
-    def __ge__(self, other: te.Self, /) -> bool: ...
+    @overload
+    def __ge__(self, other: Self, /) -> bool: ...
 
-    @t.overload
-    def __ge__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __ge__(self, other: Any, /) -> Any: ...
 
-    def __ge__(self, other: t.Any, /) -> t.Any:
+    def __ge__(self, other: Any, /) -> Any:
         return (
             self.x > other.x or self.x == other.x and self.y >= other.y
             if isinstance(other, type(self))
             else NotImplemented
         )
 
-    @t.overload
-    def __gt__(self, other: te.Self, /) -> bool: ...
+    @overload
+    def __gt__(self, other: Self, /) -> bool: ...
 
-    @t.overload
-    def __gt__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __gt__(self, other: Any, /) -> Any: ...
 
-    def __gt__(self, other: t.Any, /) -> t.Any:
+    def __gt__(self, other: Any, /) -> Any:
         return (
             self.x > other.x or self.x == other.x and self.y > other.y
             if isinstance(other, type(self))
@@ -57,26 +57,26 @@ class BasePoint(ABC, t.Generic[hints.Scalar]):
     def __hash__(self, /) -> int:
         return hash((self.x, self.y))
 
-    @t.overload
-    def __le__(self, other: te.Self, /) -> bool: ...
+    @overload
+    def __le__(self, other: Self, /) -> bool: ...
 
-    @t.overload
-    def __le__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __le__(self, other: Any, /) -> Any: ...
 
-    def __le__(self, other: t.Any, /) -> t.Any:
+    def __le__(self, other: Any, /) -> Any:
         return (
             self.x < other.x or self.x == other.x and self.y <= other.y
             if isinstance(other, type(self))
             else NotImplemented
         )
 
-    @t.overload
-    def __lt__(self, other: te.Self, /) -> bool: ...
+    @overload
+    def __lt__(self, other: Self, /) -> bool: ...
 
-    @t.overload
-    def __lt__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __lt__(self, other: Any, /) -> Any: ...
 
-    def __lt__(self, other: t.Any, /) -> t.Any:
+    def __lt__(self, other: Any, /) -> Any:
         return (
             self.x < other.x or self.x == other.x and self.y < other.y
             if isinstance(other, type(self))

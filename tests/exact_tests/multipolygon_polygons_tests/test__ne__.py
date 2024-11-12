@@ -1,4 +1,4 @@
-import typing as t
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -9,19 +9,17 @@ from . import strategies
 
 
 @given(strategies.multipolygons_polygons)
-def test_irreflexivity(polygons: t.Sequence[Polygon]) -> None:
+def test_irreflexivity(polygons: Sequence[Polygon]) -> None:
     assert polygons == polygons
 
 
 @given(strategies.multipolygons_polygons, strategies.multipolygons_polygons)
-def test_symmetry(
-    first: t.Sequence[Polygon], second: t.Sequence[Polygon]
-) -> None:
+def test_symmetry(first: Sequence[Polygon], second: Sequence[Polygon]) -> None:
     assert equivalence(first != second, second != first)
 
 
 @given(strategies.multipolygons_polygons, strategies.multipolygons_polygons)
 def test_equivalents(
-    first: t.Sequence[Polygon], second: t.Sequence[Polygon]
+    first: Sequence[Polygon], second: Sequence[Polygon]
 ) -> None:
     assert equivalence(first != second, first != second)

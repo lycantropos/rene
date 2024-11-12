@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import typing as t
+from collections.abc import Sequence
+from typing import Generic
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import Orientation, hints
 from rene._hints import Orienteer
@@ -12,14 +13,14 @@ from .mesh import Mesh, build_delaunay_triangulation, orient_point_to_edge
 from .quad_edge import QuadEdge, to_opposite_edge
 
 
-class DelaunayTriangulation(t.Generic[hints.Scalar]):
+class DelaunayTriangulation(Generic[hints.Scalar]):
     @classmethod
     def from_points(
         cls,
-        points: t.Sequence[hints.Point[hints.Scalar]],
+        points: Sequence[hints.Point[hints.Scalar]],
         orienteer: Orienteer[hints.Scalar],
         /,
-    ) -> te.Self:
+    ) -> Self:
         endpoints = list(points)
         endpoints.sort()
         mesh = Mesh.from_points(deduplicate(endpoints))
@@ -97,7 +98,7 @@ class DelaunayTriangulation(t.Generic[hints.Scalar]):
         mesh: Mesh[hints.Scalar],
         orienteer: Orienteer[hints.Scalar],
         /,
-    ) -> te.Self:
+    ) -> Self:
         self = super().__new__(cls)
         self._left_side, self._mesh, self._orienteer, self._right_side = (
             left_side,

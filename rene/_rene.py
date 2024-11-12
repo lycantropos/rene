@@ -1,10 +1,11 @@
 import enum
+from typing import Final
 
-import typing_extensions as te
+from typing_extensions import Self, final
 
-MIN_CONTOUR_VERTICES_COUNT = 3
-MIN_MULTIPOLYGON_POLYGONS_COUNT = 2
-MIN_MULTISEGMENT_SEGMENTS_COUNT = 2
+MIN_CONTOUR_VERTICES_COUNT: Final[int] = 3
+MIN_MULTIPOLYGON_POLYGONS_COUNT: Final[int] = 2
+MIN_MULTISEGMENT_SEGMENTS_COUNT: Final[int] = 2
 
 
 class Base(enum.Enum):
@@ -14,7 +15,7 @@ class Base(enum.Enum):
         return f'{type(self).__qualname__}.{self.name}'
 
 
-@te.final
+@final
 @enum.unique
 class Location(Base):
     #: point lies on the boundary of the geometry
@@ -25,7 +26,7 @@ class Location(Base):
     INTERIOR = 1
 
 
-@te.final
+@final
 @enum.unique
 class Orientation(Base):
     CLOCKWISE = -1
@@ -33,7 +34,7 @@ class Orientation(Base):
     COUNTERCLOCKWISE = 1
 
 
-@te.final
+@final
 @enum.unique
 class Relation(Base):
     """
@@ -83,7 +84,7 @@ class Relation(Base):
     WITHIN = 11
 
     @property
-    def complement(self, /) -> te.Self:
+    def complement(self, /) -> Self:
         if (
             self is Relation.CROSS
             or self is Relation.DISJOINT

@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import enum
-import typing as t
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Iterator, Sequence
+from typing import Generic
 
-import typing_extensions as te
 from dendroid import red_black
 from dendroid.hints import KeyedSet
 from prioq.base import PriorityQueue
+from typing_extensions import Self
 
 from rene import Orientation, hints
 from rene._hints import Orienteer, SegmentsIntersector
@@ -25,16 +26,16 @@ from .events_queue_key import EventsQueueKey
 from .sweep_line_key import SweepLineKey
 
 
-class Operation(ABC, t.Generic[hints.Scalar]):
+class Operation(ABC, Generic[hints.Scalar]):
     @classmethod
     def from_segments_iterables(
         cls,
-        first: t.Iterable[hints.Segment[hints.Scalar]],
-        second: t.Iterable[hints.Segment[hints.Scalar]],
+        first: Iterable[hints.Segment[hints.Scalar]],
+        second: Iterable[hints.Segment[hints.Scalar]],
         orienteer: Orienteer[hints.Scalar],
         segments_intersector: SegmentsIntersector[hints.Scalar],
         /,
-    ) -> te.Self:
+    ) -> Self:
         endpoints: list[hints.Point[hints.Scalar]] = []
         have_interior_to_left: list[bool] = []
         _populate_with_segments(first, endpoints, have_interior_to_left)
@@ -181,7 +182,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         first_segments_count: int,
         second_segments_count: int,
         endpoints: list[hints.Point[hints.Scalar]],
-        have_interior_to_left: t.Sequence[bool],
+        have_interior_to_left: Sequence[bool],
         orienteer: Orienteer[hints.Scalar],
         segments_intersector: SegmentsIntersector[hints.Scalar],
         /,
@@ -232,7 +233,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
     def __bool__(self) -> bool:
         return bool(self._events_queue_data)
 
-    def __iter__(self) -> t.Iterator[Event]:
+    def __iter__(self) -> Iterator[Event]:
         while self:
             event = self._pop()
             if self.to_event_start(
@@ -340,9 +341,9 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         depths: list[int],
         holes: list[list[int]],
         parents: list[int],
-        are_from_in_to_out: t.Sequence[bool],
-        contours_ids: t.Sequence[int],
-        events_ids: t.Sequence[int],
+        are_from_in_to_out: Sequence[bool],
+        contours_ids: Sequence[int],
+        events_ids: Sequence[int],
         /,
     ) -> None:
         assert is_event_left(event)
@@ -373,7 +374,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         are_internal.append(is_internal)
 
     def _contour_events_to_vertices(
-        self, events: t.Sequence[Event], /
+        self, events: Sequence[Event], /
     ) -> list[hints.Point[hints.Scalar]]:
         result = [self.to_event_start(events[0])] + [
             self.to_event_end(event) for event in events[:-1]
@@ -557,9 +558,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         self._divide_event_by_midpoint(max_start_event, min_end)
         self._divide_event_by_midpoint(min_start_event, max_start)
 
-    def _events_to_connectivity(
-        self, events: t.Sequence[Event], /
-    ) -> list[int]:
+    def _events_to_connectivity(self, events: Sequence[Event], /) -> list[int]:
         events_count = len(events)
         result = [0] * events_count
         event_id = 0
@@ -676,12 +675,12 @@ class Operation(ABC, t.Generic[hints.Scalar]):
 
     def _process_contour_events(
         self,
-        contour_events: t.Sequence[Event],
+        contour_events: Sequence[Event],
         contour_id: int,
         are_events_processed: list[bool],
         are_from_in_to_out: list[bool],
         contours_ids: list[int],
-        events_ids: t.Sequence[int],
+        events_ids: Sequence[int],
         /,
     ) -> None:
         for event in contour_events:
@@ -710,10 +709,10 @@ class Operation(ABC, t.Generic[hints.Scalar]):
     def _to_contour_events(
         self,
         event: Event,
-        events: t.Sequence[Event],
-        events_ids: t.Sequence[int],
-        connectivity: t.Sequence[int],
-        are_events_processed: t.Sequence[bool],
+        events: Sequence[Event],
+        events_ids: Sequence[int],
+        connectivity: Sequence[int],
+        are_events_processed: Sequence[bool],
         visited_endpoints_positions: list[int],
         /,
     ) -> list[Event]:
@@ -787,7 +786,7 @@ class OverlapKind(enum.IntEnum):
 
 
 def _populate_with_segments(
-    segments: t.Iterable[hints.Segment[hints.Scalar]],
+    segments: Iterable[hints.Segment[hints.Scalar]],
     endpoints: list[hints.Point[hints.Scalar]],
     have_interior_to_left: list[bool],
     /,
@@ -805,8 +804,8 @@ def _populate_with_segments(
 
 def _to_next_event_id(
     event_id: int,
-    are_events_processed: t.Sequence[bool],
-    connectivity: t.Sequence[int],
+    are_events_processed: Sequence[bool],
+    connectivity: Sequence[int],
     /,
 ) -> int:
     candidate = event_id

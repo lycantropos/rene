@@ -1,5 +1,5 @@
-import typing as t
 from itertools import chain, groupby
+from typing import Union
 
 from rene import Orientation, hints
 from rene._hints import Orienteer, SegmentsIntersector
@@ -21,10 +21,10 @@ from .event import Event, is_event_right
 class LinearUnion(linear.Operation[hints.Scalar]):
     def reduce_events(
         self,
-        events: t.List[Event],
-        segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        events: list[Event],
+        segment_cls: type[hints.Segment[hints.Scalar]],
         /,
-    ) -> t.List[hints.Segment[hints.Scalar]]:
+    ) -> list[hints.Segment[hints.Scalar]]:
         return [
             segment_cls(start, end)
             for (start, end), equal_segment_events in groupby(
@@ -41,7 +41,7 @@ class ShapedUnion(shaped.Operation[hints.Scalar]):
         )
 
 
-_Multisegmental = t.Union[
+_Multisegmental = Union[
     hints.Contour[hints.Scalar], hints.Multisegment[hints.Scalar]
 ]
 
@@ -49,14 +49,14 @@ _Multisegmental = t.Union[
 def unite_multipolygon_with_multipolygon(
     first: hints.Multipolygon[hints.Scalar],
     second: hints.Multipolygon[hints.Scalar],
-    contour_cls: t.Type[hints.Contour[hints.Scalar]],
-    multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+    contour_cls: type[hints.Contour[hints.Scalar]],
+    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    polygon_cls: type[hints.Polygon[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
+) -> Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
     first_bounding_box, second_bounding_box = (
         first.bounding_box,
         second.bounding_box,
@@ -128,14 +128,14 @@ def unite_multipolygon_with_multipolygon(
 def unite_multipolygon_with_polygon(
     first: hints.Multipolygon[hints.Scalar],
     second: hints.Polygon[hints.Scalar],
-    contour_cls: t.Type[hints.Contour[hints.Scalar]],
-    multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+    contour_cls: type[hints.Contour[hints.Scalar]],
+    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    polygon_cls: type[hints.Polygon[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
+) -> Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
     first_bounding_box, second_bounding_box = (
         first.bounding_box,
         second.bounding_box,
@@ -181,12 +181,12 @@ def unite_multipolygon_with_polygon(
 def unite_multisegmental_with_multisegmental(
     first: _Multisegmental[hints.Scalar],
     second: _Multisegmental[hints.Scalar],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
+) -> Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
     first_bounding_box, second_bounding_box = (
         first.bounding_box,
         second.bounding_box,
@@ -253,12 +253,12 @@ def unite_multisegmental_with_multisegmental(
 def unite_multisegmental_with_segment(
     first: _Multisegmental[hints.Scalar],
     second: hints.Segment[hints.Scalar],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
+) -> Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
     first_bounding_box, second_bounding_box = (
         first.bounding_box,
         second.bounding_box,
@@ -351,14 +351,14 @@ def unite_multisegmental_with_segment(
 def unite_polygon_with_multipolygon(
     first: hints.Polygon[hints.Scalar],
     second: hints.Multipolygon[hints.Scalar],
-    contour_cls: t.Type[hints.Contour[hints.Scalar]],
-    multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+    contour_cls: type[hints.Contour[hints.Scalar]],
+    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    polygon_cls: type[hints.Polygon[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
+) -> Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
     first_bounding_box, second_bounding_box = (
         first.bounding_box,
         second.bounding_box,
@@ -407,14 +407,14 @@ def unite_polygon_with_multipolygon(
 def unite_polygon_with_polygon(
     first: hints.Polygon[hints.Scalar],
     second: hints.Polygon[hints.Scalar],
-    contour_cls: t.Type[hints.Contour[hints.Scalar]],
-    multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+    contour_cls: type[hints.Contour[hints.Scalar]],
+    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    polygon_cls: type[hints.Polygon[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
+) -> Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
     first_bounding_box, second_bounding_box = (
         first.bounding_box,
         second.bounding_box,
@@ -438,12 +438,12 @@ def unite_polygon_with_polygon(
 def unite_segment_with_multisegmental(
     first: hints.Segment[hints.Scalar],
     second: _Multisegmental[hints.Scalar],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
+) -> Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
     first_bounding_box, second_bounding_box = (
         first.bounding_box,
         second.bounding_box,
@@ -536,12 +536,12 @@ def unite_segment_with_multisegmental(
 def unite_segment_with_segment(
     first: hints.Segment[hints.Scalar],
     second: hints.Segment[hints.Scalar],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
+) -> Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
     first_start, first_end = to_sorted_pair(first.start, first.end)
     second_start, second_end = to_sorted_pair(second.start, second.end)
     if first_start == second_start and first_end == second_end:

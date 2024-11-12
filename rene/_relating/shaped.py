@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import enum
-from typing import Generic, Iterable, Sequence
+from collections.abc import Iterable, Sequence
+from typing import Generic
 
 from dendroid import red_black
 from dendroid.hints import KeyedSet

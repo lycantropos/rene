@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import typing as t
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
+from typing import Any, overload
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import (
     Location,
@@ -65,11 +66,11 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
 
     @property
     @abstractmethod
-    def segments(self) -> t.Sequence[hints.Segment[hints.Scalar]]: ...
+    def segments(self) -> Sequence[hints.Segment[hints.Scalar]]: ...
 
     @property
     @abstractmethod
-    def vertices(self) -> t.Sequence[hints.Point[hints.Scalar]]: ...
+    def vertices(self) -> Sequence[hints.Point[hints.Scalar]]: ...
 
     def is_valid(self) -> bool:
         if not are_contour_vertices_non_degenerate(
@@ -127,12 +128,12 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
         else:
             raise TypeError(f'Unsupported type: {type(other)!r}.')
 
-    @t.overload
+    @overload
     def __and__(
         self, other: hints.Empty[hints.Scalar], /
     ) -> hints.Empty[hints.Scalar]: ...
 
-    @t.overload
+    @overload
     def __and__(
         self,
         other: (
@@ -149,10 +150,10 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
         | hints.Segment[hints.Scalar]
     ): ...
 
-    @t.overload
-    def __and__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __and__(self, other: Any, /) -> Any: ...
 
-    def __and__(self, other: t.Any, /) -> t.Any:
+    def __and__(self, other: Any, /) -> Any:
         context = self._context
         return (
             intersect_multisegmental_with_multisegmental(
@@ -212,15 +213,15 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
     def __contains__(self, point: hints.Point[hints.Scalar], /) -> bool:
         return self.locate(point) is not Location.EXTERIOR
 
-    @t.overload
-    def __eq__(self, other: te.Self, /) -> bool:
+    @overload
+    def __eq__(self, other: Self, /) -> bool:
         pass
 
-    @t.overload
-    def __eq__(self, other: t.Any, /) -> t.Any:
+    @overload
+    def __eq__(self, other: Any, /) -> Any:
         pass
 
-    def __eq__(self, other: t.Any, /) -> t.Any:
+    def __eq__(self, other: Any, /) -> Any:
         return (
             _are_non_empty_unique_sequences_rotationally_equivalent(
                 self.vertices, other.vertices
@@ -248,10 +249,10 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
         )
         return hash(vertices)
 
-    @t.overload
-    def __or__(self, other: hints.Empty[hints.Scalar], /) -> te.Self: ...
+    @overload
+    def __or__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
 
-    @t.overload
+    @overload
     def __or__(
         self,
         other: (
@@ -262,10 +263,10 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
         /,
     ) -> hints.Multisegment[hints.Scalar] | hints.Segment[hints.Scalar]: ...
 
-    @t.overload
-    def __or__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __or__(self, other: Any, /) -> Any: ...
 
-    def __or__(self, other: t.Any, /) -> t.Any:
+    def __or__(self, other: Any, /) -> Any:
         context = self._context
         return (
             unite_multisegmental_with_multisegmental(
@@ -307,10 +308,10 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
             ', '.join(map(str, self.vertices))
         )
 
-    @t.overload
-    def __sub__(self, other: hints.Empty[hints.Scalar], /) -> te.Self: ...
+    @overload
+    def __sub__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
 
-    @t.overload
+    @overload
     def __sub__(
         self,
         other: (
@@ -327,10 +328,10 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
         | hints.Segment[hints.Scalar]
     ): ...
 
-    @t.overload
-    def __sub__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __sub__(self, other: Any, /) -> Any: ...
 
-    def __sub__(self, other: t.Any, /) -> t.Any:
+    def __sub__(self, other: Any, /) -> Any:
         context = self._context
         return (
             subtract_multisegmental_from_multisegmental(
@@ -388,10 +389,10 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
             )
         )
 
-    @t.overload
-    def __xor__(self, other: hints.Empty[hints.Scalar], /) -> te.Self: ...
+    @overload
+    def __xor__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
 
-    @t.overload
+    @overload
     def __xor__(
         self,
         other: (
@@ -406,10 +407,10 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
         | hints.Segment[hints.Scalar]
     ): ...
 
-    @t.overload
-    def __xor__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __xor__(self, other: Any, /) -> Any: ...
 
-    def __xor__(self, other: t.Any, /) -> t.Any:
+    def __xor__(self, other: Any, /) -> Any:
         context = self._context
         return (
             symmetric_subtract_multisegmental_from_multisegmental(
@@ -445,7 +446,7 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
 
 
 def _are_non_empty_unique_sequences_rotationally_equivalent(
-    left: t.Sequence[t.Any], right: t.Sequence[t.Any], /
+    left: Sequence[Any], right: Sequence[Any], /
 ) -> bool:
     assert left and right
     if len(left) != len(right):
@@ -467,7 +468,7 @@ def _are_non_empty_unique_sequences_rotationally_equivalent(
 
 def _neighbour_segments_vertices_touch(
     intersection: Intersection[hints.Scalar],
-    segments: t.Sequence[hints.Segment[hints.Scalar]],
+    segments: Sequence[hints.Segment[hints.Scalar]],
     /,
 ) -> bool:
     first_segment = segments[intersection.first_segment_id]

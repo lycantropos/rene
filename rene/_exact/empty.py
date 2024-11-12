@@ -1,26 +1,26 @@
-import typing as t
+from typing import Any, ClassVar, NoReturn, TypeVar
 
-import typing_extensions as te
 from rithm.fraction import Fraction
+from typing_extensions import Self, final
 
 from rene import hints
 from rene._context import Context
 from rene._geometries.base_empty import BaseEmpty
 
-_CompoundT = t.TypeVar('_CompoundT', bound=hints.Compound[Fraction])
+_CompoundT = TypeVar('_CompoundT', bound=hints.Compound[Fraction])
 
 
-@te.final
+@final
 class Empty(BaseEmpty[Fraction]):
-    _context: t.ClassVar[Context[Fraction]]
+    _context: ClassVar[Context[Fraction]]
 
     __module__ = 'rene.exact'
     __slots__ = ()
 
-    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
 
-    def __new__(cls) -> te.Self:
+    def __new__(cls) -> Self:
         return super().__new__(cls)

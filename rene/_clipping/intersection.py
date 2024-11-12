@@ -1,5 +1,5 @@
-import typing as t
 from itertools import groupby
+from typing import Optional, Union
 
 from rene import Orientation, hints
 from rene._hints import Orienteer, SegmentsIntersector
@@ -23,10 +23,10 @@ from .utils import has_two_or_more_elements
 class LinearIntersection(linear.Operation[hints.Scalar]):
     def reduce_events(
         self,
-        events: t.List[Event],
-        segment_cls: t.Type[hints.Segment[hints.Scalar]],
+        events: list[Event],
+        segment_cls: type[hints.Segment[hints.Scalar]],
         /,
-    ) -> t.List[hints.Segment[hints.Scalar]]:
+    ) -> list[hints.Segment[hints.Scalar]]:
         return [
             segment_cls(start, end)
             for (start, end), equal_segment_events in groupby(
@@ -59,7 +59,7 @@ class ShapedIntersection(shaped.Operation[hints.Scalar]):
         )
 
 
-_Multisegmental = t.Union[
+_Multisegmental = Union[
     hints.Contour[hints.Scalar], hints.Multisegment[hints.Scalar]
 ]
 
@@ -67,15 +67,15 @@ _Multisegmental = t.Union[
 def intersect_multipolygon_with_multipolygon(
     first: hints.Multipolygon[hints.Scalar],
     second: hints.Multipolygon[hints.Scalar],
-    contour_cls: t.Type[hints.Contour[hints.Scalar]],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+    contour_cls: type[hints.Contour[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    polygon_cls: type[hints.Polygon[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multipolygon[hints.Scalar],
     hints.Polygon[hints.Scalar],
@@ -169,13 +169,13 @@ def intersect_multipolygon_with_multipolygon(
 def intersect_multipolygon_with_multisegmental(
     first: hints.Multipolygon[hints.Scalar],
     second: _Multisegmental[hints.Scalar],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multisegment[hints.Scalar],
     hints.Segment[hints.Scalar],
@@ -269,15 +269,15 @@ def intersect_multipolygon_with_multisegmental(
 def intersect_multipolygon_with_polygon(
     first: hints.Multipolygon[hints.Scalar],
     second: hints.Polygon[hints.Scalar],
-    contour_cls: t.Type[hints.Contour[hints.Scalar]],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+    contour_cls: type[hints.Contour[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    polygon_cls: type[hints.Polygon[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multipolygon[hints.Scalar],
     hints.Polygon[hints.Scalar],
@@ -353,13 +353,13 @@ def intersect_multipolygon_with_polygon(
 def intersect_multipolygon_with_segment(
     first: hints.Multipolygon[hints.Scalar],
     second: hints.Segment[hints.Scalar],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multisegment[hints.Scalar],
     hints.Segment[hints.Scalar],
@@ -429,13 +429,13 @@ def intersect_multipolygon_with_segment(
 def intersect_multisegmental_with_multipolygon(
     first: _Multisegmental[hints.Scalar],
     second: hints.Multipolygon[hints.Scalar],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multisegment[hints.Scalar],
     hints.Segment[hints.Scalar],
@@ -529,13 +529,13 @@ def intersect_multisegmental_with_multipolygon(
 def intersect_multisegmental_with_multisegmental(
     first: _Multisegmental[hints.Scalar],
     second: _Multisegmental[hints.Scalar],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multisegment[hints.Scalar],
     hints.Segment[hints.Scalar],
@@ -626,13 +626,13 @@ def intersect_multisegmental_with_multisegmental(
 def intersect_multisegmental_with_polygon(
     first: _Multisegmental[hints.Scalar],
     second: hints.Polygon[hints.Scalar],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multisegment[hints.Scalar],
     hints.Segment[hints.Scalar],
@@ -708,12 +708,12 @@ def intersect_multisegmental_with_polygon(
 def intersect_multisegmental_with_segment(
     first: _Multisegmental[hints.Scalar],
     second: hints.Segment[hints.Scalar],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multisegment[hints.Scalar],
     hints.Segment[hints.Scalar],
@@ -747,15 +747,15 @@ def intersect_multisegmental_with_segment(
 def intersect_polygon_with_multipolygon(
     first: hints.Polygon[hints.Scalar],
     second: hints.Multipolygon[hints.Scalar],
-    contour_cls: t.Type[hints.Contour[hints.Scalar]],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+    contour_cls: type[hints.Contour[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    polygon_cls: type[hints.Polygon[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multipolygon[hints.Scalar],
     hints.Polygon[hints.Scalar],
@@ -831,13 +831,13 @@ def intersect_polygon_with_multipolygon(
 def intersect_polygon_with_multisegmental(
     first: hints.Polygon[hints.Scalar],
     second: _Multisegmental[hints.Scalar],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multisegment[hints.Scalar],
     hints.Segment[hints.Scalar],
@@ -913,15 +913,15 @@ def intersect_polygon_with_multisegmental(
 def intersect_polygon_with_polygon(
     first: hints.Polygon[hints.Scalar],
     second: hints.Polygon[hints.Scalar],
-    contour_cls: t.Type[hints.Contour[hints.Scalar]],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multipolygon_cls: t.Type[hints.Multipolygon[hints.Scalar]],
+    contour_cls: type[hints.Contour[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    polygon_cls: t.Type[hints.Polygon[hints.Scalar]],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    polygon_cls: type[hints.Polygon[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multipolygon[hints.Scalar],
     hints.Polygon[hints.Scalar],
@@ -973,13 +973,13 @@ def intersect_polygon_with_polygon(
 def intersect_polygon_with_segment(
     first: hints.Polygon[hints.Scalar],
     second: hints.Segment[hints.Scalar],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multisegment[hints.Scalar],
     hints.Segment[hints.Scalar],
@@ -1028,9 +1028,9 @@ def intersect_segments_with_common_continuum_bounding_boxes(
     other_start: hints.Point[hints.Scalar],
     other_end: hints.Point[hints.Scalar],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     /,
-) -> t.Optional[hints.Segment[hints.Scalar]]:
+) -> Optional[hints.Segment[hints.Scalar]]:
     start, end = to_sorted_pair(start, end)
     other_start, other_end = to_sorted_pair(other_start, other_end)
     return (
@@ -1054,13 +1054,13 @@ def intersect_segments_with_common_continuum_bounding_boxes(
 def intersect_segment_with_multipolygon(
     first: hints.Segment[hints.Scalar],
     second: hints.Multipolygon[hints.Scalar],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multisegment[hints.Scalar],
     hints.Segment[hints.Scalar],
@@ -1130,12 +1130,12 @@ def intersect_segment_with_multipolygon(
 def intersect_segment_with_multisegmental(
     first: hints.Segment[hints.Scalar],
     second: _Multisegmental[hints.Scalar],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multisegment[hints.Scalar],
     hints.Segment[hints.Scalar],
@@ -1169,13 +1169,13 @@ def intersect_segment_with_multisegmental(
 def intersect_segment_with_polygon(
     first: hints.Segment[hints.Scalar],
     second: hints.Polygon[hints.Scalar],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
-    multisegment_cls: t.Type[hints.Multisegment[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
+    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     segments_intersector: SegmentsIntersector[hints.Scalar],
     /,
-) -> t.Union[
+) -> Union[
     hints.Empty[hints.Scalar],
     hints.Multisegment[hints.Scalar],
     hints.Segment[hints.Scalar],
@@ -1221,11 +1221,11 @@ def intersect_segment_with_polygon(
 def intersect_segment_with_segment(
     first: hints.Segment[hints.Scalar],
     second: hints.Segment[hints.Scalar],
-    empty_cls: t.Type[hints.Empty[hints.Scalar]],
+    empty_cls: type[hints.Empty[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
-    segment_cls: t.Type[hints.Segment[hints.Scalar]],
+    segment_cls: type[hints.Segment[hints.Scalar]],
     /,
-) -> t.Union[hints.Empty[hints.Scalar], hints.Segment[hints.Scalar]]:
+) -> Union[hints.Empty[hints.Scalar], hints.Segment[hints.Scalar]]:
     if do_boxes_have_no_common_continuum(
         first.bounding_box, second.bounding_box
     ):

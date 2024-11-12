@@ -1,5 +1,3 @@
-from typing import Tuple
-
 from hypothesis import given
 
 from rene.exact import Box
@@ -9,7 +7,7 @@ from . import strategies
 
 
 @given(strategies.boxes_limits)
-def test_basic(limits: Tuple[Scalar, Scalar, Scalar, Scalar]) -> None:
+def test_basic(limits: tuple[Scalar, Scalar, Scalar, Scalar]) -> None:
     min_x, max_x, min_y, max_y = limits
 
     result = Box(min_x, max_x, min_y, max_y)

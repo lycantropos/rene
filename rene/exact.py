@@ -3,8 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from numbers import Rational as _Rational
-    from typing import Any, Sequence, Union, overload
+    from typing import Any, Union, overload
 
     from rithm.fraction import Fraction as _Fraction
     from typing_extensions import Self, final
@@ -719,9 +720,9 @@ else:
         )
     else:
         import random as _random
-        import typing as _t
+        from typing import Any, NoReturn
 
-        import typing_extensions as _te
+        from typing_extensions import Self, final
 
         from . import Location as _Location
         from ._utils import (
@@ -744,7 +745,7 @@ else:
         Segment = _cexact.Segment
         _RawTrapezoidation = _cexact.Trapezoidation
 
-        @_te.final
+        @final
         class Trapezoidation:
             @classmethod
             def from_multisegment(
@@ -753,7 +754,7 @@ else:
                 /,
                 *,
                 seeder: _Seeder | None = None,
-            ) -> _te.Self:
+            ) -> Self:
                 seed = (
                     _random.randint(0, len(multisegment.segments))
                     if seeder is None
@@ -767,7 +768,7 @@ else:
             @classmethod
             def from_polygon(
                 cls, polygon: Polygon, /, *, seeder: _Seeder | None = None
-            ) -> _te.Self:
+            ) -> Self:
                 seed = (
                     _random.randint(0, _polygon_to_segments_count(polygon))
                     if seeder is None
@@ -787,13 +788,13 @@ else:
 
             __slots__ = ('_raw',)
 
-            def __init_subclass__(cls, /, **_kwargs: _t.Any) -> _t.NoReturn:
+            def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
                 raise TypeError(
                     f'type {cls.__qualname__!r} '
                     'is not an acceptable base type'
                 )
 
-            def __new__(cls, raw: _RawTrapezoidation, /) -> _te.Self:
+            def __new__(cls, raw: _RawTrapezoidation, /) -> Self:
                 self = super().__new__(cls)
                 self._raw = raw
                 return self

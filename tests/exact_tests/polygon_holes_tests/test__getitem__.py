@@ -1,5 +1,5 @@
-import typing as t
 from collections import abc
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -10,7 +10,7 @@ from . import strategies
 
 
 @given(strategies.polygons_holes, strategies.indices)
-def test_basic_index(holes: t.Sequence[Contour], item: int) -> None:
+def test_basic_index(holes: Sequence[Contour], item: int) -> None:
     try:
         result = holes[item]
     except IndexError:
@@ -20,7 +20,7 @@ def test_basic_index(holes: t.Sequence[Contour], item: int) -> None:
 
 
 @given(strategies.polygons_holes, strategies.slices)
-def test_basic_slice(holes: t.Sequence[Contour], item: slice) -> None:
+def test_basic_slice(holes: Sequence[Contour], item: slice) -> None:
     result = holes[item]
 
     assert isinstance(result, abc.Sequence)
@@ -28,13 +28,13 @@ def test_basic_slice(holes: t.Sequence[Contour], item: slice) -> None:
 
 @given(strategies.polygons_holes, strategies.slices)
 def test_slice_commutativity_with_list(
-    holes: t.Sequence[Contour], item: slice
+    holes: Sequence[Contour], item: slice
 ) -> None:
     assert list(holes[item]) == list(holes)[item]
 
 
 @given(strategies.polygons_holes)
-def test_shallow_copy(holes: t.Sequence[Contour]) -> None:
+def test_shallow_copy(holes: Sequence[Contour]) -> None:
     result = holes[::]
 
     assert result is not holes
@@ -42,7 +42,7 @@ def test_shallow_copy(holes: t.Sequence[Contour]) -> None:
 
 
 @given(strategies.polygons_holes)
-def test_reversed(holes: t.Sequence[Contour]) -> None:
+def test_reversed(holes: Sequence[Contour]) -> None:
     result = holes[::-1]
 
     assert implication(result == holes, len(result) < 2)
@@ -58,7 +58,7 @@ def test_reversed(holes: t.Sequence[Contour]) -> None:
 
 
 @given(strategies.polygons_holes)
-def test_reversed_idempotence(holes: t.Sequence[Contour]) -> None:
+def test_reversed_idempotence(holes: Sequence[Contour]) -> None:
     result = holes[::-1]
 
     assert result[::-1] == holes
@@ -66,7 +66,7 @@ def test_reversed_idempotence(holes: t.Sequence[Contour]) -> None:
 
 @given(strategies.polygons_holes, strategies.slices, strategies.slices)
 def test_consecutive_slicing(
-    holes: t.Sequence[Contour], item: slice, next_item: slice
+    holes: Sequence[Contour], item: slice, next_item: slice
 ) -> None:
     result = holes[item]
     next_result = result[next_item]

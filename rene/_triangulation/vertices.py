@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-import typing as t
+from typing import Any, Generic
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene.hints import Point, Scalar
 
 
-class ContourVertex(t.Generic[Scalar]):
+class ContourVertex(Generic[Scalar]):
     contour_index: int
     index: int
     point: Point[Scalar]
@@ -16,7 +16,7 @@ class ContourVertex(t.Generic[Scalar]):
 
     def __new__(
         cls, contour_index: int, index: int, point: Point[Scalar], /
-    ) -> te.Self:
+    ) -> Self:
         self = super().__new__(cls)
         self.contour_index, self.index, self.point = (
             contour_index,
@@ -33,28 +33,28 @@ class ContourVertex(t.Generic[Scalar]):
     def y(self, /) -> Scalar:
         return self.point.y
 
-    def __ge__(self, other: t.Any, /) -> t.Any:
+    def __ge__(self, other: Any, /) -> Any:
         return (
             self.point >= other.point
             if isinstance(other, ContourVertex)
             else NotImplemented
         )
 
-    def __gt__(self, other: t.Any, /) -> t.Any:
+    def __gt__(self, other: Any, /) -> Any:
         return (
             self.point > other.point
             if isinstance(other, ContourVertex)
             else NotImplemented
         )
 
-    def __le__(self, other: t.Any, /) -> t.Any:
+    def __le__(self, other: Any, /) -> Any:
         return (
             self.point <= other.point
             if isinstance(other, ContourVertex)
             else NotImplemented
         )
 
-    def __lt__(self, other: t.Any, /) -> t.Any:
+    def __lt__(self, other: Any, /) -> Any:
         return (
             self.point < other.point
             if isinstance(other, ContourVertex)
@@ -75,7 +75,7 @@ class PolygonVertexPosition:
         self.contour_index, self.index = contour_index, index
         return self
 
-    def __ge__(self, other: t.Any, /) -> t.Any:
+    def __ge__(self, other: Any, /) -> Any:
         return (
             (self.contour_index, self.index)
             >= (other.contour_index, other.index)
@@ -83,7 +83,7 @@ class PolygonVertexPosition:
             else NotImplemented
         )
 
-    def __gt__(self, other: t.Any, /) -> t.Any:
+    def __gt__(self, other: Any, /) -> Any:
         return (
             (self.contour_index, self.index)
             > (other.contour_index, other.index)
@@ -91,7 +91,7 @@ class PolygonVertexPosition:
             else NotImplemented
         )
 
-    def __le__(self, other: t.Any, /) -> t.Any:
+    def __le__(self, other: Any, /) -> Any:
         return (
             (self.contour_index, self.index)
             <= (other.contour_index, other.index)
@@ -99,7 +99,7 @@ class PolygonVertexPosition:
             else NotImplemented
         )
 
-    def __lt__(self, other: t.Any, /) -> t.Any:
+    def __lt__(self, other: Any, /) -> Any:
         return (
             (self.contour_index, self.index)
             < (other.contour_index, other.index)

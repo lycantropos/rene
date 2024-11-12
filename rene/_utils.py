@@ -1,24 +1,25 @@
 from __future__ import annotations
 
 import sys
-import typing as t
+from collections.abc import Iterable, MutableSequence, Sequence
 from itertools import groupby
+from typing import Any, TypeVar
 
-import typing_extensions as te
+from typing_extensions import Protocol, Self
 
 from rene import Location, MIN_CONTOUR_VERTICES_COUNT, Orientation, hints
 from rene._hints import Orienteer
 
 
-class Ordered(te.Protocol):
-    def __lt__(self, other: te.Self, /) -> bool: ...
+class Ordered(Protocol):
+    def __lt__(self, other: Self, /) -> bool: ...
 
 
-_OrderedT = t.TypeVar('_OrderedT', bound=Ordered)
-_T = t.TypeVar('_T')
+_OrderedT = TypeVar('_OrderedT', bound=Ordered)
+_T = TypeVar('_T')
 
 
-def all_same(iterable: t.Iterable[t.Any]) -> bool:
+def all_same(iterable: Iterable[Any]) -> bool:
     iterator = iter(iterable)
     try:
         value = next(iterator)
@@ -29,7 +30,7 @@ def all_same(iterable: t.Iterable[t.Any]) -> bool:
 
 
 def are_contour_vertices_non_degenerate(
-    vertices: t.Sequence[hints.Point[hints.Scalar]],
+    vertices: Sequence[hints.Point[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
     /,
 ) -> bool:
@@ -89,7 +90,7 @@ def ceil_log2(number: int, /) -> int:
 
 
 def collect_maybe_empty_polygons(
-    polygons: t.Sequence[hints.Polygon[hints.Scalar]],
+    polygons: Sequence[hints.Polygon[hints.Scalar]],
     empty_cls: type[hints.Empty[hints.Scalar]],
     multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
     /,
@@ -106,7 +107,7 @@ def collect_maybe_empty_polygons(
 
 
 def collect_maybe_empty_segments(
-    segments: t.Sequence[hints.Segment[hints.Scalar]],
+    segments: Sequence[hints.Segment[hints.Scalar]],
     empty_cls: type[hints.Empty[hints.Scalar]],
     multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     /,
@@ -123,7 +124,7 @@ def collect_maybe_empty_segments(
 
 
 def collect_non_empty_polygons(
-    polygons: t.Sequence[hints.Polygon[hints.Scalar]],
+    polygons: Sequence[hints.Polygon[hints.Scalar]],
     multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
     /,
 ) -> hints.Multipolygon[hints.Scalar] | hints.Polygon[hints.Scalar]:
@@ -132,7 +133,7 @@ def collect_non_empty_polygons(
 
 
 def collect_non_empty_segments(
-    segments: t.Sequence[hints.Segment[hints.Scalar]],
+    segments: Sequence[hints.Segment[hints.Scalar]],
     multisegment_cls: type[hints.Multisegment[hints.Scalar]],
     /,
 ) -> hints.Multisegment[hints.Scalar] | hints.Segment[hints.Scalar]:
@@ -156,11 +157,11 @@ def deduplicate(values: list[_T], /) -> list[_T]:
     return [value for value, _ in groupby(values)]
 
 
-def flags_to_false_indices(flags: t.Sequence[bool], /) -> list[int]:
+def flags_to_false_indices(flags: Sequence[bool], /) -> list[int]:
     return [index for index, flag in enumerate(flags) if not flag]
 
 
-def flags_to_true_indices(flags: t.Sequence[bool], /) -> list[int]:
+def flags_to_true_indices(flags: Sequence[bool], /) -> list[int]:
     return [index for index, flag in enumerate(flags) if flag]
 
 
@@ -261,7 +262,7 @@ def locate_point_in_segment(
 
 
 def merge_boxes(
-    boxes: t.Iterable[hints.Box[hints.Scalar]], /
+    boxes: Iterable[hints.Box[hints.Scalar]], /
 ) -> hints.Box[hints.Scalar]:
     boxes_iterator = iter(boxes)
     first_box = next(boxes_iterator)
@@ -279,7 +280,7 @@ def merge_boxes(
     return type(first_box)(min_x, max_x, min_y, max_y)
 
 
-def permute(values: t.MutableSequence[_T], seed: int, /) -> None:
+def permute(values: MutableSequence[_T], seed: int, /) -> None:
     """
     Based on "Ranking and unranking permutations in linear time"
     by W. Myrvold, F. Ruskey
@@ -314,7 +315,7 @@ def polygon_to_correctly_oriented_segments(
     polygon: hints.Polygon[hints.Scalar],
     orienteer: Orienteer[hints.Scalar],
     segment_cls: type[hints.Segment[hints.Scalar]],
-) -> t.Iterable[hints.Segment[hints.Scalar]]:
+) -> Iterable[hints.Segment[hints.Scalar]]:
     yield from to_oriented_segments(
         polygon.border.vertices,
         Orientation.COUNTERCLOCKWISE,
@@ -333,12 +334,12 @@ def polygon_to_segments_count(polygon: hints.Polygon[hints.Scalar], /) -> int:
     )
 
 
-def rotate_sequence(value: t.Sequence[_T]) -> list[_T]:
+def rotate_sequence(value: Sequence[_T]) -> list[_T]:
     return [value[0], *value[:0:-1]]
 
 
 def shrink_collinear_vertices(
-    vertices: t.Sequence[hints.Point[hints.Scalar]],
+    vertices: Sequence[hints.Point[hints.Scalar]],
     orienteer: Orienteer[hints.Scalar],
     /,
 ) -> list[hints.Point[hints.Scalar]]:
@@ -358,12 +359,12 @@ def shrink_collinear_vertices(
     return result
 
 
-def to_arg_min(values: t.Sequence[_OrderedT], /) -> int:
+def to_arg_min(values: Sequence[_OrderedT], /) -> int:
     return min(range(len(values)), key=values.__getitem__)
 
 
 def to_boxes_have_common_area(
-    boxes: t.Sequence[hints.Box[hints.Scalar]],
+    boxes: Sequence[hints.Box[hints.Scalar]],
     target_box: hints.Box[hints.Scalar],
     /,
 ) -> list[bool]:
@@ -371,7 +372,7 @@ def to_boxes_have_common_area(
 
 
 def to_boxes_have_common_continuum(
-    boxes: t.Sequence[hints.Box[hints.Scalar]],
+    boxes: Sequence[hints.Box[hints.Scalar]],
     target_box: hints.Box[hints.Scalar],
     /,
 ) -> list[bool]:
@@ -379,7 +380,7 @@ def to_boxes_have_common_continuum(
 
 
 def to_boxes_ids_with_common_area(
-    boxes: t.Iterable[hints.Box[hints.Scalar]],
+    boxes: Iterable[hints.Box[hints.Scalar]],
     target_box: hints.Box[hints.Scalar],
     /,
 ) -> list[int]:
@@ -391,7 +392,7 @@ def to_boxes_ids_with_common_area(
 
 
 def to_boxes_ids_with_common_continuum(
-    boxes: t.Iterable[hints.Box[hints.Scalar]],
+    boxes: Iterable[hints.Box[hints.Scalar]],
     target_box: hints.Box[hints.Scalar],
     /,
 ) -> list[int]:
@@ -403,7 +404,7 @@ def to_boxes_ids_with_common_continuum(
 
 
 def to_boxes_ids_with_intersection(
-    boxes: t.Iterable[hints.Box[hints.Scalar]],
+    boxes: Iterable[hints.Box[hints.Scalar]],
     target_box: hints.Box[hints.Scalar],
     /,
 ) -> list[int]:
@@ -415,7 +416,7 @@ def to_boxes_ids_with_intersection(
 
 
 def to_contour_orientation(
-    vertices: t.Sequence[hints.Point[hints.Scalar]],
+    vertices: Sequence[hints.Point[hints.Scalar]],
     min_vertex_index: int,
     orienteer: Orienteer[hints.Scalar],
     /,
@@ -428,7 +429,7 @@ def to_contour_orientation(
 
 
 def to_contour_segments(
-    vertices: t.Sequence[hints.Point[hints.Scalar]],
+    vertices: Sequence[hints.Point[hints.Scalar]],
     segment_cls: type[hints.Segment[hints.Scalar]],
     /,
 ) -> list[hints.Segment[hints.Scalar]]:
@@ -441,7 +442,7 @@ def to_contour_segments(
 
 
 def to_oriented_segments(
-    vertices: t.Sequence[hints.Point[hints.Scalar]],
+    vertices: Sequence[hints.Point[hints.Scalar]],
     target_orientation: Orientation,
     orienteer: Orienteer[hints.Scalar],
     segment_cls: type[hints.Segment[hints.Scalar]],
@@ -462,7 +463,7 @@ def to_oriented_segments(
     )
 
 
-def to_sign(value: t.Any, /) -> int:
+def to_sign(value: Any, /) -> int:
     return 1 if value > 0 else (-1 if value else 0)
 
 
@@ -473,7 +474,7 @@ def to_sorted_pair(
 
 
 def validate_seed(
-    seed: t.Any, _max_usize_value: int = (sys.maxsize << 1) + 1, /
+    seed: Any, _max_usize_value: int = (sys.maxsize << 1) + 1, /
 ) -> None:
     error_type: type[Exception]
     if not isinstance(seed, int):

@@ -1,4 +1,4 @@
-import typing as t
+from collections.abc import Sequence
 
 import pytest
 from hypothesis import given
@@ -10,7 +10,7 @@ from . import strategies
 
 @given(strategies.polygons_holes, strategies.contours)
 def test_basic_default_range(
-    holes: t.Sequence[Contour], contour: Contour
+    holes: Sequence[Contour], contour: Contour
 ) -> None:
     try:
         result = holes.index(contour)
@@ -29,7 +29,7 @@ def test_basic_default_range(
     strategies.indices,
 )
 def test_basic_custom_range(
-    holes: t.Sequence[Contour], contour: Contour, start: int, stop: int
+    holes: Sequence[Contour], contour: Contour, start: int, stop: int
 ) -> None:
     try:
         result = holes.index(contour, start, stop)
@@ -43,7 +43,7 @@ def test_basic_custom_range(
 
 @given(strategies.polygons_holes, strategies.contours)
 def test_alternatives_default_range(
-    holes: t.Sequence[Contour], contour: Contour
+    holes: Sequence[Contour], contour: Contour
 ) -> None:
     try:
         result = holes.index(contour)
@@ -64,7 +64,7 @@ def test_alternatives_default_range(
     strategies.indices,
 )
 def test_alternatives_custom_range(
-    holes: t.Sequence[Contour], contour: Contour, start: int, stop: int
+    holes: Sequence[Contour], contour: Contour, start: int, stop: int
 ) -> None:
     try:
         result = holes.index(contour, start, stop)

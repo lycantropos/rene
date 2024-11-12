@@ -1,8 +1,9 @@
 import os
 import platform
 import time
-import typing as t
+from collections.abc import Iterator
 from datetime import timedelta
+from typing import Callable, cast
 
 import pytest
 from hypothesis import HealthCheck, settings
@@ -19,7 +20,7 @@ settings.register_profile(
 
 # FIXME:
 #  workaround until https://github.com/pytest-dev/pluggy/issues/191 is fixed
-hookimpl = t.cast(t.Callable[..., t.Callable[..., None]], pytest.hookimpl)
+hookimpl = cast(Callable[..., Callable[..., None]], pytest.hookimpl)
 
 if on_ci:
     time_left = timedelta(hours=1)
@@ -30,7 +31,7 @@ if on_ci:
         item.obj = set_deadline(item.obj)
 
     @pytest.fixture(scope='function', autouse=True)
-    def time_function_call() -> t.Iterator[None]:
+    def time_function_call() -> Iterator[None]:
         start = time.monotonic()
         try:
             yield

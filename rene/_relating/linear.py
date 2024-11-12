@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import typing as t
+from collections.abc import Iterable, Iterator, Sequence
 from itertools import chain, groupby
+from typing import Any, Generic
 
-import typing_extensions as te
 from dendroid import red_black
 from dendroid.hints import KeyedSet
 from prioq.base import PriorityQueue
+from typing_extensions import Self
 
 from rene import Orientation, Relation, hints
 from rene._hints import Orienteer, SegmentsIntersector
@@ -17,16 +18,16 @@ from .events_queue_key import EventsQueueKey
 from .sweep_line_key import SweepLineKey
 
 
-class Operation(t.Generic[hints.Scalar]):
+class Operation(Generic[hints.Scalar]):
     @classmethod
     def from_segments_iterables(
         cls,
-        first: t.Iterable[hints.Segment[hints.Scalar]],
-        second: t.Iterable[hints.Segment[hints.Scalar]],
+        first: Iterable[hints.Segment[hints.Scalar]],
+        second: Iterable[hints.Segment[hints.Scalar]],
         orienteer: Orienteer[hints.Scalar],
         segments_intersector: SegmentsIntersector[hints.Scalar],
         /,
-    ) -> te.Self:
+    ) -> Self:
         endpoints: list[hints.Point[hints.Scalar]] = []
         _populate_with_segments(first, endpoints)
         first_segments_count = len(endpoints) >> 1
@@ -40,7 +41,7 @@ class Operation(t.Generic[hints.Scalar]):
             segments_intersector,
         )
 
-    def has_crossing(self, same_start_events: t.Sequence[Event]) -> bool:
+    def has_crossing(self, same_start_events: Sequence[Event]) -> bool:
         if len(same_start_events) < 4:
             return False
         from_first_operand_events_count = sum(
@@ -89,7 +90,7 @@ class Operation(t.Generic[hints.Scalar]):
             for event in from_first_events
         )
 
-    def has_intersection(self, same_start_events: t.Sequence[Event]) -> bool:
+    def has_intersection(self, same_start_events: Sequence[Event]) -> bool:
         return not all_same(
             self.is_event_from_first_operand(event)
             for event in same_start_events
@@ -490,7 +491,7 @@ def dot_multiply(
     ) * (second_end.y - second_start.y)
 
 
-def has_two_elements(iterator: t.Iterator[t.Any]) -> bool:
+def has_two_elements(iterator: Iterator[Any]) -> bool:
     return (
         next(iterator, None) is not None and next(iterator, None) is not None
     )
@@ -532,7 +533,7 @@ def squared_distance(
     return square(start.x - end.x) + square(start.y - end.y)
 
 
-class RelationState(t.Generic[hints.Scalar]):
+class RelationState(Generic[hints.Scalar]):
     def update(
         self,
         same_start_events: list[Event],
@@ -559,7 +560,7 @@ class RelationState(t.Generic[hints.Scalar]):
 
     def _detect_crossing(
         self,
-        same_start_events: t.Sequence[Event],
+        same_start_events: Sequence[Event],
         operation: Operation[hints.Scalar],
     ) -> None:
         if not self.has_crossing and operation.has_crossing(same_start_events):
@@ -567,7 +568,7 @@ class RelationState(t.Generic[hints.Scalar]):
 
     def _detect_touch_or_overlap(
         self,
-        same_start_events: t.Sequence[Event],
+        same_start_events: Sequence[Event],
         operation: Operation[hints.Scalar],
     ) -> None:
         for _, group in chain(
@@ -626,7 +627,7 @@ class RelationState(t.Generic[hints.Scalar]):
 
 
 def _populate_with_segments(
-    segments: t.Iterable[hints.Segment[hints.Scalar]],
+    segments: Iterable[hints.Segment[hints.Scalar]],
     endpoints: list[hints.Point[hints.Scalar]],
     /,
 ) -> None:

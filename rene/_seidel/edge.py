@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-import typing as t
+from collections.abc import Sequence
+from typing import Generic
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import Orientation, hints
 from rene._hints import Orienteer
 
 
-class Edge(t.Generic[hints.Scalar]):
+class Edge(Generic[hints.Scalar]):
     interior_to_left: bool
     left_point_index: int
     right_point_index: int
@@ -20,7 +21,7 @@ class Edge(t.Generic[hints.Scalar]):
         right_point_index: int,
         interior_to_left: bool,
         orienteer: Orienteer[hints.Scalar],
-    ) -> te.Self:
+    ) -> Self:
         return cls(
             left_point_index, right_point_index, interior_to_left, orienteer
         )
@@ -28,7 +29,7 @@ class Edge(t.Generic[hints.Scalar]):
     def orientation_of(
         self,
         point: hints.Point[hints.Scalar],
-        endpoints: t.Sequence[hints.Point[hints.Scalar]],
+        endpoints: Sequence[hints.Point[hints.Scalar]],
     ) -> Orientation:
         return self._orienteer(
             endpoints[self.left_point_index],
@@ -52,7 +53,7 @@ class Edge(t.Generic[hints.Scalar]):
         interior_to_left: bool,
         orienteer: Orienteer[hints.Scalar],
         /,
-    ) -> te.Self:
+    ) -> Self:
         self = super().__new__(cls)
         (
             self.interior_to_left,
@@ -63,7 +64,7 @@ class Edge(t.Generic[hints.Scalar]):
         return self
 
     def is_under(
-        self, other: te.Self, endpoints: t.Sequence[hints.Point[hints.Scalar]]
+        self, other: Self, endpoints: Sequence[hints.Point[hints.Scalar]]
     ) -> bool:
         other_left_orientation = self.orientation_of(
             endpoints[other.left_point_index], endpoints

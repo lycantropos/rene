@@ -1,4 +1,4 @@
-import typing as t
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -9,7 +9,7 @@ from . import strategies
 
 
 @given(strategies.polygons_holes)
-def test_determinism(holes: t.Sequence[Contour]) -> None:
+def test_determinism(holes: Sequence[Contour]) -> None:
     result = hash(holes)
 
     assert result == hash(holes)
@@ -17,6 +17,6 @@ def test_determinism(holes: t.Sequence[Contour]) -> None:
 
 @given(strategies.polygons_holes, strategies.polygons_holes)
 def test_preserving_equality(
-    first: t.Sequence[Contour], second: t.Sequence[Contour]
+    first: Sequence[Contour], second: Sequence[Contour]
 ) -> None:
     assert implication(first == second, hash(first) == hash(second))

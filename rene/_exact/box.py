@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-import typing as t
 from numbers import Rational
+from typing import Any, NoReturn, Union
 
-import typing_extensions as te
 from rithm.fraction import Fraction
 from rithm.integer import Int
+from typing_extensions import Self, final
 
 from rene._geometries.base_box import BaseBox
 
-_Coordinate = t.Union[Fraction, Int, Rational, float, int]
+_Coordinate = Union[Fraction, Int, Rational, float, int]
 
 
-@te.final
+@final
 class Box(BaseBox[Fraction]):
     @property
     def max_x(self, /) -> Fraction:
@@ -38,7 +38,7 @@ class Box(BaseBox[Fraction]):
     __module__ = 'rene.exact'
     __slots__ = '_min_x', '_max_x', '_min_y', '_max_y'
 
-    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
@@ -50,7 +50,7 @@ class Box(BaseBox[Fraction]):
         min_y: _Coordinate,
         max_y: _Coordinate,
         /,
-    ) -> te.Self:
+    ) -> Self:
         self = super().__new__(cls)
         self._max_x, self._max_y, self._min_x, self._min_y = (
             Fraction(max_x),

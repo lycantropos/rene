@@ -1,4 +1,4 @@
-import typing as t
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -9,17 +9,15 @@ from . import strategies
 
 
 @given(strategies.contours_vertices)
-def test_irreflexivity(vertices: t.Sequence[Point]) -> None:
+def test_irreflexivity(vertices: Sequence[Point]) -> None:
     assert vertices == vertices
 
 
 @given(strategies.contours_vertices, strategies.contours_vertices)
-def test_symmetry(first: t.Sequence[Point], second: t.Sequence[Point]) -> None:
+def test_symmetry(first: Sequence[Point], second: Sequence[Point]) -> None:
     assert equivalence(first != second, second != first)
 
 
 @given(strategies.contours_vertices, strategies.contours_vertices)
-def test_equivalents(
-    first: t.Sequence[Point], second: t.Sequence[Point]
-) -> None:
+def test_equivalents(first: Sequence[Point], second: Sequence[Point]) -> None:
     assert equivalence(first != second, first != second)

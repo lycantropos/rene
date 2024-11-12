@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import typing as t
+from collections.abc import Iterator, Sequence
+from typing import Generic
 
 from dendroid import red_black
 from dendroid.hints import KeyedSet
@@ -20,11 +21,11 @@ from .events_queue_key import EventsQueueKey
 from .sweep_line_key import SweepLineKey
 
 
-class EventsRegistry(t.Generic[hints.Scalar]):
+class EventsRegistry(Generic[hints.Scalar]):
     @classmethod
     def from_segments(
         cls,
-        segments: t.Sequence[hints.Segment[hints.Scalar]],
+        segments: Sequence[hints.Segment[hints.Scalar]],
         orienteer: Orienteer[hints.Scalar],
         segments_intersector: SegmentsIntersector[hints.Scalar],
         /,
@@ -125,7 +126,7 @@ class EventsRegistry(t.Generic[hints.Scalar]):
     def __bool__(self) -> bool:
         return bool(self._events_queue_data)
 
-    def __iter__(self) -> t.Iterator[Event]:
+    def __iter__(self) -> Iterator[Event]:
         while self:
             event = self._pop()
             if is_event_left(event):

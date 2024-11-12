@@ -1,6 +1,6 @@
-import typing as t
+from typing import Generic
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import Orientation, hints
 from rene._hints import Map, Orienteer
@@ -8,7 +8,7 @@ from rene._hints import Map, Orienteer
 from .event import Event
 
 
-class SweepLineKey(t.Generic[hints.Scalar]):
+class SweepLineKey(Generic[hints.Scalar]):
     endpoints: Map[Event, hints.Point[hints.Scalar]]
     event: Event
     is_from_first_operand: bool
@@ -31,7 +31,7 @@ class SweepLineKey(t.Generic[hints.Scalar]):
         opposites: Map[Event, Event],
         orienteer: Orienteer[hints.Scalar],
         /,
-    ) -> te.Self:
+    ) -> Self:
         self = super().__new__(cls)
         (
             self.endpoints,
@@ -42,7 +42,7 @@ class SweepLineKey(t.Generic[hints.Scalar]):
         ) = (endpoints, event, is_from_first_operand, opposites, orienteer)
         return self
 
-    def __lt__(self, other: te.Self, /) -> bool:
+    def __lt__(self, other: Self, /) -> bool:
         """
         Checks if the segment associated with event is lower than other's.
         """

@@ -1,5 +1,6 @@
+from collections.abc import Iterable, Sequence
 from functools import partial, singledispatch
-from typing import Any, Callable, Iterable, List, Sequence, Tuple, TypeVar
+from typing import Any, Callable, TypeVar
 
 from hypothesis import strategies as _st
 
@@ -236,7 +237,7 @@ def rotate_polygon_holes(polygon: _PolygonT, offset: int, /) -> _PolygonT:
     )
 
 
-def rotate_sequence(sequence: Sequence[_T1], offset: int, /) -> List[_T1]:
+def rotate_sequence(sequence: Sequence[_T1], offset: int, /) -> list[_T1]:
     if not sequence:
         return []
     offset %= len(sequence)
@@ -251,7 +252,7 @@ _Orienteer = Callable[[_PointT, _PointT, _PointT], Orientation]
 
 def to_convex_hull(
     points: Sequence[_PointT], orienteer: _Orienteer[_PointT], /
-) -> List[_PointT]:
+) -> list[_PointT]:
     points = deduplicate(sorted(points))
     lower, upper = (
         _to_sub_hull(points, orienteer),
@@ -265,7 +266,7 @@ to_distinct = dict.fromkeys
 
 def to_max_convex_hull(
     points: Sequence[_PointT], orienteer: _Orienteer[_PointT], /
-) -> List[_PointT]:
+) -> list[_PointT]:
     points = deduplicate(sorted(points))
     lower, upper = (
         _to_max_sub_hull(points, orienteer),
@@ -276,20 +277,20 @@ def to_max_convex_hull(
 
 def to_pairs(
     values: _st.SearchStrategy[_T], /
-) -> _st.SearchStrategy[Tuple[_T, _T]]:
+) -> _st.SearchStrategy[tuple[_T, _T]]:
     return _st.tuples(values, values)
 
 
 def to_triplets(
     values: _st.SearchStrategy[_T], /
-) -> _st.SearchStrategy[Tuple[_T, _T, _T]]:
+) -> _st.SearchStrategy[tuple[_T, _T, _T]]:
     return _st.tuples(values, values, values)
 
 
 def _to_max_sub_hull(
     points: Iterable[_PointT], orienteer: _Orienteer[_PointT], /
-) -> List[_PointT]:
-    result: List[_PointT] = []
+) -> list[_PointT]:
+    result: list[_PointT] = []
     for point in points:
         while len(result) >= 2:
             if (
@@ -305,8 +306,8 @@ def _to_max_sub_hull(
 
 def _to_sub_hull(
     points: Iterable[_PointT], orienteer: _Orienteer[_PointT], /
-) -> List[_PointT]:
-    result: List[_PointT] = []
+) -> list[_PointT]:
+    result: list[_PointT] = []
     for point in points:
         while len(result) >= 2:
             if (

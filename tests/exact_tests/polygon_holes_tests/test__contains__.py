@@ -1,4 +1,4 @@
-import typing as t
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -9,14 +9,14 @@ from . import strategies
 
 
 @given(strategies.polygons_holes, strategies.contours)
-def test_basic(holes: t.Sequence[Contour], contour: Contour) -> None:
+def test_basic(holes: Sequence[Contour], contour: Contour) -> None:
     result = contour in holes
 
     assert isinstance(result, bool)
 
 
 @given(strategies.polygons_holes, strategies.contours)
-def test_alternatives(holes: t.Sequence[Contour], contour: Contour) -> None:
+def test_alternatives(holes: Sequence[Contour], contour: Contour) -> None:
     result = contour in holes
 
     assert equivalence(result, contour in iter(holes))

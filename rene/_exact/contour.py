@@ -1,40 +1,39 @@
 from __future__ import annotations
 
 import enum
-import typing as t
+from collections.abc import Sequence
+from typing import Any, NoReturn, overload
 
-import typing_extensions as te
 from rithm.fraction import Fraction
+from typing_extensions import Self, final
 
 from rene import MIN_CONTOUR_VERTICES_COUNT, hints
 from rene._geometries.base_contour import BaseContour
 from rene._utils import to_contour_segments
 
 
-@te.final
+@final
 class Contour(BaseContour[Fraction]):
     @property
-    def segments(self, /) -> t.Sequence[hints.Segment[Fraction]]:
+    def segments(self, /) -> Sequence[hints.Segment[Fraction]]:
         return _ContourSegments(self._segments, _TOKEN)
 
     @property
-    def vertices(self, /) -> t.Sequence[hints.Point[Fraction]]:
+    def vertices(self, /) -> Sequence[hints.Point[Fraction]]:
         return _ContourVertices(self._vertices, _TOKEN)
 
-    _segments: t.Sequence[hints.Segment[Fraction]]
-    _vertices: t.Sequence[hints.Point[Fraction]]
+    _segments: Sequence[hints.Segment[Fraction]]
+    _vertices: Sequence[hints.Point[Fraction]]
 
     __module__ = 'rene.exact'
     __slots__ = '_segments', '_vertices'
 
-    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
 
-    def __new__(
-        cls, vertices: t.Sequence[hints.Point[Fraction]], /
-    ) -> te.Self:
+    def __new__(cls, vertices: Sequence[hints.Point[Fraction]], /) -> Self:
         if len(vertices) < MIN_CONTOUR_VERTICES_COUNT:
             raise ValueError(
                 'Contour should have at least '
@@ -56,8 +55,8 @@ class _Token(enum.Enum):
 _TOKEN = _Token.VALUE
 
 
-@te.final
-class _ContourSegments(t.Sequence[hints.Segment[Fraction]]):
+@final
+class _ContourSegments(Sequence[hints.Segment[Fraction]]):
     def count(self, segment: hints.Segment[Fraction], /) -> int:
         return self._segments.count(segment)
 
@@ -72,19 +71,19 @@ class _ContourSegments(t.Sequence[hints.Segment[Fraction]]):
             segment, start, *(() if stop is None else (stop,))
         )
 
-    _segments: t.Sequence[hints.Segment[Fraction]]
+    _segments: Sequence[hints.Segment[Fraction]]
 
     __module__ = 'rene.exact'
     __slots__ = ('_segments',)
 
-    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
 
     def __new__(
-        cls, segments: t.Sequence[hints.Segment[Fraction]], token: _Token, /
-    ) -> te.Self:
+        cls, segments: Sequence[hints.Segment[Fraction]], token: _Token, /
+    ) -> Self:
         if token is not _TOKEN:
             raise ValueError(
                 f'{cls.__qualname__!r} is internal '
@@ -95,28 +94,26 @@ class _ContourSegments(t.Sequence[hints.Segment[Fraction]]):
         self._segments = segments
         return self
 
-    @t.overload
-    def __eq__(self, other: te.Self, /) -> bool: ...
+    @overload
+    def __eq__(self, other: Self, /) -> bool: ...
 
-    @t.overload
-    def __eq__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __eq__(self, other: Any, /) -> Any: ...
 
-    def __eq__(self, other: t.Any, /) -> t.Any:
+    def __eq__(self, other: Any, /) -> Any:
         return (
             self._segments == other._segments
             if isinstance(other, _ContourSegments)
             else NotImplemented
         )
 
-    @t.overload
+    @overload
     def __getitem__(self, item: int) -> hints.Segment[Fraction]: ...
 
-    @t.overload
-    def __getitem__(self, item: slice) -> te.Self: ...
+    @overload
+    def __getitem__(self, item: slice) -> Self: ...
 
-    def __getitem__(
-        self, item: int | slice
-    ) -> hints.Segment[Fraction] | te.Self:
+    def __getitem__(self, item: int | slice) -> hints.Segment[Fraction] | Self:
         return (
             _ContourSegments(self._segments[item], _TOKEN)
             if type(item) is slice
@@ -130,8 +127,8 @@ class _ContourSegments(t.Sequence[hints.Segment[Fraction]]):
         return len(self._segments)
 
 
-@te.final
-class _ContourVertices(t.Sequence[hints.Point[Fraction]]):
+@final
+class _ContourVertices(Sequence[hints.Point[Fraction]]):
     def count(self, point: hints.Point[Fraction], /) -> int:
         return self._vertices.count(point)
 
@@ -146,19 +143,19 @@ class _ContourVertices(t.Sequence[hints.Point[Fraction]]):
             point, start, *(() if stop is None else (stop,))
         )
 
-    _vertices: t.Sequence[hints.Point[Fraction]]
+    _vertices: Sequence[hints.Point[Fraction]]
 
     __module__ = 'rene.exact'
     __slots__ = ('_vertices',)
 
-    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
 
     def __new__(
-        cls, vertices: t.Sequence[hints.Point[Fraction]], token: _Token, /
-    ) -> te.Self:
+        cls, vertices: Sequence[hints.Point[Fraction]], token: _Token, /
+    ) -> Self:
         if token is not _TOKEN:
             raise ValueError(
                 f'{cls.__qualname__!r} is internal '
@@ -169,28 +166,26 @@ class _ContourVertices(t.Sequence[hints.Point[Fraction]]):
         self._vertices = vertices
         return self
 
-    @t.overload
-    def __eq__(self, other: te.Self, /) -> bool: ...
+    @overload
+    def __eq__(self, other: Self, /) -> bool: ...
 
-    @t.overload
-    def __eq__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __eq__(self, other: Any, /) -> Any: ...
 
-    def __eq__(self, other: t.Any, /) -> t.Any:
+    def __eq__(self, other: Any, /) -> Any:
         return (
             self._vertices == other._vertices
             if isinstance(other, _ContourVertices)
             else NotImplemented
         )
 
-    @t.overload
+    @overload
     def __getitem__(self, item: int) -> hints.Point[Fraction]: ...
 
-    @t.overload
-    def __getitem__(self, item: slice) -> te.Self: ...
+    @overload
+    def __getitem__(self, item: slice) -> Self: ...
 
-    def __getitem__(
-        self, item: int | slice
-    ) -> hints.Point[Fraction] | te.Self:
+    def __getitem__(self, item: int | slice) -> hints.Point[Fraction] | Self:
         return (
             _ContourVertices(self._vertices[item], _TOKEN)
             if type(item) is slice

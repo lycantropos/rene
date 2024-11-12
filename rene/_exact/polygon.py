@@ -1,34 +1,35 @@
 from __future__ import annotations
 
 import enum
-import typing as t
+from collections.abc import Sequence
+from typing import Any, ClassVar, NoReturn, overload
 
-import typing_extensions as te
 from rithm.fraction import Fraction
+from typing_extensions import Self, final
 
 from rene import hints
 from rene._context import Context
 from rene._geometries.base_polygon import BasePolygon
 
 
-@te.final
+@final
 class Polygon(BasePolygon[Fraction]):
     @property
     def border(self, /) -> hints.Contour[Fraction]:
         return self._border
 
     @property
-    def holes(self, /) -> t.Sequence[hints.Contour[Fraction]]:
+    def holes(self, /) -> Sequence[hints.Contour[Fraction]]:
         return _PolygonHoles(self._holes, _TOKEN)
 
-    _context: t.ClassVar[Context[Fraction]]
+    _context: ClassVar[Context[Fraction]]
     _border: hints.Contour[Fraction]
-    _holes: t.Sequence[hints.Contour[Fraction]]
+    _holes: Sequence[hints.Contour[Fraction]]
 
     __module__ = 'rene.exact'
     __slots__ = '_border', '_holes'
 
-    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
@@ -36,9 +37,9 @@ class Polygon(BasePolygon[Fraction]):
     def __new__(
         cls,
         border: hints.Contour[Fraction],
-        holes: t.Sequence[hints.Contour[Fraction]],
+        holes: Sequence[hints.Contour[Fraction]],
         /,
-    ) -> te.Self:
+    ) -> Self:
         self = super().__new__(cls)
         self._border, self._holes = border, tuple(holes)
         return self
@@ -51,8 +52,8 @@ class _Token(enum.Enum):
 _TOKEN = _Token.VALUE
 
 
-@te.final
-class _PolygonHoles(t.Sequence[hints.Contour[Fraction]]):
+@final
+class _PolygonHoles(Sequence[hints.Contour[Fraction]]):
     def count(self, contour: hints.Contour[Fraction], /) -> int:
         return self._holes.count(contour)
 
@@ -67,19 +68,19 @@ class _PolygonHoles(t.Sequence[hints.Contour[Fraction]]):
             contour, start, *(() if stop is None else (stop,))
         )
 
-    _holes: t.Sequence[hints.Contour[Fraction]]
+    _holes: Sequence[hints.Contour[Fraction]]
 
     __module__ = 'rene.exact'
     __slots__ = ('_holes',)
 
-    def __init_subclass__(cls, /, **_kwargs: t.Any) -> t.NoReturn:
+    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
 
     def __new__(
-        cls, holes: t.Sequence[hints.Contour[Fraction]], token: _Token, /
-    ) -> te.Self:
+        cls, holes: Sequence[hints.Contour[Fraction]], token: _Token, /
+    ) -> Self:
         if token is not _TOKEN:
             raise ValueError(
                 f'{cls.__qualname__!r} is internal '
@@ -90,28 +91,26 @@ class _PolygonHoles(t.Sequence[hints.Contour[Fraction]]):
         self._holes = holes
         return self
 
-    @t.overload
-    def __eq__(self, other: te.Self, /) -> bool: ...
+    @overload
+    def __eq__(self, other: Self, /) -> bool: ...
 
-    @t.overload
-    def __eq__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __eq__(self, other: Any, /) -> Any: ...
 
-    def __eq__(self, other: t.Any, /) -> t.Any:
+    def __eq__(self, other: Any, /) -> Any:
         return (
             self._holes == other._holes
             if isinstance(other, _PolygonHoles)
             else NotImplemented
         )
 
-    @t.overload
+    @overload
     def __getitem__(self, item: int) -> hints.Contour[Fraction]: ...
 
-    @t.overload
-    def __getitem__(self, item: slice) -> te.Self: ...
+    @overload
+    def __getitem__(self, item: slice) -> Self: ...
 
-    def __getitem__(
-        self, item: int | slice
-    ) -> hints.Contour[Fraction] | te.Self:
+    def __getitem__(self, item: int | slice) -> hints.Contour[Fraction] | Self:
         return (
             _PolygonHoles(self._holes[item], _TOKEN)
             if type(item) is slice

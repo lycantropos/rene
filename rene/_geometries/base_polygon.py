@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import typing as t
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
+from typing import Any, overload
 
-import typing_extensions as te
+from typing_extensions import Self
 
 from rene import Location, Relation, hints
 from rene._clipping import (
@@ -31,7 +32,7 @@ class BasePolygon(ABC, BaseCompound[hints.Scalar]):
 
     @property
     @abstractmethod
-    def holes(self) -> t.Sequence[hints.Contour[hints.Scalar]]: ...
+    def holes(self) -> Sequence[hints.Contour[hints.Scalar]]: ...
 
     @property
     def bounding_box(self, /) -> hints.Box[hints.Scalar]:
@@ -79,12 +80,12 @@ class BasePolygon(ABC, BaseCompound[hints.Scalar]):
         else:
             raise TypeError(f'Unsupported type: {type(other)!r}.')
 
-    @t.overload
+    @overload
     def __and__(
         self, other: hints.Empty[hints.Scalar], /
     ) -> hints.Empty[hints.Scalar]: ...
 
-    @t.overload
+    @overload
     def __and__(
         self,
         other: hints.Multipolygon[hints.Scalar] | hints.Polygon[hints.Scalar],
@@ -95,10 +96,10 @@ class BasePolygon(ABC, BaseCompound[hints.Scalar]):
         | hints.Polygon[hints.Scalar]
     ): ...
 
-    @t.overload
-    def __and__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __and__(self, other: Any, /) -> Any: ...
 
-    def __and__(self, other: t.Any, /) -> t.Any:
+    def __and__(self, other: Any, /) -> Any:
         context = self._context
         return (
             intersect_polygon_with_multipolygon(
@@ -163,13 +164,13 @@ class BasePolygon(ABC, BaseCompound[hints.Scalar]):
     def __contains__(self, point: hints.Point[hints.Scalar], /) -> bool:
         return self.locate(point) is not Location.EXTERIOR
 
-    @t.overload
-    def __eq__(self, other: te.Self, /) -> bool: ...
+    @overload
+    def __eq__(self, other: Self, /) -> bool: ...
 
-    @t.overload
-    def __eq__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __eq__(self, other: Any, /) -> Any: ...
 
-    def __eq__(self, other: t.Any, /) -> t.Any:
+    def __eq__(self, other: Any, /) -> Any:
         return (
             (
                 self.border == other.border
@@ -183,20 +184,20 @@ class BasePolygon(ABC, BaseCompound[hints.Scalar]):
     def __hash__(self, /) -> int:
         return hash((self.border, frozenset(self.holes)))
 
-    @t.overload
-    def __or__(self, other: hints.Empty[hints.Scalar], /) -> te.Self: ...
+    @overload
+    def __or__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
 
-    @t.overload
+    @overload
     def __or__(
         self,
         other: hints.Multipolygon[hints.Scalar] | hints.Polygon[hints.Scalar],
         /,
     ) -> hints.Multipolygon[hints.Scalar] | hints.Polygon[hints.Scalar]: ...
 
-    @t.overload
-    def __or__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __or__(self, other: Any, /) -> Any: ...
 
-    def __or__(self, other: t.Any, /) -> t.Any:
+    def __or__(self, other: Any, /) -> Any:
         context = self._context
         return (
             unite_polygon_with_multipolygon(
@@ -240,10 +241,10 @@ class BasePolygon(ABC, BaseCompound[hints.Scalar]):
             ', '.join(map(str, self.holes))
         )
 
-    @t.overload
-    def __sub__(self, other: hints.Empty[hints.Scalar], /) -> te.Self: ...
+    @overload
+    def __sub__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
 
-    @t.overload
+    @overload
     def __sub__(
         self,
         other: hints.Multipolygon[hints.Scalar] | hints.Polygon[hints.Scalar],
@@ -254,10 +255,10 @@ class BasePolygon(ABC, BaseCompound[hints.Scalar]):
         | hints.Polygon[hints.Scalar]
     ): ...
 
-    @t.overload
-    def __sub__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __sub__(self, other: Any, /) -> Any: ...
 
-    def __sub__(self, other: t.Any, /) -> t.Any:
+    def __sub__(self, other: Any, /) -> Any:
         context = self._context
         return (
             subtract_multipolygon_from_polygon(
@@ -293,10 +294,10 @@ class BasePolygon(ABC, BaseCompound[hints.Scalar]):
             )
         )
 
-    @t.overload
-    def __xor__(self, other: hints.Empty[hints.Scalar], /) -> te.Self: ...
+    @overload
+    def __xor__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
 
-    @t.overload
+    @overload
     def __xor__(
         self,
         other: hints.Multipolygon[hints.Scalar] | hints.Polygon[hints.Scalar],
@@ -307,10 +308,10 @@ class BasePolygon(ABC, BaseCompound[hints.Scalar]):
         | hints.Polygon[hints.Scalar]
     ): ...
 
-    @t.overload
-    def __xor__(self, other: t.Any, /) -> t.Any: ...
+    @overload
+    def __xor__(self, other: Any, /) -> Any: ...
 
-    def __xor__(self, other: t.Any, /) -> t.Any:
+    def __xor__(self, other: Any, /) -> Any:
         context = self._context
         return (
             symmetric_subtract_multipolygon_from_polygon(

@@ -1,4 +1,4 @@
-import typing as t
+from collections.abc import Sequence
 
 from hypothesis import given
 
@@ -9,7 +9,7 @@ from . import strategies
 
 
 @given(strategies.contours_vertices, strategies.points)
-def test_basic(vertices: t.Sequence[Point], point: Point) -> None:
+def test_basic(vertices: Sequence[Point], point: Point) -> None:
     result = vertices.count(point)
 
     assert isinstance(result, int)
@@ -18,7 +18,7 @@ def test_basic(vertices: t.Sequence[Point], point: Point) -> None:
 
 
 @given(strategies.contours_vertices, strategies.points)
-def test_alternatives(vertices: t.Sequence[Point], point: Point) -> None:
+def test_alternatives(vertices: Sequence[Point], point: Point) -> None:
     result = vertices.count(point)
 
     assert result == list(vertices).count(point)

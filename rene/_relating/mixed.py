@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-import typing as t
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Sequence
 from itertools import chain, groupby
+from typing import Generic
 
-import typing_extensions as te
 from dendroid import red_black
 from dendroid.hints import KeyedSet
 from prioq.base import PriorityQueue
+from typing_extensions import Self
 
 from rene import Orientation, Relation, hints
 from rene._hints import Orienteer, SegmentsIntersector
@@ -17,22 +18,20 @@ from .event import Event, is_event_left, is_event_right, left_event_to_position
 from .events_queue_key import EventsQueueKey
 from .sweep_line_key import SweepLineKey
 
-SegmentEndpoints = t.Tuple[
-    hints.Point[hints.Scalar], hints.Point[hints.Scalar]
-]
+SegmentEndpoints = tuple[hints.Point[hints.Scalar], hints.Point[hints.Scalar]]
 
 
-class Operation(ABC, t.Generic[hints.Scalar]):
+class Operation(ABC, Generic[hints.Scalar]):
     @classmethod
     @abstractmethod
     def from_segments_iterables(
         cls,
-        first: t.Iterable[hints.Segment[hints.Scalar]],
-        second: t.Iterable[hints.Segment[hints.Scalar]],
+        first: Iterable[hints.Segment[hints.Scalar]],
+        second: Iterable[hints.Segment[hints.Scalar]],
         orienteer: Orienteer[hints.Scalar],
         segments_intersector: SegmentsIntersector[hints.Scalar],
         /,
-    ) -> te.Self: ...
+    ) -> Self: ...
 
     def has_border_intersection(
         self, same_start_events: list[Event], /
@@ -170,7 +169,7 @@ class Operation(ABC, t.Generic[hints.Scalar]):
         first_segments_count: int,
         second_segments_count: int,
         endpoints: list[hints.Point[hints.Scalar]],
-        have_interior_to_left: t.Sequence[bool],
+        have_interior_to_left: Sequence[bool],
         orienteer: Orienteer[hints.Scalar],
         segments_intersector: SegmentsIntersector[hints.Scalar],
         /,
@@ -492,12 +491,12 @@ class LinearShapedOperation(Operation[hints.Scalar]):
     @classmethod
     def from_segments_iterables(
         cls,
-        first: t.Iterable[hints.Segment[hints.Scalar]],
-        second: t.Iterable[hints.Segment[hints.Scalar]],
+        first: Iterable[hints.Segment[hints.Scalar]],
+        second: Iterable[hints.Segment[hints.Scalar]],
         orienteer: Orienteer[hints.Scalar],
         segments_intersector: SegmentsIntersector[hints.Scalar],
         /,
-    ) -> te.Self:
+    ) -> Self:
         endpoints: list[hints.Point[hints.Scalar]] = []
         have_interior_to_left: list[bool] = []
         _populate_with_linear_segments(first, endpoints, have_interior_to_left)
@@ -525,12 +524,12 @@ class ShapedLinearOperation(Operation[hints.Scalar]):
     @classmethod
     def from_segments_iterables(
         cls,
-        first: t.Iterable[hints.Segment[hints.Scalar]],
-        second: t.Iterable[hints.Segment[hints.Scalar]],
+        first: Iterable[hints.Segment[hints.Scalar]],
+        second: Iterable[hints.Segment[hints.Scalar]],
         orienteer: Orienteer[hints.Scalar],
         segments_intersector: SegmentsIntersector[hints.Scalar],
         /,
-    ) -> te.Self:
+    ) -> Self:
         endpoints: list[hints.Point[hints.Scalar]] = []
         have_interior_to_left: list[bool] = []
         _populate_with_shaped_segments(first, endpoints, have_interior_to_left)
@@ -556,7 +555,7 @@ class ShapedLinearOperation(Operation[hints.Scalar]):
         )
 
 
-class RelationState(t.Generic[hints.Scalar]):
+class RelationState(Generic[hints.Scalar]):
     def update(
         self,
         same_start_events: list[Event],
@@ -642,7 +641,7 @@ class RelationState(t.Generic[hints.Scalar]):
 
 
 def _populate_with_shaped_segments(
-    segments: t.Iterable[hints.Segment[hints.Scalar]],
+    segments: Iterable[hints.Segment[hints.Scalar]],
     endpoints: list[hints.Point[hints.Scalar]],
     have_interior_to_left: list[bool],
     /,
@@ -659,7 +658,7 @@ def _populate_with_shaped_segments(
 
 
 def _populate_with_linear_segments(
-    segments: t.Iterable[hints.Segment[hints.Scalar]],
+    segments: Iterable[hints.Segment[hints.Scalar]],
     endpoints: list[hints.Point[hints.Scalar]],
     have_interior_to_left: list[bool],
     /,
