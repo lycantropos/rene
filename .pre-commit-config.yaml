@@ -1,0 +1,83 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-toml
+      - id: check-yaml
+      - id: end-of-file-fixer
+        exclude: .bumpversion.cfg
+      - id: trailing-whitespace
+        exclude: .bumpversion.cfg
+  - repo: https://github.com/jorisroovers/gitlint
+    rev: v0.19.1
+    hooks:
+      - id: gitlint
+        args:
+          - --ignore
+          - B6
+          - --msg-filename
+        stages: [ commit-msg ]
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.27.3
+    hooks:
+      - id: typos
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.4
+    hooks:
+      - id: actionlint
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: cargo-fmt
+        entry: cargo fmt -- --check
+        language: system
+        types: [ rust ]
+      - id: cargo-clippy-all-features
+        name: cargo-clippy-all-features
+        language: system
+        entry: >
+          bash -c "cargo metadata --format-version=1 --no-deps
+          | jq --raw-output '.packages[].name'
+          | xargs -I{} cargo clippy --all-targets --all-features --package {} \
+            -- -D future-incompatible -D let-underscore -D nonstandard-style \
+               -D rust-2018-compatibility -D rust-2018-idioms \
+               -D rust-2021-compatibility -D unused -D warnings"
+        pass_filenames: false
+        types: [ rust ]
+      - id: cargo-clippy-no-default-features
+        name: cargo-clippy-no-default-features
+        language: system
+        entry: >
+          bash -c "cargo metadata --format-version=1 --no-deps
+          | jq --raw-output '.packages[].name'
+          | xargs -I{} cargo clippy --all-targets --no-default-features --package {} \
+            -- -D future-incompatible -D let-underscore -D nonstandard-style \
+               -D rust-2018-compatibility -D rust-2018-idioms \
+               -D rust-2021-compatibility -D unused -D warnings"
+        pass_filenames: false
+        types: [ rust ]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.7.3
+    hooks:
+      - id: ruff-format
+      - id: ruff
+        args:
+          - --fix
+          - --exit-non-zero-on-fix
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        args:
+          - --strict
+        additional_dependencies:
+          - 'dendroid>=1.6.1,<2.0'
+          - 'hypothesis>=6.116.0'
+          - 'prioq>=0.6.0,<1.0'
+          - 'pytest>=8.3.3'
+          - 'rithm>=14.2.0,<15.0'
+          - 'setuptools-rust>=1.8.1'
+          - 'types-setuptools'
