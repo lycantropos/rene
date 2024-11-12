@@ -1,7 +1,7 @@
 from typing import Any
 
 import pytest
-from hypothesis import given, reproduce_failure
+from hypothesis import given
 
 from rene import Location
 from rene.exact import Multisegment, Trapezoidation
@@ -34,7 +34,6 @@ def test_contains(multisegment: Multisegment, seeder: Seeder) -> None:
     assert all(segment.end in result for segment in multisegment.segments)
 
 
-@reproduce_failure('6.98.17', b'AXicY2JnZCAeMKIpPoCpAoMHAB+qAM8=')
 @given(strategies.multisegments, strategies.seeders)
 def test_locate(multisegment: Multisegment, seeder: Seeder) -> None:
     result = Trapezoidation.from_multisegment(multisegment, seeder=seeder)
