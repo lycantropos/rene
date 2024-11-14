@@ -41,7 +41,7 @@ impl TryToPyAny for Location {
         static LOCATION_CLS: GILOnceCell<PyObject> = GILOnceCell::new();
         LOCATION_CLS
             .get_or_try_init(py, || {
-                py.import_bound("rene")?
+                py.import_bound("rene.enums")?
                     .getattr(intern!(py, "Location"))
                     .map(|value| IntoPy::into_py(value, py))
             })?
@@ -63,7 +63,7 @@ impl TryToPyAny for Orientation {
         static ORIENTATION_CLS: GILOnceCell<PyObject> = GILOnceCell::new();
         ORIENTATION_CLS
             .get_or_try_init(py, || {
-                py.import_bound("rene")?
+                py.import_bound("rene.enums")?
                     .getattr(intern!(py, "Orientation"))
                     .map(|value| IntoPy::into_py(value, py))
             })?
@@ -91,7 +91,7 @@ impl TryToPyAny for Relation {
         static RELATION_CLS: GILOnceCell<PyObject> = GILOnceCell::new();
         RELATION_CLS
             .get_or_try_init(py, || {
-                py.import_bound("rene")?
+                py.import_bound("rene.enums")?
                     .getattr(intern!(py, "Relation"))
                     .map(|value| IntoPy::into_py(value, py))
             })?
