@@ -10,12 +10,12 @@ if TYPE_CHECKING:
     from rithm.fraction import Fraction as _Fraction
     from typing_extensions import Self, final
 
-    from rene.enums import (
+    from .enums import (
         Location as _Location,
         Orientation as _Orientation,
         Relation as _Relation,
     )
-    from rene.hints import Seeder as _Seeder
+    from .hints import Seeder as _Seeder
 
     _ScalarT = Union[_Fraction, _Rational, float, int]
 
@@ -724,7 +724,6 @@ else:
 
         from typing_extensions import Self, final
 
-        from . import Location as _Location
         from ._utils import (
             polygon_to_segments_count as _polygon_to_segments_count,
             validate_seed as _validate_seed,
