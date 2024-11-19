@@ -5,6 +5,8 @@ pub(super) struct Reference<T> {
 
 unsafe impl<T> Send for Reference<T> {}
 
+unsafe impl<T> Sync for Reference<T> {}
+
 impl<T> Clone for Reference<T> {
     fn clone(&self) -> Self {
         Self {

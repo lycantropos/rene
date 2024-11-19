@@ -122,7 +122,7 @@ macro_rules! impl_box_wrapper {
 
             fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
                 pyo3::types::PyAnyMethods::hash(
-                    pyo3::types::PyTuple::new_bound(
+                    pyo3::types::PyTuple::new(
                         py,
                         [
                             self.min_x(py)?,
@@ -130,7 +130,7 @@ macro_rules! impl_box_wrapper {
                             self.min_y(py)?,
                             self.max_y(py)?,
                         ],
-                    )
+                    )?
                     .as_ref(),
                 )
             }
@@ -158,16 +158,32 @@ macro_rules! impl_box_wrapper {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(
-                    &<Self as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<Self as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other =
                         other.extract::<pyo3::Bound<'_, Self>>()?.borrow();
                     match op {
                         pyo3::basic::CompareOp::Eq => {
-                            Ok(pyo3::IntoPy::into_py(self.0 == other.0, py))
+                            Ok(pyo3::BoundObject::into_bound(
+                                pyo3::IntoPyObject::into_pyobject(
+                                    self.0 == other.0,
+                                    py,
+                                )
+                                .unwrap(),
+                            )
+                            .into_any()
+                            .unbind())
                         }
                         pyo3::basic::CompareOp::Ne => {
-                            Ok(pyo3::IntoPy::into_py(self.0 != other.0, py))
+                            Ok(pyo3::BoundObject::into_bound(
+                                pyo3::IntoPyObject::into_pyobject(
+                                    self.0 != other.0,
+                                    py,
+                                )
+                                .unwrap(),
+                            )
+                            .into_any()
+                            .unbind())
                         }
                         _ => Ok(py.NotImplemented()),
                     }

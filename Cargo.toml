@@ -19,12 +19,12 @@ version = "^4.0.0"
 features = ["numbers"]
 
 [dependencies.pyo3]
-version = "^0.22.6"
+version = "^0.23.1"
 features = ["extension-module"]
 
 [dependencies.pyo3-ffi]
-version = "^0.22.6"
+version = "^0.23.1"
 features = ["extension-module"]
 
 [build-dependencies]
-pyo3-build-config = "^0.22.6"
+pyo3-build-config = "^0.23.1"

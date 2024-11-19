@@ -2,7 +2,7 @@ use pyo3::exceptions::{PyIndexError, PyOverflowError};
 use pyo3::PyErr;
 
 pub(super) fn py_long_to_valid_index(
-    value: pyo3::Bound<'_, pyo3::types::PyLong>,
+    value: pyo3::Bound<'_, pyo3::types::PyInt>,
     elements_count: usize,
 ) -> pyo3::PyResult<usize> {
     use pyo3::types::PyAnyMethods;
@@ -31,7 +31,7 @@ pub(super) fn py_long_to_valid_index(
 }
 
 pub(super) fn normalize_index_start(
-    start: Option<&pyo3::Bound<'_, pyo3::types::PyLong>>,
+    start: Option<&pyo3::Bound<'_, pyo3::types::PyInt>>,
     elements_count: usize,
 ) -> usize {
     use pyo3::types::PyAnyMethods;
@@ -52,7 +52,7 @@ pub(super) fn normalize_index_start(
 }
 
 pub(super) fn normalize_index_stop(
-    start: Option<&pyo3::Bound<'_, pyo3::types::PyLong>>,
+    start: Option<&pyo3::Bound<'_, pyo3::types::PyInt>>,
     elements_count: usize,
 ) -> usize {
     use pyo3::types::PyAnyMethods;

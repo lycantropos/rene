@@ -69,8 +69,8 @@ macro_rules! impl_py_sequence {
             fn index(
                 &self,
                 $value_name: &$py_value_type,
-                start: Option<&pyo3::Bound<'_, pyo3::types::PyLong>>,
-                stop: Option<&pyo3::Bound<'_, pyo3::types::PyLong>>,
+                start: Option<&pyo3::Bound<'_, pyo3::types::PyInt>>,
+                stop: Option<&pyo3::Bound<'_, pyo3::types::PyInt>>,
                 py: pyo3::Python<'_>,
             ) -> pyo3::PyResult<usize> {
                 use pyo3::types::PyAnyMethods;
@@ -98,7 +98,7 @@ macro_rules! impl_py_sequence {
                         match stop {
                             Some(stop) => stop.repr()?,
                             None =>
-                                pyo3::types::PyString::new_bound(py, &self.len().to_string()),
+                                pyo3::types::PyString::new(py, &self.len().to_string()),
                         }
                     ))),
                 }
@@ -108,20 +108,20 @@ macro_rules! impl_py_sequence {
                 self.iter().contains(&value.0)
             }
 
-            fn __getitem__(
+            fn __getitem__<'py>(
                 &self,
                 item: &pyo3::Bound<'_, pyo3::PyAny>,
-                py: pyo3::Python<'_>,
-            ) -> pyo3::PyResult<pyo3::PyObject> {
+                py: pyo3::Python<'py>,
+            ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::PyAny>> {
                 use pyo3::types::PyAnyMethods;
-                if item.is_instance(&<pyo3::types::PySlice as pyo3::type_object::PyTypeInfo>::type_object_bound(py))? {
+                if item.is_instance(&<pyo3::types::PySlice as pyo3::type_object::PyTypeInfo>::type_object(py))? {
                     let (start, stop, step) = super::slicing::to_next_slice_indices(
                         self.start,
                         self.step,
                         self.len(),
                         item.extract::<pyo3::Bound<'_, pyo3::types::PySlice>>()?,
                     )?;
-                    Ok(pyo3::IntoPy::into_py(
+                    pyo3::IntoPyObject::into_pyobject(
                         Self {
                             $container_field: self.$container_field.clone(),
                             start,
@@ -129,7 +129,7 @@ macro_rules! impl_py_sequence {
                             step,
                         },
                         py,
-                    ))
+                    ).map(pyo3::Bound::<'_, _>::into_any)
                 } else {
                     let maybe_index =
                         unsafe { pyo3::ffi::PyNumber_Index(pyo3::AsPyPointer::as_ptr(item)) };
@@ -142,28 +142,33 @@ macro_rules! impl_py_sequence {
                                     item.py(),
                                     maybe_index,
                                 )
-                                .extract::<pyo3::Bound<'_, pyo3::types::PyLong>>()?
+                                .extract::<pyo3::Bound<'_, pyo3::types::PyInt>>()?
                             },
                             self.len(),
                         )?;
-                        Ok(pyo3::IntoPy::into_py(
-                            unsafe {
-                                self.iter().nth(index).unwrap_unchecked()
-                            }
-                            .clone(),
+                        pyo3::IntoPyObject::into_pyobject(
+                            <$py_value_type>::from(
+                                unsafe {
+                                    self.iter().nth(index).unwrap_unchecked()
+                                }
+                                .clone(),
+                            ),
                             py,
-                        ))
+                        ).map(pyo3::Bound::<'_, _>::into_any)
                     }
                 }
             }
 
             fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
                 pyo3::types::PyAnyMethods::hash(
-                    <pyo3::types::PyTuple>::new_bound(
+                    <pyo3::types::PyTuple>::new(
                         py,
-                        self.iter().collect::<Vec<_>>(),
-                    )
-                    .as_ref()
+                        self.iter()
+                            .cloned()
+                            .map(|element| <$py_value_type>::from(element))
+                            .collect::<Vec<_>>(),
+                    )?
+                    .as_ref(),
                 )
             }
 
@@ -178,14 +183,33 @@ macro_rules! impl_py_sequence {
             ) -> pyo3::PyResult<pyo3::PyObject> {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
-                if other.is_instance(&<Self as pyo3::type_object::PyTypeInfo>::type_object_bound(py))? {
-                    let other = other.extract::<pyo3::Bound<'_, Self>>()?.borrow();
+                if other.is_instance(
+                    &<Self as pyo3::type_object::PyTypeInfo>::type_object(py),
+                )? {
+                    let other =
+                        other.extract::<pyo3::Bound<'_, Self>>()?.borrow();
                     match op {
                         pyo3::basic::CompareOp::Eq => {
-                            Ok(pyo3::IntoPy::into_py(self.iter().eq(other.iter()), py))
+                            Ok(pyo3::BoundObject::into_bound(
+                                pyo3::IntoPyObject::into_pyobject(
+                                    self.iter().eq(other.iter()),
+                                    py,
+                                )
+                                .unwrap(),
+                            )
+                            .into_any()
+                            .unbind())
                         }
                         pyo3::basic::CompareOp::Ne => {
-                            Ok(pyo3::IntoPy::into_py(self.iter().ne(other.iter()), py))
+                            Ok(pyo3::BoundObject::into_bound(
+                                pyo3::IntoPyObject::into_pyobject(
+                                    self.iter().ne(other.iter()),
+                                    py,
+                                )
+                                .unwrap(),
+                            )
+                            .into_any()
+                            .unbind())
                         }
                         _ => Ok(py.NotImplemented()),
                     }

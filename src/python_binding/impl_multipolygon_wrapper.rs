@@ -114,70 +114,67 @@ macro_rules! impl_multipolygon_wrapper {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(
-                    &<PyEmpty as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyEmpty as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyEmpty>>()?.borrow();
-                    Ok(pyo3::IntoPy::into_py(
+                    pyo3::IntoPyObject::into_pyobject(
                         PyEmpty(crate::traits::Intersection::intersection(
                             &self.0, &other.0,
                         )),
                         py,
-                    ))
+                    )
+                    .map(pyo3::Bound::into_any)
+                    .map(pyo3::Bound::unbind)
                 } else if other.is_instance(
-                    &<PyMultipolygon as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyMultipolygon as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyMultipolygon>>()?.borrow();
                     let polygons =
                         crate::traits::Intersection::intersection(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_polygons::<
-                        PyEmpty,
-                        PyMultipolygon,
-                        Polygon,
-                    >(polygons, py))
+                    super::unpacking::try_unpack_maybe_empty_polygons::<PyEmpty, PyMultipolygon, Polygon, _>(
+                        polygons,
+                        py,
+                    )
                 } else if other.is_instance(
-                    &<PyPolygon as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyPolygon as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyPolygon>>()?.borrow();
                     let polygons =
                         crate::traits::Intersection::intersection(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_polygons::<
-                        PyEmpty,
-                        PyMultipolygon,
-                        Polygon,
-                    >(polygons, py))
+                    super::unpacking::try_unpack_maybe_empty_polygons::<PyEmpty, PyMultipolygon, Polygon, _>(
+                        polygons,
+                        py,
+                    )
                 } else if other.is_instance(
-                    &<PyContour as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyContour as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyContour>>()?.borrow();
                     let segments =
                         crate::traits::Intersection::intersection(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_segments::<
-                        PyEmpty,
-                        PyMultisegment,
-                        Segment,
-                    >(segments, py))
+                    super::unpacking::try_unpack_maybe_empty_segments::<PyEmpty, PyMultisegment, Segment, _>(
+                        segments,
+                        py,
+                    )
                 } else if other.is_instance(
-                    &<PyMultisegment as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyMultisegment as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyMultisegment>>()?.borrow();
                     let segments =
                         crate::traits::Intersection::intersection(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_segments::<
-                        PyEmpty,
-                        PyMultisegment,
-                        Segment,
-                    >(segments, py))
+                    super::unpacking::try_unpack_maybe_empty_segments::<PyEmpty, PyMultisegment, Segment, _>(
+                        segments,
+                        py,
+                    )
                 } else if other.is_instance(
-                    &<PySegment as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PySegment as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PySegment>>()?.borrow();
                     let segments =
                         crate::traits::Intersection::intersection(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_segments::<
-                        PyEmpty,
-                        PyMultisegment,
-                        Segment,
-                    >(segments, py))
+                    super::unpacking::try_unpack_maybe_empty_segments::<PyEmpty, PyMultisegment, Segment, _>(
+                        segments,
+                        py,
+                    )
                 } else {
                     Ok(py.NotImplemented())
                 }
@@ -190,13 +187,12 @@ macro_rules! impl_multipolygon_wrapper {
 
             fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
                 pyo3::types::PyAnyMethods::hash(
-                    pyo3::types::PyFrozenSet::new_bound(
+                    pyo3::types::PyFrozenSet::new(
                         py,
-                        &(&self.0)
+                        (&self.0)
                             .polygons()
                             .into_iter()
-                            .cloned()
-                            .collect::<Vec<_>>(),
+                            .cloned(),
                     )?
                     .as_ref()
                 )
@@ -209,31 +205,33 @@ macro_rules! impl_multipolygon_wrapper {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(
-                    &<PyEmpty as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyEmpty as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyEmpty>>()?.borrow();
-                    Ok(pyo3::IntoPy::into_py(
-                        crate::traits::Union::union(&self.0, other.0),
+                    pyo3::IntoPyObject::into_pyobject(
+                        crate::traits::Union::union(&self.0, &other.0),
                         py,
-                    ))
+                    )
+                    .map(pyo3::Bound::into_any)
+                    .map(pyo3::Bound::unbind)
                 } else if other.is_instance(
-                    &<PyMultipolygon as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyMultipolygon as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyMultipolygon>>()?.borrow();
                     let polygons = crate::traits::Union::union(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_non_empty_polygons::<
-                        PyMultipolygon,
-                        Polygon,
-                    >(polygons, py))
+                    super::unpacking::try_unpack_non_empty_polygons::<PyMultipolygon, Polygon, _>(
+                        polygons,
+                        py,
+                    )
                 } else if other.is_instance(
-                    &<PyPolygon as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyPolygon as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyPolygon>>()?.borrow();
                     let polygons = crate::traits::Union::union(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_non_empty_polygons::<
-                        PyMultipolygon,
-                        Polygon,
-                    >(polygons, py))
+                    super::unpacking::try_unpack_non_empty_polygons::<PyMultipolygon, Polygon, _>(
+                        polygons,
+                        py,
+                    )
                 } else {
                     Ok(py.NotImplemented())
                 }
@@ -244,15 +242,14 @@ macro_rules! impl_multipolygon_wrapper {
                 Ok(format!(
                     "{}({})",
                     <Self as pyo3::type_object::PyTypeInfo>::NAME,
-                    pyo3::IntoPy::into_py(
+                    pyo3::IntoPyObject::into_pyobject(
                         (&self.0)
                             .polygons()
                             .into_iter()
                             .cloned()
                             .collect::<Vec<_>>(),
                         py
-                    )
-                    .bind(py)
+                    )?
                     .repr()?
                     .extract::<String>()?
                 ))
@@ -266,15 +263,25 @@ macro_rules! impl_multipolygon_wrapper {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(
-                    &<PyMultipolygon as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyMultipolygon as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyMultipolygon>>()?.borrow();
                     match op {
                         pyo3::basic::CompareOp::Eq => {
-                            Ok(pyo3::IntoPy::into_py(self.0 == other.0, py))
+                            Ok(pyo3::BoundObject::into_bound(
+                                pyo3::IntoPyObject::into_pyobject(self.0 == other.0, py)
+                                .unwrap()
+                            )
+                            .into_any()
+                            .unbind())
                         }
                         pyo3::basic::CompareOp::Ne => {
-                            Ok(pyo3::IntoPy::into_py(self.0 != other.0, py))
+                            Ok(pyo3::BoundObject::into_bound(
+                                pyo3::IntoPyObject::into_pyobject(self.0 != other.0, py)
+                                .unwrap()
+                            )
+                            .into_any()
+                            .unbind())
                         }
                         _ => Ok(py.NotImplemented()),
                     }
@@ -304,35 +311,35 @@ macro_rules! impl_multipolygon_wrapper {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(
-                    &<PyEmpty as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyEmpty as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyEmpty>>()?.borrow();
-                    Ok(pyo3::IntoPy::into_py(
+                    pyo3::IntoPyObject::into_pyobject(
                         crate::traits::Difference::difference(&self.0, &other.0),
                         py,
-                    ))
+                    )
+                    .map(pyo3::Bound::into_any)
+                    .map(pyo3::Bound::unbind)
                 } else if other.is_instance(
-                    &<PyMultipolygon as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyMultipolygon as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyMultipolygon>>()?.borrow();
                     let polygons =
                         crate::traits::Difference::difference(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_polygons::<
-                        PyEmpty,
-                        PyMultipolygon,
-                        Polygon,
-                    >(polygons, py))
+                    super::unpacking::try_unpack_maybe_empty_polygons::<PyEmpty, PyMultipolygon, Polygon, _>(
+                        polygons,
+                        py,
+                    )
                 } else if other.is_instance(
-                    &<PyPolygon as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyPolygon as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyPolygon>>()?.borrow();
                     let polygons =
                         crate::traits::Difference::difference(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_polygons::<
-                        PyEmpty,
-                        PyMultipolygon,
-                        Polygon,
-                    >(polygons, py))
+                    super::unpacking::try_unpack_maybe_empty_polygons::<PyEmpty, PyMultipolygon, Polygon, _>(
+                        polygons,
+                        py,
+                    )
                 } else {
                     Ok(py.NotImplemented())
                 }
@@ -345,41 +352,39 @@ macro_rules! impl_multipolygon_wrapper {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(
-                    &<PyEmpty as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyEmpty as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyEmpty>>()?.borrow();
-                    Ok(pyo3::IntoPy::into_py(
-                        crate::traits::SymmetricDifference::symmetric_difference(
-                            &self.0, &other.0,
-                        ),
+                    pyo3::IntoPyObject::into_pyobject(
+                        crate::traits::SymmetricDifference::symmetric_difference(&self.0, &other.0),
                         py,
-                    ))
+                    )
+                    .map(pyo3::Bound::into_any)
+                    .map(pyo3::Bound::unbind)
                 } else if other.is_instance(
-                    &<PyMultipolygon as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyMultipolygon as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyMultipolygon>>()?.borrow();
                     let polygons =
                         crate::traits::SymmetricDifference::symmetric_difference(
                             &self.0, &other.0,
                         );
-                    Ok(super::unpacking::unpack_maybe_empty_polygons::<
-                        PyEmpty,
-                        PyMultipolygon,
-                        Polygon,
-                    >(polygons, py))
+                    super::unpacking::try_unpack_maybe_empty_polygons::<PyEmpty, PyMultipolygon, Polygon, _>(
+                        polygons,
+                        py,
+                    )
                 } else if other.is_instance(
-                    &<PyPolygon as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyPolygon as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyPolygon>>()?.borrow();
                     let polygons =
                         crate::traits::SymmetricDifference::symmetric_difference(
                             &self.0, &other.0,
                         );
-                    Ok(super::unpacking::unpack_maybe_empty_polygons::<
-                        PyEmpty,
-                        PyMultipolygon,
-                        Polygon,
-                    >(polygons, py))
+                    super::unpacking::try_unpack_maybe_empty_polygons::<PyEmpty, PyMultipolygon, Polygon, _>(
+                        polygons,
+                        py,
+                    )
                 } else {
                     Ok(py.NotImplemented())
                 }

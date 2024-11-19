@@ -71,9 +71,15 @@ impl Default for PyEmpty {
     }
 }
 
-impl From<Vec<Polygon>> for PyMultipolygon {
-    fn from(value: Vec<Polygon>) -> Self {
-        Self(Multipolygon::new(value))
+impl From<Box> for PyBox {
+    fn from(value: Box) -> Self {
+        Self(value)
+    }
+}
+
+impl From<Contour> for PyContour {
+    fn from(value: Contour) -> Self {
+        Self(value)
     }
 }
 
@@ -83,9 +89,33 @@ impl From<Vec<Point>> for PyContour {
     }
 }
 
+impl From<Vec<Polygon>> for PyMultipolygon {
+    fn from(value: Vec<Polygon>) -> Self {
+        Self(Multipolygon::new(value))
+    }
+}
+
 impl From<Vec<Segment>> for PyMultisegment {
     fn from(value: Vec<Segment>) -> Self {
         Self(Multisegment::new(value))
+    }
+}
+
+impl From<Point> for PyPoint {
+    fn from(value: Point) -> Self {
+        Self(value)
+    }
+}
+
+impl From<Polygon> for PyPolygon {
+    fn from(value: Polygon) -> Self {
+        Self(value)
+    }
+}
+
+impl From<Segment> for PySegment {
+    fn from(value: Segment) -> Self {
+        Self(value)
     }
 }
 
@@ -208,7 +238,7 @@ impl TryFromPyAny for Fraction {
         py: pyo3::Python<'_>,
     ) -> pyo3::PyResult<Self> {
         use pyo3::types::PyAnyMethods;
-        if value.is_instance(&<pyo3::types::PyFloat as pyo3::type_object::PyTypeInfo>::type_object_bound(py))? {
+        if value.is_instance(&<pyo3::types::PyFloat as pyo3::type_object::PyTypeInfo>::type_object(py))? {
                 Fraction::try_from(value.extract::<f64>()?).map_err(|error| {
                     match error {
                         fraction::FromFloatConstructionError::Infinity => {
@@ -256,11 +286,16 @@ impl TryToPyAny for &Fraction {
             pyo3::sync::GILOnceCell::new();
         FRACTION_CLS
             .get_or_try_init(py, || {
-                py.import_bound("rithm.fraction")?
+                py.import("rithm.fraction")?
                     .getattr(pyo3::intern!(py, "Fraction"))
-                    .map(|value| pyo3::IntoPy::into_py(value, py))
+                    .map(|value| {
+                        pyo3::IntoPyObject::into_pyobject(value, py)
+                            .unwrap()
+                            .into_any()
+                            .unbind()
+                    })
             })?
-            .call_bound(
+            .call(
                 py,
                 (
                     big_int_to_py_long(self.numerator()),
@@ -269,30 +304,6 @@ impl TryToPyAny for &Fraction {
                 None,
             )
             .map(|value| value.into_bound(py))
-    }
-}
-
-impl pyo3::ToPyObject for Contour {
-    fn to_object(&self, py: pyo3::Python<'_>) -> pyo3::PyObject {
-        pyo3::IntoPy::into_py(self.clone(), py)
-    }
-}
-
-impl pyo3::ToPyObject for Point {
-    fn to_object(&self, py: pyo3::Python<'_>) -> pyo3::PyObject {
-        pyo3::IntoPy::into_py(self.clone(), py)
-    }
-}
-
-impl pyo3::ToPyObject for Polygon {
-    fn to_object(&self, py: pyo3::Python<'_>) -> pyo3::PyObject {
-        pyo3::IntoPy::into_py(self.clone(), py)
-    }
-}
-
-impl pyo3::ToPyObject for Segment {
-    fn to_object(&self, py: pyo3::Python<'_>) -> pyo3::PyObject {
-        pyo3::IntoPy::into_py(self.clone(), py)
     }
 }
 
@@ -320,39 +331,81 @@ impl From<PySegment> for Segment {
     }
 }
 
-impl pyo3::IntoPy<pyo3::PyObject> for Box {
-    fn into_py(self, py: pyo3::Python<'_>) -> pyo3::PyObject {
-        pyo3::IntoPy::into_py(PyBox(self), py)
+impl<'py> pyo3::IntoPyObject<'py> for Box {
+    type Target = <PyBox as pyo3::IntoPyObject<'py>>::Target;
+    type Output = <PyBox as pyo3::IntoPyObject<'py>>::Output;
+    type Error = <PyBox as pyo3::IntoPyObject<'py>>::Error;
+
+    fn into_pyobject(
+        self,
+        py: pyo3::Python<'py>,
+    ) -> Result<Self::Output, Self::Error> {
+        pyo3::IntoPyObject::into_pyobject(PyBox(self), py)
     }
 }
 
-impl pyo3::IntoPy<pyo3::PyObject> for Contour {
-    fn into_py(self, py: pyo3::Python<'_>) -> pyo3::PyObject {
-        pyo3::IntoPy::into_py(PyContour(self), py)
+impl<'py> pyo3::IntoPyObject<'py> for Contour {
+    type Target = <PyContour as pyo3::IntoPyObject<'py>>::Target;
+    type Output = <PyContour as pyo3::IntoPyObject<'py>>::Output;
+    type Error = <PyContour as pyo3::IntoPyObject<'py>>::Error;
+
+    fn into_pyobject(
+        self,
+        py: pyo3::Python<'py>,
+    ) -> Result<Self::Output, Self::Error> {
+        pyo3::IntoPyObject::into_pyobject(PyContour(self), py)
     }
 }
 
-impl pyo3::IntoPy<pyo3::PyObject> for Multipolygon {
-    fn into_py(self, py: pyo3::Python<'_>) -> pyo3::PyObject {
-        pyo3::IntoPy::into_py(PyMultipolygon(self), py)
+impl<'py> pyo3::IntoPyObject<'py> for Multipolygon {
+    type Target = <PyMultipolygon as pyo3::IntoPyObject<'py>>::Target;
+    type Output = <PyMultipolygon as pyo3::IntoPyObject<'py>>::Output;
+    type Error = <PyMultipolygon as pyo3::IntoPyObject<'py>>::Error;
+
+    fn into_pyobject(
+        self,
+        py: pyo3::Python<'py>,
+    ) -> Result<Self::Output, Self::Error> {
+        pyo3::IntoPyObject::into_pyobject(PyMultipolygon(self), py)
     }
 }
 
-impl pyo3::IntoPy<pyo3::PyObject> for Point {
-    fn into_py(self, py: pyo3::Python<'_>) -> pyo3::PyObject {
-        pyo3::IntoPy::into_py(PyPoint(self), py)
+impl<'py> pyo3::IntoPyObject<'py> for Point {
+    type Target = <PyPoint as pyo3::IntoPyObject<'py>>::Target;
+    type Output = <PyPoint as pyo3::IntoPyObject<'py>>::Output;
+    type Error = <PyPoint as pyo3::IntoPyObject<'py>>::Error;
+
+    fn into_pyobject(
+        self,
+        py: pyo3::Python<'py>,
+    ) -> Result<Self::Output, Self::Error> {
+        pyo3::IntoPyObject::into_pyobject(PyPoint(self), py)
     }
 }
 
-impl pyo3::IntoPy<pyo3::PyObject> for Polygon {
-    fn into_py(self, py: pyo3::Python<'_>) -> pyo3::PyObject {
-        pyo3::IntoPy::into_py(PyPolygon(self), py)
+impl<'py> pyo3::IntoPyObject<'py> for Polygon {
+    type Target = <PyPolygon as pyo3::IntoPyObject<'py>>::Target;
+    type Output = <PyPolygon as pyo3::IntoPyObject<'py>>::Output;
+    type Error = <PyPolygon as pyo3::IntoPyObject<'py>>::Error;
+
+    fn into_pyobject(
+        self,
+        py: pyo3::Python<'py>,
+    ) -> Result<Self::Output, Self::Error> {
+        pyo3::IntoPyObject::into_pyobject(PyPolygon(self), py)
     }
 }
 
-impl pyo3::IntoPy<pyo3::PyObject> for Segment {
-    fn into_py(self, py: pyo3::Python<'_>) -> pyo3::PyObject {
-        pyo3::IntoPy::into_py(PySegment(self), py)
+impl<'py> pyo3::IntoPyObject<'py> for Segment {
+    type Target = <PySegment as pyo3::IntoPyObject<'py>>::Target;
+    type Output = <PySegment as pyo3::IntoPyObject<'py>>::Output;
+    type Error = <PySegment as pyo3::IntoPyObject<'py>>::Error;
+
+    fn into_pyobject(
+        self,
+        py: pyo3::Python<'py>,
+    ) -> Result<Self::Output, Self::Error> {
+        pyo3::IntoPyObject::into_pyobject(PySegment(self), py)
     }
 }
 
@@ -372,7 +425,7 @@ type Trapezoidation = crate::seidel::Trapezoidation<Point>;
 
 #[pyo3::pyclass(name = "Box", module = "rene.exact")]
 #[derive(Clone)]
-struct PyBox(Box);
+pub struct PyBox(Box);
 
 #[pyo3::pyclass(
     name = "ConstrainedDelaunayTriangulation",
@@ -383,7 +436,7 @@ struct PyConstrainedDelaunayTriangulation(ConstrainedDelaunayTriangulation);
 
 #[pyo3::pyclass(name = "Contour", module = "rene.exact")]
 #[derive(Clone)]
-struct PyContour(Contour);
+pub struct PyContour(Contour);
 
 #[pyo3::pyclass(name = "DelaunayTriangulation", module = "rene.exact")]
 #[derive(Clone)]
@@ -395,7 +448,7 @@ struct PyEmpty(Empty);
 
 #[pyo3::pyclass(name = "Multipolygon", module = "rene.exact")]
 #[derive(Clone)]
-struct PyMultipolygon(Multipolygon);
+pub struct PyMultipolygon(Multipolygon);
 
 #[pyo3::pyclass(name = "Multisegment", module = "rene.exact")]
 #[derive(Clone)]
@@ -403,15 +456,15 @@ struct PyMultisegment(Multisegment);
 
 #[pyo3::pyclass(name = "Polygon", module = "rene.exact")]
 #[derive(Clone)]
-struct PyPolygon(Polygon);
+pub struct PyPolygon(Polygon);
 
 #[pyo3::pyclass(name = "Point", module = "rene.exact")]
 #[derive(Clone)]
-struct PyPoint(Point);
+pub struct PyPoint(Point);
 
 #[pyo3::pyclass(name = "Segment", module = "rene.exact")]
 #[derive(Clone)]
-struct PySegment(Segment);
+pub struct PySegment(Segment);
 
 #[pyo3::pyclass(name = "Trapezoidation", module = "rene.exact")]
 #[derive(Clone)]
@@ -547,7 +600,7 @@ fn try_py_integral_to_big_int(
                 let mut buffer = vec![0u8; bytes_count];
                 if pyo3::ffi::_PyLong_AsByteArray(
                     pyo3::AsPyPointer::as_ptr(
-                        &pyo3::Py::<pyo3::types::PyLong>::from_owned_ptr(
+                        &pyo3::Py::<pyo3::types::PyInt>::from_owned_ptr(
                             py, ptr,
                         ),
                     )

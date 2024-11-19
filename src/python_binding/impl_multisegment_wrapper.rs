@@ -44,7 +44,10 @@ macro_rules! impl_multisegment_wrapper {
                 py: pyo3::Python<'py>,
             ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::PyAny>> {
                 TryToPyAny::try_to_py_any(
-                    crate::locatable::Locatable::locate(&self.0, &point.borrow().0),
+                    crate::locatable::Locatable::locate(
+                        &self.0,
+                        &point.borrow().0,
+                    ),
                     py,
                 )
             }
@@ -60,7 +63,10 @@ macro_rules! impl_multisegment_wrapper {
                     TryToPyAny::try_to_py_any(
                         crate::relatable::Relatable::relate_to(
                             &self.0,
-                            &other.extract::<pyo3::Bound<'_, PyEmpty>>()?.borrow().0,
+                            &other
+                                .extract::<pyo3::Bound<'_, PyEmpty>>()?
+                                .borrow()
+                                .0,
                         ),
                         py,
                     )
@@ -68,7 +74,10 @@ macro_rules! impl_multisegment_wrapper {
                     TryToPyAny::try_to_py_any(
                         crate::relatable::Relatable::relate_to(
                             &self.0,
-                            &other.extract::<pyo3::Bound<'_, PyContour>>()?.borrow().0,
+                            &other
+                                .extract::<pyo3::Bound<'_, PyContour>>()?
+                                .borrow()
+                                .0,
                         ),
                         py,
                     )
@@ -76,7 +85,10 @@ macro_rules! impl_multisegment_wrapper {
                     TryToPyAny::try_to_py_any(
                         crate::relatable::Relatable::relate_to(
                             &self.0,
-                            &other.extract::<pyo3::Bound<'_, Self>>()?.borrow().0,
+                            &other
+                                .extract::<pyo3::Bound<'_, Self>>()?
+                                .borrow()
+                                .0,
                         ),
                         py,
                     )
@@ -84,7 +96,10 @@ macro_rules! impl_multisegment_wrapper {
                     TryToPyAny::try_to_py_any(
                         crate::relatable::Relatable::relate_to(
                             &self.0,
-                            &other.extract::<pyo3::Bound<'_, PySegment>>()?.borrow().0,
+                            &other
+                                .extract::<pyo3::Bound<'_, PySegment>>()?
+                                .borrow()
+                                .0,
                         ),
                         py,
                     )
@@ -92,7 +107,10 @@ macro_rules! impl_multisegment_wrapper {
                     TryToPyAny::try_to_py_any(
                         crate::relatable::Relatable::relate_to(
                             &self.0,
-                            &other.extract::<pyo3::Bound<'_, PyPolygon>>()?.borrow().0,
+                            &other
+                                .extract::<pyo3::Bound<'_, PyPolygon>>()?
+                                .borrow()
+                                .0,
                         ),
                         py,
                     )
@@ -100,7 +118,10 @@ macro_rules! impl_multisegment_wrapper {
                     TryToPyAny::try_to_py_any(
                         crate::relatable::Relatable::relate_to(
                             &self.0,
-                            &other.extract::<pyo3::Bound<'_, PyMultipolygon>>()?.borrow().0,
+                            &other
+                                .extract::<pyo3::Bound<'_, PyMultipolygon>>()?
+                                .borrow()
+                                .0,
                         ),
                         py,
                     )
@@ -119,70 +140,67 @@ macro_rules! impl_multisegment_wrapper {
             ) -> pyo3::PyResult<pyo3::PyObject> {
                 use pyo3::types::PyAnyMethods;
                 if other.is_instance(
-                    &<PyEmpty as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyEmpty as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyEmpty>>()?.borrow();
-                    Ok(pyo3::IntoPy::into_py(
+                    pyo3::IntoPyObject::into_pyobject(
                         PyEmpty(crate::traits::Intersection::intersection(
                             &self.0, &other.0,
                         )),
                         py,
-                    ))
+                    )
+                    .map(pyo3::Bound::into_any)
+                    .map(pyo3::Bound::unbind)
                 } else if other.is_instance(
-                    &<PyContour as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyContour as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyContour>>()?.borrow();
                     let segments =
                         crate::traits::Intersection::intersection(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_segments::<
-                        PyEmpty,
-                        PyMultisegment,
-                        Segment,
-                    >(segments, py))
+                    super::unpacking::try_unpack_maybe_empty_segments::<PyEmpty, PyMultisegment, Segment, _>(
+                        segments,
+                        py,
+                    )
                 } else if other.is_instance(
-                    &<Self as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<Self as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, Self>>()?.borrow();
                     let segments =
                         crate::traits::Intersection::intersection(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_segments::<
-                        PyEmpty,
-                        PyMultisegment,
-                        Segment,
-                    >(segments, py))
+                    super::unpacking::try_unpack_maybe_empty_segments::<PyEmpty, PyMultisegment, Segment, _>(
+                        segments,
+                        py,
+                    )
                 } else if other.is_instance(
-                    &<PySegment as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PySegment as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PySegment>>()?.borrow();
                     let segments =
                         crate::traits::Intersection::intersection(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_segments::<
-                        PyEmpty,
-                        PyMultisegment,
-                        Segment,
-                    >(segments, py))
+                    super::unpacking::try_unpack_maybe_empty_segments::<PyEmpty, PyMultisegment, Segment, _>(
+                        segments,
+                        py,
+                    )
                 } else if other.is_instance(
-                    &<PyMultipolygon as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyMultipolygon as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyMultipolygon>>()?.borrow();
                     let segments =
                         crate::traits::Intersection::intersection(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_segments::<
-                        PyEmpty,
-                        PyMultisegment,
-                        Segment,
-                    >(segments, py))
+                    super::unpacking::try_unpack_maybe_empty_segments::<PyEmpty, PyMultisegment, Segment, _>(
+                        segments,
+                        py,
+                    )
                 } else if other.is_instance(
-                    &<PyPolygon as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyPolygon as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyPolygon>>()?.borrow();
                     let segments =
                         crate::traits::Intersection::intersection(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_segments::<
-                        PyEmpty,
-                        PyMultisegment,
-                        Segment,
-                    >(segments, py))
+                    super::unpacking::try_unpack_maybe_empty_segments::<PyEmpty, PyMultisegment, Segment, _>(
+                        segments,
+                        py,
+                    )
                 } else {
                     Ok(py.NotImplemented())
                 }
@@ -195,11 +213,13 @@ macro_rules! impl_multisegment_wrapper {
 
             fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
                 pyo3::types::PyAnyMethods::hash(
-                    pyo3::types::PyFrozenSet::new_bound(
+                    pyo3::types::PyFrozenSet::new(
                         py,
-                        crate::traits::Multisegmental::segments(&self.0),
+                        crate::traits::Multisegmental::segments(&self.0)
+                            .into_iter()
+                            .cloned(),
                     )?
-                    .as_ref()
+                    .as_ref(),
                 )
             }
 
@@ -210,68 +230,81 @@ macro_rules! impl_multisegment_wrapper {
             ) -> pyo3::PyResult<pyo3::PyObject> {
                 use pyo3::types::PyAnyMethods;
                 if other.is_instance(
-                    &<PyEmpty as pyo3::type_object::PyTypeInfo>::type_object_bound(
+                    &<PyEmpty as pyo3::type_object::PyTypeInfo>::type_object(
                         py,
                     ),
                 )? {
-                    let other = other.extract::<pyo3::Bound<'_, PyEmpty>>()?.borrow();
-                    Ok(pyo3::IntoPy::into_py(
+                    let other =
+                        other.extract::<pyo3::Bound<'_, PyEmpty>>()?.borrow();
+                    pyo3::IntoPyObject::into_pyobject(
                         Self(crate::traits::Union::union(&self.0, &other.0)),
                         py,
-                    ))
+                    )
+                    .map(pyo3::Bound::into_any)
+                    .map(pyo3::Bound::unbind)
                 } else if other.is_instance(
-                    &<PyContour as pyo3::type_object::PyTypeInfo>::type_object_bound(
+                    &<PyContour as pyo3::type_object::PyTypeInfo>::type_object(
                         py,
                     ),
                 )? {
-                    let other = other.extract::<pyo3::Bound<'_, PyContour>>()?.borrow();
+                    let other = other
+                        .extract::<pyo3::Bound<'_, PyContour>>()?
+                        .borrow();
                     let segments =
                         crate::traits::Union::union(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_non_empty_segments::<
+                    super::unpacking::try_unpack_non_empty_segments::<
                         PyMultisegment,
                         Segment,
-                    >(segments, py))
+                        _,
+                    >(segments, py)
                 } else if other.is_instance(
-                    &<Self as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<Self as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
-                    let other = other.extract::<pyo3::Bound<'_, Self>>()?.borrow();
+                    let other =
+                        other.extract::<pyo3::Bound<'_, Self>>()?.borrow();
                     let segments =
                         crate::traits::Union::union(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_non_empty_segments::<
+                    super::unpacking::try_unpack_non_empty_segments::<
                         PyMultisegment,
                         Segment,
-                    >(segments, py))
+                        _,
+                    >(segments, py)
                 } else if other.is_instance(
-                    &<PySegment as pyo3::type_object::PyTypeInfo>::type_object_bound(
+                    &<PySegment as pyo3::type_object::PyTypeInfo>::type_object(
                         py,
                     ),
                 )? {
-                    let other = other.extract::<pyo3::Bound<'_, PySegment>>()?.borrow();
+                    let other = other
+                        .extract::<pyo3::Bound<'_, PySegment>>()?
+                        .borrow();
                     let segments =
                         crate::traits::Union::union(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_non_empty_segments::<
+                    super::unpacking::try_unpack_non_empty_segments::<
                         PyMultisegment,
                         Segment,
-                    >(segments, py))
+                        _,
+                    >(segments, py)
                 } else {
                     Ok(py.NotImplemented())
                 }
             }
 
-            fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+            fn __repr__(
+                &self,
+                py: pyo3::Python<'_>,
+            ) -> pyo3::PyResult<String> {
                 use pyo3::types::PyAnyMethods;
                 Ok(format!(
                     "{}({})",
                     <Self as pyo3::type_object::PyTypeInfo>::NAME,
-                    pyo3::IntoPy::into_py(
+                    pyo3::IntoPyObject::into_pyobject(
                         crate::traits::Iterable::iter(
                             &crate::traits::Multisegmental::segments(&self.0)
                         )
                         .cloned()
                         .collect::<Vec<_>>(),
                         py
-                    )
-                    .bind(py)
+                    )?
                     .repr()?
                     .extract::<String>()?
                 ))
@@ -285,15 +318,25 @@ macro_rules! impl_multisegment_wrapper {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(
-                    &<PyMultisegment as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyMultisegment as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyMultisegment>>()?.borrow();
                     match op {
                         pyo3::basic::CompareOp::Eq => {
-                            Ok(pyo3::IntoPy::into_py(self.0 == other.0, py))
+                            Ok(pyo3::BoundObject::into_bound(
+                                pyo3::IntoPyObject::into_pyobject(self.0 == other.0, py)
+                                    .unwrap()
+                            )
+                                .into_any()
+                                .unbind())
                         }
                         pyo3::basic::CompareOp::Ne => {
-                            Ok(pyo3::IntoPy::into_py(self.0 != other.0, py))
+                            Ok(pyo3::BoundObject::into_bound(
+                                pyo3::IntoPyObject::into_pyobject(self.0 != other.0, py)
+                                    .unwrap()
+                            )
+                                .into_any()
+                                .unbind())
                         }
                         _ => Ok(py.NotImplemented()),
                     }
@@ -323,68 +366,65 @@ macro_rules! impl_multisegment_wrapper {
             ) -> pyo3::PyResult<pyo3::PyObject> {
                 use pyo3::types::PyAnyMethods;
                 if other.is_instance(
-                    &<PyEmpty as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyEmpty as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyEmpty>>()?.borrow();
-                    Ok(pyo3::IntoPy::into_py(
+                    pyo3::IntoPyObject::into_pyobject(
                         Self(crate::traits::Difference::difference(&self.0, &other.0)),
                         py,
-                    ))
+                    )
+                    .map(pyo3::Bound::into_any)
+                    .map(pyo3::Bound::unbind)
                 } else if other.is_instance(
-                    &<PyContour as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyContour as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyContour>>()?.borrow();
                     let segments =
                         crate::traits::Difference::difference(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_segments::<
-                        PyEmpty,
-                        PyMultisegment,
-                        Segment,
-                    >(segments, py))
+                    super::unpacking::try_unpack_maybe_empty_segments::<PyEmpty, PyMultisegment, Segment, _>(
+                        segments,
+                        py,
+                    )
                 } else if other.is_instance(
-                    &<Self as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<Self as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, Self>>()?.borrow();
                     let segments =
                         crate::traits::Difference::difference(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_segments::<
-                        PyEmpty,
-                        PyMultisegment,
-                        Segment,
-                    >(segments, py))
+                    super::unpacking::try_unpack_maybe_empty_segments::<PyEmpty, PyMultisegment, Segment, _>(
+                        segments,
+                        py,
+                    )
                 } else if other.is_instance(
-                    &<PySegment as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PySegment as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PySegment>>()?.borrow();
                     let segments =
                         crate::traits::Difference::difference(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_segments::<
-                        PyEmpty,
-                        PyMultisegment,
-                        Segment,
-                    >(segments, py))
+                    super::unpacking::try_unpack_maybe_empty_segments::<PyEmpty, PyMultisegment, Segment, _>(
+                        segments,
+                        py,
+                    )
                 } else if other.is_instance(
-                    &<PyPolygon as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyPolygon as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyPolygon>>()?.borrow();
                     let segments =
                         crate::traits::Difference::difference(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_segments::<
-                        PyEmpty,
-                        PyMultisegment,
-                        Segment,
-                    >(segments, py))
+                    super::unpacking::try_unpack_maybe_empty_segments::<PyEmpty, PyMultisegment, Segment, _>(
+                        segments,
+                        py,
+                    )
                 } else if other.is_instance(
-                    &<PyMultipolygon as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<PyMultipolygon as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other = other.extract::<pyo3::Bound<'_, PyMultipolygon>>()?.borrow();
                     let segments =
                         crate::traits::Difference::difference(&self.0, &other.0);
-                    Ok(super::unpacking::unpack_maybe_empty_segments::<
-                        PyEmpty,
-                        PyMultisegment,
-                        Segment,
-                    >(segments, py))
+                    super::unpacking::try_unpack_maybe_empty_segments::<PyEmpty, PyMultisegment, Segment, _>(
+                        segments,
+                        py,
+                    )
                 } else {
                     Ok(py.NotImplemented())
                 }
@@ -397,62 +437,73 @@ macro_rules! impl_multisegment_wrapper {
             ) -> pyo3::PyResult<pyo3::PyObject> {
                 use pyo3::types::PyAnyMethods;
                 if other.is_instance(
-                    &<PyEmpty as pyo3::type_object::PyTypeInfo>::type_object_bound(
+                    &<PyEmpty as pyo3::type_object::PyTypeInfo>::type_object(
                         py,
                     ),
                 )? {
-                    let other = other.extract::<pyo3::Bound<'_, PyEmpty>>()?.borrow();
-                    Ok(pyo3::IntoPy::into_py(
-                    Self(
+                    let other =
+                        other.extract::<pyo3::Bound<'_, PyEmpty>>()?.borrow();
+                    pyo3::IntoPyObject::into_pyobject(
+                        Self(
+                            crate::traits::SymmetricDifference::symmetric_difference(
+                                &self.0, &other.0,
+                            ),
+                        ),
+                        py,
+                    )
+                    .map(pyo3::Bound::into_any)
+                    .map(pyo3::Bound::unbind)
+                } else if other.is_instance(
+                    &<PyContour as pyo3::type_object::PyTypeInfo>::type_object(
+                        py,
+                    ),
+                )? {
+                    let other = other
+                        .extract::<pyo3::Bound<'_, PyContour>>()?
+                        .borrow();
+                    let segments =
                         crate::traits::SymmetricDifference::symmetric_difference(
                             &self.0, &other.0,
-                        ),
-                    ),
-                    py,
-                ))
+                        );
+                    super::unpacking::try_unpack_maybe_empty_segments::<
+                        PyEmpty,
+                        PyMultisegment,
+                        Segment,
+                        _,
+                    >(segments, py)
                 } else if other.is_instance(
-                    &<PyContour as pyo3::type_object::PyTypeInfo>::type_object_bound(
+                    &<Self as pyo3::type_object::PyTypeInfo>::type_object(py),
+                )? {
+                    let other =
+                        other.extract::<pyo3::Bound<'_, Self>>()?.borrow();
+                    let segments =
+                        crate::traits::SymmetricDifference::symmetric_difference(
+                            &self.0, &other.0,
+                        );
+                    super::unpacking::try_unpack_maybe_empty_segments::<
+                        PyEmpty,
+                        PyMultisegment,
+                        Segment,
+                        _,
+                    >(segments, py)
+                } else if other.is_instance(
+                    &<PySegment as pyo3::type_object::PyTypeInfo>::type_object(
                         py,
                     ),
                 )? {
-                    let other = other.extract::<pyo3::Bound<'_, PyContour>>()?.borrow();
+                    let other = other
+                        .extract::<pyo3::Bound<'_, PySegment>>()?
+                        .borrow();
                     let segments =
-                    crate::traits::SymmetricDifference::symmetric_difference(
-                        &self.0, &other.0,
-                    );
-                    Ok(super::unpacking::unpack_maybe_empty_segments::<
+                        crate::traits::SymmetricDifference::symmetric_difference(
+                            &self.0, &other.0,
+                        );
+                    super::unpacking::try_unpack_maybe_empty_segments::<
                         PyEmpty,
                         PyMultisegment,
                         Segment,
-                    >(segments, py))
-                } else if other.is_instance(
-                    &<Self as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
-                )? {
-                    let other = other.extract::<pyo3::Bound<'_, Self>>()?.borrow();
-                    let segments =
-                    crate::traits::SymmetricDifference::symmetric_difference(
-                        &self.0, &other.0,
-                    );
-                    Ok(super::unpacking::unpack_maybe_empty_segments::<
-                        PyEmpty,
-                        PyMultisegment,
-                        Segment,
-                    >(segments, py))
-                } else if other.is_instance(
-                    &<PySegment as pyo3::type_object::PyTypeInfo>::type_object_bound(
-                        py,
-                    ),
-                )? {
-                    let other = other.extract::<pyo3::Bound<'_, PySegment>>()?.borrow();
-                    let segments =
-                    crate::traits::SymmetricDifference::symmetric_difference(
-                        &self.0, &other.0,
-                    );
-                    Ok(super::unpacking::unpack_maybe_empty_segments::<
-                        PyEmpty,
-                        PyMultisegment,
-                        Segment,
-                    >(segments, py))
+                        _,
+                    >(segments, py)
                 } else {
                     Ok(py.NotImplemented())
                 }

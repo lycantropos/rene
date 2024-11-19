@@ -39,11 +39,8 @@ macro_rules! impl_point_wrapper {
 
             fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
                 pyo3::types::PyAnyMethods::hash(
-                    pyo3::types::PyTuple::new_bound(
-                        py,
-                        [self.x(py)?, self.y(py)?],
-                    )
-                    .as_ref(),
+                    pyo3::types::PyTuple::new(py, [self.x(py)?, self.y(py)?])?
+                        .as_ref(),
                 )
             }
 
@@ -68,29 +65,34 @@ macro_rules! impl_point_wrapper {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(
-                    &<Self as pyo3::type_object::PyTypeInfo>::type_object_bound(py),
+                    &<Self as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
-                    let other = other.extract::<pyo3::Bound<'_, Self>>()?.borrow();
-                    match op {
-                        pyo3::basic::CompareOp::Eq => {
-                            Ok(pyo3::IntoPy::into_py(self.0 == other.0, py))
-                        }
-                        pyo3::basic::CompareOp::Ge => {
-                            Ok(pyo3::IntoPy::into_py(self.0 >= other.0, py))
-                        }
-                        pyo3::basic::CompareOp::Gt => {
-                            Ok(pyo3::IntoPy::into_py(self.0 > other.0, py))
-                        }
-                        pyo3::basic::CompareOp::Le => {
-                            Ok(pyo3::IntoPy::into_py(self.0 <= other.0, py))
-                        }
-                        pyo3::basic::CompareOp::Lt => {
-                            Ok(pyo3::IntoPy::into_py(self.0 < other.0, py))
-                        }
-                        pyo3::basic::CompareOp::Ne => {
-                            Ok(pyo3::IntoPy::into_py(self.0 != other.0, py))
-                        }
-                    }
+                    let other =
+                        other.extract::<pyo3::Bound<'_, Self>>()?.borrow();
+                    Ok(pyo3::BoundObject::into_bound(
+                        pyo3::IntoPyObject::into_pyobject(
+                            match op {
+                                pyo3::basic::CompareOp::Eq => {
+                                    self.0 == other.0
+                                }
+                                pyo3::basic::CompareOp::Ge => {
+                                    self.0 >= other.0
+                                }
+                                pyo3::basic::CompareOp::Gt => self.0 > other.0,
+                                pyo3::basic::CompareOp::Le => {
+                                    self.0 <= other.0
+                                }
+                                pyo3::basic::CompareOp::Lt => self.0 < other.0,
+                                pyo3::basic::CompareOp::Ne => {
+                                    self.0 != other.0
+                                }
+                            },
+                            py,
+                        )
+                        .unwrap(),
+                    )
+                    .into_any()
+                    .unbind())
                 } else {
                     Ok(py.NotImplemented())
                 }

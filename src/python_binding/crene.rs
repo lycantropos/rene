@@ -3,8 +3,8 @@ use pyo3::sync::GILOnceCell;
 use pyo3::type_object::PyTypeInfo;
 use pyo3::types::{PyModule, PyTuple};
 use pyo3::{
-    intern, pyclass, pymethods, pymodule, Bound, IntoPy, Py, PyAny, PyObject,
-    PyResult, Python,
+    intern, pyclass, pymethods, pymodule, Bound, IntoPyObject, Py, PyAny,
+    PyObject, PyResult, Python,
 };
 
 use crate::constants::{
@@ -41,9 +41,9 @@ impl TryToPyAny for Location {
         static LOCATION_CLS: GILOnceCell<PyObject> = GILOnceCell::new();
         LOCATION_CLS
             .get_or_try_init(py, || {
-                py.import_bound("rene.enums")?
+                py.import("rene.enums")?
                     .getattr(intern!(py, "Location"))
-                    .map(|value| IntoPy::into_py(value, py))
+                    .map(|value| value.into_pyobject(py).unwrap().unbind())
             })?
             .getattr(
                 py,
@@ -63,9 +63,9 @@ impl TryToPyAny for Orientation {
         static ORIENTATION_CLS: GILOnceCell<PyObject> = GILOnceCell::new();
         ORIENTATION_CLS
             .get_or_try_init(py, || {
-                py.import_bound("rene.enums")?
+                py.import("rene.enums")?
                     .getattr(intern!(py, "Orientation"))
-                    .map(|value| IntoPy::into_py(value, py))
+                    .map(|value| value.into_pyobject(py).unwrap().unbind())
             })?
             .getattr(
                 py,
@@ -91,9 +91,9 @@ impl TryToPyAny for Relation {
         static RELATION_CLS: GILOnceCell<PyObject> = GILOnceCell::new();
         RELATION_CLS
             .get_or_try_init(py, || {
-                py.import_bound("rene.enums")?
+                py.import("rene.enums")?
                     .getattr(intern!(py, "Relation"))
-                    .map(|value| IntoPy::into_py(value, py))
+                    .map(|value| value.into_pyobject(py).unwrap().unbind())
             })?
             .getattr(
                 py,
@@ -282,8 +282,11 @@ impl PyRelation {
         }
     }
 
-    fn __getnewargs__<'py>(&self, py: Python<'py>) -> Bound<'py, PyTuple> {
-        PyTuple::new_bound(py, [self.value()])
+    fn __getnewargs__<'py>(
+        &self,
+        py: Python<'py>,
+    ) -> PyResult<Bound<'py, PyTuple>> {
+        PyTuple::new(py, [self.value()])
     }
 
     fn __repr__(&self) -> String {
