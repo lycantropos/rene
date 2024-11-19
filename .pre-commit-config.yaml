@@ -60,7 +60,7 @@ repos:
         pass_filenames: false
         types: [ rust ]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.3
+    rev: v0.7.4
     hooks:
       - id: ruff-format
       - id: ruff
@@ -71,13 +71,11 @@ repos:
     rev: v1.13.0
     hooks:
       - id: mypy
-        args:
-          - --strict
         additional_dependencies:
           - 'dendroid>=1.6.1,<2.0'
           - 'hypothesis>=6.116.0'
           - 'prioq>=0.6.0,<1.0'
           - 'pytest>=8.3.3'
-          - 'rithm>=14.2.0,<15.0'
+          - 'rithm>=14.5.0,<15.0'
           - 'setuptools-rust>=1.8.1'
           - 'types-setuptools'
