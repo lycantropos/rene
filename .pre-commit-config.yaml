@@ -77,12 +77,13 @@ repos:
           - "--strict"
         additional_dependencies:
           - "dendroid>=1.6.1,<2.0"
-          - "hypothesis>=6.82.0,<7.0"
+          - "hypothesis>=6.148.11,<7.0"
           - "hypothesis-geometry>=8.0.0,<9.0"
           - "prioq>=0.6.0,<1.0"
-          - "pytest>=7.4.0,<8.0"
-          - "rithm>=14.6.0,<15.0"
-          - "setuptools-rust>=1.8.1"
+          - "pytest>=9.0.2,<10.0"
+          - "rithm>=14.7.1,<15.0"
+          - "setuptools-rust>=1.12.0,<2.0; platform_python_implementation=='CPython'"
+          - "typing-extensions>=4.15.0,<5.0"
           - "types-setuptools"
   - repo: https://github.com/RobertCraigie/pyright-python
     rev: v1.1.407
@@ -90,10 +91,11 @@ repos:
       - id: pyright
         additional_dependencies:
           - "dendroid>=1.6.1,<2.0"
-          - "hypothesis>=6.82.0,<7.0"
+          - "hypothesis>=6.148.11,<7.0"
           - "hypothesis-geometry>=8.0.0,<9.0"
           - "prioq>=0.6.0,<1.0"
-          - "pytest>=7.4.0,<8.0"
-          - "rithm>=14.6.0,<15.0"
-          - "setuptools-rust>=1.8.1"
+          - "pytest>=9.0.2,<10.0"
+          - "rithm>=14.7.1,<15.0"
+          - "setuptools-rust>=1.12.0,<2.0; platform_python_implementation=='CPython'"
+          - "typing-extensions>=4.15.0,<5.0"
           - "types-setuptools"
