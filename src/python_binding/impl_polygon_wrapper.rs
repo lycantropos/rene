@@ -140,7 +140,7 @@ macro_rules! impl_polygon_wrapper {
             fn __and__(
                 &self,
                 other: &pyo3::Bound<'_, pyo3::PyAny>,
-            ) -> pyo3::PyResult<pyo3::PyObject> {
+            ) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(
@@ -233,14 +233,14 @@ macro_rules! impl_polygon_wrapper {
                             )?.into_any(),
                         ],
                     )?
-                    .as_ref(),
+                    .as_any(),
                 )
             }
 
             fn __or__(
                 &self,
                 other: &pyo3::Bound<'_, pyo3::PyAny>,
-            ) -> pyo3::PyResult<pyo3::PyObject> {
+            ) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(
@@ -300,7 +300,7 @@ macro_rules! impl_polygon_wrapper {
                 &self,
                 other: &pyo3::Bound<'_, pyo3::PyAny>,
                 op: pyo3::basic::CompareOp,
-            ) -> pyo3::PyResult<pyo3::PyObject> {
+            ) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(
@@ -357,7 +357,7 @@ macro_rules! impl_polygon_wrapper {
             fn __sub__(
                 &self,
                 other: &pyo3::Bound<'_, pyo3::PyAny>,
-            ) -> pyo3::PyResult<pyo3::PyObject> {
+            ) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(
@@ -398,7 +398,7 @@ macro_rules! impl_polygon_wrapper {
             fn __xor__(
                 &self,
                 other: &pyo3::Bound<'_, pyo3::PyAny>,
-            ) -> pyo3::PyResult<pyo3::PyObject> {
+            ) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(

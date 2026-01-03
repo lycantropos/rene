@@ -1,10 +1,10 @@
 use pyo3::exceptions::PyValueError;
-use pyo3::sync::GILOnceCell;
+use pyo3::sync::PyOnceLock;
 use pyo3::type_object::PyTypeInfo;
 use pyo3::types::{PyModule, PyTuple};
 use pyo3::{
     intern, pyclass, pymethods, pymodule, Bound, IntoPyObject, Py, PyAny,
-    PyObject, PyResult, Python,
+    PyResult, Python,
 };
 
 use crate::constants::{
@@ -38,7 +38,7 @@ fn _crene(_py: Python<'_>, module: &Bound<'_, PyModule>) -> PyResult<()> {
 impl TryToPyAny for Location {
     fn try_to_py_any(self, py: Python<'_>) -> PyResult<Bound<'_, PyAny>> {
         use pyo3::types::PyAnyMethods;
-        static LOCATION_CLS: GILOnceCell<PyObject> = GILOnceCell::new();
+        static LOCATION_CLS: PyOnceLock<Py<PyAny>> = PyOnceLock::new();
         LOCATION_CLS
             .get_or_try_init(py, || {
                 py.import("rene.enums")?
@@ -60,7 +60,7 @@ impl TryToPyAny for Location {
 impl TryToPyAny for Orientation {
     fn try_to_py_any(self, py: Python<'_>) -> PyResult<Bound<'_, PyAny>> {
         use pyo3::types::PyAnyMethods;
-        static ORIENTATION_CLS: GILOnceCell<PyObject> = GILOnceCell::new();
+        static ORIENTATION_CLS: PyOnceLock<Py<PyAny>> = PyOnceLock::new();
         ORIENTATION_CLS
             .get_or_try_init(py, || {
                 py.import("rene.enums")?
@@ -88,7 +88,8 @@ impl TryToPyAny for Orientation {
 impl TryToPyAny for Relation {
     fn try_to_py_any(self, py: Python<'_>) -> PyResult<Bound<'_, PyAny>> {
         use pyo3::types::PyAnyMethods;
-        static RELATION_CLS: GILOnceCell<PyObject> = GILOnceCell::new();
+        static RELATION_CLS: pyo3::sync::PyOnceLock<Py<PyAny>> =
+            pyo3::sync::PyOnceLock::new();
         RELATION_CLS
             .get_or_try_init(py, || {
                 py.import("rene.enums")?
@@ -311,7 +312,7 @@ impl PyRelation {
 }
 
 fn to_py_relation_values(py: Python<'_>) -> &[Py<PyRelation>; 11] {
-    static VALUES: GILOnceCell<[Py<PyRelation>; 11]> = GILOnceCell::new();
+    static VALUES: PyOnceLock<[Py<PyRelation>; 11]> = PyOnceLock::new();
     VALUES.get_or_init(py, || {
         [
             Bound::new(py, PyRelation(Relation::Component))

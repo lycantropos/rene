@@ -15,7 +15,7 @@ pub(super) fn are_non_empty_unique_sequences_rotationally_equivalent<
         right
             .iter()
             .position(|value| value == left_first_element)
-            .map_or(false, |index| {
+            .is_some_and(|index| {
                 (left[1..left.len() - index] == right[index + 1..]
                     && left[left.len() - index..] == right[..index])
                     || (left[1..=index].iter().eq(right[..index].iter().rev())

@@ -40,7 +40,7 @@ macro_rules! impl_point_wrapper {
             fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
                 pyo3::types::PyAnyMethods::hash(
                     pyo3::types::PyTuple::new(py, [self.x(py)?, self.y(py)?])?
-                        .as_ref(),
+                        .as_any(),
                 )
             }
 
@@ -61,7 +61,7 @@ macro_rules! impl_point_wrapper {
                 &self,
                 other: &pyo3::Bound<'_, pyo3::PyAny>,
                 op: pyo3::basic::CompareOp,
-            ) -> pyo3::PyResult<pyo3::PyObject> {
+            ) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(

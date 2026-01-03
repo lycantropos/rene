@@ -131,7 +131,7 @@ macro_rules! impl_box_wrapper {
                             self.max_y(py)?,
                         ],
                     )?
-                    .as_ref(),
+                    .as_any(),
                 )
             }
 
@@ -154,7 +154,7 @@ macro_rules! impl_box_wrapper {
                 &self,
                 other: &pyo3::Bound<'_, pyo3::PyAny>,
                 op: pyo3::basic::CompareOp,
-            ) -> pyo3::PyResult<pyo3::PyObject> {
+            ) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(

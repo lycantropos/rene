@@ -1,5 +1,5 @@
 pub(super) struct Reference<T> {
-    _python_value: pyo3::PyObject,
+    _python_value: pyo3::Py<pyo3::PyAny>,
     rust_ptr: *const T,
 }
 
@@ -11,7 +11,7 @@ impl<T> Clone for Reference<T> {
     fn clone(&self) -> Self {
         Self {
             _python_value: unsafe {
-                pyo3::Python::with_gil_unchecked(|py| {
+                pyo3::Python::attach_unchecked(|py| {
                     self._python_value.clone_ref(py)
                 })
             },
@@ -35,10 +35,7 @@ impl<T> Reference<T> {
     {
         Reference {
             _python_value: unsafe {
-                pyo3::Bound::from_borrowed_ptr(
-                    value.py(),
-                    pyo3::AsPyPointer::as_ptr(&value),
-                )
+                pyo3::Bound::from_borrowed_ptr(value.py(), value.as_ptr())
             }
             .unbind(),
             rust_ptr: std::ops::Deref::deref(&value) as *const T,

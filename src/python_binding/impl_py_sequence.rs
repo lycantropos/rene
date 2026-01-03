@@ -132,7 +132,7 @@ macro_rules! impl_py_sequence {
                     ).map(pyo3::Bound::<'_, _>::into_any)
                 } else {
                     let maybe_index =
-                        unsafe { pyo3::ffi::PyNumber_Index(pyo3::AsPyPointer::as_ptr(item)) };
+                        unsafe { pyo3::ffi::PyNumber_Index(item.as_ptr()) };
                     if maybe_index.is_null() {
                         Err(pyo3::PyErr::fetch(item.py()))
                     } else {
@@ -167,8 +167,7 @@ macro_rules! impl_py_sequence {
                             .cloned()
                             .map(|element| <$py_value_type>::from(element))
                             .collect::<Vec<_>>(),
-                    )?
-                    .as_ref(),
+                    )?.as_any(),
                 )
             }
 
@@ -180,7 +179,7 @@ macro_rules! impl_py_sequence {
                 &self,
                 other: &pyo3::Bound<'_, pyo3::PyAny>,
                 op: pyo3::basic::CompareOp,
-            ) -> pyo3::PyResult<pyo3::PyObject> {
+            ) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(

@@ -65,12 +65,6 @@ const _: () =
 type BigInt = big_int::BigInt<Digit, DIGIT_BITNESS>;
 type Fraction = fraction::Fraction<BigInt>;
 
-impl Default for PyEmpty {
-    fn default() -> Self {
-        PyEmpty(Empty::new())
-    }
-}
-
 impl From<Box> for PyBox {
     fn from(value: Box) -> Self {
         Self(value)
@@ -239,40 +233,40 @@ impl TryFromPyAny for Fraction {
     ) -> pyo3::PyResult<Self> {
         use pyo3::types::PyAnyMethods;
         if value.is_instance(&<pyo3::types::PyFloat as pyo3::type_object::PyTypeInfo>::type_object(py))? {
-                Fraction::try_from(value.extract::<f64>()?).map_err(|error| {
-                    match error {
-                        fraction::FromFloatConstructionError::Infinity => {
-                            pyo3::exceptions::PyOverflowError::new_err(error.to_string())
-                        }
-                        _ => pyo3::exceptions::PyValueError::new_err(error.to_string()),
+            Fraction::try_from(value.extract::<f64>()?).map_err(|error| {
+                match error {
+                    fraction::FromFloatConstructionError::Infinity => {
+                        pyo3::exceptions::PyOverflowError::new_err(error.to_string())
                     }
-                })
-            } else {
-                let numerator = try_py_integral_to_big_int(
-                    value.getattr(pyo3::intern!(py, "numerator")).map_err(
-                        |_| {
-                            pyo3::exceptions::PyTypeError::new_err(
-                                INVALID_SCALAR_TYPE_ERROR_MESSAGE,
-                            )
-                        },
-                    )?,
-                )?;
-                let denominator = try_py_integral_to_big_int(
-                    value.getattr(pyo3::intern!(py, "denominator")).map_err(
-                        |_| {
-                            pyo3::exceptions::PyTypeError::new_err(
-                                INVALID_SCALAR_TYPE_ERROR_MESSAGE,
-                            )
-                        },
-                    )?,
-                )?;
-                match Fraction::new(numerator, denominator) {
-                    Some(value) => Ok(value),
-                    None => Err(pyo3::exceptions::PyZeroDivisionError::new_err(
-                        UNDEFINED_DIVISION_ERROR_MESSAGE,
-                    )),
+                    _ => pyo3::exceptions::PyValueError::new_err(error.to_string()),
                 }
+            })
+        } else {
+            let numerator = try_py_integral_to_big_int(
+                value.getattr(pyo3::intern!(py, "numerator")).map_err(
+                    |_| {
+                        pyo3::exceptions::PyTypeError::new_err(
+                            INVALID_SCALAR_TYPE_ERROR_MESSAGE,
+                        )
+                    },
+                )?,
+            )?;
+            let denominator = try_py_integral_to_big_int(
+                value.getattr(pyo3::intern!(py, "denominator")).map_err(
+                    |_| {
+                        pyo3::exceptions::PyTypeError::new_err(
+                            INVALID_SCALAR_TYPE_ERROR_MESSAGE,
+                        )
+                    },
+                )?,
+            )?;
+            match Fraction::new(numerator, denominator) {
+                Some(value) => Ok(value),
+                None => Err(pyo3::exceptions::PyZeroDivisionError::new_err(
+                    UNDEFINED_DIVISION_ERROR_MESSAGE,
+                )),
             }
+        }
     }
 }
 
@@ -282,8 +276,8 @@ impl TryToPyAny for &Fraction {
         py: pyo3::Python<'_>,
     ) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::PyAny>> {
         use pyo3::types::PyAnyMethods;
-        static FRACTION_CLS: pyo3::sync::GILOnceCell<pyo3::PyObject> =
-            pyo3::sync::GILOnceCell::new();
+        static FRACTION_CLS: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>> =
+            pyo3::sync::PyOnceLock::new();
         FRACTION_CLS
             .get_or_try_init(py, || {
                 py.import("rithm.fraction")?
@@ -443,7 +437,7 @@ pub struct PyContour(Contour);
 struct PyDelaunayTriangulation(DelaunayTriangulation);
 
 #[pyo3::pyclass(name = "Empty", module = "rene.exact")]
-#[derive(Clone)]
+#[derive(Clone, Default)]
 struct PyEmpty(Empty);
 
 #[pyo3::pyclass(name = "Multipolygon", module = "rene.exact")]
@@ -566,10 +560,10 @@ impl_py_sequence!(
 
 impl_py_sequence!(PyPolygonHoles, polygon, contour, holes, PyContour, Contour);
 
-fn big_int_to_py_long(value: &BigInt) -> pyo3::PyObject {
+fn big_int_to_py_long(value: &BigInt) -> pyo3::Py<pyo3::PyAny> {
     let buffer = value.to_bytes(Endianness::Little);
-    pyo3::Python::with_gil(|py| unsafe {
-        pyo3::PyObject::from_owned_ptr(
+    pyo3::Python::attach(|py| unsafe {
+        pyo3::Py::<pyo3::PyAny>::from_owned_ptr(
             py,
             pyo3::ffi::_PyLong_FromByteArray(
                 buffer.as_ptr(),
@@ -599,12 +593,9 @@ fn try_py_integral_to_big_int(
                 let bytes_count = bits_count / (u8::BITS as usize) + 1;
                 let mut buffer = vec![0u8; bytes_count];
                 if pyo3::ffi::_PyLong_AsByteArray(
-                    pyo3::AsPyPointer::as_ptr(
-                        &pyo3::Py::<pyo3::types::PyInt>::from_owned_ptr(
-                            py, ptr,
-                        ),
-                    )
-                    .cast::<pyo3::ffi::PyLongObject>(),
+                    pyo3::Py::<pyo3::types::PyInt>::from_owned_ptr(py, ptr)
+                        .as_ptr()
+                        .cast::<pyo3::ffi::PyLongObject>(),
                     buffer.as_mut_ptr(),
                     buffer.len(),
                     1,

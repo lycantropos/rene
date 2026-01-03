@@ -5,26 +5,26 @@ license = "MIT"
 version = "0.1.0"
 edition = "2018"
 repository = "https://github.com/lycantropos/rene"
-rust-version = "1.71.0"
+rust-version = "1.74.0"
 
 [lib]
 name = "rene"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-rithm = "^14.6.0"
+rithm = "^14.7.0"
 
 [dependencies.traiter]
 version = "^4.0.0"
 features = ["numbers"]
 
 [dependencies.pyo3]
-version = "^0.23.1"
+version = "^0.27.2"
 features = ["extension-module"]
 
 [dependencies.pyo3-ffi]
-version = "^0.23.1"
+version = "^0.27.2"
 features = ["extension-module"]
 
 [build-dependencies]
-pyo3-build-config = "^0.23.1"
+pyo3-build-config = "^0.27.2"
