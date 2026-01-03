@@ -1,18 +1,18 @@
 [package]
-name = "rene"
 description = "Computational geometry."
-license = "MIT"
-version = "0.1.0"
 edition = "2018"
-repository = "https://github.com/lycantropos/rene"
+license = "MIT"
+name = "rene"
+repository = "https://github.com/lycantropos/rithm"
 rust-version = "1.74.0"
+version = "0.1.0"
 
 [lib]
 name = "rene"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-rithm = "^14.7.0"
+rithm = "^14.7.1"
 
 [dependencies.traiter]
 version = "^4.0.0"
