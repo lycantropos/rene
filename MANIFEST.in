@@ -1,4 +1,3 @@
 include Cargo.toml
 include rene/py.typed
-recursive-include rene *.pyi
 recursive-include src *.rs
