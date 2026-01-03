@@ -3,7 +3,7 @@ description = "Computational geometry."
 edition = "2018"
 license = "MIT"
 name = "rene"
-repository = "https://github.com/lycantropos/rithm"
+repository = "https://github.com/lycantropos/rene"
 rust-version = "1.74.0"
 version = "0.1.0"
 
