@@ -2,15 +2,13 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-toml
       - id: check-yaml
       - id: end-of-file-fixer
-        exclude: .bumpversion.cfg
       - id: trailing-whitespace
-        exclude: .bumpversion.cfg
   - repo: https://github.com/jorisroovers/gitlint
     rev: v0.19.1
     hooks:
@@ -21,18 +19,22 @@ repos:
           - --msg-filename
         stages: [ commit-msg ]
   - repo: https://github.com/crate-ci/typos
-    rev: v1.27.3
+    rev: v1.41.0
     hooks:
       - id: typos
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.4
+    rev: v1.7.10
     hooks:
       - id: actionlint
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.47.0
+    hooks:
+      - id: markdownlint-fix
   - repo: local
     hooks:
       - id: cargo-fmt
         name: cargo-fmt
-        entry: cargo fmt -- --check
+        entry: cargo fmt --
         language: system
         types: [ rust ]
       - id: cargo-clippy-all-features
@@ -60,22 +62,38 @@ repos:
         pass_filenames: false
         types: [ rust ]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.4
+    rev: v0.14.10
     hooks:
       - id: ruff-format
-      - id: ruff
+      - id: ruff-check
         args:
           - --fix
           - --exit-non-zero-on-fix
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.13.0
+    rev: v1.19.1
     hooks:
       - id: mypy
+        args:
+          - "--strict"
         additional_dependencies:
-          - 'dendroid>=1.6.1,<2.0'
-          - 'hypothesis>=6.116.0'
-          - 'prioq>=0.6.0,<1.0'
-          - 'pytest>=8.3.3'
-          - 'rithm>=14.6.0,<15.0'
-          - 'setuptools-rust>=1.8.1'
-          - 'types-setuptools'
+          - "dendroid>=1.6.1,<2.0"
+          - "hypothesis>=6.82.0,<7.0"
+          - "hypothesis-geometry>=8.0.0,<9.0"
+          - "prioq>=0.6.0,<1.0"
+          - "pytest>=7.4.0,<8.0"
+          - "rithm>=14.6.0,<15.0"
+          - "setuptools-rust>=1.8.1"
+          - "types-setuptools"
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.407
+    hooks:
+      - id: pyright
+        additional_dependencies:
+          - "dendroid>=1.6.1,<2.0"
+          - "hypothesis>=6.82.0,<7.0"
+          - "hypothesis-geometry>=8.0.0,<9.0"
+          - "prioq>=0.6.0,<1.0"
+          - "pytest>=7.4.0,<8.0"
+          - "rithm>=14.6.0,<15.0"
+          - "setuptools-rust>=1.8.1"
+          - "types-setuptools"
