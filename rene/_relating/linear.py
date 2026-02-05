@@ -238,7 +238,7 @@ class Operation(Generic[hints.ScalarT]):
         assert is_event_left(event)
         try:
             return self._sweep_line_data.next(self._to_sweep_line_key(event))
-        except ValueError:
+        except KeyError:
             return None
 
     def _add(self, event: Event, /) -> None:
@@ -249,7 +249,7 @@ class Operation(Generic[hints.ScalarT]):
         assert is_event_left(event)
         try:
             return self._sweep_line_data.prev(self._to_sweep_line_key(event))
-        except ValueError:
+        except KeyError:
             return None
 
     def _detect_intersection(

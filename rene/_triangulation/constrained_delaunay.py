@@ -42,7 +42,7 @@ class ConstrainedDelaunayTriangulation(Generic[hints.ScalarT]):
                     ContourVertex(index, vertex_index, vertex)
                     for vertex_index, vertex in zip(
                         range(len(contour_vertices) - 1),
-                        contour_vertices,
+                        contour_vertices[:-1],
                         strict=True,
                     )
                 )
