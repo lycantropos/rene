@@ -89,7 +89,9 @@ class BaseContour(ABC, BaseCompound[hints.ScalarT]):
             return False
         neighbour_segments_touches_count = 0
         for intersection in sweep(
-            segments, self._context.orient, self._context.intersect_segments
+            segments,
+            orienteer=self._context.orient,
+            segments_intersector=self._context.intersect_segments,
         ):
             if not _neighbour_segments_vertices_touch(intersection, segments):
                 return False

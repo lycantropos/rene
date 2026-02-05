@@ -68,12 +68,16 @@ class Intersection(Generic[hints.ScalarT]):
 
 def sweep(
     segments: Sequence[hints.Segment[hints.ScalarT]],
+    /,
+    *,
     orienteer: Orienteer[hints.ScalarT],
     segments_intersector: SegmentsIntersector[hints.ScalarT],
-    /,
 ) -> Iterable[Intersection[hints.ScalarT]]:
     events_registry = EventsRegistry.from_segments(
-        segments, orienteer, segments_intersector, unique=False
+        segments,
+        orienteer=orienteer,
+        segments_intersector=segments_intersector,
+        unique=False,
     )
     events = iter(events_registry)
     event = next(events)

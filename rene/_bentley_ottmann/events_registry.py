@@ -31,10 +31,10 @@ class EventsRegistry(Generic[hints.ScalarT]):
     def from_segments(
         cls,
         segments: Sequence[hints.Segment[hints.ScalarT]],
-        orienteer: Orienteer[hints.ScalarT],
-        segments_intersector: SegmentsIntersector[hints.ScalarT],
         /,
         *,
+        orienteer: Orienteer[hints.ScalarT],
+        segments_intersector: SegmentsIntersector[hints.ScalarT],
         unique: bool,
     ) -> EventsRegistry[hints.ScalarT]:
         result = cls(

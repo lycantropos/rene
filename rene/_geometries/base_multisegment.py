@@ -72,8 +72,8 @@ class BaseMultisegment(ABC, BaseCompound[hints.ScalarT]):
             intersection.relation is Relation.TOUCH
             for intersection in sweep(
                 self.segments,
-                self._context.orient,
-                self._context.intersect_segments,
+                orienteer=self._context.orient,
+                segments_intersector=self._context.intersect_segments,
             )
         )
 
