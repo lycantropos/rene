@@ -8,10 +8,10 @@ if t.TYPE_CHECKING:
 
 
 def polygon_to_segments(
-    polygon: hints.Polygon[hints.Scalar],
-    bounding_box: hints.Box[hints.Scalar],
+    polygon: hints.Polygon[hints.ScalarT],
+    bounding_box: hints.Box[hints.ScalarT],
     /,
-) -> t.Iterable[hints.Segment[hints.Scalar]]:
+) -> t.Iterable[hints.Segment[hints.ScalarT]]:
     return chain(
         polygon.border.segments,
         chain.from_iterable(

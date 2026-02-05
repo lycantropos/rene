@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from numbers import Rational as _Rational
-    from typing import Any, Union, overload
+    from typing import Any, overload
 
     from rithm.fraction import Fraction as _Fraction
     from typing_extensions import Self, final
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     )
     from .hints import Seeder as _Seeder
 
-    _ScalarT = Union[_Fraction, _Rational, float, int]
+    _Scalar = _Fraction | _Rational | float | int
 
     class Box:
         @property
@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 
         def equals_to(self, other: Self, /) -> bool: ...
 
-        def is_valid(self) -> bool: ...
+        def is_valid(self, /) -> bool: ...
 
         def overlaps(self, other: Self, /) -> bool: ...
 
@@ -54,10 +54,10 @@ if TYPE_CHECKING:
 
         def __new__(
             cls,
-            min_x: _ScalarT,
-            max_x: _ScalarT,
-            min_y: _ScalarT,
-            max_y: _ScalarT,
+            min_x: _Scalar,
+            max_x: _Scalar,
+            min_y: _Scalar,
+            max_y: _Scalar,
             /,
         ) -> Self: ...
 
@@ -88,7 +88,7 @@ if TYPE_CHECKING:
         @property
         def vertices(self, /) -> Sequence[Point]: ...
 
-        def is_valid(self) -> bool: ...
+        def is_valid(self, /) -> bool: ...
 
         def locate(self, point: Point, /) -> _Location: ...
 
@@ -370,7 +370,7 @@ if TYPE_CHECKING:
         @property
         def segments(self, /) -> Sequence[Segment]: ...
 
-        def is_valid(self) -> bool: ...
+        def is_valid(self, /) -> bool: ...
 
         def locate(self, point: Point, /) -> _Location: ...
 
@@ -451,7 +451,7 @@ if TYPE_CHECKING:
         @property
         def y(self, /) -> _Fraction: ...
 
-        def __new__(cls, x: _ScalarT, y: _ScalarT, /) -> Self: ...
+        def __new__(cls, x: _Scalar, y: _Scalar, /) -> Self: ...
 
         @overload
         def __eq__(self, other: Self, /) -> bool: ...
@@ -664,7 +664,7 @@ if TYPE_CHECKING:
         @property
         def triangles(self, /) -> Sequence[Contour]: ...
 
-        def __bool__(self) -> bool: ...
+        def __bool__(self, /) -> bool: ...
 
     @final
     class DelaunayTriangulation:
@@ -677,7 +677,7 @@ if TYPE_CHECKING:
         @property
         def triangles(self, /) -> Sequence[Contour]: ...
 
-        def __bool__(self) -> bool: ...
+        def __bool__(self, /) -> bool: ...
 
     @final
     class Trapezoidation:
@@ -698,9 +698,9 @@ if TYPE_CHECKING:
 
         def __contains__(self, point: Point, /) -> bool: ...
 
-    _Compound = Union[
-        Contour, Empty, Multisegment, Multipolygon, Polygon, Segment
-    ]
+    _Compound = (
+        Contour | Empty | Multisegment | Multipolygon | Polygon | Segment
+    )
 else:
     try:
         from . import _cexact
@@ -786,10 +786,9 @@ else:
 
             __slots__ = ('_raw',)
 
-            def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
+            def __init_subclass__(cls, /) -> NoReturn:
                 raise TypeError(
-                    f'type {cls.__qualname__!r} '
-                    'is not an acceptable base type'
+                    f'type {cls.__qualname__!r} is not an acceptable base type'
                 )
 
             def __new__(cls, raw: _RawTrapezoidation, /) -> Self:

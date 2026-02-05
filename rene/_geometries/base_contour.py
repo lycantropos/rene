@@ -31,14 +31,23 @@ from rene.constants import MIN_CONTOUR_VERTICES_COUNT
 from rene.enums import Location, Orientation, Relation
 
 from .base_compound import BaseCompound
+from .utils import (
+    is_contour,
+    is_empty,
+    is_multipolygon,
+    is_multisegment,
+    is_multisegmental,
+    is_polygon,
+    is_segment,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-class BaseContour(ABC, BaseCompound[hints.Scalar]):
+class BaseContour(ABC, BaseCompound[hints.ScalarT]):
     @property
-    def bounding_box(self, /) -> hints.Box[hints.Scalar]:
+    def bounding_box(self, /) -> hints.Box[hints.ScalarT]:
         vertices = iter(self.vertices)
         first_vertex = next(vertices)
         min_x = max_x = first_vertex.x
@@ -64,13 +73,13 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
 
     @property
     @abstractmethod
-    def segments(self) -> Sequence[hints.Segment[hints.Scalar]]: ...
+    def segments(self, /) -> Sequence[hints.Segment[hints.ScalarT]]: ...
 
     @property
     @abstractmethod
-    def vertices(self) -> Sequence[hints.Point[hints.Scalar]]: ...
+    def vertices(self, /) -> Sequence[hints.Point[hints.ScalarT]]: ...
 
-    def is_valid(self) -> bool:
+    def is_valid(self, /) -> bool:
         if not are_contour_vertices_non_degenerate(
             self.vertices, self._context.orient
         ):
@@ -87,7 +96,7 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
             neighbour_segments_touches_count += 1
         return neighbour_segments_touches_count == len(segments)
 
-    def locate(self, point: hints.Point[hints.Scalar], /) -> Location:
+    def locate(self, point: hints.Point[hints.ScalarT], /) -> Location:
         return (
             Location.EXTERIOR
             if all(
@@ -97,13 +106,19 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
             else Location.BOUNDARY
         )
 
-    def relate_to(self, other: hints.Compound[hints.Scalar], /) -> Relation:
+    def relate_to(self, other: hints.Compound[hints.ScalarT], /) -> Relation:
         context = self._context
-        if isinstance(other, context.contour_cls):
+        if is_contour(other, context=context):
             return contour.relate_to_contour(
                 self, other, context.orient, context.intersect_segments
             )
-        elif isinstance(other, context.multisegment_cls):
+        if is_empty(other, context=context):
+            return Relation.DISJOINT
+        if is_multipolygon(other, context=context):
+            return contour.relate_to_multipolygon(
+                self, other, context.orient, context.intersect_segments
+            )
+        if is_multisegment(other, context=context):
             return contour.relate_to_multisegment(
                 self,
                 other,
@@ -111,41 +126,40 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                 context.to_segments_intersection_scale,
                 context.intersect_segments,
             )
-        elif isinstance(other, context.segment_cls):
-            return contour.relate_to_segment(self, other, context.orient)
-        elif isinstance(other, context.polygon_cls):
+        if is_polygon(other, context=context):
             return contour.relate_to_polygon(
                 self, other, context.orient, context.intersect_segments
             )
-        elif isinstance(other, context.multipolygon_cls):
-            return contour.relate_to_multipolygon(
-                self, other, context.orient, context.intersect_segments
-            )
-        elif isinstance(other, context.empty_cls):
-            return Relation.DISJOINT
-        else:
-            raise TypeError(f'Unsupported type: {type(other)!r}.')
+        if is_segment(other, context=context):
+            return contour.relate_to_segment(self, other, context.orient)
+        raise TypeError(f'Unsupported type: {type(other)!r}.')
+
+    @abstractmethod
+    def __new__(
+        cls, vertices: Sequence[hints.Point[hints.ScalarT]], /
+    ) -> Self:
+        raise NotImplementedError
 
     @overload
     def __and__(
-        self, other: hints.Empty[hints.Scalar], /
-    ) -> hints.Empty[hints.Scalar]: ...
+        self, other: hints.Empty[hints.ScalarT], /
+    ) -> hints.Empty[hints.ScalarT]: ...
 
     @overload
     def __and__(
         self,
         other: (
-            hints.Contour[hints.Scalar]
-            | hints.Multipolygon[hints.Scalar]
-            | hints.Multisegment[hints.Scalar]
-            | hints.Polygon[hints.Scalar]
-            | hints.Segment[hints.Scalar]
+            hints.Contour[hints.ScalarT]
+            | hints.Multipolygon[hints.ScalarT]
+            | hints.Multisegment[hints.ScalarT]
+            | hints.Polygon[hints.ScalarT]
+            | hints.Segment[hints.ScalarT]
         ),
         /,
     ) -> (
-        hints.Empty[hints.Scalar]
-        | hints.Multisegment[hints.Scalar]
-        | hints.Segment[hints.Scalar]
+        hints.Empty[hints.ScalarT]
+        | hints.Multisegment[hints.ScalarT]
+        | hints.Segment[hints.ScalarT]
     ): ...
 
     @overload
@@ -163,9 +177,7 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(
-                other, (context.contour_cls, context.multisegment_cls)
-            )
+            if is_multisegmental(other, context=context)
             else (
                 intersect_multisegmental_with_segment(
                     self,
@@ -175,7 +187,7 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                     context.orient,
                     context.segment_cls,
                 )
-                if isinstance(other, context.segment_cls)
+                if is_segment(other, context=context)
                 else (
                     intersect_multisegmental_with_polygon(
                         self,
@@ -186,7 +198,7 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                         context.segment_cls,
                         context.intersect_segments,
                     )
-                    if isinstance(other, context.polygon_cls)
+                    if is_polygon(other, context=context)
                     else (
                         intersect_multisegmental_with_multipolygon(
                             self,
@@ -197,10 +209,10 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                             context.segment_cls,
                             context.intersect_segments,
                         )
-                        if isinstance(other, context.multipolygon_cls)
+                        if is_multipolygon(other, context=context)
                         else (
                             other
-                            if isinstance(other, context.empty_cls)
+                            if is_empty(other, context=context)
                             else NotImplemented
                         )
                     )
@@ -208,7 +220,7 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
             )
         )
 
-    def __contains__(self, point: hints.Point[hints.Scalar], /) -> bool:
+    def __contains__(self, point: hints.Point[hints.ScalarT], /) -> bool:
         return self.locate(point) is not Location.EXTERIOR
 
     @overload
@@ -224,7 +236,7 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
             _are_non_empty_unique_sequences_rotationally_equivalent(
                 self.vertices, other.vertices
             )
-            if isinstance(other, self._context.contour_cls)
+            if is_contour(other, context=self._context)
             else NotImplemented
         )
 
@@ -248,18 +260,18 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
         return hash(vertices)
 
     @overload
-    def __or__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
+    def __or__(self, other: hints.Empty[hints.ScalarT], /) -> Self: ...
 
     @overload
     def __or__(
         self,
         other: (
-            hints.Contour[hints.Scalar]
-            | hints.Multisegment[hints.Scalar]
-            | hints.Segment[hints.Scalar]
+            hints.Contour[hints.ScalarT]
+            | hints.Multisegment[hints.ScalarT]
+            | hints.Segment[hints.ScalarT]
         ),
         /,
-    ) -> hints.Multisegment[hints.Scalar] | hints.Segment[hints.Scalar]: ...
+    ) -> hints.Multisegment[hints.ScalarT] | hints.Segment[hints.ScalarT]: ...
 
     @overload
     def __or__(self, other: Any, /) -> Any: ...
@@ -275,9 +287,7 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(
-                other, (context.contour_cls, context.multisegment_cls)
-            )
+            if is_multisegmental(other, context=context)
             else (
                 unite_multisegmental_with_segment(
                     self,
@@ -287,10 +297,10 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                     context.segment_cls,
                     context.intersect_segments,
                 )
-                if isinstance(other, context.segment_cls)
+                if is_segment(other, context=context)
                 else (
                     self
-                    if isinstance(other, context.empty_cls)
+                    if is_empty(other, context=context)
                     else NotImplemented
                 )
             )
@@ -307,23 +317,23 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
         )
 
     @overload
-    def __sub__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
+    def __sub__(self, other: hints.Empty[hints.ScalarT], /) -> Self: ...
 
     @overload
     def __sub__(
         self,
         other: (
-            hints.Contour[hints.Scalar]
-            | hints.Multipolygon[hints.Scalar]
-            | hints.Multisegment[hints.Scalar]
-            | hints.Polygon[hints.Scalar]
-            | hints.Segment[hints.Scalar]
+            hints.Contour[hints.ScalarT]
+            | hints.Multipolygon[hints.ScalarT]
+            | hints.Multisegment[hints.ScalarT]
+            | hints.Polygon[hints.ScalarT]
+            | hints.Segment[hints.ScalarT]
         ),
         /,
     ) -> (
-        hints.Empty[hints.Scalar]
-        | hints.Multisegment[hints.Scalar]
-        | hints.Segment[hints.Scalar]
+        hints.Empty[hints.ScalarT]
+        | hints.Multisegment[hints.ScalarT]
+        | hints.Segment[hints.ScalarT]
     ): ...
 
     @overload
@@ -341,9 +351,7 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(
-                other, (context.contour_cls, context.multisegment_cls)
-            )
+            if is_multisegmental(other, context=context)
             else (
                 subtract_segment_from_multisegmental(
                     self,
@@ -354,7 +362,7 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                     context.segment_cls,
                     context.intersect_segments,
                 )
-                if isinstance(other, context.segment_cls)
+                if is_segment(other, context=context)
                 else (
                     subtract_multipolygon_from_multisegmental(
                         self,
@@ -365,7 +373,7 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                         context.segment_cls,
                         context.intersect_segments,
                     )
-                    if isinstance(other, context.multipolygon_cls)
+                    if is_multipolygon(other, context=context)
                     else (
                         subtract_polygon_from_multisegmental(
                             self,
@@ -376,10 +384,10 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                             context.segment_cls,
                             context.intersect_segments,
                         )
-                        if isinstance(other, context.polygon_cls)
+                        if is_polygon(other, context=context)
                         else (
                             self
-                            if isinstance(other, context.empty_cls)
+                            if is_empty(other, context=context)
                             else NotImplemented
                         )
                     )
@@ -388,21 +396,21 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
         )
 
     @overload
-    def __xor__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
+    def __xor__(self, other: hints.Empty[hints.ScalarT], /) -> Self: ...
 
     @overload
     def __xor__(
         self,
         other: (
-            hints.Contour[hints.Scalar]
-            | hints.Multisegment[hints.Scalar]
-            | hints.Segment[hints.Scalar]
+            hints.Contour[hints.ScalarT]
+            | hints.Multisegment[hints.ScalarT]
+            | hints.Segment[hints.ScalarT]
         ),
         /,
     ) -> (
-        hints.Empty[hints.Scalar]
-        | hints.Multisegment[hints.Scalar]
-        | hints.Segment[hints.Scalar]
+        hints.Empty[hints.ScalarT]
+        | hints.Multisegment[hints.ScalarT]
+        | hints.Segment[hints.ScalarT]
     ): ...
 
     @overload
@@ -420,9 +428,7 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(
-                other, (context.contour_cls, context.multisegment_cls)
-            )
+            if is_multisegmental(other, context=context)
             else (
                 symmetric_subtract_segment_from_multisegmental(
                     self,
@@ -433,10 +439,10 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
                     context.segment_cls,
                     context.intersect_segments,
                 )
-                if isinstance(other, context.segment_cls)
+                if is_segment(other, context=context)
                 else (
                     self
-                    if isinstance(other, context.empty_cls)
+                    if is_empty(other, context=context)
                     else NotImplemented
                 )
             )
@@ -446,7 +452,8 @@ class BaseContour(ABC, BaseCompound[hints.Scalar]):
 def _are_non_empty_unique_sequences_rotationally_equivalent(
     left: Sequence[Any], right: Sequence[Any], /
 ) -> bool:
-    assert left and right
+    assert len(left) > 0, left
+    assert len(right) > 0, right
     if len(left) != len(right):
         return False
     first_left_element = left[0]
@@ -465,8 +472,8 @@ def _are_non_empty_unique_sequences_rotationally_equivalent(
 
 
 def _neighbour_segments_vertices_touch(
-    intersection: Intersection[hints.Scalar],
-    segments: Sequence[hints.Segment[hints.Scalar]],
+    intersection: Intersection[hints.ScalarT],
+    segments: Sequence[hints.Segment[hints.ScalarT]],
     /,
 ) -> bool:
     first_segment = segments[intersection.first_segment_id]

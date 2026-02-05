@@ -18,16 +18,16 @@ class Trapezoid:
     def upper_right_node_index(self, /) -> int | None:
         return self._upper_right_node_index
 
-    def reset_lower_left(self) -> None:
+    def reset_lower_left(self, /) -> None:
         self._lower_left_node_index = None
 
-    def reset_lower_right(self) -> None:
+    def reset_lower_right(self, /) -> None:
         self._lower_right_node_index = None
 
-    def reset_upper_left(self) -> None:
+    def reset_upper_left(self, /) -> None:
         self._upper_left_node_index = None
 
-    def reset_upper_right(self) -> None:
+    def reset_upper_right(self, /) -> None:
         self._upper_right_node_index = None
 
     def set_as_lower_left(self, value: Trapezoid) -> None:
@@ -52,20 +52,22 @@ class Trapezoid:
     _upper_right_node_index: int | None
 
     __slots__ = (
+        '_lower_left_node_index',
+        '_lower_right_node_index',
+        '_upper_left_node_index',
+        '_upper_right_node_index',
         'above_edge_index',
         'below_edge_index',
         'is_component',
         'leaf_index',
         'left_point_index',
         'right_point_index',
-        '_lower_left_node_index',
-        '_lower_right_node_index',
-        '_upper_left_node_index',
-        '_upper_right_node_index',
     )
 
     def __init__(
         self,
+        /,
+        *,
         is_component: bool,
         left_point_index: int,
         right_point_index: int,

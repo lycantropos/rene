@@ -18,22 +18,22 @@ from .sweep_line_key import SweepLineKey
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator, Sequence
 
-    from dendroid.hints import KeyedSet
+    from dendroid.hints import Map
 
     from rene._hints import Orienteer, SegmentsIntersector
 
 
-class Operation(Generic[hints.Scalar]):
+class Operation(Generic[hints.ScalarT]):
     @classmethod
     def from_segments_iterables(
         cls,
-        first: Iterable[hints.Segment[hints.Scalar]],
-        second: Iterable[hints.Segment[hints.Scalar]],
-        orienteer: Orienteer[hints.Scalar],
-        segments_intersector: SegmentsIntersector[hints.Scalar],
+        first: Iterable[hints.Segment[hints.ScalarT]],
+        second: Iterable[hints.Segment[hints.ScalarT]],
+        orienteer: Orienteer[hints.ScalarT],
+        segments_intersector: SegmentsIntersector[hints.ScalarT],
         /,
     ) -> Self:
-        endpoints: list[hints.Point[hints.Scalar]] = []
+        endpoints: list[hints.Point[hints.ScalarT]] = []
         _populate_with_segments(first, endpoints)
         first_segments_count = len(endpoints) >> 1
         _populate_with_segments(second, endpoints)
@@ -106,20 +106,21 @@ class Operation(Generic[hints.Scalar]):
             self._to_left_event(event)
         )
 
-    def to_event_end(self, event: Event, /) -> hints.Point[hints.Scalar]:
+    def to_event_end(self, event: Event, /) -> hints.Point[hints.ScalarT]:
         return self.to_event_start(self._to_opposite_event(event))
 
-    def to_event_start(self, event: Event, /) -> hints.Point[hints.Scalar]:
+    def to_event_start(self, event: Event, /) -> hints.Point[hints.ScalarT]:
         return self.endpoints[event]
 
     def to_relation(
         self,
+        /,
+        *,
         first_is_subset: bool,
         second_is_subset: bool,
-        min_max_x: hints.Scalar,
-        /,
+        min_max_x: hints.ScalarT,
     ) -> Relation:
-        state: RelationState[hints.Scalar] = RelationState(
+        state: RelationState[hints.ScalarT] = RelationState(
             first_is_subset=first_is_subset,
             second_is_subset=second_is_subset,
             has_crossing=False,
@@ -162,43 +163,41 @@ class Operation(Generic[hints.Scalar]):
         if state.first_is_subset:
             if state.second_is_subset:
                 return Relation.EQUAL
-            else:
-                return Relation.COMPONENT
-        elif state.second_is_subset:
+            return Relation.COMPONENT
+        if state.second_is_subset:
             return Relation.COMPOSITE
-        elif state.has_overlap:
+        if state.has_overlap:
             return Relation.OVERLAP
-        elif state.has_crossing:
+        if state.has_crossing:
             return Relation.CROSS
-        elif state.has_intersection:
+        if state.has_intersection:
             return Relation.TOUCH
-        else:
-            return Relation.DISJOINT
+        return Relation.DISJOINT
 
-    _sweep_line_data: KeyedSet[SweepLineKey[hints.Scalar], Event]
+    _sweep_line_data: Map[SweepLineKey[hints.ScalarT], Event]
 
     __slots__ = (
-        'first_segments_count',
-        'second_segments_count',
-        'endpoints',
         '_events_queue_data',
         '_opposites',
         '_orienteer',
-        '_segments_intersector',
         '_segments_ids',
+        '_segments_intersector',
         '_sweep_line_data',
+        'endpoints',
+        'first_segments_count',
+        'second_segments_count',
     )
 
-    def __bool__(self) -> bool:
+    def __bool__(self, /) -> bool:
         return bool(self._events_queue_data)
 
     def __init__(
         self,
         first_segments_count: int,
         second_segments_count: int,
-        endpoints: list[hints.Point[hints.Scalar]],
-        orienteer: Orienteer[hints.Scalar],
-        segments_intersector: SegmentsIntersector[hints.Scalar],
+        endpoints: list[hints.Point[hints.ScalarT]],
+        orienteer: Orienteer[hints.ScalarT],
+        segments_intersector: SegmentsIntersector[hints.ScalarT],
         /,
     ) -> None:
         (
@@ -222,34 +221,34 @@ class Operation(Generic[hints.Scalar]):
         ]
         self._segments_ids = list(range(segments_count))
         self._events_queue_data: PriorityQueue[
-            EventsQueueKey[hints.Scalar], Event
+            EventsQueueKey[hints.ScalarT], Event
         ] = PriorityQueue(
             *map(Event, range(initial_events_count)),
             key=lambda event: EventsQueueKey(
                 event,
-                self.is_event_from_first_operand(event),
-                self.endpoints,
-                self._opposites,
-                self._orienteer,
+                is_from_first_operand=self.is_event_from_first_operand(event),
+                endpoints=self.endpoints,
+                opposites=self._opposites,
+                orienteer=self._orienteer,
             ),
         )
-        self._sweep_line_data = red_black.set_(key=self._to_sweep_line_key)
+        self._sweep_line_data = red_black.map_()
 
     def _above(self, event: Event, /) -> Event | None:
         assert is_event_left(event)
         try:
-            return self._sweep_line_data.next(event)
+            return self._sweep_line_data.next(self._to_sweep_line_key(event))
         except ValueError:
             return None
 
     def _add(self, event: Event, /) -> None:
         assert is_event_left(event)
-        self._sweep_line_data.add(event)
+        self._sweep_line_data[self._to_sweep_line_key(event)] = event
 
     def _below(self, event: Event, /) -> Event | None:
         assert is_event_left(event)
         try:
-            return self._sweep_line_data.prev(event)
+            return self._sweep_line_data.prev(self._to_sweep_line_key(event))
         except ValueError:
             return None
 
@@ -351,7 +350,7 @@ class Operation(Generic[hints.Scalar]):
                 self._divide_event_by_midpoint(event, cross_point)
 
     def _divide(
-        self, event: Event, mid_point: hints.Point[hints.Scalar], /
+        self, event: Event, mid_point: hints.Point[hints.ScalarT], /
     ) -> tuple[Event, Event]:
         assert is_event_left(event)
         opposite_event = self._to_opposite_event(event)
@@ -377,15 +376,15 @@ class Operation(Generic[hints.Scalar]):
     def _divide_event_by_mid_segment_event_endpoints(
         self,
         event: Event,
-        mid_segment_event_start: hints.Point[hints.Scalar],
-        mid_segment_event_end: hints.Point[hints.Scalar],
+        mid_segment_event_start: hints.Point[hints.ScalarT],
+        mid_segment_event_end: hints.Point[hints.ScalarT],
         /,
     ) -> None:
         self._divide_event_by_midpoint(event, mid_segment_event_end)
         self._divide_event_by_midpoint(event, mid_segment_event_start)
 
     def _divide_event_by_midpoint(
-        self, event: Event, point: hints.Point[hints.Scalar], /
+        self, event: Event, point: hints.Point[hints.ScalarT], /
     ) -> None:
         point_to_event_start_event, point_to_event_end_event = self._divide(
             event, point
@@ -397,8 +396,8 @@ class Operation(Generic[hints.Scalar]):
         self,
         min_start_event: Event,
         max_start_event: Event,
-        max_start: hints.Point[hints.Scalar],
-        min_end: hints.Point[hints.Scalar],
+        max_start: hints.Point[hints.ScalarT],
+        min_end: hints.Point[hints.ScalarT],
         /,
     ) -> None:
         self._divide_event_by_midpoint(max_start_event, min_end)
@@ -406,10 +405,7 @@ class Operation(Generic[hints.Scalar]):
 
     def _find(self, event: Event, /) -> Event | None:
         assert is_event_left(event)
-        candidate = self._sweep_line_data.tree.find(
-            self._to_sweep_line_key(event)
-        )
-        return None if candidate is red_black.NIL else candidate.value
+        return self._sweep_line_data.get(self._to_sweep_line_key(event))
 
     def _is_left_event_from_first_operand(self, event: Event, /) -> bool:
         return (
@@ -419,7 +415,7 @@ class Operation(Generic[hints.Scalar]):
     def _left_event_to_segment_id(self, event: Event, /) -> int:
         return self._segments_ids[left_event_to_position(event)]
 
-    def _pop(self) -> Event:
+    def _pop(self, /) -> Event:
         return self._events_queue_data.pop()
 
     def _process_event(self, event: Event) -> None:
@@ -448,11 +444,11 @@ class Operation(Generic[hints.Scalar]):
 
     def _remove(self, event: Event, /) -> None:
         assert is_event_left(event)
-        self._sweep_line_data.remove(event)
+        del self._sweep_line_data[self._to_sweep_line_key(event)]
 
     def _to_event_endpoints(
         self, event: Event, /
-    ) -> tuple[hints.Point[hints.Scalar], hints.Point[hints.Scalar]]:
+    ) -> tuple[hints.Point[hints.ScalarT], hints.Point[hints.ScalarT]]:
         return self.to_event_start(event), self.to_event_end(event)
 
     def _to_left_event(self, event: Event, /) -> Event:
@@ -465,18 +461,20 @@ class Operation(Generic[hints.Scalar]):
 
     def _to_sweep_line_key(
         self, event: Event, /
-    ) -> SweepLineKey[hints.Scalar]:
+    ) -> SweepLineKey[hints.ScalarT]:
         return SweepLineKey(
             event,
-            self._is_left_event_from_first_operand(event),
-            self.endpoints,
-            self._opposites,
-            self._orienteer,
+            is_from_first_operand=self._is_left_event_from_first_operand(
+                event
+            ),
+            endpoints=self.endpoints,
+            opposites=self._opposites,
+            orienteer=self._orienteer,
         )
 
     def to_signed_point_event_squared_cosine(
-        self, point: hints.Point[hints.Scalar], event: Event
-    ) -> hints.Scalar:
+        self, point: hints.Point[hints.ScalarT], event: Event
+    ) -> hints.ScalarT:
         start = self.to_event_start(event)
         end = self.to_event_end(event)
         dot_product = dot_multiply(start, point, start, end)
@@ -486,11 +484,11 @@ class Operation(Generic[hints.Scalar]):
 
 
 def dot_multiply(
-    first_start: hints.Point[hints.Scalar],
-    first_end: hints.Point[hints.Scalar],
-    second_start: hints.Point[hints.Scalar],
-    second_end: hints.Point[hints.Scalar],
-) -> hints.Scalar:
+    first_start: hints.Point[hints.ScalarT],
+    first_end: hints.Point[hints.ScalarT],
+    second_start: hints.Point[hints.ScalarT],
+    second_end: hints.Point[hints.ScalarT],
+) -> hints.ScalarT:
     return (first_end.x - first_start.x) * (second_end.x - second_start.x) + (
         first_end.y - first_start.y
     ) * (second_end.y - second_start.y)
@@ -503,12 +501,12 @@ def has_two_elements(iterator: Iterator[Any]) -> bool:
 
 
 def is_point_in_angle(
-    point: hints.Point[hints.Scalar],
-    vertex: hints.Point[hints.Scalar],
-    first_ray_point: hints.Point[hints.Scalar],
-    second_ray_point: hints.Point[hints.Scalar],
+    point: hints.Point[hints.ScalarT],
+    vertex: hints.Point[hints.ScalarT],
+    first_ray_point: hints.Point[hints.ScalarT],
+    second_ray_point: hints.Point[hints.ScalarT],
     angle_orientation: Orientation,
-    orienteer: Orienteer[hints.Scalar],
+    orienteer: Orienteer[hints.ScalarT],
     /,
 ) -> bool:
     first_half_orientation = orienteer(vertex, first_ray_point, point)
@@ -533,16 +531,16 @@ def is_point_in_angle(
 
 
 def squared_distance(
-    start: hints.Point[hints.Scalar], end: hints.Point[hints.Scalar]
-) -> hints.Scalar:
+    start: hints.Point[hints.ScalarT], end: hints.Point[hints.ScalarT]
+) -> hints.ScalarT:
     return square(start.x - end.x) + square(start.y - end.y)
 
 
-class RelationState(Generic[hints.Scalar]):
+class RelationState(Generic[hints.ScalarT]):
     def update(
         self,
         same_start_events: list[Event],
-        operation: Operation[hints.Scalar],
+        operation: Operation[hints.ScalarT],
     ) -> None:
         if operation.has_intersection(same_start_events):
             if not self.has_intersection:
@@ -566,7 +564,7 @@ class RelationState(Generic[hints.Scalar]):
     def _detect_crossing(
         self,
         same_start_events: Sequence[Event],
-        operation: Operation[hints.Scalar],
+        operation: Operation[hints.ScalarT],
     ) -> None:
         if not self.has_crossing and operation.has_crossing(same_start_events):
             self.has_crossing = True
@@ -574,7 +572,7 @@ class RelationState(Generic[hints.Scalar]):
     def _detect_touch_or_overlap(
         self,
         same_start_events: Sequence[Event],
-        operation: Operation[hints.Scalar],
+        operation: Operation[hints.ScalarT],
     ) -> None:
         for _, group in chain(
             groupby(
@@ -601,10 +599,10 @@ class RelationState(Generic[hints.Scalar]):
 
     __slots__ = (
         'first_is_subset',
-        'second_is_subset',
         'has_crossing',
         'has_intersection',
         'has_overlap',
+        'second_is_subset',
     )
 
     def __init__(
@@ -632,11 +630,10 @@ class RelationState(Generic[hints.Scalar]):
 
 
 def _populate_with_segments(
-    segments: Iterable[hints.Segment[hints.Scalar]],
-    endpoints: list[hints.Point[hints.Scalar]],
+    segments: Iterable[hints.Segment[hints.ScalarT]],
+    endpoints: list[hints.Point[hints.ScalarT]],
     /,
 ) -> None:
     for segment in segments:
         start, end = to_sorted_pair(segment.start, segment.end)
-        endpoints.append(start)
-        endpoints.append(end)
+        endpoints.extend((start, end))

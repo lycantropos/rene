@@ -1,5 +1,5 @@
 from itertools import chain, groupby
-from typing import Union
+from typing import TypeAlias
 
 from rene import hints
 from rene._hints import Orienteer, SegmentsIntersector
@@ -19,13 +19,13 @@ from . import linear, shaped
 from .event import Event, is_event_right
 
 
-class LinearUnion(linear.Operation[hints.Scalar]):
+class LinearUnion(linear.Operation[hints.ScalarT]):
     def reduce_events(
         self,
         events: list[Event],
-        segment_cls: type[hints.Segment[hints.Scalar]],
+        segment_cls: type[hints.Segment[hints.ScalarT]],
         /,
-    ) -> list[hints.Segment[hints.Scalar]]:
+    ) -> list[hints.Segment[hints.ScalarT]]:
         return [
             segment_cls(start, end)
             for (start, end), equal_segment_events in groupby(
@@ -34,7 +34,7 @@ class LinearUnion(linear.Operation[hints.Scalar]):
         ]
 
 
-class ShapedUnion(shaped.Operation[hints.Scalar]):
+class ShapedUnion(shaped.Operation[hints.ScalarT]):
     def _detect_if_left_event_from_result(self, event: Event, /) -> bool:
         return self._is_left_event_outside(event) or (
             not self._is_left_event_from_first_operand(event)
@@ -42,22 +42,22 @@ class ShapedUnion(shaped.Operation[hints.Scalar]):
         )
 
 
-_Multisegmental = Union[
-    hints.Contour[hints.Scalar], hints.Multisegment[hints.Scalar]
-]
+_Multisegmental: TypeAlias = (
+    hints.Contour[hints.ScalarT] | hints.Multisegment[hints.ScalarT]
+)
 
 
 def unite_multipolygon_with_multipolygon(
-    first: hints.Multipolygon[hints.Scalar],
-    second: hints.Multipolygon[hints.Scalar],
-    contour_cls: type[hints.Contour[hints.Scalar]],
-    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
-    orienteer: Orienteer[hints.Scalar],
-    polygon_cls: type[hints.Polygon[hints.Scalar]],
-    segment_cls: type[hints.Segment[hints.Scalar]],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    first: hints.Multipolygon[hints.ScalarT],
+    second: hints.Multipolygon[hints.ScalarT],
+    contour_cls: type[hints.Contour[hints.ScalarT]],
+    multipolygon_cls: type[hints.Multipolygon[hints.ScalarT]],
+    orienteer: Orienteer[hints.ScalarT],
+    polygon_cls: type[hints.Polygon[hints.ScalarT]],
+    segment_cls: type[hints.Segment[hints.ScalarT]],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
-) -> Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
+) -> hints.Multipolygon[hints.ScalarT] | hints.Polygon[hints.ScalarT]:
     first_bounding_box, second_bounding_box = (
         first.bounding_box,
         second.bounding_box,
@@ -127,16 +127,16 @@ def unite_multipolygon_with_multipolygon(
 
 
 def unite_multipolygon_with_polygon(
-    first: hints.Multipolygon[hints.Scalar],
-    second: hints.Polygon[hints.Scalar],
-    contour_cls: type[hints.Contour[hints.Scalar]],
-    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
-    orienteer: Orienteer[hints.Scalar],
-    polygon_cls: type[hints.Polygon[hints.Scalar]],
-    segment_cls: type[hints.Segment[hints.Scalar]],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    first: hints.Multipolygon[hints.ScalarT],
+    second: hints.Polygon[hints.ScalarT],
+    contour_cls: type[hints.Contour[hints.ScalarT]],
+    multipolygon_cls: type[hints.Multipolygon[hints.ScalarT]],
+    orienteer: Orienteer[hints.ScalarT],
+    polygon_cls: type[hints.Polygon[hints.ScalarT]],
+    segment_cls: type[hints.Segment[hints.ScalarT]],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
-) -> Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
+) -> hints.Multipolygon[hints.ScalarT] | hints.Polygon[hints.ScalarT]:
     first_bounding_box, second_bounding_box = (
         first.bounding_box,
         second.bounding_box,
@@ -180,14 +180,14 @@ def unite_multipolygon_with_polygon(
 
 
 def unite_multisegmental_with_multisegmental(
-    first: _Multisegmental[hints.Scalar],
-    second: _Multisegmental[hints.Scalar],
-    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
-    orienteer: Orienteer[hints.Scalar],
-    segment_cls: type[hints.Segment[hints.Scalar]],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    first: _Multisegmental[hints.ScalarT],
+    second: _Multisegmental[hints.ScalarT],
+    multisegment_cls: type[hints.Multisegment[hints.ScalarT]],
+    orienteer: Orienteer[hints.ScalarT],
+    segment_cls: type[hints.Segment[hints.ScalarT]],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
-) -> Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
+) -> hints.Multisegment[hints.ScalarT] | hints.Segment[hints.ScalarT]:
     first_bounding_box, second_bounding_box = (
         first.bounding_box,
         second.bounding_box,
@@ -252,14 +252,14 @@ def unite_multisegmental_with_multisegmental(
 
 
 def unite_multisegmental_with_segment(
-    first: _Multisegmental[hints.Scalar],
-    second: hints.Segment[hints.Scalar],
-    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
-    orienteer: Orienteer[hints.Scalar],
-    segment_cls: type[hints.Segment[hints.Scalar]],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    first: _Multisegmental[hints.ScalarT],
+    second: hints.Segment[hints.ScalarT],
+    multisegment_cls: type[hints.Multisegment[hints.ScalarT]],
+    orienteer: Orienteer[hints.ScalarT],
+    segment_cls: type[hints.Segment[hints.ScalarT]],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
-) -> Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
+) -> hints.Multisegment[hints.ScalarT] | hints.Segment[hints.ScalarT]:
     first_bounding_box, second_bounding_box = (
         first.bounding_box,
         second.bounding_box,
@@ -292,15 +292,15 @@ def unite_multisegmental_with_segment(
                     if second_end < first_end:
                         segments.append(segment_cls(second_end, first_end))
                     continue
-                elif second_end == first_end:
+                if second_end == first_end:
                     if first_start < second_start:
                         segments.append(segment_cls(first_start, second_start))
                     continue
-                elif second_start < first_start < second_end:
+                if second_start < first_start < second_end:
                     if second_end < first_end:
                         segments.append(segment_cls(second_end, first_end))
                     continue
-                elif first_start < second_start < first_end:
+                if first_start < second_start < first_end:
                     segments.append(segment_cls(first_start, second_start))
                     if second_end < first_end:
                         segments.append(segment_cls(second_end, first_end))
@@ -320,21 +320,33 @@ def unite_multisegmental_with_segment(
             )
             if second_start_orientation is Orientation.COLLINEAR:
                 if first_start < second_start < first_end:
-                    segments.append(segment_cls(first_start, second_start))
-                    segments.append(segment_cls(second_start, first_end))
+                    segments.extend(
+                        (
+                            segment_cls(first_start, second_start),
+                            segment_cls(second_start, first_end),
+                        )
+                    )
                     continue
             elif second_end_orientation is Orientation.COLLINEAR:
                 if first_start < second_end < first_end:
-                    segments.append(segment_cls(first_start, second_end))
-                    segments.append(segment_cls(second_end, first_end))
+                    segments.extend(
+                        (
+                            segment_cls(first_start, second_end),
+                            segment_cls(second_end, first_end),
+                        )
+                    )
                     continue
             elif second_start_orientation is not second_end_orientation:
                 cross_point = segments_intersector(
                     first_start, first_end, second_start, second_end
                 )
                 second_break_points.append(cross_point)
-                segments.append(segment_cls(first_start, cross_point))
-                segments.append(segment_cls(cross_point, first_end))
+                segments.extend(
+                    (
+                        segment_cls(first_start, cross_point),
+                        segment_cls(cross_point, first_end),
+                    )
+                )
                 continue
         segments.append(first_segment)
     if second_break_points:
@@ -350,16 +362,16 @@ def unite_multisegmental_with_segment(
 
 
 def unite_polygon_with_multipolygon(
-    first: hints.Polygon[hints.Scalar],
-    second: hints.Multipolygon[hints.Scalar],
-    contour_cls: type[hints.Contour[hints.Scalar]],
-    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
-    orienteer: Orienteer[hints.Scalar],
-    polygon_cls: type[hints.Polygon[hints.Scalar]],
-    segment_cls: type[hints.Segment[hints.Scalar]],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    first: hints.Polygon[hints.ScalarT],
+    second: hints.Multipolygon[hints.ScalarT],
+    contour_cls: type[hints.Contour[hints.ScalarT]],
+    multipolygon_cls: type[hints.Multipolygon[hints.ScalarT]],
+    orienteer: Orienteer[hints.ScalarT],
+    polygon_cls: type[hints.Polygon[hints.ScalarT]],
+    segment_cls: type[hints.Segment[hints.ScalarT]],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
-) -> Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
+) -> hints.Multipolygon[hints.ScalarT] | hints.Polygon[hints.ScalarT]:
     first_bounding_box, second_bounding_box = (
         first.bounding_box,
         second.bounding_box,
@@ -406,16 +418,16 @@ def unite_polygon_with_multipolygon(
 
 
 def unite_polygon_with_polygon(
-    first: hints.Polygon[hints.Scalar],
-    second: hints.Polygon[hints.Scalar],
-    contour_cls: type[hints.Contour[hints.Scalar]],
-    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
-    orienteer: Orienteer[hints.Scalar],
-    polygon_cls: type[hints.Polygon[hints.Scalar]],
-    segment_cls: type[hints.Segment[hints.Scalar]],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    first: hints.Polygon[hints.ScalarT],
+    second: hints.Polygon[hints.ScalarT],
+    contour_cls: type[hints.Contour[hints.ScalarT]],
+    multipolygon_cls: type[hints.Multipolygon[hints.ScalarT]],
+    orienteer: Orienteer[hints.ScalarT],
+    polygon_cls: type[hints.Polygon[hints.ScalarT]],
+    segment_cls: type[hints.Segment[hints.ScalarT]],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
-) -> Union[hints.Multipolygon[hints.Scalar], hints.Polygon[hints.Scalar]]:
+) -> hints.Multipolygon[hints.ScalarT] | hints.Polygon[hints.ScalarT]:
     first_bounding_box, second_bounding_box = (
         first.bounding_box,
         second.bounding_box,
@@ -437,14 +449,14 @@ def unite_polygon_with_polygon(
 
 
 def unite_segment_with_multisegmental(
-    first: hints.Segment[hints.Scalar],
-    second: _Multisegmental[hints.Scalar],
-    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
-    orienteer: Orienteer[hints.Scalar],
-    segment_cls: type[hints.Segment[hints.Scalar]],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    first: hints.Segment[hints.ScalarT],
+    second: _Multisegmental[hints.ScalarT],
+    multisegment_cls: type[hints.Multisegment[hints.ScalarT]],
+    orienteer: Orienteer[hints.ScalarT],
+    segment_cls: type[hints.Segment[hints.ScalarT]],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
-) -> Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
+) -> hints.Multisegment[hints.ScalarT] | hints.Segment[hints.ScalarT]:
     first_bounding_box, second_bounding_box = (
         first.bounding_box,
         second.bounding_box,
@@ -477,15 +489,15 @@ def unite_segment_with_multisegmental(
                     if first_end < second_end:
                         segments.append(segment_cls(first_end, second_end))
                     continue
-                elif first_end == second_end:
+                if first_end == second_end:
                     if second_start < first_start:
                         segments.append(segment_cls(second_start, first_start))
                     continue
-                elif first_start < second_start < first_end:
+                if first_start < second_start < first_end:
                     if first_end < second_end:
                         segments.append(segment_cls(first_end, second_end))
                     continue
-                elif second_start < first_start < second_end:
+                if second_start < first_start < second_end:
                     segments.append(segment_cls(second_start, first_start))
                     if first_end < second_end:
                         segments.append(segment_cls(first_end, second_end))
@@ -505,21 +517,33 @@ def unite_segment_with_multisegmental(
             )
             if first_start_orientation is Orientation.COLLINEAR:
                 if second_start < first_start < second_end:
-                    segments.append(segment_cls(second_start, first_start))
-                    segments.append(segment_cls(first_start, second_end))
+                    segments.extend(
+                        (
+                            segment_cls(second_start, first_start),
+                            segment_cls(first_start, second_end),
+                        )
+                    )
                     continue
             elif first_end_orientation is Orientation.COLLINEAR:
                 if second_start < first_end < second_end:
-                    segments.append(segment_cls(second_start, first_end))
-                    segments.append(segment_cls(first_end, second_end))
+                    segments.extend(
+                        (
+                            segment_cls(second_start, first_end),
+                            segment_cls(first_end, second_end),
+                        )
+                    )
                     continue
             elif first_start_orientation is not first_end_orientation:
                 cross_point = segments_intersector(
                     second_start, second_end, first_start, first_end
                 )
                 first_break_points.append(cross_point)
-                segments.append(segment_cls(second_start, cross_point))
-                segments.append(segment_cls(cross_point, second_end))
+                segments.extend(
+                    (
+                        segment_cls(second_start, cross_point),
+                        segment_cls(cross_point, second_end),
+                    )
+                )
                 continue
         segments.append(second_segment)
     if first_break_points:
@@ -535,14 +559,14 @@ def unite_segment_with_multisegmental(
 
 
 def unite_segment_with_segment(
-    first: hints.Segment[hints.Scalar],
-    second: hints.Segment[hints.Scalar],
-    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
-    orienteer: Orienteer[hints.Scalar],
-    segment_cls: type[hints.Segment[hints.Scalar]],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    first: hints.Segment[hints.ScalarT],
+    second: hints.Segment[hints.ScalarT],
+    multisegment_cls: type[hints.Multisegment[hints.ScalarT]],
+    orienteer: Orienteer[hints.ScalarT],
+    segment_cls: type[hints.Segment[hints.ScalarT]],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
-) -> Union[hints.Multisegment[hints.Scalar], hints.Segment[hints.Scalar]]:
+) -> hints.Multisegment[hints.ScalarT] | hints.Segment[hints.ScalarT]:
     first_start, first_end = to_sorted_pair(first.start, first.end)
     second_start, second_end = to_sorted_pair(second.start, second.end)
     if first_start == second_start and first_end == second_end:

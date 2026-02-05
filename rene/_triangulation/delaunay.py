@@ -17,12 +17,12 @@ if TYPE_CHECKING:
     from rene._hints import Orienteer
 
 
-class DelaunayTriangulation(Generic[hints.Scalar]):
+class DelaunayTriangulation(Generic[hints.ScalarT]):
     @classmethod
     def from_points(
         cls,
-        points: Sequence[hints.Point[hints.Scalar]],
-        orienteer: Orienteer[hints.Scalar],
+        points: Sequence[hints.Point[hints.ScalarT]],
+        orienteer: Orienteer[hints.ScalarT],
         /,
     ) -> Self:
         endpoints = list(points)
@@ -36,14 +36,14 @@ class DelaunayTriangulation(Generic[hints.Scalar]):
         return self._left_side
 
     @property
-    def mesh(self, /) -> Mesh[hints.Scalar]:
+    def mesh(self, /) -> Mesh[hints.ScalarT]:
         return self._mesh
 
     @property
     def right_side(self, /) -> QuadEdge:
         return self._right_side
 
-    def to_boundary_points(self) -> list[hints.Point[hints.Scalar]]:
+    def to_boundary_points(self, /) -> list[hints.Point[hints.ScalarT]]:
         if self:
             result = []
             start = self.left_side
@@ -55,16 +55,15 @@ class DelaunayTriangulation(Generic[hints.Scalar]):
                     break
                 edge = candidate
             return result
-        else:
-            return self.mesh.endpoints
+        return self.mesh.endpoints
 
     def triangles_vertices(
         self,
     ) -> list[
         tuple[
-            hints.Point[hints.Scalar],
-            hints.Point[hints.Scalar],
-            hints.Point[hints.Scalar],
+            hints.Point[hints.ScalarT],
+            hints.Point[hints.ScalarT],
+            hints.Point[hints.ScalarT],
         ]
     ]:
         mesh = self.mesh
@@ -76,21 +75,25 @@ class DelaunayTriangulation(Generic[hints.Scalar]):
             if (
                 first_vertex < second_vertex
                 and first_vertex < third_vertex
-                and third_vertex
-                == mesh.to_end(
-                    mesh.to_right_from_start(to_opposite_edge(edge))
+                and (
+                    third_vertex
+                    == mesh.to_end(
+                        mesh.to_right_from_start(to_opposite_edge(edge))
+                    )
                 )
-                and orient_point_to_edge(
-                    mesh, edge, third_vertex, self._orienteer
+                and (
+                    orient_point_to_edge(
+                        mesh, edge, third_vertex, self._orienteer
+                    )
+                    is Orientation.COUNTERCLOCKWISE
                 )
-                is Orientation.COUNTERCLOCKWISE
             ):
                 result.append((first_vertex, second_vertex, third_vertex))
         return result
 
     _left_side: QuadEdge
-    _mesh: Mesh[hints.Scalar]
-    _orienteer: Orienteer[hints.Scalar]
+    _mesh: Mesh[hints.ScalarT]
+    _orienteer: Orienteer[hints.ScalarT]
     _right_side: QuadEdge
 
     __slots__ = '_left_side', '_mesh', '_orienteer', '_right_side'
@@ -99,8 +102,8 @@ class DelaunayTriangulation(Generic[hints.Scalar]):
         cls,
         left_side: QuadEdge,
         right_side: QuadEdge,
-        mesh: Mesh[hints.Scalar],
-        orienteer: Orienteer[hints.Scalar],
+        mesh: Mesh[hints.ScalarT],
+        orienteer: Orienteer[hints.ScalarT],
         /,
     ) -> Self:
         self = super().__new__(cls)

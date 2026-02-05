@@ -1,16 +1,16 @@
 import os
 import platform
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from datetime import timedelta
-from typing import Callable, cast
+from typing import cast
 
 import pytest
 from hypothesis import HealthCheck, settings
 
 is_pypy = platform.python_implementation() == 'PyPy'
-on_ci = bool(os.getenv('CI', False))
-max_examples = 2 if on_ci else settings.default.max_examples
+on_ci = bool(os.getenv('CI'))
+max_examples = 2 if on_ci else settings().max_examples
 settings.register_profile(
     'default',
     deadline=None,
@@ -30,7 +30,7 @@ if on_ci:
         set_deadline = settings(deadline=time_left / max_examples)
         item.obj = set_deadline(item.obj)
 
-    @pytest.fixture(scope='function', autouse=True)
+    @pytest.fixture(autouse=True)
     def time_function_call() -> Iterator[None]:
         start = time.monotonic()
         try:

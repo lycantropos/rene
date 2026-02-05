@@ -49,7 +49,7 @@ def test_reversed(polygons: Sequence[Polygon]) -> None:
     assert [
         polygon
         for index, (polygon, reversed_polygon) in (
-            enumerate(zip(result, reversed(polygons)))
+            enumerate(zip(result, reversed(polygons), strict=False))
         )
         if polygon != reversed_polygon
     ] == []

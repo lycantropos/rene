@@ -1,15 +1,15 @@
-from typing import TypeVar, Union
+from typing import TypeVar
 
 from rene import exact as _exact
 
-Compound = Union[
-    _exact.Contour,
-    _exact.Empty,
-    _exact.Multipolygon,
-    _exact.Multisegment,
-    _exact.Polygon,
-    _exact.Segment,
-]
+Compound = (
+    _exact.Contour
+    | _exact.Empty
+    | _exact.Multipolygon
+    | _exact.Multisegment
+    | _exact.Polygon
+    | _exact.Segment
+)
 # here and after we use `TypeVar` instead of `Union` because of
 # https://github.com/python/mypy/issues/6478
 CompoundT = TypeVar(
@@ -29,13 +29,13 @@ ClosedIdempotentCompoundT = TypeVar(
     _exact.Polygon,
     _exact.Segment,
 )
-IdempotentMaybeLinearCompound = Union[
-    _exact.Empty, _exact.Multisegment, _exact.Segment
-]
-MaybeLinearCompound = Union[
-    _exact.Contour, _exact.Empty, _exact.Multisegment, _exact.Segment
-]
-MaybeShapedCompound = Union[_exact.Empty, _exact.Multipolygon, _exact.Polygon]
+IdempotentMaybeLinearCompound = (
+    _exact.Empty | _exact.Multisegment | _exact.Segment
+)
+MaybeLinearCompound = (
+    _exact.Contour | _exact.Empty | _exact.Multisegment | _exact.Segment
+)
+MaybeShapedCompound = _exact.Empty | _exact.Multipolygon | _exact.Polygon
 ClosedCompoundsPairT = TypeVar(
     'ClosedCompoundsPairT',
     tuple[MaybeLinearCompound, MaybeLinearCompound],

@@ -1,24 +1,26 @@
 from __future__ import annotations
 
-import typing as t
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
+from typing import Generic, TYPE_CHECKING
 
 from rene import hints
 
-if t.TYPE_CHECKING:
+if TYPE_CHECKING:
     from rene.enums import Location
 
     from .edge import Edge
 
 
-class Node(ABC, t.Generic[hints.Scalar]):
+class Node(ABC, Generic[hints.ScalarT]):
     @abstractmethod
     def locate(
         self,
-        point: hints.Point[hints.Scalar],
-        edges: t.Sequence[Edge[hints.Scalar]],
-        endpoints: t.Sequence[hints.Point[hints.Scalar]],
-        nodes: t.Sequence[Node[hints.Scalar]],
+        point: hints.Point[hints.ScalarT],
+        edges: Sequence[Edge[hints.ScalarT]],
+        endpoints: Sequence[hints.Point[hints.ScalarT]],
+        nodes: Sequence[Node[hints.ScalarT]],
+        /,
     ) -> Location:
         """
         Finds location of given point relative to the contour.
@@ -27,18 +29,19 @@ class Node(ABC, t.Generic[hints.Scalar]):
     @abstractmethod
     def search_edge_node(
         self,
-        edge: Edge[hints.Scalar],
-        edges: t.Sequence[Edge[hints.Scalar]],
-        endpoints: t.Sequence[hints.Point[hints.Scalar]],
-        nodes: t.Sequence[Node[hints.Scalar]],
-    ) -> Node[hints.Scalar]:
+        edge: Edge[hints.ScalarT],
+        edges: Sequence[Edge[hints.ScalarT]],
+        endpoints: Sequence[hints.Point[hints.ScalarT]],
+        nodes: Sequence[Node[hints.ScalarT]],
+        /,
+    ) -> Node[hints.ScalarT]:
         """
         Recursive search for the trapezoid
         which contains the left endpoint of the given segment.
         """
 
     @abstractmethod
-    def to_height(self, nodes: t.Sequence[Node[hints.Scalar]]) -> int:
+    def to_height(self, nodes: Sequence[Node[hints.ScalarT]], /) -> int:
         """
         Returns height of the node.
         """

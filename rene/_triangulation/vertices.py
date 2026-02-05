@@ -4,18 +4,18 @@ from typing import Any, Generic
 
 from typing_extensions import Self
 
-from rene.hints import Point, Scalar
+from rene.hints import Point, ScalarT
 
 
-class ContourVertex(Generic[Scalar]):
+class ContourVertex(Generic[ScalarT]):
     contour_index: int
     index: int
-    point: Point[Scalar]
+    point: Point[ScalarT]
 
     __slots__ = 'contour_index', 'index', 'point'
 
     def __new__(
-        cls, contour_index: int, index: int, point: Point[Scalar], /
+        cls, contour_index: int, index: int, point: Point[ScalarT], /
     ) -> Self:
         self = super().__new__(cls)
         self.contour_index, self.index, self.point = (
@@ -26,11 +26,11 @@ class ContourVertex(Generic[Scalar]):
         return self
 
     @property
-    def x(self, /) -> Scalar:
+    def x(self, /) -> ScalarT:
         return self.point.x
 
     @property
-    def y(self, /) -> Scalar:
+    def y(self, /) -> ScalarT:
         return self.point.y
 
     def __ge__(self, other: Any, /) -> Any:

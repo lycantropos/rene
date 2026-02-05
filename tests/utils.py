@@ -1,6 +1,7 @@
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from functools import partial, singledispatch
-from typing import Any, Callable, TypeVar
+from operator import is_
+from typing import Any, TypeVar
 
 from hypothesis import strategies as _st
 
@@ -33,15 +34,14 @@ def are_sequences_equivalent(
     )
 
 
-def equivalence(left: bool, right: bool, /) -> bool:
-    return left is right
+equivalence = is_
 
 
 def implication(antecedent: bool, consequent: bool, /) -> bool:
     return not antecedent or consequent
 
 
-def is_contour_triangular(contour: _ContourT, /) -> bool:
+def is_contour_triangular(contour: exact.Contour, /) -> bool:
     return len(contour.vertices) == MIN_CONTOUR_VERTICES_COUNT
 
 
@@ -245,7 +245,7 @@ def rotate_sequence(sequence: Sequence[_T1], offset: int, /) -> list[_T1]:
     offset %= len(sequence)
     return [
         *[sequence[index] for index in range(offset, len(sequence))],
-        *[sequence[index] for index in range(0, offset)],
+        *[sequence[index] for index in range(offset)],
     ]
 
 

@@ -6,14 +6,18 @@ from typing_extensions import Self
 from rene import hints
 
 
-class BasePoint(ABC, Generic[hints.Scalar]):
+class BasePoint(ABC, Generic[hints.ScalarT]):
     @property
     @abstractmethod
-    def x(self) -> hints.Scalar: ...
+    def x(self, /) -> hints.ScalarT: ...
 
     @property
     @abstractmethod
-    def y(self) -> hints.Scalar: ...
+    def y(self, /) -> hints.ScalarT: ...
+
+    @abstractmethod
+    def __new__(cls, x: hints.ScalarT, y: hints.ScalarT, /) -> Self:
+        raise NotImplementedError
 
     @overload
     def __eq__(self, other: Self, /) -> bool: ...
@@ -36,7 +40,7 @@ class BasePoint(ABC, Generic[hints.Scalar]):
 
     def __ge__(self, other: Any, /) -> Any:
         return (
-            self.x > other.x or self.x == other.x and self.y >= other.y
+            self.x > other.x or (self.x == other.x and self.y >= other.y)
             if isinstance(other, type(self))
             else NotImplemented
         )
@@ -49,7 +53,7 @@ class BasePoint(ABC, Generic[hints.Scalar]):
 
     def __gt__(self, other: Any, /) -> Any:
         return (
-            self.x > other.x or self.x == other.x and self.y > other.y
+            self.x > other.x or (self.x == other.x and self.y > other.y)
             if isinstance(other, type(self))
             else NotImplemented
         )
@@ -65,7 +69,7 @@ class BasePoint(ABC, Generic[hints.Scalar]):
 
     def __le__(self, other: Any, /) -> Any:
         return (
-            self.x < other.x or self.x == other.x and self.y <= other.y
+            self.x < other.x or (self.x == other.x and self.y <= other.y)
             if isinstance(other, type(self))
             else NotImplemented
         )
@@ -78,7 +82,7 @@ class BasePoint(ABC, Generic[hints.Scalar]):
 
     def __lt__(self, other: Any, /) -> Any:
         return (
-            self.x < other.x or self.x == other.x and self.y < other.y
+            self.x < other.x or (self.x == other.x and self.y < other.y)
             if isinstance(other, type(self))
             else NotImplemented
         )

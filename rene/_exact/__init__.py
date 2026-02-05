@@ -61,12 +61,12 @@ def to_segments_intersection(
 
 
 def to_segments_intersection_scale(
-    first_start: hints.Point[hints.Scalar],
-    first_end: hints.Point[hints.Scalar],
-    second_start: hints.Point[hints.Scalar],
-    second_end: hints.Point[hints.Scalar],
+    first_start: hints.Point[hints.ScalarT],
+    first_end: hints.Point[hints.ScalarT],
+    second_start: hints.Point[hints.ScalarT],
+    second_end: hints.Point[hints.ScalarT],
     /,
-) -> hints.Scalar:
+) -> hints.ScalarT:
     return cross_multiply(
         first_start, second_start, second_start, second_end
     ) / cross_multiply(first_start, first_end, second_start, second_end)
@@ -85,13 +85,13 @@ _context = Context(
     segments_intersection_scale=to_segments_intersection_scale,
     segments_intersector=to_segments_intersection,
 )
-ConstrainedDelaunayTriangulation._context = _context
-Contour._context = _context
-DelaunayTriangulation._context = _context
-Empty._context = _context
-Multipolygon._context = _context
-Multisegment._context = _context
-Polygon._context = _context
-Segment._context = _context
-Trapezoidation._context = _context
+ConstrainedDelaunayTriangulation._context = _context  # noqa: SLF001
+Contour._context = _context  # noqa: SLF001
+DelaunayTriangulation._context = _context  # noqa: SLF001
+Empty._context = _context  # noqa: SLF001
+Multipolygon._context = _context  # noqa: SLF001
+Multisegment._context = _context  # noqa: SLF001
+Polygon._context = _context  # noqa: SLF001
+Segment._context = _context  # noqa: SLF001
+Trapezoidation._context = _context  # noqa: SLF001
 del _context

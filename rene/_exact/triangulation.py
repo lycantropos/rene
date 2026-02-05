@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, NoReturn, TYPE_CHECKING
+from typing import ClassVar, NoReturn, TYPE_CHECKING
 
 from typing_extensions import Self, final
 
@@ -51,13 +51,13 @@ class ConstrainedDelaunayTriangulation:
             for vertices in self._raw.triangles_vertices()
         ]
 
-    _context: Context[Fraction]
+    _context: ClassVar[Context[Fraction]]
     _raw: _RawConstrainedDelaunayTriangulation[Fraction]
 
     __module__ = 'rene.exact'
     __slots__ = ('_raw',)
 
-    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
+    def __init_subclass__(cls, /) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
@@ -69,7 +69,7 @@ class ConstrainedDelaunayTriangulation:
         self._raw = raw
         return self
 
-    def __bool__(self) -> bool:
+    def __bool__(self, /) -> bool:
         return bool(self._raw)
 
 
@@ -105,7 +105,7 @@ class DelaunayTriangulation:
     __module__ = 'rene.exact'
     __slots__ = ('_raw',)
 
-    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
+    def __init_subclass__(cls, /) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
@@ -115,5 +115,5 @@ class DelaunayTriangulation:
         self._raw = raw
         return self
 
-    def __bool__(self) -> bool:
+    def __bool__(self, /) -> bool:
         return bool(self._raw)

@@ -51,7 +51,7 @@ def test_reversed(holes: Sequence[Contour]) -> None:
     assert [
         contour
         for index, (contour, reversed_contour) in (
-            enumerate(zip(result, reversed(holes)))
+            enumerate(zip(result, reversed(holes), strict=False))
         )
         if contour != reversed_contour
     ] == []

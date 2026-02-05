@@ -1,4 +1,4 @@
-from typing import Any, ClassVar, NoReturn, TypeVar
+from typing import ClassVar, NoReturn, TypeVar
 
 from rithm.fraction import Fraction
 from typing_extensions import Self, final
@@ -17,7 +17,7 @@ class Empty(BaseEmpty[Fraction]):
     __module__ = 'rene.exact'
     __slots__ = ()
 
-    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
+    def __init_subclass__(cls, /) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )

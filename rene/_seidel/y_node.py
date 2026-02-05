@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from typing_extensions import Self
+from typing_extensions import Self, override
 
 from rene import hints
 from rene.enums import Location, Orientation
@@ -9,17 +9,18 @@ from .edge import Edge
 from .node import Node
 
 
-class YNode(Node[hints.Scalar]):
+class YNode(Node[hints.ScalarT]):
     above_node_index: int
     below_node_index: int
     edge_index: int
 
+    @override
     def locate(
         self,
-        point: hints.Point[hints.Scalar],
-        edges: Sequence[Edge[hints.Scalar]],
-        endpoints: Sequence[hints.Point[hints.Scalar]],
-        nodes: Sequence[Node[hints.Scalar]],
+        point: hints.Point[hints.ScalarT],
+        edges: Sequence[Edge[hints.ScalarT]],
+        endpoints: Sequence[hints.Point[hints.ScalarT]],
+        nodes: Sequence[Node[hints.ScalarT]],
         /,
     ) -> Location:
         point_orientation = edges[self.edge_index].orientation_of(
@@ -37,14 +38,15 @@ class YNode(Node[hints.Scalar]):
             )
         )
 
+    @override
     def search_edge_node(
         self,
-        edge: Edge[hints.Scalar],
-        edges: Sequence[Edge[hints.Scalar]],
-        endpoints: Sequence[hints.Point[hints.Scalar]],
-        nodes: Sequence[Node[hints.Scalar]],
+        edge: Edge[hints.ScalarT],
+        edges: Sequence[Edge[hints.ScalarT]],
+        endpoints: Sequence[hints.Point[hints.ScalarT]],
+        nodes: Sequence[Node[hints.ScalarT]],
         /,
-    ) -> Node[hints.Scalar]:
+    ) -> Node[hints.ScalarT]:
         return nodes[
             (
                 self.above_node_index
@@ -53,7 +55,8 @@ class YNode(Node[hints.Scalar]):
             )
         ]
 
-    def to_height(self, nodes: Sequence[Node[hints.Scalar]], /) -> int:
+    @override
+    def to_height(self, nodes: Sequence[Node[hints.ScalarT]], /) -> int:
         return (
             max(
                 nodes[self.below_node_index].to_height(nodes),

@@ -9,20 +9,20 @@ from rene.enums import Orientation
 from .event import Event
 
 
-class SweepLineKey(Generic[hints.Scalar]):
-    endpoints: Map[Event, hints.Point[hints.Scalar]]
+class SweepLineKey(Generic[hints.ScalarT]):
+    endpoints: Map[Event, hints.Point[hints.ScalarT]]
     opposites: Map[Event, Event]
     event: Event
-    _orienteer: Orienteer[hints.Scalar]
+    _orienteer: Orienteer[hints.ScalarT]
 
-    __slots__ = 'endpoints', 'event', 'opposites', '_orienteer'
+    __slots__ = '_orienteer', 'endpoints', 'event', 'opposites'
 
     def __new__(
         cls,
-        endpoints: Map[Event, hints.Point[hints.Scalar]],
+        endpoints: Map[Event, hints.Point[hints.ScalarT]],
         opposites: Map[Event, Event],
         event: Event,
-        orienteer: Orienteer[hints.Scalar],
+        orienteer: Orienteer[hints.ScalarT],
         /,
     ) -> Self:
         self = super().__new__(cls)
@@ -56,28 +56,25 @@ class SweepLineKey(Generic[hints.Scalar]):
                 # other segment fully lies on one side
                 return other_start_orientation is Orientation.COUNTERCLOCKWISE
             # segments are collinear
-            elif start_y == other_start_y:
+            if start_y == other_start_y:
                 end_x, end_y = end.x, end.y
                 other_end_x, other_end_y = other_end.x, other_end.y
                 if start_x != other_start_x:
                     return start_x < other_start_x
                 # segments have same start
-                elif end_y != other_end_y:
+                if end_y != other_end_y:
                     return end_y < other_end_y
-                else:
-                    # segments are horizontal
-                    return end_x < other_end_x
-            else:
-                return start_y < other_start_y
+                # segments are horizontal
+                return end_x < other_end_x
+            return start_y < other_start_y
         start_orientation = self._orienteer(other_start, other_end, start)
         end_orientation = self._orienteer(other_start, other_end, end)
         if start_orientation is end_orientation:
             return start_orientation is Orientation.CLOCKWISE
-        elif other_start_orientation is Orientation.COLLINEAR:
+        if other_start_orientation is Orientation.COLLINEAR:
             return other_end_orientation is Orientation.COUNTERCLOCKWISE
-        elif start_orientation is Orientation.COLLINEAR:
+        if start_orientation is Orientation.COLLINEAR:
             return end_orientation is Orientation.CLOCKWISE
-        elif end_orientation is Orientation.COLLINEAR:
+        if end_orientation is Orientation.COLLINEAR:
             return start_orientation is Orientation.CLOCKWISE
-        else:
-            return other_start_orientation is Orientation.COUNTERCLOCKWISE
+        return other_start_orientation is Orientation.COUNTERCLOCKWISE

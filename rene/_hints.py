@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Callable, TypeVar
+from collections.abc import Callable
+from typing import TypeVar
 
 from typing_extensions import Protocol
 
@@ -17,27 +18,27 @@ class Map(Protocol[_Key, _Value]):
 
 Orienteer = Callable[
     [
-        hints.Point[hints.Scalar],
-        hints.Point[hints.Scalar],
-        hints.Point[hints.Scalar],
+        hints.Point[hints.ScalarT],
+        hints.Point[hints.ScalarT],
+        hints.Point[hints.ScalarT],
     ],
     Orientation,
 ]
 SegmentsIntersector = Callable[
     [
-        hints.Point[hints.Scalar],
-        hints.Point[hints.Scalar],
-        hints.Point[hints.Scalar],
-        hints.Point[hints.Scalar],
+        hints.Point[hints.ScalarT],
+        hints.Point[hints.ScalarT],
+        hints.Point[hints.ScalarT],
+        hints.Point[hints.ScalarT],
     ],
-    hints.Point[hints.Scalar],
+    hints.Point[hints.ScalarT],
 ]
 SegmentsIntersectionScale = Callable[
     [
-        hints.Point[hints.Scalar],
-        hints.Point[hints.Scalar],
-        hints.Point[hints.Scalar],
-        hints.Point[hints.Scalar],
+        hints.Point[hints.ScalarT],
+        hints.Point[hints.ScalarT],
+        hints.Point[hints.ScalarT],
+        hints.Point[hints.ScalarT],
     ],
-    hints.Scalar,
+    hints.ScalarT,
 ]

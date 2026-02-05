@@ -1,9 +1,9 @@
-import typing as t
+from typing import Any, ClassVar, Generic
 
 from rene import hints
 from rene._context import Context
 
 
-class BaseCompound(t.Generic[hints.Scalar]):
+class BaseCompound(Generic[hints.ScalarT]):
     # can't use generic because of https://github.com/python/mypy/issues/5144
-    _context: t.ClassVar[Context[t.Any]]
+    _context: ClassVar[Context[Any]]

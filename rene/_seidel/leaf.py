@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from typing_extensions import Self
+from typing_extensions import Self, override
 
 from rene import hints
 from rene.enums import Location
@@ -10,13 +10,15 @@ from .node import Node
 from .trapezoid import Trapezoid
 
 
-class Leaf(Node[hints.Scalar]):
+class Leaf(Node[hints.ScalarT]):
+    @override
     def locate(
         self,
-        point: hints.Point[hints.Scalar],
-        edges: Sequence[Edge[hints.Scalar]],
-        endpoints: Sequence[hints.Point[hints.Scalar]],
-        nodes: Sequence[Node[hints.Scalar]],
+        point: hints.Point[hints.ScalarT],
+        edges: Sequence[Edge[hints.ScalarT]],
+        endpoints: Sequence[hints.Point[hints.ScalarT]],
+        nodes: Sequence[Node[hints.ScalarT]],
+        /,
     ) -> Location:
         return (
             Location.INTERIOR
@@ -24,16 +26,19 @@ class Leaf(Node[hints.Scalar]):
             else Location.EXTERIOR
         )
 
+    @override
     def search_edge_node(
         self,
-        edge: Edge[hints.Scalar],
-        edges: Sequence[Edge[hints.Scalar]],
-        endpoints: Sequence[hints.Point[hints.Scalar]],
-        nodes: Sequence[Node[hints.Scalar]],
+        edge: Edge[hints.ScalarT],
+        edges: Sequence[Edge[hints.ScalarT]],
+        endpoints: Sequence[hints.Point[hints.ScalarT]],
+        nodes: Sequence[Node[hints.ScalarT]],
+        /,
     ) -> Self:
         return self
 
-    def to_height(self, nodes: Sequence[Node[hints.Scalar]]) -> int:
+    @override
+    def to_height(self, nodes: Sequence[Node[hints.ScalarT]], /) -> int:
         return 0
 
     trapezoid: Trapezoid
@@ -42,6 +47,8 @@ class Leaf(Node[hints.Scalar]):
 
     def __new__(
         cls,
+        /,
+        *,
         is_component: bool,
         left_point_index: int,
         right_point_index: int,
@@ -51,11 +58,11 @@ class Leaf(Node[hints.Scalar]):
     ) -> Self:
         self = super().__new__(cls)
         self.trapezoid = Trapezoid(
-            is_component,
-            left_point_index,
-            right_point_index,
-            below_edge_index,
-            above_edge_index,
-            index,
+            is_component=is_component,
+            left_point_index=left_point_index,
+            right_point_index=right_point_index,
+            below_edge_index=below_edge_index,
+            above_edge_index=above_edge_index,
+            leaf_index=index,
         )
         return self

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from numbers import Rational
-from typing import Any, NoReturn, Union
+from typing import NoReturn, TypeAlias
 
 from rithm.fraction import Fraction
 from rithm.integer import Int
@@ -9,7 +9,7 @@ from typing_extensions import Self, final
 
 from rene._geometries.base_box import BaseBox
 
-_Coordinate = Union[Fraction, Int, Rational, float, int]
+_Coordinate: TypeAlias = Fraction | Int | Rational | float | int
 
 
 @final
@@ -36,9 +36,9 @@ class Box(BaseBox[Fraction]):
     _min_y: Fraction
 
     __module__ = 'rene.exact'
-    __slots__ = '_min_x', '_max_x', '_min_y', '_max_y'
+    __slots__ = '_max_x', '_max_y', '_min_x', '_min_y'
 
-    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
+    def __init_subclass__(cls, /) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )

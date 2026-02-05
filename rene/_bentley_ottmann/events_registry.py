@@ -26,18 +26,22 @@ if TYPE_CHECKING:
     from rene._hints import Orienteer, SegmentsIntersector
 
 
-class EventsRegistry(Generic[hints.Scalar]):
+class EventsRegistry(Generic[hints.ScalarT]):
     @classmethod
     def from_segments(
         cls,
-        segments: Sequence[hints.Segment[hints.Scalar]],
-        orienteer: Orienteer[hints.Scalar],
-        segments_intersector: SegmentsIntersector[hints.Scalar],
+        segments: Sequence[hints.Segment[hints.ScalarT]],
+        orienteer: Orienteer[hints.ScalarT],
+        segments_intersector: SegmentsIntersector[hints.ScalarT],
         /,
         *,
         unique: bool,
-    ) -> EventsRegistry[hints.Scalar]:
-        result = cls(orienteer, segments_intersector, unique)
+    ) -> EventsRegistry[hints.ScalarT]:
+        result = cls(
+            orienteer=orienteer,
+            segments_intersector=segments_intersector,
+            unique=unique,
+        )
         for segment_id, segment in enumerate(segments):
             left_event = segment_id_to_left_event(segment_id)
             right_event = segment_id_to_right_event(segment_id)
@@ -63,7 +67,7 @@ class EventsRegistry(Generic[hints.Scalar]):
             first_segment_id
         ) == self._to_min_collinear_segment_id(second_segment_id)
 
-    def to_event_end(self, event: Event, /) -> hints.Point[hints.Scalar]:
+    def to_event_end(self, event: Event, /) -> hints.Point[hints.ScalarT]:
         return self.to_event_start(self._to_opposite_event(event))
 
     def to_event_segment_id(self, event: Event, /) -> int:
@@ -71,15 +75,15 @@ class EventsRegistry(Generic[hints.Scalar]):
             event if is_event_left(event) else self._to_opposite_event(event)
         )
 
-    def to_event_start(self, event: Event, /) -> hints.Point[hints.Scalar]:
+    def to_event_start(self, event: Event, /) -> hints.Point[hints.ScalarT]:
         return self._endpoints[event]
 
-    def to_segment_end(self, segment_id: int, /) -> hints.Point[hints.Scalar]:
+    def to_segment_end(self, segment_id: int, /) -> hints.Point[hints.ScalarT]:
         return self.to_event_start(segment_id_to_right_event(segment_id))
 
     def to_segment_start(
         self, segment_id: int, /
-    ) -> hints.Point[hints.Scalar]:
+    ) -> hints.Point[hints.ScalarT]:
         return self.to_event_start(segment_id_to_left_event(segment_id))
 
     __slots__ = (
@@ -96,10 +100,11 @@ class EventsRegistry(Generic[hints.Scalar]):
 
     def __init__(
         self,
-        orienteer: Orienteer[hints.Scalar],
-        segments_intersector: SegmentsIntersector[hints.Scalar],
-        unique: bool,
         /,
+        *,
+        orienteer: Orienteer[hints.ScalarT],
+        segments_intersector: SegmentsIntersector[hints.ScalarT],
+        unique: bool,
     ) -> None:
         self._orienteer, self._segments_intersector, self._unique = (
             orienteer,
@@ -107,31 +112,31 @@ class EventsRegistry(Generic[hints.Scalar]):
             unique,
         )
         self._opposites: list[Event] = []
-        self._endpoints: list[hints.Point[hints.Scalar]] = []
+        self._endpoints: list[hints.Point[hints.ScalarT]] = []
         self._segments_ids: list[int] = []
         self._min_collinear_segments_ids: list[int] = []
         self._events_queue_data: PriorityQueue[
-            EventsQueueKey[hints.Scalar], Event
+            EventsQueueKey[hints.ScalarT], Event
         ] = PriorityQueue(
             key=lambda event: EventsQueueKey(
                 self._endpoints, self._opposites, event
             )
         )
-        self._sweep_line_data: KeyedSet[SweepLineKey[hints.Scalar], Event] = (
+        self._sweep_line_data: KeyedSet[SweepLineKey[hints.ScalarT], Event] = (
             red_black.set_(key=self._event_to_sweep_line_key)
         )
 
     def _event_to_sweep_line_key(
         self, event: Event, /
-    ) -> SweepLineKey[hints.Scalar]:
+    ) -> SweepLineKey[hints.ScalarT]:
         return SweepLineKey(
             self._endpoints, self._opposites, event, self._orienteer
         )
 
-    def __bool__(self) -> bool:
+    def __bool__(self, /) -> bool:
         return bool(self._events_queue_data)
 
-    def __iter__(self) -> Iterator[Event]:
+    def __iter__(self, /) -> Iterator[Event]:
         while self:
             event = self._pop()
             if is_event_left(event):
@@ -293,7 +298,7 @@ class EventsRegistry(Generic[hints.Scalar]):
                 )
 
     def _divide(
-        self, event: Event, mid_point: hints.Point[hints.Scalar], /
+        self, event: Event, mid_point: hints.Point[hints.ScalarT], /
     ) -> tuple[Event, Event]:
         assert is_event_left(event)
         opposite_event = self._to_opposite_event(event)
@@ -312,8 +317,8 @@ class EventsRegistry(Generic[hints.Scalar]):
         self,
         event: Event,
         mid_segment_event: Event,
-        mid_segment_event_start: hints.Point[hints.Scalar],
-        mid_segment_event_end: hints.Point[hints.Scalar],
+        mid_segment_event_start: hints.Point[hints.ScalarT],
+        mid_segment_event_end: hints.Point[hints.ScalarT],
         /,
     ) -> None:
         self._divide_event_by_midpoint(event, mid_segment_event_end)
@@ -328,7 +333,7 @@ class EventsRegistry(Generic[hints.Scalar]):
         )
 
     def _divide_event_by_midpoint(
-        self, event: Event, point: hints.Point[hints.Scalar], /
+        self, event: Event, point: hints.Point[hints.ScalarT], /
     ) -> None:
         point_to_event_start_event, point_to_event_end_event = self._divide(
             event, point
@@ -337,7 +342,7 @@ class EventsRegistry(Generic[hints.Scalar]):
         self._push(point_to_event_end_event)
 
     def _divide_event_by_midpoint_checking_above(
-        self, event: Event, point: hints.Point[hints.Scalar], /
+        self, event: Event, point: hints.Point[hints.ScalarT], /
     ) -> None:
         above_event = self._above(event)
         if above_event is not None and (
@@ -354,8 +359,8 @@ class EventsRegistry(Generic[hints.Scalar]):
         self,
         min_start_event: Event,
         max_start_event: Event,
-        max_start: hints.Point[hints.Scalar],
-        min_end: hints.Point[hints.Scalar],
+        max_start: hints.Point[hints.ScalarT],
+        min_end: hints.Point[hints.ScalarT],
         /,
     ) -> None:
         self._divide_event_by_midpoint(max_start_event, min_end)
@@ -416,7 +421,7 @@ class EventsRegistry(Generic[hints.Scalar]):
             min_collinear_segment_id
         )
 
-    def _pop(self) -> Event:
+    def _pop(self, /) -> Event:
         return self._events_queue_data.pop()
 
     def _push(self, event: Event, /) -> None:

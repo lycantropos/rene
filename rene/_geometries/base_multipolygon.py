@@ -22,6 +22,15 @@ from rene._relating import multipolygon
 from rene.enums import Location, Relation
 
 from .base_compound import BaseCompound
+from .utils import (
+    is_contour,
+    is_empty,
+    is_multipolygon,
+    is_multisegment,
+    is_multisegmental,
+    is_polygon,
+    is_segment,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -29,13 +38,14 @@ if TYPE_CHECKING:
     from rene._context import Context
 
 
-class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):
+class BaseMultipolygon(ABC, BaseCompound[hints.ScalarT]):
     @property
     @abstractmethod
-    def polygons(self) -> Sequence[hints.Polygon[hints.Scalar]]: ...
+    def polygons(self, /) -> Sequence[hints.Polygon[hints.ScalarT]]:
+        raise NotImplementedError
 
     @property
-    def bounding_box(self, /) -> hints.Box[hints.Scalar]:
+    def bounding_box(self, /) -> hints.Box[hints.ScalarT]:
         polygons = iter(self.polygons)
         first_polygon_bounding_box = next(polygons).bounding_box
         min_x, max_x, min_y, max_y = (
@@ -56,56 +66,63 @@ class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):
                 min_y = polygon_bounding_box.min_y
         return self._context.box_cls(min_x, max_x, min_y, max_y)
 
-    def locate(self, point: hints.Point[hints.Scalar], /) -> Location:
+    def locate(self, point: hints.Point[hints.ScalarT], /) -> Location:
         for polygon in self.polygons:
             location = polygon.locate(point)
             if location is not Location.EXTERIOR:
                 return location
         return Location.EXTERIOR
 
-    def relate_to(self, other: hints.Compound[hints.Scalar], /) -> Relation:
+    def relate_to(self, other: hints.Compound[hints.ScalarT], /) -> Relation:
         context = self._context
-        if isinstance(other, context.contour_cls):
+        if is_contour(other, context=context):
             return multipolygon.relate_to_contour(
                 self, other, context.orient, context.intersect_segments
             )
-        elif isinstance(other, context.multisegment_cls):
+        if is_empty(other, context=context):
+            return Relation.DISJOINT
+        if is_multisegment(other, context=context):
             return multipolygon.relate_to_multisegment(
                 self, other, context.orient, context.intersect_segments
             )
-        elif isinstance(other, context.segment_cls):
-            return multipolygon.relate_to_segment(
-                self, other, context.orient, context.intersect_segments
-            )
-        elif isinstance(other, context.empty_cls):
-            return Relation.DISJOINT
-        elif isinstance(other, context.multipolygon_cls):
+        if is_multipolygon(other, context=context):
             return multipolygon.relate_to_multipolygon(
                 self, other, context.orient, context.intersect_segments
             )
-        elif isinstance(other, context.polygon_cls):
+        if is_polygon(other, context=context):
             return multipolygon.relate_to_polygon(
                 self, other, context.orient, context.intersect_segments
             )
-        else:
-            raise TypeError(f'Unsupported type: {type(other)!r}.')
+        if is_segment(other, context=context):
+            return multipolygon.relate_to_segment(
+                self, other, context.orient, context.intersect_segments
+            )
+        raise TypeError(f'Unsupported type: {type(other)!r}.')
 
     _context: ClassVar[Context[Any]]
 
+    @abstractmethod
+    def __new__(
+        cls, polygons: Sequence[hints.Polygon[hints.ScalarT]], /
+    ) -> Self:
+        raise NotImplementedError
+
     @overload
     def __and__(
-        self, other: hints.Empty[hints.Scalar], /
-    ) -> hints.Empty[hints.Scalar]: ...
+        self, other: hints.Empty[hints.ScalarT], /
+    ) -> hints.Empty[hints.ScalarT]: ...
 
     @overload
     def __and__(
         self,
-        other: hints.Multipolygon[hints.Scalar] | hints.Polygon[hints.Scalar],
+        other: (
+            hints.Multipolygon[hints.ScalarT] | hints.Polygon[hints.ScalarT]
+        ),
         /,
     ) -> (
-        hints.Empty[hints.Scalar]
-        | hints.Multipolygon[hints.Scalar]
-        | hints.Polygon[hints.Scalar]
+        hints.Empty[hints.ScalarT]
+        | hints.Multipolygon[hints.ScalarT]
+        | hints.Polygon[hints.ScalarT]
     ): ...
 
     @overload
@@ -125,7 +142,7 @@ class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(other, context.multipolygon_cls)
+            if is_multipolygon(other, context=context)
             else (
                 intersect_multipolygon_with_polygon(
                     self,
@@ -138,7 +155,7 @@ class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):
                     context.segment_cls,
                     context.intersect_segments,
                 )
-                if isinstance(other, context.polygon_cls)
+                if is_polygon(other, context=context)
                 else (
                     intersect_multipolygon_with_multisegmental(
                         self,
@@ -149,9 +166,7 @@ class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):
                         context.segment_cls,
                         context.intersect_segments,
                     )
-                    if isinstance(
-                        other, (context.contour_cls, context.multisegment_cls)
-                    )
+                    if is_multisegmental(other, context=context)
                     else (
                         intersect_multipolygon_with_segment(
                             self,
@@ -162,10 +177,10 @@ class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):
                             context.segment_cls,
                             context.intersect_segments,
                         )
-                        if isinstance(other, context.segment_cls)
+                        if is_segment(other, context=context)
                         else (
                             other
-                            if isinstance(other, context.empty_cls)
+                            if is_empty(other, context=context)
                             else NotImplemented
                         )
                     )
@@ -173,7 +188,7 @@ class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):
             )
         )
 
-    def __contains__(self, point: hints.Point[hints.Scalar], /) -> bool:
+    def __contains__(self, point: hints.Point[hints.ScalarT], /) -> bool:
         return self.locate(point) is not Location.EXTERIOR
 
     @overload
@@ -193,14 +208,16 @@ class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):
         return hash(frozenset(self.polygons))
 
     @overload
-    def __or__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
+    def __or__(self, other: hints.Empty[hints.ScalarT], /) -> Self: ...
 
     @overload
     def __or__(
         self,
-        other: hints.Multipolygon[hints.Scalar] | hints.Polygon[hints.Scalar],
+        other: (
+            hints.Multipolygon[hints.ScalarT] | hints.Polygon[hints.ScalarT]
+        ),
         /,
-    ) -> hints.Multipolygon[hints.Scalar] | hints.Polygon[hints.Scalar]: ...
+    ) -> hints.Multipolygon[hints.ScalarT] | hints.Polygon[hints.ScalarT]: ...
 
     @overload
     def __or__(self, other: Any, /) -> Any: ...
@@ -218,7 +235,7 @@ class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(other, context.multipolygon_cls)
+            if is_multipolygon(other, context=context)
             else (
                 unite_multipolygon_with_polygon(
                     self,
@@ -230,10 +247,10 @@ class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):
                     context.segment_cls,
                     context.intersect_segments,
                 )
-                if isinstance(other, context.polygon_cls)
+                if is_polygon(other, context=context)
                 else (
                     self
-                    if isinstance(other, context.empty_cls)
+                    if is_empty(other, context=context)
                     else NotImplemented
                 )
             )
@@ -250,17 +267,19 @@ class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):
         )
 
     @overload
-    def __sub__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
+    def __sub__(self, other: hints.Empty[hints.ScalarT], /) -> Self: ...
 
     @overload
     def __sub__(
         self,
-        other: hints.Multipolygon[hints.Scalar] | hints.Polygon[hints.Scalar],
+        other: (
+            hints.Multipolygon[hints.ScalarT] | hints.Polygon[hints.ScalarT]
+        ),
         /,
     ) -> (
-        hints.Empty[hints.Scalar]
-        | hints.Multipolygon[hints.Scalar]
-        | hints.Polygon[hints.Scalar]
+        hints.Empty[hints.ScalarT]
+        | hints.Multipolygon[hints.ScalarT]
+        | hints.Polygon[hints.ScalarT]
     ): ...
 
     @overload
@@ -280,7 +299,7 @@ class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(other, context.multipolygon_cls)
+            if is_multipolygon(other, context=context)
             else (
                 subtract_polygon_from_multipolygon(
                     self,
@@ -293,27 +312,29 @@ class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):
                     context.segment_cls,
                     context.intersect_segments,
                 )
-                if isinstance(other, context.polygon_cls)
+                if is_polygon(other, context=context)
                 else (
                     self
-                    if isinstance(other, context.empty_cls)
+                    if is_empty(other, context=context)
                     else NotImplemented
                 )
             )
         )
 
     @overload
-    def __xor__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
+    def __xor__(self, other: hints.Empty[hints.ScalarT], /) -> Self: ...
 
     @overload
     def __xor__(
         self,
-        other: hints.Multipolygon[hints.Scalar] | hints.Polygon[hints.Scalar],
+        other: (
+            hints.Multipolygon[hints.ScalarT] | hints.Polygon[hints.ScalarT]
+        ),
         /,
     ) -> (
-        hints.Empty[hints.Scalar]
-        | hints.Multipolygon[hints.Scalar]
-        | hints.Polygon[hints.Scalar]
+        hints.Empty[hints.ScalarT]
+        | hints.Multipolygon[hints.ScalarT]
+        | hints.Polygon[hints.ScalarT]
     ): ...
 
     @overload
@@ -333,7 +354,7 @@ class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(other, context.multipolygon_cls)
+            if is_multipolygon(other, context=context)
             else (
                 symmetric_subtract_polygon_from_multipolygon(
                     self,
@@ -346,10 +367,10 @@ class BaseMultipolygon(ABC, BaseCompound[hints.Scalar]):
                     context.segment_cls,
                     context.intersect_segments,
                 )
-                if isinstance(other, context.polygon_cls)
+                if is_polygon(other, context=context)
                 else (
                     self
-                    if isinstance(other, context.empty_cls)
+                    if is_empty(other, context=context)
                     else NotImplemented
                 )
             )

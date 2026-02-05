@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from typing_extensions import Self
+from typing_extensions import Self, override
 
 from rene import hints
 from rene.enums import Location
@@ -9,17 +9,18 @@ from .edge import Edge
 from .node import Node
 
 
-class XNode(Node[hints.Scalar]):
+class XNode(Node[hints.ScalarT]):
     point_index: int
     left_node_index: int
     right_node_index: int
 
+    @override
     def locate(
         self,
-        point: hints.Point[hints.Scalar],
-        edges: Sequence[Edge[hints.Scalar]],
-        endpoints: Sequence[hints.Point[hints.Scalar]],
-        nodes: Sequence[Node[hints.Scalar]],
+        point: hints.Point[hints.ScalarT],
+        edges: Sequence[Edge[hints.ScalarT]],
+        endpoints: Sequence[hints.Point[hints.ScalarT]],
+        nodes: Sequence[Node[hints.ScalarT]],
         /,
     ) -> Location:
         return (
@@ -34,24 +35,28 @@ class XNode(Node[hints.Scalar]):
             )
         )
 
+    @override
     def search_edge_node(
         self,
-        edge: Edge[hints.Scalar],
-        edges: Sequence[Edge[hints.Scalar]],
-        endpoints: Sequence[hints.Point[hints.Scalar]],
-        nodes: Sequence[Node[hints.Scalar]],
+        edge: Edge[hints.ScalarT],
+        edges: Sequence[Edge[hints.ScalarT]],
+        endpoints: Sequence[hints.Point[hints.ScalarT]],
+        nodes: Sequence[Node[hints.ScalarT]],
         /,
-    ) -> Node[hints.Scalar]:
+    ) -> Node[hints.ScalarT]:
         return nodes[
             (
                 self.left_node_index
-                if endpoints[edge.left_point_index]
-                < endpoints[self.point_index]
+                if (
+                    endpoints[edge.left_point_index]
+                    < endpoints[self.point_index]
+                )
                 else self.right_node_index
             )
         ]
 
-    def to_height(self, nodes: Sequence[Node[hints.Scalar]], /) -> int:
+    @override
+    def to_height(self, nodes: Sequence[Node[hints.ScalarT]], /) -> int:
         return (
             max(
                 nodes[self.left_node_index].to_height(nodes),

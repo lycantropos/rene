@@ -25,9 +25,9 @@ if t.TYPE_CHECKING:
 
 
 def relate_to_contour(
-    segment: hints.Segment[hints.Scalar],
-    contour: hints.Contour[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
+    segment: hints.Segment[hints.ScalarT],
+    contour: hints.Contour[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
     /,
 ) -> Relation:
     return relate_endpoints_to_contour(
@@ -36,10 +36,10 @@ def relate_to_contour(
 
 
 def relate_to_multipolygon(
-    segment: hints.Segment[hints.Scalar],
-    multipolygon: hints.Multipolygon[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    segment: hints.Segment[hints.ScalarT],
+    multipolygon: hints.Multipolygon[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
 ) -> Relation:
     segment_bounding_box = segment.bounding_box
@@ -71,14 +71,14 @@ def relate_to_multipolygon(
         ),
         orienteer,
         segments_intersector,
-    ).to_relation(True, min_max_x)
+    ).to_relation(linear_is_subset_of_shaped=True, min_max_x=min_max_x)
 
 
 def relate_to_multiregion(
-    segment: hints.Segment[hints.Scalar],
-    borders: t.Sequence[hints.Contour[hints.Scalar]],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    segment: hints.Segment[hints.ScalarT],
+    borders: t.Sequence[hints.Contour[hints.ScalarT]],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
 ) -> Relation:
     assert len(borders) > 1, borders
@@ -101,14 +101,14 @@ def relate_to_multiregion(
         [edge for border in borders for edge in border.segments],
         orienteer,
         segments_intersector,
-    ).to_relation(True, min_max_x)
+    ).to_relation(linear_is_subset_of_shaped=True, min_max_x=min_max_x)
 
 
 def relate_to_multisegment(
-    segment: hints.Segment[hints.Scalar],
-    multisegment: hints.Multisegment[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersection_scale: SegmentsIntersectionScale[hints.Scalar],
+    segment: hints.Segment[hints.ScalarT],
+    multisegment: hints.Multisegment[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersection_scale: SegmentsIntersectionScale[hints.ScalarT],
     /,
 ) -> Relation:
     return relate_endpoints_to_multisegment(
@@ -121,14 +121,14 @@ def relate_to_multisegment(
 
 
 def relate_to_polygon(
-    segment: hints.Segment[hints.Scalar],
-    polygon: hints.Polygon[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    segment: hints.Segment[hints.ScalarT],
+    polygon: hints.Polygon[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
 ) -> Relation:
     relation_without_holes = relate_to_region(
-        segment, polygon.border, False, orienteer
+        segment, polygon.border, reverse_orientation=False, orienteer=orienteer
     )
     holes = polygon.holes
     if holes and (
@@ -136,7 +136,12 @@ def relate_to_polygon(
         or relation_without_holes is Relation.ENCLOSED
     ):
         relation_with_holes = (
-            relate_to_region(segment, holes[0], True, orienteer)
+            relate_to_region(
+                segment,
+                holes[0],
+                reverse_orientation=True,
+                orienteer=orienteer,
+            )
             if len(holes) == 1
             else relate_to_multiregion(
                 segment, holes, orienteer, segments_intersector
@@ -144,34 +149,37 @@ def relate_to_polygon(
         )
         if relation_with_holes is Relation.DISJOINT:
             return relation_without_holes
-        elif relation_with_holes is Relation.TOUCH:
+        if relation_with_holes is Relation.TOUCH:
             return Relation.ENCLOSED
-        elif relation_with_holes is Relation.ENCLOSED:
+        if relation_with_holes is Relation.ENCLOSED:
             return Relation.TOUCH
-        elif relation_with_holes is Relation.WITHIN:
+        if relation_with_holes is Relation.WITHIN:
             return Relation.DISJOINT
-        else:
-            return relation_with_holes
-    else:
-        return relation_without_holes
+        return relation_with_holes
+    return relation_without_holes
 
 
 def relate_to_region(
-    segment: hints.Segment[hints.Scalar],
-    border: hints.Contour[hints.Scalar],
-    reverse_orientation: bool,
-    orienteer: Orienteer[hints.Scalar],
+    segment: hints.Segment[hints.ScalarT],
+    border: hints.Contour[hints.ScalarT],
     /,
+    *,
+    reverse_orientation: bool,
+    orienteer: Orienteer[hints.ScalarT],
 ) -> Relation:
     return relate_endpoints_to_region(
-        segment.start, segment.end, border, reverse_orientation, orienteer
+        segment.start,
+        segment.end,
+        border,
+        reverse_orientation=reverse_orientation,
+        orienteer=orienteer,
     )
 
 
 def relate_to_segment(
-    first: hints.Segment[hints.Scalar],
-    second: hints.Segment[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
+    first: hints.Segment[hints.ScalarT],
+    second: hints.Segment[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
     /,
 ) -> Relation:
     return relate_endpoints_to_endpoints(

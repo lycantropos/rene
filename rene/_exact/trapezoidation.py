@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import Any, ClassVar, NoReturn, TYPE_CHECKING
+from typing import ClassVar, NoReturn, TYPE_CHECKING
 
 from typing_extensions import Self, final
 
@@ -69,7 +69,7 @@ class Trapezoidation:
     __module__ = 'rene.exact'
     __slots__ = ('_raw',)
 
-    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
+    def __init_subclass__(cls, /) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )

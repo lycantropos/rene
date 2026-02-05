@@ -35,8 +35,8 @@ def all_same(iterable: Iterable[Any]) -> bool:
 
 
 def are_contour_vertices_non_degenerate(
-    vertices: Sequence[hints.Point[hints.Scalar]],
-    orienteer: Orienteer[hints.Scalar],
+    vertices: Sequence[hints.Point[hints.ScalarT]],
+    orienteer: Orienteer[hints.ScalarT],
     /,
 ) -> bool:
     return all(
@@ -59,19 +59,19 @@ def are_contour_vertices_non_degenerate(
 
 
 def do_boxes_have_common_area(
-    first: hints.Box[hints.Scalar], second: hints.Box[hints.Scalar], /
+    first: hints.Box[hints.ScalarT], second: hints.Box[hints.ScalarT], /
 ) -> bool:
     return not first.disjoint_with(second) and not first.touches(second)
 
 
 def do_boxes_have_no_common_area(
-    first: hints.Box[hints.Scalar], second: hints.Box[hints.Scalar], /
+    first: hints.Box[hints.ScalarT], second: hints.Box[hints.ScalarT], /
 ) -> bool:
     return first.disjoint_with(second) or first.touches(second)
 
 
 def do_boxes_have_common_continuum(
-    first: hints.Box[hints.Scalar], second: hints.Box[hints.Scalar], /
+    first: hints.Box[hints.ScalarT], second: hints.Box[hints.ScalarT], /
 ) -> bool:
     return not first.disjoint_with(second) and (
         not first.touches(second)
@@ -81,7 +81,7 @@ def do_boxes_have_common_continuum(
 
 
 def do_boxes_have_no_common_continuum(
-    first: hints.Box[hints.Scalar], second: hints.Box[hints.Scalar], /
+    first: hints.Box[hints.ScalarT], second: hints.Box[hints.ScalarT], /
 ) -> bool:
     return first.disjoint_with(second) or (
         first.touches(second)
@@ -95,14 +95,14 @@ def ceil_log2(number: int, /) -> int:
 
 
 def collect_maybe_empty_polygons(
-    polygons: Sequence[hints.Polygon[hints.Scalar]],
-    empty_cls: type[hints.Empty[hints.Scalar]],
-    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
+    polygons: Sequence[hints.Polygon[hints.ScalarT]],
+    empty_cls: type[hints.Empty[hints.ScalarT]],
+    multipolygon_cls: type[hints.Multipolygon[hints.ScalarT]],
     /,
 ) -> (
-    hints.Empty[hints.Scalar]
-    | hints.Multipolygon[hints.Scalar]
-    | hints.Polygon[hints.Scalar]
+    hints.Empty[hints.ScalarT]
+    | hints.Multipolygon[hints.ScalarT]
+    | hints.Polygon[hints.ScalarT]
 ):
     return (
         collect_non_empty_polygons(polygons, multipolygon_cls)
@@ -112,14 +112,14 @@ def collect_maybe_empty_polygons(
 
 
 def collect_maybe_empty_segments(
-    segments: Sequence[hints.Segment[hints.Scalar]],
-    empty_cls: type[hints.Empty[hints.Scalar]],
-    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
+    segments: Sequence[hints.Segment[hints.ScalarT]],
+    empty_cls: type[hints.Empty[hints.ScalarT]],
+    multisegment_cls: type[hints.Multisegment[hints.ScalarT]],
     /,
 ) -> (
-    hints.Empty[hints.Scalar]
-    | hints.Multisegment[hints.Scalar]
-    | hints.Segment[hints.Scalar]
+    hints.Empty[hints.ScalarT]
+    | hints.Multisegment[hints.ScalarT]
+    | hints.Segment[hints.ScalarT]
 ):
     return (
         collect_non_empty_segments(segments, multisegment_cls)
@@ -129,30 +129,30 @@ def collect_maybe_empty_segments(
 
 
 def collect_non_empty_polygons(
-    polygons: Sequence[hints.Polygon[hints.Scalar]],
-    multipolygon_cls: type[hints.Multipolygon[hints.Scalar]],
+    polygons: Sequence[hints.Polygon[hints.ScalarT]],
+    multipolygon_cls: type[hints.Multipolygon[hints.ScalarT]],
     /,
-) -> hints.Multipolygon[hints.Scalar] | hints.Polygon[hints.Scalar]:
+) -> hints.Multipolygon[hints.ScalarT] | hints.Polygon[hints.ScalarT]:
     assert len(polygons) >= 1
     return polygons[0] if len(polygons) == 1 else multipolygon_cls(polygons)
 
 
 def collect_non_empty_segments(
-    segments: Sequence[hints.Segment[hints.Scalar]],
-    multisegment_cls: type[hints.Multisegment[hints.Scalar]],
+    segments: Sequence[hints.Segment[hints.ScalarT]],
+    multisegment_cls: type[hints.Multisegment[hints.ScalarT]],
     /,
-) -> hints.Multisegment[hints.Scalar] | hints.Segment[hints.Scalar]:
+) -> hints.Multisegment[hints.ScalarT] | hints.Segment[hints.ScalarT]:
     assert len(segments) >= 1
     return segments[0] if len(segments) == 1 else multisegment_cls(segments)
 
 
 def cross_multiply(
-    first_start: hints.Point[hints.Scalar],
-    first_end: hints.Point[hints.Scalar],
-    second_start: hints.Point[hints.Scalar],
-    second_end: hints.Point[hints.Scalar],
+    first_start: hints.Point[hints.ScalarT],
+    first_end: hints.Point[hints.ScalarT],
+    second_start: hints.Point[hints.ScalarT],
+    second_end: hints.Point[hints.ScalarT],
     /,
-) -> hints.Scalar:
+) -> hints.ScalarT:
     return (first_end.x - first_start.x) * (second_end.y - second_start.y) - (
         first_end.y - first_start.y
     ) * (second_end.x - second_start.x)
@@ -170,7 +170,7 @@ def flags_to_true_indices(flags: Sequence[bool], /) -> list[int]:
     return [index for index, flag in enumerate(flags) if flag]
 
 
-def square(value: hints.Scalar, /) -> hints.Scalar:
+def square(value: hints.ScalarT, /) -> hints.ScalarT:
     return value * value
 
 
@@ -183,10 +183,10 @@ def is_odd(value: int, /) -> bool:
 
 
 def locate_point_in_point_point_point_circle(
-    point: hints.Point[hints.Scalar],
-    first: hints.Point[hints.Scalar],
-    second: hints.Point[hints.Scalar],
-    third: hints.Point[hints.Scalar],
+    point: hints.Point[hints.ScalarT],
+    first: hints.Point[hints.ScalarT],
+    second: hints.Point[hints.ScalarT],
+    third: hints.Point[hints.ScalarT],
     /,
 ) -> Location:
     first_dx, first_dy = first.x - point.x, first.y - point.y
@@ -214,9 +214,9 @@ def locate_point_in_point_point_point_circle(
 
 
 def locate_point_in_region(
-    border: hints.Contour[hints.Scalar],
-    point: hints.Point[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
+    border: hints.Contour[hints.ScalarT],
+    point: hints.Point[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
     /,
 ) -> Location:
     is_point_inside = False
@@ -237,10 +237,10 @@ def locate_point_in_region(
 
 
 def locate_point_in_segment(
-    start: hints.Point[hints.Scalar],
-    end: hints.Point[hints.Scalar],
-    point: hints.Point[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
+    start: hints.Point[hints.ScalarT],
+    end: hints.Point[hints.ScalarT],
+    point: hints.Point[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
     /,
 ) -> Location:
     return (
@@ -267,8 +267,8 @@ def locate_point_in_segment(
 
 
 def merge_boxes(
-    boxes: Iterable[hints.Box[hints.Scalar]], /
-) -> hints.Box[hints.Scalar]:
+    boxes: Iterable[hints.Box[hints.ScalarT]], /
+) -> hints.Box[hints.ScalarT]:
     boxes_iterator = iter(boxes)
     first_box = next(boxes_iterator)
     max_x, min_x = first_box.max_x, first_box.min_x
@@ -304,11 +304,11 @@ def permute(values: MutableSequence[_T], seed: int, /) -> None:
 
 
 def point_vertex_line_divides_angle(
-    point: hints.Point[hints.Scalar],
-    vertex: hints.Point[hints.Scalar],
-    first_ray_point: hints.Point[hints.Scalar],
-    second_ray_point: hints.Point[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
+    point: hints.Point[hints.ScalarT],
+    vertex: hints.Point[hints.ScalarT],
+    first_ray_point: hints.Point[hints.ScalarT],
+    second_ray_point: hints.Point[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
     /,
 ) -> bool:
     return orienteer(vertex, first_ray_point, point) is orienteer(
@@ -317,10 +317,10 @@ def point_vertex_line_divides_angle(
 
 
 def polygon_to_correctly_oriented_segments(
-    polygon: hints.Polygon[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
-    segment_cls: type[hints.Segment[hints.Scalar]],
-) -> Iterable[hints.Segment[hints.Scalar]]:
+    polygon: hints.Polygon[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
+    segment_cls: type[hints.Segment[hints.ScalarT]],
+) -> Iterable[hints.Segment[hints.ScalarT]]:
     yield from to_oriented_segments(
         polygon.border.vertices,
         Orientation.COUNTERCLOCKWISE,
@@ -333,7 +333,7 @@ def polygon_to_correctly_oriented_segments(
         )
 
 
-def polygon_to_segments_count(polygon: hints.Polygon[hints.Scalar], /) -> int:
+def polygon_to_segments_count(polygon: hints.Polygon[hints.ScalarT], /) -> int:
     return len(polygon.border.segments) + sum(
         len(hole.segments) for hole in polygon.holes
     )
@@ -344,10 +344,10 @@ def rotate_sequence(value: Sequence[_T]) -> list[_T]:
 
 
 def shrink_collinear_vertices(
-    vertices: Sequence[hints.Point[hints.Scalar]],
-    orienteer: Orienteer[hints.Scalar],
+    vertices: Sequence[hints.Point[hints.ScalarT]],
+    orienteer: Orienteer[hints.ScalarT],
     /,
-) -> list[hints.Point[hints.Scalar]]:
+) -> list[hints.Point[hints.ScalarT]]:
     assert len(vertices) >= MIN_CONTOUR_VERTICES_COUNT
     result = [vertices[0]]
     for index in range(1, len(vertices) - 1):
@@ -369,24 +369,24 @@ def to_arg_min(values: Sequence[_OrderedT], /) -> int:
 
 
 def to_boxes_have_common_area(
-    boxes: Sequence[hints.Box[hints.Scalar]],
-    target_box: hints.Box[hints.Scalar],
+    boxes: Sequence[hints.Box[hints.ScalarT]],
+    target_box: hints.Box[hints.ScalarT],
     /,
 ) -> list[bool]:
     return [do_boxes_have_common_area(box, target_box) for box in boxes]
 
 
 def to_boxes_have_common_continuum(
-    boxes: Sequence[hints.Box[hints.Scalar]],
-    target_box: hints.Box[hints.Scalar],
+    boxes: Sequence[hints.Box[hints.ScalarT]],
+    target_box: hints.Box[hints.ScalarT],
     /,
 ) -> list[bool]:
     return [do_boxes_have_common_continuum(box, target_box) for box in boxes]
 
 
 def to_boxes_ids_with_common_area(
-    boxes: Iterable[hints.Box[hints.Scalar]],
-    target_box: hints.Box[hints.Scalar],
+    boxes: Iterable[hints.Box[hints.ScalarT]],
+    target_box: hints.Box[hints.ScalarT],
     /,
 ) -> list[int]:
     return [
@@ -397,8 +397,8 @@ def to_boxes_ids_with_common_area(
 
 
 def to_boxes_ids_with_common_continuum(
-    boxes: Iterable[hints.Box[hints.Scalar]],
-    target_box: hints.Box[hints.Scalar],
+    boxes: Iterable[hints.Box[hints.ScalarT]],
+    target_box: hints.Box[hints.ScalarT],
     /,
 ) -> list[int]:
     return [
@@ -409,8 +409,8 @@ def to_boxes_ids_with_common_continuum(
 
 
 def to_boxes_ids_with_intersection(
-    boxes: Iterable[hints.Box[hints.Scalar]],
-    target_box: hints.Box[hints.Scalar],
+    boxes: Iterable[hints.Box[hints.ScalarT]],
+    target_box: hints.Box[hints.ScalarT],
     /,
 ) -> list[int]:
     return [
@@ -421,9 +421,9 @@ def to_boxes_ids_with_intersection(
 
 
 def to_contour_orientation(
-    vertices: Sequence[hints.Point[hints.Scalar]],
+    vertices: Sequence[hints.Point[hints.ScalarT]],
     min_vertex_index: int,
-    orienteer: Orienteer[hints.Scalar],
+    orienteer: Orienteer[hints.ScalarT],
     /,
 ) -> Orientation:
     return orienteer(
@@ -434,10 +434,10 @@ def to_contour_orientation(
 
 
 def to_contour_segments(
-    vertices: Sequence[hints.Point[hints.Scalar]],
-    segment_cls: type[hints.Segment[hints.Scalar]],
+    vertices: Sequence[hints.Point[hints.ScalarT]],
+    segment_cls: type[hints.Segment[hints.ScalarT]],
     /,
-) -> list[hints.Segment[hints.Scalar]]:
+) -> list[hints.Segment[hints.ScalarT]]:
     result = [
         segment_cls(vertices[index], vertices[index + 1])
         for index in range(len(vertices) - 1)
@@ -447,12 +447,12 @@ def to_contour_segments(
 
 
 def to_oriented_segments(
-    vertices: Sequence[hints.Point[hints.Scalar]],
+    vertices: Sequence[hints.Point[hints.ScalarT]],
     target_orientation: Orientation,
-    orienteer: Orienteer[hints.Scalar],
-    segment_cls: type[hints.Segment[hints.Scalar]],
+    orienteer: Orienteer[hints.ScalarT],
+    segment_cls: type[hints.Segment[hints.ScalarT]],
     /,
-) -> list[hints.Segment[hints.Scalar]]:
+) -> list[hints.Segment[hints.ScalarT]]:
     return to_contour_segments(
         (
             vertices
@@ -497,12 +497,12 @@ def validate_seed(
 
 
 def subtract_segments_overlap(
-    minuend_start: hints.Point[hints.Scalar],
-    minuend_end: hints.Point[hints.Scalar],
-    subtrahend_start: hints.Point[hints.Scalar],
-    subtrahend_end: hints.Point[hints.Scalar],
+    minuend_start: hints.Point[hints.ScalarT],
+    minuend_end: hints.Point[hints.ScalarT],
+    subtrahend_start: hints.Point[hints.ScalarT],
+    subtrahend_end: hints.Point[hints.ScalarT],
     /,
-) -> tuple[hints.Point[hints.Scalar], hints.Point[hints.Scalar]]:
+) -> tuple[hints.Point[hints.ScalarT], hints.Point[hints.ScalarT]]:
     minuend_start, minuend_end = to_sorted_pair(minuend_start, minuend_end)
     subtrahend_start, subtrahend_end = to_sorted_pair(
         subtrahend_start, subtrahend_end

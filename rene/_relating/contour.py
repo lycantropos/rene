@@ -19,10 +19,10 @@ from .segment_endpoints import (
 
 
 def relate_to_contour(
-    first: hints.Contour[hints.Scalar],
-    second: hints.Contour[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    first: hints.Contour[hints.ScalarT],
+    second: hints.Contour[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
 ) -> Relation:
     return relate_multisegmental_to_multisegmental(
@@ -44,10 +44,10 @@ def relate_to_contour(
 
 
 def relate_to_multipolygon(
-    contour: hints.Contour[hints.Scalar],
-    multipolygon: hints.Multipolygon[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    contour: hints.Contour[hints.ScalarT],
+    multipolygon: hints.Multipolygon[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
 ) -> Relation:
     return relate_multisegmental_to_multipolygon(
@@ -56,11 +56,11 @@ def relate_to_multipolygon(
 
 
 def relate_to_multisegment(
-    contour: hints.Contour[hints.Scalar],
-    multisegment: hints.Multisegment[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersection_scale: SegmentsIntersectionScale[hints.Scalar],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    contour: hints.Contour[hints.ScalarT],
+    multisegment: hints.Multisegment[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersection_scale: SegmentsIntersectionScale[hints.ScalarT],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
 ) -> Relation:
     return relate_multisegmental_to_multisegmental(
@@ -86,10 +86,10 @@ def relate_to_multisegment(
 
 
 def relate_to_polygon(
-    contour: hints.Contour[hints.Scalar],
-    polygon: hints.Polygon[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    contour: hints.Contour[hints.ScalarT],
+    polygon: hints.Polygon[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
 ) -> Relation:
     return relate_multisegmental_to_polygon(
@@ -98,9 +98,9 @@ def relate_to_polygon(
 
 
 def relate_to_segment(
-    contour: hints.Contour[hints.Scalar],
-    segment: hints.Segment[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
+    contour: hints.Contour[hints.ScalarT],
+    segment: hints.Segment[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
     /,
 ) -> Relation:
     return relate_segment_to_contour(segment, contour, orienteer).complement

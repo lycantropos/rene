@@ -4,7 +4,7 @@ from typing import Generic, TYPE_CHECKING
 
 from typing_extensions import Self
 
-from rene.hints import Point, Scalar
+from rene.hints import Point, ScalarT
 
 from .event import Event, is_event_left
 
@@ -12,8 +12,8 @@ if TYPE_CHECKING:
     from rene._hints import Map
 
 
-class EventsQueueKey(Generic[Scalar]):
-    endpoints: Map[Event, Point[Scalar]]
+class EventsQueueKey(Generic[ScalarT]):
+    endpoints: Map[Event, Point[ScalarT]]
     opposites: Map[Event, Event]
     event: Event
 
@@ -21,7 +21,7 @@ class EventsQueueKey(Generic[Scalar]):
 
     def __new__(
         cls,
-        endpoints: Map[Event, Point[Scalar]],
+        endpoints: Map[Event, Point[ScalarT]],
         opposites: Map[Event, Event],
         event: Event,
         /,
@@ -49,19 +49,18 @@ class EventsQueueKey(Generic[Scalar]):
             # different x-coordinate,
             # the event with lower x-coordinate is processed first
             return start_x < other_start_x
-        elif start_y != other_start_y:
+        if start_y != other_start_y:
             # different starts, but same x-coordinate,
             # the event with lower y-coordinate is processed first
             return start_y < other_start_y
-        elif is_event_left(event) is not is_event_left(other_event):
+        if is_event_left(event) is not is_event_left(other_event):
             # same start, but one is a left endpoint
             # and the other is a right endpoint,
             # the right endpoint is processed first
             return not is_event_left(event)
-        else:
-            # same start,
-            # both events are left endpoints or both are right endpoints
-            return (
-                self.endpoints[self.opposites[event]]
-                < self.endpoints[self.opposites[other_event]]
-            )
+        # same start,
+        # both events are left endpoints or both are right endpoints
+        return (
+            self.endpoints[self.opposites[event]]
+            < self.endpoints[self.opposites[other_event]]
+        )

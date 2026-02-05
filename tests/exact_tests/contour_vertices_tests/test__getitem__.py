@@ -49,7 +49,7 @@ def test_reversed(vertices: Sequence[Point]) -> None:
     assert [
         point
         for index, (point, reversed_point) in (
-            enumerate(zip(result, reversed(vertices)))
+            enumerate(zip(result, reversed(vertices), strict=False))
         )
         if point != reversed_point
     ] == []

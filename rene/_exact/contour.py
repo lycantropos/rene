@@ -29,7 +29,7 @@ class Contour(BaseContour[Fraction]):
     __module__ = 'rene.exact'
     __slots__ = '_segments', '_vertices'
 
-    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
+    def __init_subclass__(cls, /) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
@@ -41,7 +41,7 @@ class Contour(BaseContour[Fraction]):
                 f'{MIN_CONTOUR_VERTICES_COUNT} vertices, '
                 f'but found {len(vertices)}.'
             )
-        self = super().__new__(cls)
+        self = object.__new__(cls)
         self._vertices = tuple(vertices)
         self._segments = tuple(
             to_contour_segments(self._vertices, self._context.segment_cls)
@@ -58,18 +58,17 @@ _TOKEN = _Token.VALUE
 
 @final
 class _ContourSegments(Sequence[hints.Segment[Fraction]]):
-    def count(self, segment: hints.Segment[Fraction], /) -> int:
-        return self._segments.count(segment)
+    def count(self, value: Any) -> int:
+        return self._segments.count(value)
 
     def index(
         self,
-        segment: hints.Segment[Fraction],
+        value: hints.Segment[Fraction],
         start: int = 0,
         stop: int | None = None,
-        /,
     ) -> int:
         return self._segments.index(
-            segment, start, *(() if stop is None else (stop,))
+            value, start, *(() if stop is None else (stop,))
         )
 
     _segments: Sequence[hints.Segment[Fraction]]
@@ -77,7 +76,7 @@ class _ContourSegments(Sequence[hints.Segment[Fraction]]):
     __module__ = 'rene.exact'
     __slots__ = ('_segments',)
 
-    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
+    def __init_subclass__(cls, /) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
@@ -116,7 +115,7 @@ class _ContourSegments(Sequence[hints.Segment[Fraction]]):
 
     def __getitem__(self, item: int | slice) -> hints.Segment[Fraction] | Self:
         return (
-            _ContourSegments(self._segments[item], _TOKEN)
+            type(self)(self._segments[item], _TOKEN)
             if type(item) is slice
             else self._segments[item]
         )
@@ -124,24 +123,23 @@ class _ContourSegments(Sequence[hints.Segment[Fraction]]):
     def __hash__(self, /) -> int:
         return hash(self._segments)
 
-    def __len__(self) -> int:
+    def __len__(self, /) -> int:
         return len(self._segments)
 
 
 @final
 class _ContourVertices(Sequence[hints.Point[Fraction]]):
-    def count(self, point: hints.Point[Fraction], /) -> int:
-        return self._vertices.count(point)
+    def count(self, value: Any) -> int:
+        return self._vertices.count(value)
 
     def index(
         self,
-        point: hints.Point[Fraction],
+        value: hints.Point[Fraction],
         start: int = 0,
         stop: int | None = None,
-        /,
     ) -> int:
         return self._vertices.index(
-            point, start, *(() if stop is None else (stop,))
+            value, start, *(() if stop is None else (stop,))
         )
 
     _vertices: Sequence[hints.Point[Fraction]]
@@ -149,7 +147,7 @@ class _ContourVertices(Sequence[hints.Point[Fraction]]):
     __module__ = 'rene.exact'
     __slots__ = ('_vertices',)
 
-    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
+    def __init_subclass__(cls, /) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
@@ -188,7 +186,7 @@ class _ContourVertices(Sequence[hints.Point[Fraction]]):
 
     def __getitem__(self, item: int | slice) -> hints.Point[Fraction] | Self:
         return (
-            _ContourVertices(self._vertices[item], _TOKEN)
+            type(self)(self._vertices[item], _TOKEN)
             if type(item) is slice
             else self._vertices[item]
         )
@@ -196,5 +194,5 @@ class _ContourVertices(Sequence[hints.Point[Fraction]]):
     def __hash__(self, /) -> int:
         return hash(self._vertices)
 
-    def __len__(self) -> int:
+    def __len__(self, /) -> int:
         return len(self._vertices)

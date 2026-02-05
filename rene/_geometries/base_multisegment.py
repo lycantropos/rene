@@ -25,18 +25,27 @@ from rene._relating import multisegment
 from rene.enums import Location, Relation
 
 from .base_compound import BaseCompound
+from .utils import (
+    is_contour,
+    is_empty,
+    is_multipolygon,
+    is_multisegment,
+    is_multisegmental,
+    is_polygon,
+    is_segment,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
+class BaseMultisegment(ABC, BaseCompound[hints.ScalarT]):
     @property
     @abstractmethod
-    def segments(self) -> Sequence[hints.Segment[hints.Scalar]]: ...
+    def segments(self, /) -> Sequence[hints.Segment[hints.ScalarT]]: ...
 
     @property
-    def bounding_box(self, /) -> hints.Box[hints.Scalar]:
+    def bounding_box(self, /) -> hints.Box[hints.ScalarT]:
         segments = iter(self.segments)
         first_segment = next(segments)
         min_x = min(first_segment.start.x, first_segment.end.x)
@@ -58,7 +67,7 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                 min_y = segment_min_y
         return self._context.box_cls(min_x, max_x, min_y, max_y)
 
-    def is_valid(self) -> bool:
+    def is_valid(self, /) -> bool:
         return all(
             intersection.relation is Relation.TOUCH
             for intersection in sweep(
@@ -68,16 +77,16 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
             )
         )
 
-    def locate(self, point: hints.Point[hints.Scalar], /) -> Location:
+    def locate(self, point: hints.Point[hints.ScalarT], /) -> Location:
         for segment in self.segments:
             location = segment.locate(point)
             if location is not Location.EXTERIOR:
                 return location
         return Location.EXTERIOR
 
-    def relate_to(self, other: hints.Compound[hints.Scalar], /) -> Relation:
+    def relate_to(self, other: hints.Compound[hints.ScalarT], /) -> Relation:
         context = self._context
-        if isinstance(other, context.contour_cls):
+        if is_contour(other, context=context):
             return multisegment.relate_to_contour(
                 self,
                 other,
@@ -85,7 +94,9 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                 context.to_segments_intersection_scale,
                 context.intersect_segments,
             )
-        elif isinstance(other, context.multisegment_cls):
+        if is_empty(other, context=context):
+            return Relation.DISJOINT
+        if is_multisegment(other, context=context):
             return multisegment.relate_to_multisegment(
                 self,
                 other,
@@ -93,46 +104,49 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                 context.to_segments_intersection_scale,
                 context.intersect_segments,
             )
-        elif isinstance(other, context.segment_cls):
+        if is_multipolygon(other, context=context):
+            return multisegment.relate_to_multipolygon(
+                self, other, context.orient, context.intersect_segments
+            )
+        if is_polygon(other, context=context):
+            return multisegment.relate_to_polygon(
+                self, other, context.orient, context.intersect_segments
+            )
+        if is_segment(other, context=context):
             return multisegment.relate_to_segment(
                 self,
                 other,
                 context.orient,
                 context.to_segments_intersection_scale,
             )
-        elif isinstance(other, context.polygon_cls):
-            return multisegment.relate_to_polygon(
-                self, other, context.orient, context.intersect_segments
-            )
-        elif isinstance(other, context.multipolygon_cls):
-            return multisegment.relate_to_multipolygon(
-                self, other, context.orient, context.intersect_segments
-            )
-        elif isinstance(other, context.empty_cls):
-            return Relation.DISJOINT
-        else:
-            raise TypeError(f'Unsupported type: {type(other)!r}.')
+        raise TypeError(f'Unsupported type: {type(other)!r}.')
+
+    @abstractmethod
+    def __new__(
+        cls, segments: Sequence[hints.Segment[hints.ScalarT]], /
+    ) -> Self:
+        raise NotImplementedError
 
     @overload
     def __and__(
-        self, other: hints.Empty[hints.Scalar], /
-    ) -> hints.Empty[hints.Scalar]: ...
+        self, other: hints.Empty[hints.ScalarT], /
+    ) -> hints.Empty[hints.ScalarT]: ...
 
     @overload
     def __and__(
         self,
         other: (
-            hints.Contour[hints.Scalar]
-            | hints.Multipolygon[hints.Scalar]
-            | hints.Multisegment[hints.Scalar]
-            | hints.Polygon[hints.Scalar]
-            | hints.Segment[hints.Scalar]
+            hints.Contour[hints.ScalarT]
+            | hints.Multipolygon[hints.ScalarT]
+            | hints.Multisegment[hints.ScalarT]
+            | hints.Polygon[hints.ScalarT]
+            | hints.Segment[hints.ScalarT]
         ),
         /,
     ) -> (
-        hints.Empty[hints.Scalar]
-        | hints.Multisegment[hints.Scalar]
-        | hints.Segment[hints.Scalar]
+        hints.Empty[hints.ScalarT]
+        | hints.Multisegment[hints.ScalarT]
+        | hints.Segment[hints.ScalarT]
     ): ...
 
     @overload
@@ -150,9 +164,7 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(
-                other, (context.contour_cls, context.multisegment_cls)
-            )
+            if is_multisegmental(other, context=context)
             else (
                 intersect_multisegmental_with_segment(
                     self,
@@ -162,7 +174,7 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                     context.orient,
                     context.segment_cls,
                 )
-                if isinstance(other, context.segment_cls)
+                if is_segment(other, context=context)
                 else (
                     intersect_multisegmental_with_polygon(
                         self,
@@ -173,7 +185,7 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                         context.segment_cls,
                         context.intersect_segments,
                     )
-                    if isinstance(other, context.polygon_cls)
+                    if is_polygon(other, context=context)
                     else (
                         intersect_multisegmental_with_multipolygon(
                             self,
@@ -184,10 +196,10 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                             context.segment_cls,
                             context.intersect_segments,
                         )
-                        if isinstance(other, context.multipolygon_cls)
+                        if is_multipolygon(other, context=context)
                         else (
                             other
-                            if isinstance(other, context.empty_cls)
+                            if is_empty(other, context=context)
                             else NotImplemented
                         )
                     )
@@ -195,7 +207,7 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
             )
         )
 
-    def __contains__(self, point: hints.Point[hints.Scalar], /) -> bool:
+    def __contains__(self, point: hints.Point[hints.ScalarT], /) -> bool:
         return self.locate(point) is not Location.EXTERIOR
 
     @overload
@@ -215,18 +227,18 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
         return hash(frozenset(self.segments))
 
     @overload
-    def __or__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
+    def __or__(self, other: hints.Empty[hints.ScalarT], /) -> Self: ...
 
     @overload
     def __or__(
         self,
         other: (
-            hints.Contour[hints.Scalar]
-            | hints.Multisegment[hints.Scalar]
-            | hints.Segment[hints.Scalar]
+            hints.Contour[hints.ScalarT]
+            | hints.Multisegment[hints.ScalarT]
+            | hints.Segment[hints.ScalarT]
         ),
         /,
-    ) -> hints.Multisegment[hints.Scalar] | hints.Segment[hints.Scalar]: ...
+    ) -> hints.Multisegment[hints.ScalarT] | hints.Segment[hints.ScalarT]: ...
 
     @overload
     def __or__(self, other: Any, /) -> Any: ...
@@ -242,9 +254,7 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(
-                other, (context.contour_cls, context.multisegment_cls)
-            )
+            if is_multisegmental(other, context=context)
             else (
                 unite_multisegmental_with_segment(
                     self,
@@ -254,10 +264,10 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                     context.segment_cls,
                     context.intersect_segments,
                 )
-                if isinstance(other, context.segment_cls)
+                if is_segment(other, context=context)
                 else (
                     self
-                    if isinstance(other, context.empty_cls)
+                    if is_empty(other, context=context)
                     else NotImplemented
                 )
             )
@@ -274,22 +284,22 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
         )
 
     @overload
-    def __sub__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
+    def __sub__(self, other: hints.Empty[hints.ScalarT], /) -> Self: ...
 
     @overload
     def __sub__(
         self,
         other: (
-            hints.Contour[hints.Scalar]
-            | hints.Multipolygon[hints.Scalar]
-            | hints.Multisegment[hints.Scalar]
-            | hints.Segment[hints.Scalar]
+            hints.Contour[hints.ScalarT]
+            | hints.Multipolygon[hints.ScalarT]
+            | hints.Multisegment[hints.ScalarT]
+            | hints.Segment[hints.ScalarT]
         ),
         /,
     ) -> (
-        hints.Empty[hints.Scalar]
-        | hints.Multisegment[hints.Scalar]
-        | hints.Segment[hints.Scalar]
+        hints.Empty[hints.ScalarT]
+        | hints.Multisegment[hints.ScalarT]
+        | hints.Segment[hints.ScalarT]
     ): ...
 
     @overload
@@ -307,9 +317,7 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(
-                other, (context.contour_cls, context.multisegment_cls)
-            )
+            if is_multisegmental(other, context=context)
             else (
                 subtract_segment_from_multisegmental(
                     self,
@@ -320,7 +328,7 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                     context.segment_cls,
                     context.intersect_segments,
                 )
-                if isinstance(other, context.segment_cls)
+                if is_segment(other, context=context)
                 else (
                     subtract_multipolygon_from_multisegmental(
                         self,
@@ -331,7 +339,7 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                         context.segment_cls,
                         context.intersect_segments,
                     )
-                    if isinstance(other, context.multipolygon_cls)
+                    if is_multipolygon(other, context=context)
                     else (
                         subtract_polygon_from_multisegmental(
                             self,
@@ -342,10 +350,10 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                             context.segment_cls,
                             context.intersect_segments,
                         )
-                        if isinstance(other, context.polygon_cls)
+                        if is_polygon(other, context=context)
                         else (
                             self
-                            if isinstance(other, context.empty_cls)
+                            if is_empty(other, context=context)
                             else NotImplemented
                         )
                     )
@@ -354,21 +362,21 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
         )
 
     @overload
-    def __xor__(self, other: hints.Empty[hints.Scalar], /) -> Self: ...
+    def __xor__(self, other: hints.Empty[hints.ScalarT], /) -> Self: ...
 
     @overload
     def __xor__(
         self,
         other: (
-            hints.Contour[hints.Scalar]
-            | hints.Multisegment[hints.Scalar]
-            | hints.Segment[hints.Scalar]
+            hints.Contour[hints.ScalarT]
+            | hints.Multisegment[hints.ScalarT]
+            | hints.Segment[hints.ScalarT]
         ),
         /,
     ) -> (
-        hints.Empty[hints.Scalar]
-        | hints.Multisegment[hints.Scalar]
-        | hints.Segment[hints.Scalar]
+        hints.Empty[hints.ScalarT]
+        | hints.Multisegment[hints.ScalarT]
+        | hints.Segment[hints.ScalarT]
     ): ...
 
     @overload
@@ -386,9 +394,7 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                 context.segment_cls,
                 context.intersect_segments,
             )
-            if isinstance(
-                other, (context.contour_cls, context.multisegment_cls)
-            )
+            if is_multisegmental(other, context=context)
             else (
                 symmetric_subtract_segment_from_multisegmental(
                     self,
@@ -399,10 +405,10 @@ class BaseMultisegment(ABC, BaseCompound[hints.Scalar]):
                     context.segment_cls,
                     context.intersect_segments,
                 )
-                if isinstance(other, context.segment_cls)
+                if is_segment(other, context=context)
                 else (
                     self
-                    if isinstance(other, context.empty_cls)
+                    if is_empty(other, context=context)
                     else NotImplemented
                 )
             )

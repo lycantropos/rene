@@ -6,61 +6,33 @@ from rene import hints
 from rene.enums import Location, Relation
 
 from .base_compound import BaseCompound
+from .utils import is_compound, is_empty
 
 _CompoundT = TypeVar('_CompoundT', bound=hints.Compound[Any])
 
 
-class BaseEmpty(BaseCompound[hints.Scalar]):
-    def locate(self, _point: hints.Point[hints.Scalar], /) -> Location:
+class BaseEmpty(BaseCompound[hints.ScalarT]):
+    def locate(self, _point: hints.Point[hints.ScalarT], /) -> Location:
         return Location.EXTERIOR
 
-    def relate_to(self, other: hints.Compound[hints.Scalar], /) -> Relation:
-        context = self._context
-        if not isinstance(
-            other,
-            (
-                context.contour_cls,
-                context.empty_cls,
-                context.multisegment_cls,
-                context.multipolygon_cls,
-                context.polygon_cls,
-                context.segment_cls,
-            ),
-        ):
-            raise TypeError(
-                f'Expected compound geometry, but got {type(other)}.'
-            )
+    def relate_to(self, other: hints.Compound[hints.ScalarT], /) -> Relation:
         return (
             Relation.EQUAL
-            if isinstance(other, context.empty_cls)
+            if is_empty(other, context=self._context)
             else Relation.DISJOINT
         )
 
     @overload
-    def __and__(self, other: hints.Compound[hints.Scalar], /) -> Self: ...
+    def __and__(self, other: hints.Compound[hints.ScalarT], /) -> Self: ...
 
     @overload
     def __and__(self, other: Any, /) -> Any: ...
 
     def __and__(self, other: Any, /) -> Any:
         context = self._context
-        return (
-            self
-            if isinstance(
-                other,
-                (
-                    context.contour_cls,
-                    context.empty_cls,
-                    context.multisegment_cls,
-                    context.multipolygon_cls,
-                    context.polygon_cls,
-                    context.segment_cls,
-                ),
-            )
-            else NotImplemented
-        )
+        return self if is_compound(other, context=context) else NotImplemented
 
-    def __contains__(self, point: hints.Point[hints.Scalar], /) -> bool:
+    def __contains__(self, point: hints.Point[hints.ScalarT], /) -> bool:
         return False
 
     @overload
@@ -83,48 +55,20 @@ class BaseEmpty(BaseCompound[hints.Scalar]):
 
     def __or__(self, other: Any, /) -> Any:
         context = self._context
-        return (
-            other
-            if isinstance(
-                other,
-                (
-                    context.contour_cls,
-                    context.empty_cls,
-                    context.multisegment_cls,
-                    context.multipolygon_cls,
-                    context.polygon_cls,
-                    context.segment_cls,
-                ),
-            )
-            else NotImplemented
-        )
+        return other if is_compound(other, context=context) else NotImplemented
 
     def __repr__(self, /) -> str:
         return f'{type(self).__qualname__}()'
 
     @overload
-    def __sub__(self, other: _CompoundT, /) -> Self: ...
+    def __sub__(self, other: hints.Compound[Any], /) -> Self: ...
 
     @overload
     def __sub__(self, other: Any, /) -> Any: ...
 
     def __sub__(self, other: Any, /) -> Any:
         context = self._context
-        return (
-            self
-            if isinstance(
-                other,
-                (
-                    context.contour_cls,
-                    context.empty_cls,
-                    context.multisegment_cls,
-                    context.multipolygon_cls,
-                    context.polygon_cls,
-                    context.segment_cls,
-                ),
-            )
-            else NotImplemented
-        )
+        return self if is_compound(other, context=context) else NotImplemented
 
     @overload
     def __xor__(self, other: Self, /) -> Self: ...
@@ -137,18 +81,4 @@ class BaseEmpty(BaseCompound[hints.Scalar]):
 
     def __xor__(self, other: Any, /) -> Any:
         context = self._context
-        return (
-            other
-            if isinstance(
-                other,
-                (
-                    context.contour_cls,
-                    context.empty_cls,
-                    context.multisegment_cls,
-                    context.multipolygon_cls,
-                    context.polygon_cls,
-                    context.segment_cls,
-                ),
-            )
-            else NotImplemented
-        )
+        return other if is_compound(other, context=context) else NotImplemented

@@ -27,7 +27,7 @@ class Multipolygon(BaseMultipolygon[Fraction]):
     __module__ = 'rene.exact'
     __slots__ = ('_polygons',)
 
-    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
+    def __init_subclass__(cls, /) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
@@ -39,7 +39,7 @@ class Multipolygon(BaseMultipolygon[Fraction]):
                 f'{MIN_MULTIPOLYGON_POLYGONS_COUNT} polygons, '
                 f'but found {len(polygons)}.'
             )
-        self = super().__new__(cls)
+        self = object.__new__(cls)
         self._polygons = tuple(polygons)
         return self
 
@@ -53,18 +53,14 @@ _TOKEN = _Token.VALUE
 
 @final
 class _MultipolygonPolygons(Sequence[hints.Polygon[Fraction]]):
-    def count(self, polygon: hints.Polygon[Fraction], /) -> int:
-        return self._polygons.count(polygon)
+    def count(self, value: Any) -> int:
+        return self._polygons.count(value)
 
     def index(
-        self,
-        polygon: hints.Polygon[Fraction],
-        start: int = 0,
-        stop: int | None = None,
-        /,
+        self, value: Any, start: int = 0, stop: int | None = None
     ) -> int:
         return self._polygons.index(
-            polygon, start, *(() if stop is None else (stop,))
+            value, start, *(() if stop is None else (stop,))
         )
 
     _polygons: Sequence[hints.Polygon[Fraction]]
@@ -72,7 +68,7 @@ class _MultipolygonPolygons(Sequence[hints.Polygon[Fraction]]):
     __module__ = 'rene.exact'
     __slots__ = ('_polygons',)
 
-    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
+    def __init_subclass__(cls, /) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
@@ -111,7 +107,7 @@ class _MultipolygonPolygons(Sequence[hints.Polygon[Fraction]]):
 
     def __getitem__(self, item: int | slice) -> hints.Polygon[Fraction] | Self:
         return (
-            _MultipolygonPolygons(self._polygons[item], _TOKEN)
+            type(self)(self._polygons[item], _TOKEN)
             if type(item) is slice
             else self._polygons[item]
         )
@@ -119,5 +115,5 @@ class _MultipolygonPolygons(Sequence[hints.Polygon[Fraction]]):
     def __hash__(self, /) -> int:
         return hash(self._polygons)
 
-    def __len__(self) -> int:
+    def __len__(self, /) -> int:
         return len(self._polygons)

@@ -16,20 +16,20 @@ if t.TYPE_CHECKING:
 
 
 def relate_to_contour(
-    start: hints.Point[hints.Scalar],
-    end: hints.Point[hints.Scalar],
-    contour: hints.Contour[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
+    start: hints.Point[hints.ScalarT],
+    end: hints.Point[hints.ScalarT],
+    contour: hints.Contour[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
     /,
 ) -> Relation:
     return relate_to_contour_segments(start, end, contour.segments, orienteer)
 
 
 def relate_to_contour_segments(
-    start: hints.Point[hints.Scalar],
-    end: hints.Point[hints.Scalar],
-    contour_segments: t.Sequence[hints.Segment[hints.Scalar]],
-    orienteer: Orienteer[hints.Scalar],
+    start: hints.Point[hints.ScalarT],
+    end: hints.Point[hints.ScalarT],
+    contour_segments: t.Sequence[hints.Segment[hints.ScalarT]],
+    orienteer: Orienteer[hints.ScalarT],
     /,
 ) -> Relation:
     has_no_cross = has_no_touch = True
@@ -45,9 +45,9 @@ def relate_to_contour_segments(
         )
         if relation is Relation.COMPONENT or relation is Relation.EQUAL:
             return Relation.COMPONENT
-        elif relation is Relation.OVERLAP or relation is Relation.COMPOSITE:
+        if relation is Relation.OVERLAP or relation is Relation.COMPOSITE:
             return Relation.OVERLAP
-        elif relation is Relation.TOUCH:
+        if relation is Relation.TOUCH:
             if has_no_touch:
                 has_no_touch = False
             elif has_no_cross:
@@ -105,11 +105,11 @@ def relate_to_contour_segments(
 
 
 def relate_to_multisegment(
-    start: hints.Point[hints.Scalar],
-    end: hints.Point[hints.Scalar],
-    multisegment: hints.Multisegment[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersection_scale: SegmentsIntersectionScale[hints.Scalar],
+    start: hints.Point[hints.ScalarT],
+    end: hints.Point[hints.ScalarT],
+    multisegment: hints.Multisegment[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersection_scale: SegmentsIntersectionScale[hints.ScalarT],
     /,
 ) -> Relation:
     return relate_to_multisegment_segments(
@@ -122,18 +122,18 @@ def relate_to_multisegment(
 
 
 def relate_to_multisegment_segments(
-    start: hints.Point[hints.Scalar],
-    end: hints.Point[hints.Scalar],
-    multisegment_segments: t.Sequence[hints.Segment[hints.Scalar]],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersection_scale: SegmentsIntersectionScale[hints.Scalar],
+    start: hints.Point[hints.ScalarT],
+    end: hints.Point[hints.ScalarT],
+    multisegment_segments: t.Sequence[hints.Segment[hints.ScalarT]],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersection_scale: SegmentsIntersectionScale[hints.ScalarT],
     /,
 ) -> Relation:
     is_segment_superset = has_no_touch = has_no_cross = has_no_overlap = True
-    clockwise_middle_touch_scales: list[hints.Scalar] = []
-    counterclockwise_middle_touch_scales: list[hints.Scalar] = []
+    clockwise_middle_touch_scales: list[hints.ScalarT] = []
+    counterclockwise_middle_touch_scales: list[hints.ScalarT] = []
     components: list[
-        tuple[hints.Point[hints.Scalar], hints.Point[hints.Scalar]]
+        tuple[hints.Point[hints.ScalarT], hints.Point[hints.ScalarT]]
     ] = []
     if start > end:
         start, end = end, start
@@ -152,7 +152,7 @@ def relate_to_multisegment_segments(
         )
         if relation is Relation.COMPONENT or relation is Relation.EQUAL:
             return Relation.COMPONENT
-        elif relation is Relation.COMPOSITE:
+        if relation is Relation.COMPOSITE:
             if has_no_overlap:
                 has_no_overlap = False
             if start in (multisegment_segment_start, multisegment_segment_end):
@@ -256,7 +256,7 @@ def relate_to_multisegment_segments(
             if has_no_touch and has_no_cross
             else (Relation.TOUCH if has_no_cross else Relation.CROSS)
         )
-    elif components:
+    if components:
         components_iterator = iter(components)
         min_component_start, max_component_end = next(components_iterator)
         components_starts = {min_component_start}
@@ -281,22 +281,19 @@ def relate_to_multisegment_segments(
                 Relation.COMPOSITE if is_segment_superset else Relation.OVERLAP
             )
         )
-    else:
-        return (
-            (Relation.EQUAL if is_segment_superset else Relation.COMPONENT)
-            if start == end
-            else (
-                Relation.COMPOSITE if is_segment_superset else Relation.OVERLAP
-            )
-        )
+    return (
+        (Relation.EQUAL if is_segment_superset else Relation.COMPONENT)
+        if start == end
+        else (Relation.COMPOSITE if is_segment_superset else Relation.OVERLAP)
+    )
 
 
 def relate_to_segment_endpoints(
-    first_start: hints.Point[hints.Scalar],
-    first_end: hints.Point[hints.Scalar],
-    second_start: hints.Point[hints.Scalar],
-    second_end: hints.Point[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
+    first_start: hints.Point[hints.ScalarT],
+    first_end: hints.Point[hints.ScalarT],
+    second_start: hints.Point[hints.ScalarT],
+    second_end: hints.Point[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
     /,
 ) -> Relation:
     assert first_start != first_end
@@ -310,69 +307,57 @@ def relate_to_segment_endpoints(
     if second_start_orientation is second_end_orientation:
         if second_start_orientation is not Orientation.COLLINEAR:
             return Relation.DISJOINT
-        elif first_start == second_start:
+        if first_start == second_start:
             if second_end < first_end:
                 return Relation.COMPOSITE
-            else:
-                return Relation.COMPONENT
-        elif first_end == second_end:
+            return Relation.COMPONENT
+        if first_end == second_end:
             if second_start < first_start:
                 return Relation.COMPONENT
-            else:
-                return Relation.COMPOSITE
-        elif first_start == second_end or first_end == second_start:
+            return Relation.COMPOSITE
+        if first_start == second_end or first_end == second_start:
             return Relation.TOUCH
-        elif first_start < second_start < first_end:
+        if first_start < second_start < first_end:
             if second_end < first_end:
                 return Relation.COMPOSITE
-            else:
-                return Relation.OVERLAP
-        elif second_start < first_start < second_end:
+            return Relation.OVERLAP
+        if second_start < first_start < second_end:
             if first_end < second_end:
                 return Relation.COMPONENT
-            else:
-                return Relation.OVERLAP
-        else:
-            return Relation.DISJOINT
-    elif second_start_orientation is Orientation.COLLINEAR:
+            return Relation.OVERLAP
+        return Relation.DISJOINT
+    if second_start_orientation is Orientation.COLLINEAR:
         if first_start <= second_start <= first_end:
             return Relation.TOUCH
-        else:
-            return Relation.DISJOINT
-    elif second_end_orientation is Orientation.COLLINEAR:
+        return Relation.DISJOINT
+    if second_end_orientation is Orientation.COLLINEAR:
         if first_start <= second_end <= first_end:
             return Relation.TOUCH
-        else:
-            return Relation.DISJOINT
-    else:
-        first_start_orientation = orienteer(
-            second_start, second_end, first_start
-        )
-        first_end_orientation = orienteer(second_start, second_end, first_end)
-        if first_start_orientation is first_end_orientation:
-            assert first_start_orientation is not Orientation.COLLINEAR
-            return Relation.DISJOINT
-        elif first_start_orientation is Orientation.COLLINEAR:
-            if second_start < first_start < second_end:
-                return Relation.TOUCH
-            else:
-                return Relation.DISJOINT
-        elif first_end_orientation is Orientation.COLLINEAR:
-            if second_start < first_end < second_end:
-                return Relation.TOUCH
-            else:
-                return Relation.DISJOINT
-        else:
-            return Relation.CROSS
+        return Relation.DISJOINT
+    first_start_orientation = orienteer(second_start, second_end, first_start)
+    first_end_orientation = orienteer(second_start, second_end, first_end)
+    if first_start_orientation is first_end_orientation:
+        assert first_start_orientation is not Orientation.COLLINEAR
+        return Relation.DISJOINT
+    if first_start_orientation is Orientation.COLLINEAR:
+        if second_start < first_start < second_end:
+            return Relation.TOUCH
+        return Relation.DISJOINT
+    if first_end_orientation is Orientation.COLLINEAR:
+        if second_start < first_end < second_end:
+            return Relation.TOUCH
+        return Relation.DISJOINT
+    return Relation.CROSS
 
 
 def relate_to_region(
-    start: hints.Point[hints.Scalar],
-    end: hints.Point[hints.Scalar],
-    border: hints.Contour[hints.Scalar],
-    reverse_orientation: bool,
-    orienteer: Orienteer[hints.Scalar],
+    start: hints.Point[hints.ScalarT],
+    end: hints.Point[hints.ScalarT],
+    border: hints.Contour[hints.ScalarT],
     /,
+    *,
+    reverse_orientation: bool,
+    orienteer: Orienteer[hints.ScalarT],
 ) -> Relation:
     edges = border.segments
     relation_with_border = _relate_to_region_border(
@@ -392,140 +377,110 @@ def relate_to_region(
             if start_location is Location.EXTERIOR
             else Relation.WITHIN
         )
-    elif start_location is Location.EXTERIOR:
+    if start_location is Location.EXTERIOR:
         return Relation.TOUCH
-    elif start_location is Location.INTERIOR:
+    if start_location is Location.INTERIOR:
         return Relation.ENCLOSED
-    else:
-        assert start_index is not None
-        end_index, end_location = _locate_point_in_region(
-            edges, end, orienteer
+    assert start_index is not None
+    end_index, end_location = _locate_point_in_region(edges, end, orienteer)
+    if end_location is Location.EXTERIOR:
+        return Relation.TOUCH
+    if end_location is Location.INTERIOR:
+        return Relation.ENCLOSED
+    assert end_index is not None
+    assert end_location is Location.BOUNDARY, end_location
+    edge = edges[start_index]
+    edge_start, edge_end = edge.start, edge.end
+    border_orientation = (
+        Orientation.CLOCKWISE
+        if reverse_orientation
+        else Orientation.COUNTERCLOCKWISE
+    )
+    if start == edge_start:
+        prev_start = (
+            edges[(start_index + 1) % len(edges)].end
+            if reverse_orientation
+            else edges[start_index - 1].start
         )
-        if end_location is Location.EXTERIOR:
+        if orienteer(prev_start, edge_start, edge_end) is border_orientation:
+            if (
+                orienteer(edge_start, prev_start, end) is border_orientation
+            ) or (orienteer(edge_end, edge_start, end) is border_orientation):
+                return Relation.TOUCH
+        elif (
+            orienteer(edge_start, prev_start, end)
+            is orienteer(edge_end, edge_start, end)
+            is border_orientation
+        ):
             return Relation.TOUCH
-        elif end_location is Location.INTERIOR:
-            return Relation.ENCLOSED
-        else:
-            assert end_index is not None
-            assert end_location is Location.BOUNDARY, end_location
-            edge = edges[start_index]
-            edge_start, edge_end = edge.start, edge.end
-            border_orientation = (
-                Orientation.CLOCKWISE
-                if reverse_orientation
-                else Orientation.COUNTERCLOCKWISE
+    elif start == edge_end:
+        next_end = (
+            edges[start_index - 1].start
+            if reverse_orientation
+            else edges[(start_index + 1) % len(edges)].end
+        )
+        if (
+            orienteer(edge_start, edge_end, next_end) is border_orientation
+        ) and (
+            (orienteer(edge_end, edge_start, end) is border_orientation)
+            or (orienteer(next_end, edge_end, end) is border_orientation)
+            or (
+                orienteer(edge_end, edge_start, end)
+                is orienteer(next_end, edge_end, end)
+                is border_orientation
             )
-            if start == edge_start:
-                prev_start = (
-                    edges[(start_index + 1) % len(edges)].end
-                    if reverse_orientation
-                    else edges[start_index - 1].start
-                )
-                if (
-                    orienteer(prev_start, edge_start, edge_end)
-                    is border_orientation
-                ):
-                    if (
-                        orienteer(edge_start, prev_start, end)
-                        is border_orientation
-                    ) or (
-                        orienteer(edge_end, edge_start, end)
-                        is border_orientation
-                    ):
-                        return Relation.TOUCH
-                elif (
-                    orienteer(edge_start, prev_start, end)
-                    is orienteer(edge_end, edge_start, end)
-                    is border_orientation
-                ):
-                    return Relation.TOUCH
-            elif start == edge_end:
-                next_end = (
-                    edges[start_index - 1].start
-                    if reverse_orientation
-                    else edges[(start_index + 1) % len(edges)].end
-                )
-                if (
-                    orienteer(edge_start, edge_end, next_end)
-                    is border_orientation
-                ) and (
-                    (
-                        orienteer(edge_end, edge_start, end)
-                        is border_orientation
-                    )
-                    or (
-                        orienteer(next_end, edge_end, end)
-                        is border_orientation
-                    )
-                    or (
-                        orienteer(edge_end, edge_start, end)
-                        is orienteer(next_end, edge_end, end)
-                        is border_orientation
-                    )
-                ):
-                    return Relation.TOUCH
-            elif orienteer(edge_end, edge_start, end) is border_orientation:
+        ):
+            return Relation.TOUCH
+    elif orienteer(edge_end, edge_start, end) is border_orientation:
+        return Relation.TOUCH
+    edge = edges[end_index]
+    edge_start, edge_end = edge.start, edge.end
+    if end == edge_start:
+        prev_start = (
+            edges[(end_index + 1) % len(edges)].end
+            if reverse_orientation
+            else edges[end_index - 1].start
+        )
+        if orienteer(prev_start, edge_start, edge_end) is border_orientation:
+            if (
+                orienteer(edge_start, prev_start, start) is border_orientation
+            ) or (
+                orienteer(edge_end, edge_start, start) is border_orientation
+            ):
                 return Relation.TOUCH
-            edge = edges[end_index]
-            edge_start, edge_end = edge.start, edge.end
-            if end == edge_start:
-                prev_start = (
-                    edges[(end_index + 1) % len(edges)].end
-                    if reverse_orientation
-                    else edges[end_index - 1].start
-                )
-                if (
-                    orienteer(prev_start, edge_start, edge_end)
-                    is border_orientation
-                ):
-                    if (
-                        orienteer(edge_start, prev_start, start)
-                        is border_orientation
-                    ) or (
-                        orienteer(edge_end, edge_start, start)
-                        is border_orientation
-                    ):
-                        return Relation.TOUCH
-                elif (
-                    orienteer(edge_start, prev_start, start)
-                    is orienteer(edge_end, edge_start, start)
-                    is border_orientation
-                ):
-                    return Relation.TOUCH
-            elif end == edge_end:
-                next_end = (
-                    edges[end_index - 1].start
-                    if reverse_orientation
-                    else edges[(end_index + 1) % len(edges)].end
-                )
-                if (
-                    orienteer(edge_start, edge_end, next_end)
-                    is border_orientation
-                ):
-                    if (
-                        orienteer(edge_end, edge_start, start)
-                        is border_orientation
-                    ) or (
-                        orienteer(next_end, edge_end, start)
-                        is border_orientation
-                    ):
-                        return Relation.TOUCH
-                elif (
-                    orienteer(edge_end, edge_start, start)
-                    is orienteer(next_end, edge_end, start)
-                    is border_orientation
-                ):
-                    return Relation.TOUCH
-            elif orienteer(edge_end, edge_start, start) is border_orientation:
+        elif (
+            orienteer(edge_start, prev_start, start)
+            is orienteer(edge_end, edge_start, start)
+            is border_orientation
+        ):
+            return Relation.TOUCH
+    elif end == edge_end:
+        next_end = (
+            edges[end_index - 1].start
+            if reverse_orientation
+            else edges[(end_index + 1) % len(edges)].end
+        )
+        if orienteer(edge_start, edge_end, next_end) is border_orientation:
+            if (
+                orienteer(edge_end, edge_start, start) is border_orientation
+            ) or (orienteer(next_end, edge_end, start) is border_orientation):
                 return Relation.TOUCH
-            return Relation.ENCLOSED
+        elif (
+            orienteer(edge_end, edge_start, start)
+            is orienteer(next_end, edge_end, start)
+            is border_orientation
+        ):
+            return Relation.TOUCH
+    elif orienteer(edge_end, edge_start, start) is border_orientation:
+        return Relation.TOUCH
+    return Relation.ENCLOSED
 
 
 def _relate_to_region_border(
-    start: hints.Point[hints.Scalar],
-    end: hints.Point[hints.Scalar],
-    edges: t.Sequence[hints.Segment[hints.Scalar]],
-    orienteer: Orienteer[hints.Scalar],
+    start: hints.Point[hints.ScalarT],
+    end: hints.Point[hints.ScalarT],
+    edges: t.Sequence[hints.Segment[hints.ScalarT]],
+    orienteer: Orienteer[hints.ScalarT],
     /,
 ) -> Relation:
     # similar to segment-in-contour check
@@ -558,6 +513,7 @@ def _relate_to_region_border(
                 has_touch = True
             else:
                 assert last_touched_edge_index is not None
+                assert last_touched_edge_start is not None
                 if (
                     index - last_touched_edge_index == 1
                     and start != edge_start
@@ -614,9 +570,9 @@ def _relate_to_region_border(
 
 
 def _locate_point_in_region(
-    edges: t.Sequence[hints.Segment[hints.Scalar]],
-    point: hints.Point[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
+    edges: t.Sequence[hints.Segment[hints.ScalarT]],
+    point: hints.Point[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
     /,
 ) -> tuple[int | None, Location]:
     result = False

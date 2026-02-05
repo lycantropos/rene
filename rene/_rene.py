@@ -3,7 +3,7 @@ from __future__ import annotations
 import enum
 from typing import Final
 
-from typing_extensions import Self, final
+from typing_extensions import final
 
 MIN_CONTOUR_VERTICES_COUNT: Final[int] = 3
 MIN_MULTIPOLYGON_POLYGONS_COUNT: Final[int] = 2
@@ -86,7 +86,7 @@ class Relation(Base):
     WITHIN = 11
 
     @property
-    def complement(self, /) -> Self:
+    def complement(self, /) -> Relation:
         if (
             self is Relation.CROSS
             or self is Relation.DISJOINT
@@ -95,16 +95,15 @@ class Relation(Base):
             or self is Relation.TOUCH
         ):
             return self
-        elif self is Relation.COMPONENT:
+        if self is Relation.COMPONENT:
             return Relation.COMPOSITE
-        elif self is Relation.COMPOSITE:
+        if self is Relation.COMPOSITE:
             return Relation.COMPONENT
-        elif self is Relation.COVER:
+        if self is Relation.COVER:
             return Relation.WITHIN
-        elif self is Relation.ENCLOSED:
+        if self is Relation.ENCLOSED:
             return Relation.ENCLOSES
-        elif self is Relation.ENCLOSES:
+        if self is Relation.ENCLOSES:
             return Relation.ENCLOSED
-        else:
-            assert self is Relation.WITHIN
-            return Relation.COVER
+        assert self is Relation.WITHIN
+        return Relation.COVER

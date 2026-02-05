@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, ClassVar, NoReturn, TYPE_CHECKING
+from typing import ClassVar, NoReturn, TYPE_CHECKING
 
 from rithm.fraction import Fraction
 from typing_extensions import Self, final
@@ -29,7 +29,7 @@ class Segment(BaseSegment[Fraction]):
     __module__ = 'rene.exact'
     __slots__ = '_end', '_start'
 
-    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
+    def __init_subclass__(cls, /) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
@@ -37,6 +37,6 @@ class Segment(BaseSegment[Fraction]):
     def __new__(
         cls, start: hints.Point[Fraction], end: hints.Point[Fraction], /
     ) -> Self:
-        self = super().__new__(cls)
+        self = object.__new__(cls)
         self._end, self._start = end, start
         return self

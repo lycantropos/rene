@@ -27,7 +27,7 @@ class Multisegment(BaseMultisegment[Fraction]):
     __module__ = 'rene.exact'
     __slots__ = ('_segments',)
 
-    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
+    def __init_subclass__(cls, /) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
@@ -39,7 +39,7 @@ class Multisegment(BaseMultisegment[Fraction]):
                 f'{MIN_MULTISEGMENT_SEGMENTS_COUNT} segments, '
                 f'but found {len(segments)}.'
             )
-        self = super().__new__(cls)
+        self = object.__new__(cls)
         self._segments = tuple(segments)
         return self
 
@@ -53,18 +53,14 @@ _TOKEN = _Token.VALUE
 
 @final
 class _MultisegmentSegments(Sequence[hints.Segment[Fraction]]):
-    def count(self, segment: hints.Segment[Fraction], /) -> int:
-        return self._segments.count(segment)
+    def count(self, value: Any) -> int:
+        return self._segments.count(value)
 
     def index(
-        self,
-        segment: hints.Segment[Fraction],
-        start: int = 0,
-        stop: int | None = None,
-        /,
+        self, value: Any, start: int = 0, stop: int | None = None
     ) -> int:
         return self._segments.index(
-            segment, start, *(() if stop is None else (stop,))
+            value, start, *(() if stop is None else (stop,))
         )
 
     _segments: Sequence[hints.Segment[Fraction]]
@@ -72,7 +68,7 @@ class _MultisegmentSegments(Sequence[hints.Segment[Fraction]]):
     __module__ = 'rene.exact'
     __slots__ = ('_segments',)
 
-    def __init_subclass__(cls, /, **_kwargs: Any) -> NoReturn:
+    def __init_subclass__(cls, /) -> NoReturn:
         raise TypeError(
             f'type {cls.__qualname__!r} is not an acceptable base type'
         )
@@ -111,7 +107,7 @@ class _MultisegmentSegments(Sequence[hints.Segment[Fraction]]):
 
     def __getitem__(self, item: int | slice) -> hints.Segment[Fraction] | Self:
         return (
-            _MultisegmentSegments(self._segments[item], _TOKEN)
+            type(self)(self._segments[item], _TOKEN)
             if type(item) is slice
             else self._segments[item]
         )
@@ -119,5 +115,5 @@ class _MultisegmentSegments(Sequence[hints.Segment[Fraction]]):
     def __hash__(self, /) -> int:
         return hash(self._segments)
 
-    def __len__(self) -> int:
+    def __len__(self, /) -> int:
         return len(self._segments)

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import typing as t
 from itertools import chain
+from typing import TYPE_CHECKING, TypeAlias
 
 from rene import hints
 from rene._utils import to_boxes_ids_with_intersection
@@ -10,15 +10,15 @@ from rene.enums import Relation
 from . import mixed, shaped
 from .utils import polygon_to_segments
 
-if t.TYPE_CHECKING:
+if TYPE_CHECKING:
     from rene._hints import Orienteer, SegmentsIntersector
 
 
 def relate_to_contour(
-    polygon: hints.Polygon[hints.Scalar],
-    contour: hints.Contour[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    polygon: hints.Polygon[hints.ScalarT],
+    contour: hints.Contour[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
 ) -> Relation:
     return relate_to_multisegmental(
@@ -27,10 +27,10 @@ def relate_to_contour(
 
 
 def relate_to_multipolygon(
-    polygon: hints.Polygon[hints.Scalar],
-    multipolygon: hints.Multipolygon[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    polygon: hints.Polygon[hints.ScalarT],
+    multipolygon: hints.Multipolygon[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
 ) -> Relation:
     polygon_bounding_box, multipolygon_bounding_box = (
@@ -67,14 +67,18 @@ def relate_to_multipolygon(
         ),
         orienteer,
         segments_intersector,
-    ).to_relation(True, len(intersecting_polygons) == len(polygons), min_max_x)
+    ).to_relation(
+        first_is_subset=True,
+        second_is_subset=len(intersecting_polygons) == len(polygons),
+        min_max_x=min_max_x,
+    )
 
 
 def relate_to_multisegment(
-    polygon: hints.Polygon[hints.Scalar],
-    multisegment: hints.Multisegment[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    polygon: hints.Polygon[hints.ScalarT],
+    multisegment: hints.Multisegment[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
 ) -> Relation:
     return relate_to_multisegmental(
@@ -83,10 +87,10 @@ def relate_to_multisegment(
 
 
 def relate_to_polygon(
-    first: hints.Polygon[hints.Scalar],
-    second: hints.Polygon[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    first: hints.Polygon[hints.ScalarT],
+    second: hints.Polygon[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
 ) -> Relation:
     first_bounding_box, second_bounding_box = (
@@ -101,14 +105,16 @@ def relate_to_polygon(
         polygon_to_segments(second, first_bounding_box),
         orienteer,
         segments_intersector,
-    ).to_relation(True, True, min_max_x)
+    ).to_relation(
+        first_is_subset=True, second_is_subset=True, min_max_x=min_max_x
+    )
 
 
 def relate_to_segment(
-    polygon: hints.Polygon[hints.Scalar],
-    segment: hints.Segment[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    polygon: hints.Polygon[hints.ScalarT],
+    segment: hints.Segment[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
 ) -> Relation:
     polygon_bounding_box, segment_bounding_box = (
@@ -123,19 +129,19 @@ def relate_to_segment(
         [segment],
         orienteer,
         segments_intersector,
-    ).to_relation(True, min_max_x)
+    ).to_relation(linear_is_subset_of_shaped=True, min_max_x=min_max_x)
 
 
-_Multisegmental = t.Union[
-    hints.Contour[hints.Scalar], hints.Multisegment[hints.Scalar]
-]
+_Multisegmental: TypeAlias = (
+    hints.Contour[hints.ScalarT] | hints.Multisegment[hints.ScalarT]
+)
 
 
 def relate_to_multisegmental(
-    polygon: hints.Polygon[hints.Scalar],
-    multisegmental: _Multisegmental[hints.Scalar],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    polygon: hints.Polygon[hints.ScalarT],
+    multisegmental: _Multisegmental[hints.ScalarT],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
 ) -> Relation:
     polygon_bounding_box, multisegmental_bounding_box = (
@@ -153,7 +159,7 @@ def relate_to_multisegmental(
     )
     if not intersecting_segments_ids:
         return Relation.DISJOINT
-    elif len(intersecting_segments_ids) == 1:
+    if len(intersecting_segments_ids) == 1:
         intersecting_segment = multisegmental_segments[
             intersecting_segments_ids[0]
         ]
@@ -188,6 +194,7 @@ def relate_to_multisegmental(
         orienteer,
         segments_intersector,
     ).to_relation(
-        len(intersecting_segments_ids) == len(multisegmental_segments),
-        min_max_x,
+        linear_is_subset_of_shaped=len(intersecting_segments_ids)
+        == len(multisegmental_segments),
+        min_max_x=min_max_x,
     )

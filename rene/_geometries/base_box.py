@@ -9,22 +9,22 @@ from rene import hints
 from rene.enums import Relation
 
 
-class BaseBox(ABC, Generic[hints.Scalar]):
+class BaseBox(ABC, Generic[hints.ScalarT]):
     @property
     @abstractmethod
-    def max_x(self) -> hints.Scalar: ...
+    def max_x(self, /) -> hints.ScalarT: ...
 
     @property
     @abstractmethod
-    def max_y(self) -> hints.Scalar: ...
+    def max_y(self, /) -> hints.ScalarT: ...
 
     @property
     @abstractmethod
-    def min_x(self) -> hints.Scalar: ...
+    def min_x(self, /) -> hints.ScalarT: ...
 
     @property
     @abstractmethod
-    def min_y(self) -> hints.Scalar: ...
+    def min_y(self, /) -> hints.ScalarT: ...
 
     def covers(self, other: Self, /) -> bool:
         return (
@@ -106,7 +106,7 @@ class BaseBox(ABC, Generic[hints.Scalar]):
             and self.max_y == other.max_y
         )
 
-    def is_valid(self) -> bool:
+    def is_valid(self, /) -> bool:
         return self.min_x <= self.max_x and self.min_y <= self.max_y
 
     def overlaps(self, other: Self, /) -> bool:
@@ -117,26 +117,25 @@ class BaseBox(ABC, Generic[hints.Scalar]):
             and other.min_y < self.max_y
         ):
             return False
-        elif self.max_x > other.max_x:
+        if self.max_x > other.max_x:
             return (
                 other.min_x < self.min_x
                 or other.min_y < self.min_y
                 or self.max_y < other.max_y
             )
-        elif self.max_x < other.max_x:
+        if self.max_x < other.max_x:
             return (
                 self.min_x < other.min_x
                 or self.min_y < other.min_y
                 or other.max_y < self.max_y
             )
-        elif self.min_x > other.min_x:
+        if self.min_x > other.min_x:
             return self.min_y < other.min_y or other.max_y < self.max_y
-        elif self.min_x < other.min_x:
+        if self.min_x < other.min_x:
             return other.min_y < self.min_y or self.max_y < other.max_y
-        else:
-            return (other.min_y < self.min_y and other.max_y < self.max_y) or (
-                self.min_y < other.min_y and self.max_y < other.max_y
-            )
+        return (other.min_y < self.min_y and other.max_y < self.max_y) or (
+            self.min_y < other.min_y and self.max_y < other.max_y
+        )
 
     def relate_to(self, other: Self, /) -> Relation:
         if self.max_x == other.max_x:
@@ -144,290 +143,252 @@ class BaseBox(ABC, Generic[hints.Scalar]):
                 if self.max_y == other.max_y:
                     if self.min_y == other.min_y:
                         return Relation.EQUAL
-                    elif self.min_y > other.min_y:
+                    if self.min_y > other.min_y:
                         return Relation.ENCLOSED
-                    else:
-                        assert self.min_y < other.min_y
-                        return Relation.ENCLOSES
-                elif self.max_y > other.max_y:
+                    assert self.min_y < other.min_y
+                    return Relation.ENCLOSES
+                if self.max_y > other.max_y:
                     if self.min_y == other.max_y:
                         return Relation.TOUCH
-                    elif self.min_y > other.max_y:
+                    if self.min_y > other.max_y:
                         return Relation.DISJOINT
-                    else:
-                        assert self.min_y < other.max_y
-                        return (
-                            Relation.OVERLAP
-                            if self.min_y > other.min_y
-                            else Relation.ENCLOSES
-                        )
-                else:
-                    assert self.max_y < other.max_y
-                    if self.max_y == other.min_y:
-                        return Relation.TOUCH
-                    elif self.max_y > other.min_y:
-                        return (
-                            Relation.OVERLAP
-                            if self.min_y < other.min_y
-                            else Relation.ENCLOSED
-                        )
-                    else:
-                        assert self.max_y < other.min_y
-                        return Relation.DISJOINT
-            elif self.min_x > other.min_x:
+                    assert self.min_y < other.max_y
+                    return (
+                        Relation.OVERLAP
+                        if self.min_y > other.min_y
+                        else Relation.ENCLOSES
+                    )
+                assert self.max_y < other.max_y
+                if self.max_y == other.min_y:
+                    return Relation.TOUCH
+                if self.max_y > other.min_y:
+                    return (
+                        Relation.OVERLAP
+                        if self.min_y < other.min_y
+                        else Relation.ENCLOSED
+                    )
+                assert self.max_y < other.min_y
+                return Relation.DISJOINT
+            if self.min_x > other.min_x:
                 if self.max_y == other.max_y:
                     return (
                         Relation.OVERLAP
                         if self.min_y < other.min_y
                         else Relation.ENCLOSED
                     )
-                elif self.max_y > other.max_y:
+                if self.max_y > other.max_y:
                     if self.min_y == other.max_y:
                         return Relation.TOUCH
-                    elif self.min_y > other.max_y:
+                    if self.min_y > other.max_y:
                         return Relation.DISJOINT
-                    else:
-                        assert self.min_y < other.max_y
-                        return Relation.OVERLAP
-                else:
-                    assert self.max_y < other.max_y
-                    if self.max_y == other.min_y:
-                        return Relation.TOUCH
-                    elif self.max_y > other.min_y:
-                        return (
-                            Relation.OVERLAP
-                            if self.min_y < other.min_y
-                            else Relation.ENCLOSED
-                        )
-                    else:
-                        assert self.max_y < other.min_y
-                        return Relation.DISJOINT
-            else:
-                assert self.min_x < other.min_x
+                    assert self.min_y < other.max_y
+                    return Relation.OVERLAP
+                assert self.max_y < other.max_y
+                if self.max_y == other.min_y:
+                    return Relation.TOUCH
+                if self.max_y > other.min_y:
+                    return (
+                        Relation.OVERLAP
+                        if self.min_y < other.min_y
+                        else Relation.ENCLOSED
+                    )
+                assert self.max_y < other.min_y
+                return Relation.DISJOINT
+            assert self.min_x < other.min_x
+            if self.max_y == other.max_y:
+                return (
+                    Relation.OVERLAP
+                    if self.min_y > other.min_y
+                    else Relation.ENCLOSES
+                )
+            if self.max_y > other.max_y:
+                if self.min_y == other.max_y:
+                    return Relation.TOUCH
+                if self.min_y > other.max_y:
+                    return Relation.DISJOINT
+                assert self.min_y < other.max_y
+                return (
+                    Relation.OVERLAP
+                    if self.min_y > other.min_y
+                    else Relation.ENCLOSES
+                )
+            assert self.max_y < other.max_y
+            if self.max_y == other.min_y:
+                return Relation.TOUCH
+            if self.max_y > other.min_y:
+                return Relation.OVERLAP
+            assert self.max_y < other.min_y
+            return Relation.DISJOINT
+        if self.max_x > other.max_x:
+            if self.min_x == other.max_x:
+                if self.max_y == other.max_y:
+                    return Relation.TOUCH
+                if self.max_y > other.max_y:
+                    return (
+                        Relation.DISJOINT
+                        if self.min_y > other.max_y
+                        else Relation.TOUCH
+                    )
+                assert self.max_y < other.max_y
+                return (
+                    Relation.DISJOINT
+                    if self.max_y < other.min_y
+                    else Relation.TOUCH
+                )
+            if self.min_x > other.max_x:
+                return Relation.DISJOINT
+            assert self.min_x < other.max_x
+            if self.min_x == other.min_x:
                 if self.max_y == other.max_y:
                     return (
                         Relation.OVERLAP
                         if self.min_y > other.min_y
                         else Relation.ENCLOSES
                     )
-                elif self.max_y > other.max_y:
+                if self.max_y > other.max_y:
                     if self.min_y == other.max_y:
                         return Relation.TOUCH
-                    elif self.min_y > other.max_y:
+                    if self.min_y > other.max_y:
                         return Relation.DISJOINT
-                    else:
-                        assert self.min_y < other.max_y
-                        return (
-                            Relation.OVERLAP
-                            if self.min_y > other.min_y
-                            else Relation.ENCLOSES
-                        )
-                else:
-                    assert self.max_y < other.max_y
-                    if self.max_y == other.min_y:
+                    assert self.min_y < other.max_y
+                    return (
+                        Relation.OVERLAP
+                        if self.min_y > other.min_y
+                        else Relation.ENCLOSES
+                    )
+                assert self.max_y < other.max_y
+                if self.max_y == other.min_y:
+                    return Relation.TOUCH
+                if self.max_y > other.min_y:
+                    return Relation.OVERLAP
+                return Relation.DISJOINT
+            if self.min_x > other.min_x:
+                if self.max_y == other.max_y:
+                    return Relation.OVERLAP
+                if self.max_y > other.max_y:
+                    if self.min_y == other.max_y:
                         return Relation.TOUCH
-                    elif self.max_y > other.min_y:
-                        return Relation.OVERLAP
-                    else:
-                        assert self.max_y < other.min_y
+                    if self.min_y > other.max_y:
                         return Relation.DISJOINT
-        elif self.max_x > other.max_x:
-            if self.min_x == other.max_x:
-                if self.max_y == other.max_y:
+                    assert self.min_y < other.max_y
+                    return Relation.OVERLAP
+                assert self.max_y < other.max_y
+                if self.max_y == other.min_y:
                     return Relation.TOUCH
-                elif self.max_y > other.max_y:
-                    return (
-                        Relation.DISJOINT
-                        if self.min_y > other.max_y
-                        else Relation.TOUCH
-                    )
-                else:
-                    assert self.max_y < other.max_y
-                    return (
-                        Relation.DISJOINT
-                        if self.max_y < other.min_y
-                        else Relation.TOUCH
-                    )
-            elif self.min_x > other.max_x:
+                if self.max_y > other.min_y:
+                    return Relation.OVERLAP
+                assert self.max_y < other.min_y
                 return Relation.DISJOINT
-            else:
-                assert self.min_x < other.max_x
-                if self.min_x == other.min_x:
-                    if self.max_y == other.max_y:
-                        return (
-                            Relation.OVERLAP
-                            if self.min_y > other.min_y
-                            else Relation.ENCLOSES
-                        )
-                    elif self.max_y > other.max_y:
-                        if self.min_y == other.max_y:
-                            return Relation.TOUCH
-                        elif self.min_y > other.max_y:
-                            return Relation.DISJOINT
-                        else:
-                            assert self.min_y < other.max_y
-                            return (
-                                Relation.OVERLAP
-                                if self.min_y > other.min_y
-                                else Relation.ENCLOSES
-                            )
-                    else:
-                        assert self.max_y < other.max_y
-                        if self.max_y == other.min_y:
-                            return Relation.TOUCH
-                        elif self.max_y > other.min_y:
-                            return Relation.OVERLAP
-                        else:
-                            return Relation.DISJOINT
-                elif self.min_x > other.min_x:
-                    if self.max_y == other.max_y:
-                        return Relation.OVERLAP
-                    elif self.max_y > other.max_y:
-                        if self.min_y == other.max_y:
-                            return Relation.TOUCH
-                        elif self.min_y > other.max_y:
-                            return Relation.DISJOINT
-                        else:
-                            assert self.min_y < other.max_y
-                            return Relation.OVERLAP
-                    else:
-                        assert self.max_y < other.max_y
-                        if self.max_y == other.min_y:
-                            return Relation.TOUCH
-                        elif self.max_y > other.min_y:
-                            return Relation.OVERLAP
-                        else:
-                            assert self.max_y < other.min_y
-                            return Relation.DISJOINT
-                else:
-                    assert self.min_x < other.min_x
-                    if self.max_y == other.max_y:
-                        return (
-                            Relation.OVERLAP
-                            if self.min_y > other.min_y
-                            else Relation.ENCLOSES
-                        )
-                    elif self.max_y > other.max_y:
-                        if self.min_y == other.max_y:
-                            return Relation.TOUCH
-                        elif self.min_y > other.max_y:
-                            return Relation.DISJOINT
-                        else:
-                            assert self.min_y < other.max_y
-                            if self.min_y == other.min_y:
-                                return Relation.ENCLOSES
-                            elif self.min_y > other.min_y:
-                                return Relation.OVERLAP
-                            else:
-                                assert self.min_y < other.min_y
-                                return Relation.COVER
-                    else:
-                        assert self.max_y < other.max_y
-                        if self.max_y == other.min_y:
-                            return Relation.TOUCH
-                        elif self.max_y > other.min_y:
-                            return Relation.OVERLAP
-                        else:
-                            return Relation.DISJOINT
-        else:
-            assert self.max_x < other.max_x
-            if self.max_x == other.min_x:
-                if self.max_y == other.max_y:
+            assert self.min_x < other.min_x
+            if self.max_y == other.max_y:
+                return (
+                    Relation.OVERLAP
+                    if self.min_y > other.min_y
+                    else Relation.ENCLOSES
+                )
+            if self.max_y > other.max_y:
+                if self.min_y == other.max_y:
                     return Relation.TOUCH
-                elif self.max_y > other.max_y:
+                if self.min_y > other.max_y:
+                    return Relation.DISJOINT
+                assert self.min_y < other.max_y
+                if self.min_y == other.min_y:
+                    return Relation.ENCLOSES
+                if self.min_y > other.min_y:
+                    return Relation.OVERLAP
+                assert self.min_y < other.min_y
+                return Relation.COVER
+            assert self.max_y < other.max_y
+            if self.max_y == other.min_y:
+                return Relation.TOUCH
+            if self.max_y > other.min_y:
+                return Relation.OVERLAP
+            return Relation.DISJOINT
+        assert self.max_x < other.max_x
+        if self.max_x == other.min_x:
+            if self.max_y == other.max_y:
+                return Relation.TOUCH
+            if self.max_y > other.max_y:
+                return (
+                    Relation.DISJOINT
+                    if self.min_y > other.max_y
+                    else Relation.TOUCH
+                )
+            assert self.max_y < other.max_y
+            return (
+                Relation.DISJOINT
+                if self.max_y < other.min_y
+                else Relation.TOUCH
+            )
+        if self.max_x > other.min_x:
+            if self.min_x == other.min_x:
+                if self.max_y == other.max_y:
                     return (
-                        Relation.DISJOINT
-                        if self.min_y > other.max_y
-                        else Relation.TOUCH
+                        Relation.OVERLAP
+                        if self.min_y < other.min_y
+                        else Relation.ENCLOSED
                     )
-                else:
-                    assert self.max_y < other.max_y
+                if self.max_y > other.max_y:
+                    if self.min_y == other.max_y:
+                        return Relation.TOUCH
+                    if self.min_y > other.max_y:
+                        return Relation.DISJOINT
+                    return Relation.OVERLAP
+                assert self.max_y < other.max_y
+                if self.max_y == other.min_y:
+                    return Relation.TOUCH
+                if self.max_y > other.min_y:
                     return (
-                        Relation.DISJOINT
-                        if self.max_y < other.min_y
-                        else Relation.TOUCH
+                        Relation.OVERLAP
+                        if self.min_y < other.min_y
+                        else Relation.ENCLOSED
                     )
-            elif self.max_x > other.min_x:
-                if self.min_x == other.min_x:
-                    if self.max_y == other.max_y:
-                        return (
-                            Relation.OVERLAP
-                            if self.min_y < other.min_y
-                            else Relation.ENCLOSED
-                        )
-                    elif self.max_y > other.max_y:
-                        if self.min_y == other.max_y:
-                            return Relation.TOUCH
-                        elif self.min_y > other.max_y:
-                            return Relation.DISJOINT
-                        else:
-                            return Relation.OVERLAP
-                    else:
-                        assert self.max_y < other.max_y
-                        if self.max_y == other.min_y:
-                            return Relation.TOUCH
-                        elif self.max_y > other.min_y:
-                            return (
-                                Relation.OVERLAP
-                                if self.min_y < other.min_y
-                                else Relation.ENCLOSED
-                            )
-                        else:
-                            assert self.max_y < other.min_y
-                            return Relation.DISJOINT
-                elif self.min_x > other.min_x:
-                    if self.max_y == other.max_y:
-                        return (
-                            Relation.OVERLAP
-                            if self.min_y < other.min_y
-                            else Relation.ENCLOSED
-                        )
-                    elif self.max_y > other.max_y:
-                        if self.min_y == other.max_y:
-                            return Relation.TOUCH
-                        elif self.min_y > other.max_y:
-                            return Relation.DISJOINT
-                        else:
-                            assert self.min_y < other.max_y
-                            return Relation.OVERLAP
-                    else:
-                        assert self.max_y < other.max_y
-                        if self.max_y == other.min_y:
-                            return Relation.TOUCH
-                        elif self.max_y > other.min_y:
-                            if self.min_y == other.min_y:
-                                return Relation.ENCLOSED
-                            elif self.min_y > other.min_y:
-                                return Relation.WITHIN
-                            else:
-                                assert self.min_y < other.min_y
-                                return Relation.OVERLAP
-                        else:
-                            assert self.max_y < other.min_y
-                            return Relation.DISJOINT
-                else:
-                    assert self.min_x < other.min_x
-                    if self.max_y == other.max_y:
-                        return Relation.OVERLAP
-                    elif self.max_y > other.max_y:
-                        if self.min_y == other.max_y:
-                            return Relation.TOUCH
-                        elif self.min_y > other.max_y:
-                            return Relation.DISJOINT
-                        else:
-                            assert self.min_y < other.max_y
-                            return Relation.OVERLAP
-                    else:
-                        assert self.max_y < other.max_y
-                        if self.max_y == other.min_y:
-                            return Relation.TOUCH
-                        elif self.max_y > other.min_y:
-                            return Relation.OVERLAP
-                        else:
-                            return Relation.DISJOINT
-            else:
-                assert self.max_x < other.min_x
+                assert self.max_y < other.min_y
                 return Relation.DISJOINT
+            if self.min_x > other.min_x:
+                if self.max_y == other.max_y:
+                    return (
+                        Relation.OVERLAP
+                        if self.min_y < other.min_y
+                        else Relation.ENCLOSED
+                    )
+                if self.max_y > other.max_y:
+                    if self.min_y == other.max_y:
+                        return Relation.TOUCH
+                    if self.min_y > other.max_y:
+                        return Relation.DISJOINT
+                    assert self.min_y < other.max_y
+                    return Relation.OVERLAP
+                assert self.max_y < other.max_y
+                if self.max_y == other.min_y:
+                    return Relation.TOUCH
+                if self.max_y > other.min_y:
+                    if self.min_y == other.min_y:
+                        return Relation.ENCLOSED
+                    if self.min_y > other.min_y:
+                        return Relation.WITHIN
+                    assert self.min_y < other.min_y
+                    return Relation.OVERLAP
+                assert self.max_y < other.min_y
+                return Relation.DISJOINT
+            assert self.min_x < other.min_x
+            if self.max_y == other.max_y:
+                return Relation.OVERLAP
+            if self.max_y > other.max_y:
+                if self.min_y == other.max_y:
+                    return Relation.TOUCH
+                if self.min_y > other.max_y:
+                    return Relation.DISJOINT
+                assert self.min_y < other.max_y
+                return Relation.OVERLAP
+            assert self.max_y < other.max_y
+            if self.max_y == other.min_y:
+                return Relation.TOUCH
+            if self.max_y > other.min_y:
+                return Relation.OVERLAP
+            return Relation.DISJOINT
+        assert self.max_x < other.min_x
+        return Relation.DISJOINT
 
     def touches(self, other: Self, /) -> bool:
         return (

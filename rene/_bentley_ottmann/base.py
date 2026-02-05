@@ -11,9 +11,9 @@ from rene.enums import Relation
 from .events_registry import EventsRegistry
 
 
-class Intersection(Generic[hints.Scalar]):
+class Intersection(Generic[hints.ScalarT]):
     @property
-    def end(self, /) -> hints.Point[hints.Scalar]:
+    def end(self, /) -> hints.Point[hints.ScalarT]:
         return self._end
 
     @property
@@ -29,14 +29,14 @@ class Intersection(Generic[hints.Scalar]):
         return self._second_segment_id
 
     @property
-    def start(self, /) -> hints.Point[hints.Scalar]:
+    def start(self, /) -> hints.Point[hints.ScalarT]:
         return self._start
 
-    _end: hints.Point[hints.Scalar]
+    _end: hints.Point[hints.ScalarT]
     _first_segment_id: int
     _relation: Relation
     _second_segment_id: int
-    _start: hints.Point[hints.Scalar]
+    _start: hints.Point[hints.ScalarT]
 
     __slots__ = (
         '_end',
@@ -51,8 +51,8 @@ class Intersection(Generic[hints.Scalar]):
         first_segment_id: int,
         second_segment_id: int,
         relation: Relation,
-        start: hints.Point[hints.Scalar],
-        end: hints.Point[hints.Scalar],
+        start: hints.Point[hints.ScalarT],
+        end: hints.Point[hints.ScalarT],
         /,
     ) -> Self:
         self = super().__new__(cls)
@@ -67,11 +67,11 @@ class Intersection(Generic[hints.Scalar]):
 
 
 def sweep(
-    segments: Sequence[hints.Segment[hints.Scalar]],
-    orienteer: Orienteer[hints.Scalar],
-    segments_intersector: SegmentsIntersector[hints.Scalar],
+    segments: Sequence[hints.Segment[hints.ScalarT]],
+    orienteer: Orienteer[hints.ScalarT],
+    segments_intersector: SegmentsIntersector[hints.ScalarT],
     /,
-) -> Iterable[Intersection[hints.Scalar]]:
+) -> Iterable[Intersection[hints.ScalarT]]:
     events_registry = EventsRegistry.from_segments(
         segments, orienteer, segments_intersector, unique=False
     )
@@ -102,10 +102,10 @@ def sweep(
 
 def segments_ids_containing_point_to_intersections(
     segments_ids: Sequence[int],
-    point: hints.Point[hints.Scalar],
-    events_registry: EventsRegistry[hints.Scalar],
+    point: hints.Point[hints.ScalarT],
+    events_registry: EventsRegistry[hints.ScalarT],
     /,
-) -> Iterable[Intersection[hints.Scalar]]:
+) -> Iterable[Intersection[hints.ScalarT]]:
     for first_segment_id, second_segment_id in combinations(segments_ids, 2):
         first_start = events_registry.to_segment_start(first_segment_id)
         first_end = events_registry.to_segment_end(first_segment_id)

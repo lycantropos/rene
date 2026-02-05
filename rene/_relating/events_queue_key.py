@@ -9,29 +9,30 @@ from rene.enums import Orientation
 from .event import Event, is_event_left
 
 
-class EventsQueueKey(Generic[hints.Scalar]):
+class EventsQueueKey(Generic[hints.ScalarT]):
     event: Event
     is_from_first_operand: bool
-    endpoints: Map[Event, hints.Point[hints.Scalar]]
+    endpoints: Map[Event, hints.Point[hints.ScalarT]]
     opposites: Map[Event, Event]
-    _orienteer: Orienteer[hints.Scalar]
+    _orienteer: Orienteer[hints.ScalarT]
 
     __slots__ = (
+        '_orienteer',
         'endpoints',
         'event',
         'is_from_first_operand',
         'opposites',
-        '_orienteer',
     )
 
     def __new__(
         cls,
         event: Event,
-        is_from_first_operand: bool,
-        endpoints: Map[Event, hints.Point[hints.Scalar]],
-        opposites: Map[Event, Event],
-        orienteer: Orienteer[hints.Scalar],
         /,
+        *,
+        is_from_first_operand: bool,
+        endpoints: Map[Event, hints.Point[hints.ScalarT]],
+        opposites: Map[Event, Event],
+        orienteer: Orienteer[hints.ScalarT],
     ) -> Self:
         self = super().__new__(cls)
         (
@@ -40,7 +41,7 @@ class EventsQueueKey(Generic[hints.Scalar]):
             self.is_from_first_operand,
             self.opposites,
             self._orienteer,
-        ) = endpoints, event, is_from_first_operand, opposites, orienteer
+        ) = (endpoints, event, is_from_first_operand, opposites, orienteer)
         return self
 
     def __lt__(self, other: Self, /) -> bool:
@@ -58,34 +59,31 @@ class EventsQueueKey(Generic[hints.Scalar]):
             # different x-coordinate,
             # the event with lower x-coordinate is processed first
             return start_x < other_start_x
-        elif start_y != other_start_y:
+        if start_y != other_start_y:
             # different starts, but same x-coordinate,
             # the event with lower y-coordinate is processed first
             return start_y < other_start_y
-        elif is_event_left(event) is not is_event_left(other_event):
+        if is_event_left(event) is not is_event_left(other_event):
             # same start, but one is a left endpoint
             # and the other is a right endpoint,
             # the right endpoint is processed first
             return not is_event_left(event)
-        else:
-            other_end_orientation = self._orienteer(
-                event_start,
-                self.endpoints[self.opposites[event]],
-                self.endpoints[self.opposites[other_event]],
+        other_end_orientation = self._orienteer(
+            event_start,
+            self.endpoints[self.opposites[event]],
+            self.endpoints[self.opposites[other_event]],
+        )
+        if other_end_orientation is Orientation.COLLINEAR:
+            assert (
+                self.is_from_first_operand is not other.is_from_first_operand
             )
-            if other_end_orientation is Orientation.COLLINEAR:
-                assert (
-                    self.is_from_first_operand
-                    is not other.is_from_first_operand
-                )
-                return other.is_from_first_operand
-            else:
-                return (
-                    other_end_orientation
-                    # the lowest segment is processed first
-                    is (
-                        Orientation.COUNTERCLOCKWISE
-                        if is_event_left(event)
-                        else Orientation.CLOCKWISE
-                    )
-                )
+            return other.is_from_first_operand
+        return (
+            other_end_orientation
+            # the lowest segment is processed first
+            is (
+                Orientation.COUNTERCLOCKWISE
+                if is_event_left(event)
+                else Orientation.CLOCKWISE
+            )
+        )

@@ -49,7 +49,7 @@ def test_reversed(segments: Sequence[Segment]) -> None:
     assert [
         segment
         for index, (segment, reversed_segment) in (
-            enumerate(zip(result, reversed(segments)))
+            enumerate(zip(result, reversed(segments), strict=False))
         )
         if segment != reversed_segment
     ] == []

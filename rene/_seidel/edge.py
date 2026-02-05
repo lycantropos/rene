@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from rene._hints import Orienteer
 
 
-class Edge(Generic[hints.Scalar]):
+class Edge(Generic[hints.ScalarT]):
     interior_to_left: bool
     left_point_index: int
     right_point_index: int
@@ -23,17 +23,22 @@ class Edge(Generic[hints.Scalar]):
         cls,
         left_point_index: int,
         right_point_index: int,
+        /,
+        *,
         interior_to_left: bool,
-        orienteer: Orienteer[hints.Scalar],
+        orienteer: Orienteer[hints.ScalarT],
     ) -> Self:
         return cls(
-            left_point_index, right_point_index, interior_to_left, orienteer
+            left_point_index,
+            right_point_index,
+            interior_to_left=interior_to_left,
+            orienteer=orienteer,
         )
 
     def orientation_of(
         self,
-        point: hints.Point[hints.Scalar],
-        endpoints: Sequence[hints.Point[hints.Scalar]],
+        point: hints.Point[hints.ScalarT],
+        endpoints: Sequence[hints.Point[hints.ScalarT]],
     ) -> Orientation:
         return self._orienteer(
             endpoints[self.left_point_index],
@@ -41,22 +46,23 @@ class Edge(Generic[hints.Scalar]):
             point,
         )
 
-    _orienteer: Orienteer[hints.Scalar]
+    _orienteer: Orienteer[hints.ScalarT]
 
     __slots__ = (
+        '_orienteer',
         'interior_to_left',
         'left_point_index',
         'right_point_index',
-        '_orienteer',
     )
 
     def __new__(
         cls,
         left_point_index: int,
         right_point_index: int,
-        interior_to_left: bool,
-        orienteer: Orienteer[hints.Scalar],
         /,
+        *,
+        interior_to_left: bool,
+        orienteer: Orienteer[hints.ScalarT],
     ) -> Self:
         self = super().__new__(cls)
         (
@@ -68,7 +74,7 @@ class Edge(Generic[hints.Scalar]):
         return self
 
     def is_under(
-        self, other: Self, endpoints: Sequence[hints.Point[hints.Scalar]]
+        self, other: Self, endpoints: Sequence[hints.Point[hints.ScalarT]]
     ) -> bool:
         other_left_orientation = self.orientation_of(
             endpoints[other.left_point_index], endpoints
@@ -78,7 +84,7 @@ class Edge(Generic[hints.Scalar]):
         )
         if other_left_orientation is other_right_orientation:
             return other_left_orientation is Orientation.COUNTERCLOCKWISE
-        elif other_left_orientation is Orientation.COLLINEAR:
+        if other_left_orientation is Orientation.COLLINEAR:
             return other_right_orientation is Orientation.COUNTERCLOCKWISE
         left_orientation = other.orientation_of(
             endpoints[self.left_point_index], endpoints
@@ -88,12 +94,11 @@ class Edge(Generic[hints.Scalar]):
         )
         if left_orientation is right_orientation:
             return left_orientation is Orientation.CLOCKWISE
-        elif left_orientation is Orientation.COLLINEAR:
+        if left_orientation is Orientation.COLLINEAR:
             return right_orientation is Orientation.CLOCKWISE
-        elif other_right_orientation is Orientation.COLLINEAR:
+        if other_right_orientation is Orientation.COLLINEAR:
             return other_left_orientation is Orientation.COUNTERCLOCKWISE
-        elif right_orientation is Orientation.COLLINEAR:
+        if right_orientation is Orientation.COLLINEAR:
             return left_orientation is Orientation.CLOCKWISE
-        else:
-            # crossing edges are incomparable
-            return False
+        # crossing edges are incomparable
+        return False
