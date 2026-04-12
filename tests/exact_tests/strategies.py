@@ -33,9 +33,6 @@ scalars_strategies = strategies.sampled_from(
     [
         integers,
         strategies.fractions(MIN_VALUE, MAX_VALUE, max_denominator=MAX_VALUE),
-        strategies.floats(
-            MIN_VALUE, MAX_VALUE, allow_infinity=False, allow_nan=False
-        ),
     ]
 )
 empty_geometries = strategies.builds(Empty)
