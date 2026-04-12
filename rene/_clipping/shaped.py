@@ -401,9 +401,14 @@ class Operation(ABC, Generic[hints.ScalarT]):
         )
         if event_start_orientation is event_end_orientation:
             if event_start_orientation is Orientation.COLLINEAR:
-                assert self._is_left_event_from_first_operand(
-                    below_event
-                ) is not self._is_left_event_from_first_operand(event)
+                assert (
+                    (
+                        self._is_left_event_from_first_operand(below_event)
+                        is not self._is_left_event_from_first_operand(event)
+                    )
+                    or event_end == below_event_start
+                    or event_start == below_event_end
+                )
                 if event_start == below_event_start:
                     if event_end != below_event_end:
                         max_end_event, min_end_event = (
