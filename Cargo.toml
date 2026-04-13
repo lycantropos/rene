@@ -28,3 +28,6 @@ features = ["extension-module"]
 
 [build-dependencies]
 pyo3-build-config = "^0.28.3"
+
+[lints.rust]
+warnings = "deny"
