@@ -7,7 +7,7 @@ services:
       args:
         - IMAGE_NAME=${CPYTHON_IMAGE_NAME}
         - IMAGE_VERSION=${CPYTHON_IMAGE_VERSION}
-    image: lycantropos/rene-cpython:0.1.0
+    image: lycantropos/rene-cpython:0.2.0
     volumes:
       - ./Cargo.toml:/opt/rene/Cargo.toml
       - ./pyproject.toml:/opt/rene/pyproject.toml
