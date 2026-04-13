@@ -315,7 +315,7 @@ jobs:
           target: ${{ matrix.platform.rust_target }}
         if: ${{ runner.os != 'Linux' }}
       - name: 'Setup QEMU'
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
         with:
           platforms: all
         if: ${{ runner.os == 'Linux' }}
