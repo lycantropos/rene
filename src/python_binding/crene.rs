@@ -1,7 +1,7 @@
 use pyo3::exceptions::PyValueError;
 use pyo3::sync::PyOnceLock;
 use pyo3::type_object::PyTypeInfo;
-use pyo3::types::{PyModule, PyTuple};
+use pyo3::types::{PyModule, PyTuple, PyTypeMethods};
 use pyo3::{
     intern, pyclass, pymethods, pymodule, Bound, IntoPyObject, Py, PyAny,
     PyResult, Python,
@@ -136,16 +136,16 @@ impl PyLocation {
     #[classattr]
     const INTERIOR: PyLocation = PyLocation(Location::Interior);
 
-    fn __repr__(&self, _py: Python<'_>) -> String {
-        format!(
+    fn __repr__(&self, py: Python<'_>) -> PyResult<String> {
+        Ok(format!(
             "{}.{}",
-            Self::NAME,
+            Self::type_object(py).name()?,
             match self.0 {
                 Location::Boundary => "BOUNDARY",
                 Location::Exterior => "EXTERIOR",
                 Location::Interior => "INTERIOR",
             }
-        )
+        ))
     }
 }
 
@@ -161,16 +161,16 @@ impl PyOrientation {
     const COUNTERCLOCKWISE: PyOrientation =
         PyOrientation(Orientation::Counterclockwise);
 
-    fn __repr__(&self) -> String {
-        format!(
+    fn __repr__(&self, py: Python<'_>) -> PyResult<String> {
+        Ok(format!(
             "{}.{}",
-            Self::NAME,
+            Self::type_object(py).name()?,
             match self.0 {
                 Orientation::Clockwise => "CLOCKWISE",
                 Orientation::Collinear => "COLLINEAR",
                 Orientation::Counterclockwise => "COUNTERCLOCKWISE",
             }
-        )
+        ))
     }
 }
 
@@ -244,7 +244,7 @@ impl PyRelation {
             _ => Err(PyValueError::new_err(format!(
                 "{} is not a valid {}",
                 value.repr()?,
-                Self::NAME
+                Self::type_object(py).name()?
             ))),
         }
     }
@@ -290,10 +290,10 @@ impl PyRelation {
         PyTuple::new(py, [self.value()])
     }
 
-    fn __repr__(&self) -> String {
-        format!(
+    fn __repr__(&self, py: Python<'_>) -> PyResult<String> {
+        Ok(format!(
             "{}.{}",
-            Self::NAME,
+            Self::type_object(py).name()?,
             match self.0 {
                 Relation::Component => "COMPONENT",
                 Relation::Composite => "COMPOSITE",
@@ -307,7 +307,7 @@ impl PyRelation {
                 Relation::Touch => "TOUCH",
                 Relation::Within => "WITHIN",
             }
-        )
+        ))
     }
 }
 

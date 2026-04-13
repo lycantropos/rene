@@ -292,8 +292,8 @@ impl TryToPyAny for &Fraction {
             .call(
                 py,
                 (
-                    big_int_to_py_long(self.numerator()),
-                    big_int_to_py_long(self.denominator()),
+                    big_int_to_py_long(self.numerator(), py),
+                    big_int_to_py_long(self.denominator(), py),
                 ),
                 None,
             )
@@ -417,50 +417,67 @@ type Polygon = crate::geometries::Polygon<Fraction>;
 type Segment = crate::geometries::Segment<Fraction>;
 type Trapezoidation = crate::seidel::Trapezoidation<Point>;
 
-#[pyo3::pyclass(name = "Box", module = "rene.exact")]
+#[pyo3::pyclass(name = "Box", module = "rene.exact", skip_from_py_object)]
 #[derive(Clone)]
 pub struct PyBox(Box);
 
 #[pyo3::pyclass(
     name = "ConstrainedDelaunayTriangulation",
-    module = "rene.exact"
+    module = "rene.exact",
+    skip_from_py_object
 )]
 #[derive(Clone)]
 struct PyConstrainedDelaunayTriangulation(ConstrainedDelaunayTriangulation);
 
-#[pyo3::pyclass(name = "Contour", module = "rene.exact")]
+#[pyo3::pyclass(name = "Contour", module = "rene.exact", from_py_object)]
 #[derive(Clone)]
 pub struct PyContour(Contour);
 
-#[pyo3::pyclass(name = "DelaunayTriangulation", module = "rene.exact")]
+#[pyo3::pyclass(
+    name = "DelaunayTriangulation",
+    module = "rene.exact",
+    skip_from_py_object
+)]
 #[derive(Clone)]
 struct PyDelaunayTriangulation(DelaunayTriangulation);
 
-#[pyo3::pyclass(name = "Empty", module = "rene.exact")]
+#[pyo3::pyclass(name = "Empty", module = "rene.exact", skip_from_py_object)]
 #[derive(Clone, Default)]
 struct PyEmpty(Empty);
 
-#[pyo3::pyclass(name = "Multipolygon", module = "rene.exact")]
+#[pyo3::pyclass(
+    name = "Multipolygon",
+    module = "rene.exact",
+    skip_from_py_object
+)]
 #[derive(Clone)]
 pub struct PyMultipolygon(Multipolygon);
 
-#[pyo3::pyclass(name = "Multisegment", module = "rene.exact")]
+#[pyo3::pyclass(
+    name = "Multisegment",
+    module = "rene.exact",
+    skip_from_py_object
+)]
 #[derive(Clone)]
 struct PyMultisegment(Multisegment);
 
-#[pyo3::pyclass(name = "Polygon", module = "rene.exact")]
+#[pyo3::pyclass(name = "Polygon", module = "rene.exact", from_py_object)]
 #[derive(Clone)]
 pub struct PyPolygon(Polygon);
 
-#[pyo3::pyclass(name = "Point", module = "rene.exact")]
+#[pyo3::pyclass(name = "Point", module = "rene.exact", from_py_object)]
 #[derive(Clone)]
 pub struct PyPoint(Point);
 
-#[pyo3::pyclass(name = "Segment", module = "rene.exact")]
+#[pyo3::pyclass(name = "Segment", module = "rene.exact", from_py_object)]
 #[derive(Clone)]
 pub struct PySegment(Segment);
 
-#[pyo3::pyclass(name = "Trapezoidation", module = "rene.exact")]
+#[pyo3::pyclass(
+    name = "Trapezoidation",
+    module = "rene.exact",
+    skip_from_py_object
+)]
 #[derive(Clone)]
 struct PyTrapezoidation(Trapezoidation);
 
@@ -560,10 +577,13 @@ impl_py_sequence!(
 
 impl_py_sequence!(PyPolygonHoles, polygon, contour, holes, PyContour, Contour);
 
-fn big_int_to_py_long(value: &BigInt) -> pyo3::Py<pyo3::PyAny> {
+fn big_int_to_py_long<'py>(
+    value: &BigInt,
+    py: pyo3::Python<'py>,
+) -> pyo3::Bound<'py, pyo3::PyAny> {
     let buffer = value.to_bytes(Endianness::Little);
-    pyo3::Python::attach(|py| unsafe {
-        pyo3::Py::<pyo3::PyAny>::from_owned_ptr(
+    unsafe {
+        pyo3::Bound::<'py, pyo3::PyAny>::from_owned_ptr(
             py,
             pyo3::ffi::_PyLong_FromByteArray(
                 buffer.as_ptr(),
@@ -572,11 +592,11 @@ fn big_int_to_py_long(value: &BigInt) -> pyo3::Py<pyo3::PyAny> {
                 1,
             ),
         )
-    })
+    }
 }
 
-fn try_py_integral_to_big_int(
-    value: pyo3::Bound<'_, pyo3::PyAny>,
+fn try_py_integral_to_big_int<'py>(
+    value: pyo3::Bound<'py, pyo3::PyAny>,
 ) -> pyo3::PyResult<BigInt> {
     let ptr = value.as_ptr();
     let py = value.py();
@@ -593,7 +613,7 @@ fn try_py_integral_to_big_int(
                 let bytes_count = bits_count / (u8::BITS as usize) + 1;
                 let mut buffer = vec![0u8; bytes_count];
                 if pyo3::ffi::_PyLong_AsByteArray(
-                    pyo3::Py::<pyo3::types::PyInt>::from_owned_ptr(py, ptr)
+                    pyo3::Bound::<'py, pyo3::PyAny>::from_owned_ptr(py, ptr)
                         .as_ptr()
                         .cast::<pyo3::ffi::PyLongObject>(),
                     buffer.as_mut_ptr(),

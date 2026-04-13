@@ -304,9 +304,10 @@ macro_rules! impl_contour_wrapper {
                 &self,
                 py: pyo3::Python<'_>,
             ) -> pyo3::PyResult<String> {
+                use pyo3::types::PyTypeMethods;
                 Ok(format!(
                     "{}([{}])",
-                    <Self as pyo3::type_object::PyTypeInfo>::NAME,
+                    <Self as pyo3::type_object::PyTypeInfo>::type_object(py).name()?,
                     (&self.0)
                         .vertices()
                         .into_iter()

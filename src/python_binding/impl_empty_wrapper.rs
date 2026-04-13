@@ -241,8 +241,12 @@ macro_rules! impl_empty_wrapper {
                 }
             }
 
-            fn __repr__(&self) -> String {
-                format!("{}()", <Self as pyo3::type_object::PyTypeInfo>::NAME)
+            fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+                use pyo3::types::PyTypeMethods;
+                Ok(format!(
+                    "{}()",
+                    <Self as pyo3::type_object::PyTypeInfo>::type_object(py).name()?
+                ))
             }
 
             fn __richcmp__(

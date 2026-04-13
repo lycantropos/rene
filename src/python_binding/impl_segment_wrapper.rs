@@ -253,9 +253,10 @@ macro_rules! impl_segment_wrapper {
                 &self,
                 py: pyo3::Python<'_>,
             ) -> pyo3::PyResult<String> {
+                use pyo3::types::PyTypeMethods;
                 Ok(format!(
                     "{}({}, {})",
-                    <Self as pyo3::type_object::PyTypeInfo>::NAME,
+                    <Self as pyo3::type_object::PyTypeInfo>::type_object(py).name()?,
                     self.start().__repr__(py)?,
                     self.end().__repr__(py)?,
                 ))
@@ -373,9 +374,10 @@ macro_rules! impl_segment_wrapper {
                 &self,
                 py: pyo3::Python<'_>,
             ) -> pyo3::PyResult<String> {
+                use pyo3::types::PyTypeMethods;
                 Ok(format!(
                     "{}({}, {})",
-                    <Self as pyo3::type_object::PyTypeInfo>::NAME,
+                    <Self as pyo3::type_object::PyTypeInfo>::type_object(py).name()?,
                     self.start().__str__(py)?,
                     self.end().__str__(py)?,
                 ))

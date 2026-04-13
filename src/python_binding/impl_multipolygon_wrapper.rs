@@ -238,10 +238,10 @@ macro_rules! impl_multipolygon_wrapper {
             }
 
             fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
-                use pyo3::types::PyAnyMethods;
+                use pyo3::types::{PyAnyMethods, PyTypeMethods};
                 Ok(format!(
                     "{}({})",
-                    <Self as pyo3::type_object::PyTypeInfo>::NAME,
+                    <Self as pyo3::type_object::PyTypeInfo>::type_object(py).name()?,
                     pyo3::IntoPyObject::into_pyobject(
                         (&self.0)
                             .polygons()
@@ -291,9 +291,10 @@ macro_rules! impl_multipolygon_wrapper {
             }
 
             fn __str__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+                use pyo3::types::PyTypeMethods;
                 Ok(format!(
                     "{}([{}])",
-                    <Self as pyo3::type_object::PyTypeInfo>::NAME,
+                    <Self as pyo3::type_object::PyTypeInfo>::type_object(py).name()?,
                     (&self.0)
                         .polygons()
                         .into_iter()

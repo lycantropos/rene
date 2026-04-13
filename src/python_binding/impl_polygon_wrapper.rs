@@ -280,10 +280,10 @@ macro_rules! impl_polygon_wrapper {
                 &self,
                 py: pyo3::Python<'_>,
             ) -> pyo3::PyResult<String> {
-                use pyo3::types::PyAnyMethods;
+                use pyo3::types::{PyAnyMethods, PyTypeMethods};
                 Ok(format!(
                     "{}({}, {})",
-                    <Self as pyo3::type_object::PyTypeInfo>::NAME,
+                    <Self as pyo3::type_object::PyTypeInfo>::type_object(py).name()?,
                     self.border().__repr__(py)?,
                     pyo3::IntoPyObject::into_pyobject(
                         crate::traits::Iterable::iter(&(&self.0).holes())
@@ -342,9 +342,10 @@ macro_rules! impl_polygon_wrapper {
             }
 
             fn __str__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+                use pyo3::types::PyTypeMethods;
                 Ok(format!(
                     "{}({}, [{}])",
-                    <Self as pyo3::type_object::PyTypeInfo>::NAME,
+                    <Self as pyo3::type_object::PyTypeInfo>::type_object(py).name()?,
                     self.border().__str__(py)?,
                     crate::traits::Iterable::iter(&(&self.0).holes())
                         .cloned()

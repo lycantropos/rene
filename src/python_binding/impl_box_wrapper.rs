@@ -139,10 +139,11 @@ macro_rules! impl_box_wrapper {
                 &self,
                 py: pyo3::Python<'_>,
             ) -> pyo3::PyResult<String> {
-                use pyo3::types::PyAnyMethods;
+                use pyo3::types::{PyAnyMethods, PyTypeMethods};
                 Ok(format!(
                     "{}({}, {}, {}, {})",
-                    <Self as pyo3::type_object::PyTypeInfo>::NAME,
+                    <Self as pyo3::type_object::PyTypeInfo>::type_object(py)
+                        .name()?,
                     self.min_x(py)?.repr()?.extract::<String>()?,
                     self.max_x(py)?.repr()?.extract::<String>()?,
                     self.min_y(py)?.repr()?.extract::<String>()?,
@@ -193,10 +194,11 @@ macro_rules! impl_box_wrapper {
             }
 
             fn __str__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
-                use pyo3::types::PyAnyMethods;
+                use pyo3::types::{PyAnyMethods, PyTypeMethods};
                 Ok(format!(
                     "{}({}, {}, {}, {})",
-                    <Self as pyo3::type_object::PyTypeInfo>::NAME,
+                    <Self as pyo3::type_object::PyTypeInfo>::type_object(py)
+                        .name()?,
                     self.min_x(py)?.str()?.extract::<String>()?,
                     self.max_x(py)?.str()?.extract::<String>()?,
                     self.min_y(py)?.str()?.extract::<String>()?,
