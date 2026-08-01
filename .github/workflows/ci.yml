@@ -105,9 +105,11 @@ jobs:
               rust_target: 'aarch64-apple-darwin'
             }
         include:
-          - python_version: 'pypy-3.10'
+          - python_version: 'pypy-3.11'
+            platform: { os: 'macos-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.11'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
-          - python_version: 'pypy-3.10'
+          - python_version: 'pypy-3.11'
             platform: { os: 'windows-latest', python_architecture: 'x64' }
     steps:
       - name: 'Checkout'
@@ -369,9 +371,11 @@ jobs:
           - python_version: '3.10'
             platform: { os: 'macos-latest', python_architecture: 'x64' }
         include:
-          - python_version: 'pypy-3.10'
+          - python_version: 'pypy-3.11'
+            platform: { os: 'macos-latest', python_architecture: 'x64' }
+          - python_version: 'pypy-3.11'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
-          - python_version: 'pypy-3.10'
+          - python_version: 'pypy-3.11'
             platform: { os: 'windows-latest', python_architecture: 'x64' }
     steps:
       - name: 'Setup Python'
