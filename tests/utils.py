@@ -1,5 +1,5 @@
 from collections.abc import Callable, Iterable, Sequence
-from functools import partial, singledispatch
+from functools import singledispatch
 from operator import is_
 from typing import Any, TypeVar
 
@@ -79,10 +79,6 @@ def is_segment_inside_box(segment: _SegmentT, box: _BoxT, /) -> bool:
     return is_point_inside_box(segment.start, box) and is_point_inside_box(
         segment.end, box
     )
-
-
-def pack(function: Callable[..., _T2], /) -> Callable[[Iterable[_T1]], _T2]:
-    return partial(apply, function)
 
 
 def reverse_box_coordinates(box: _BoxT, /) -> _BoxT:

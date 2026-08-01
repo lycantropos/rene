@@ -85,13 +85,13 @@ _context = Context(
     segments_intersection_scale=to_segments_intersection_scale,
     segments_intersector=to_segments_intersection,
 )
-ConstrainedDelaunayTriangulation._context = _context  # noqa: SLF001
-Contour._context = _context  # noqa: SLF001
-DelaunayTriangulation._context = _context  # noqa: SLF001
-Empty._context = _context  # noqa: SLF001
-Multipolygon._context = _context  # noqa: SLF001
-Multisegment._context = _context  # noqa: SLF001
-Polygon._context = _context  # noqa: SLF001
-Segment._context = _context  # noqa: SLF001
-Trapezoidation._context = _context  # noqa: SLF001
+ConstrainedDelaunayTriangulation._context = _context  # ruff: ignore[private-member-access]
+Contour._context = _context  # ruff: ignore[private-member-access]
+DelaunayTriangulation._context = _context  # ruff: ignore[private-member-access]
+Empty._context = _context  # ruff: ignore[private-member-access]
+Multipolygon._context = _context  # ruff: ignore[private-member-access]
+Multisegment._context = _context  # ruff: ignore[private-member-access]
+Polygon._context = _context  # ruff: ignore[private-member-access]
+Segment._context = _context  # ruff: ignore[private-member-access]
+Trapezoidation._context = _context  # ruff: ignore[private-member-access]
 del _context

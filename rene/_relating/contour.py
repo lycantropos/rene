@@ -14,7 +14,7 @@ from .multisegmental import (
 from .segment import relate_to_contour as relate_segment_to_contour
 from .segment_endpoints import (
     relate_to_contour_segments as relate_segment_endpoints_to_contour_segments,
-    relate_to_multisegment_segments as relate_segment_endpoints_to_multisegment_segments,  # noqa: E501
+    relate_to_multisegment_segments as relate_segment_endpoints_to_multisegment_segments,  # ruff: ignore[line-too-long]
 )
 
 
