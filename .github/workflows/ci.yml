@@ -79,22 +79,22 @@ jobs:
           {
             os: 'macos-latest',
             python_architecture: 'x64',
-            rust_target: 'aarch64-apple-darwin'
+            rust_toolchain: 'stable-aarch64-apple-darwin'
           },
           {
             os: 'ubuntu-latest',
             python_architecture: 'x64',
-            rust_target: 'x86_64-unknown-linux-gnu'
+            rust_toolchain: 'stable-x86_64-unknown-linux-gnu'
           },
           {
             os: 'windows-latest',
             python_architecture: 'x64',
-            rust_target: 'x86_64-pc-windows-msvc'
+            rust_toolchain: 'stable-x86_64-pc-windows-msvc'
           },
           {
             os: 'windows-latest',
             python_architecture: 'x86',
-            rust_target: 'i686-pc-windows-msvc'
+            rust_toolchain: 'stable-i686-pc-windows-msvc'
           },
         ]
         exclude:
@@ -102,7 +102,7 @@ jobs:
             platform: {
               os: 'macos-latest',
               python_architecture: 'x64',
-              rust_target: 'aarch64-apple-darwin'
+              rust_toolchain: 'stable-aarch64-apple-darwin'
             }
         include:
           - python_version: 'pypy-3.11'
@@ -122,7 +122,7 @@ jobs:
       - name: 'Setup Rust'
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: stable-${{ matrix.platform.rust_target }}
+          toolchain: ${{ matrix.platform.rust_toolchain }}
           components: llvm-tools,rustfmt
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Install Rust coverage dependencies'
@@ -130,8 +130,8 @@ jobs:
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Run Rust doctests'
         run: |
-          eval "$(cargo llvm-cov show-env --export-prefix --doctests)"
-          cargo test --doc
+          eval "$(rustup run ${{ matrix.platform.rust_toolchain }} cargo llvm-cov show-env --export-prefix --doctests)"
+          rustup run ${{ matrix.platform.rust_toolchain }} cargo test --doc
         env:
           CARGO_INCREMENTAL: 1
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
@@ -158,7 +158,7 @@ jobs:
       - name: 'Collect Rust coverage'
         run: |
           eval "$(cargo llvm-cov show-env --export-prefix)"
-          cargo llvm-cov report --cobertura --branch --output-path coverage_rust.xml
+          rustup run ${{ matrix.platform.rust_toolchain }} cargo llvm-cov report --cobertura --branch --output-path coverage_rust.xml
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Upload PyPy coverage'
         uses: codecov/codecov-action@v7
@@ -321,7 +321,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.platform.architecture }}
           CIBW_BEFORE_ALL_LINUX: |
             curl https://sh.rustup.rs -sSf |
-            sh -s -- -y --default-toolchain=nightly &&
+            sh -s -- -y --default-toolchain=stable &&
             # caused by https://github.com/rust-lang/cargo/issues/9167
             cat > ~/.cargo/config.toml <<EOF
             [net]
