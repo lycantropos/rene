@@ -79,22 +79,22 @@ jobs:
           {
             os: 'macos-latest',
             python_architecture: 'x64',
-            rust_toolchain: 'stable-aarch64-apple-darwin'
+            rust_target: 'aarch64-apple-darwin'
           },
           {
             os: 'ubuntu-latest',
             python_architecture: 'x64',
-            rust_toolchain: 'stable-x86_64-unknown-linux-gnu'
+            rust_target: 'x86_64-unknown-linux-gnu'
           },
           {
             os: 'windows-latest',
             python_architecture: 'x64',
-            rust_toolchain: 'stable-x86_64-pc-windows-msvc'
+            rust_target: 'x86_64-pc-windows-msvc'
           },
           {
             os: 'windows-latest',
             python_architecture: 'x86',
-            rust_toolchain: 'stable-i686-pc-windows-msvc'
+            rust_target: 'i686-pc-windows-msvc'
           },
         ]
         exclude:
@@ -102,7 +102,7 @@ jobs:
             platform: {
               os: 'macos-latest',
               python_architecture: 'x64',
-              rust_toolchain: 'stable-aarch64-apple-darwin'
+              rust_target: 'aarch64-apple-darwin'
             }
         include:
           - python_version: 'pypy-3.11'
@@ -119,10 +119,16 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
           architecture: ${{ matrix.platform.python_architecture }}
-      - name: 'Setup Rust'
+      - name: 'Setup nightly Rust'
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: ${{ matrix.platform.rust_toolchain }}
+          toolchain: nightly-${{ matrix.platform.rust_target }}
+          components: llvm-tools
+        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
+      - name: 'Setup stable Rust'
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable-${{ matrix.platform.rust_target }}
           components: llvm-tools,rustfmt
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Install Rust coverage dependencies'
@@ -130,8 +136,9 @@ jobs:
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Run Rust doctests'
         run: |
-          eval "$(rustup run ${{ matrix.platform.rust_toolchain }} cargo llvm-cov show-env --export-prefix --doctests)"
-          rustup run ${{ matrix.platform.rust_toolchain }} cargo test --doc
+          # using nightly because of https://github.com/taiki-e/cargo-llvm-cov/issues/2
+          eval "$(rustup run nightly-${{ matrix.platform.rust_target }} cargo llvm-cov show-env --export-prefix --doctests)"
+          rustup run nightly-${{ matrix.platform.rust_target }} cargo test --doc
         env:
           CARGO_INCREMENTAL: 1
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
@@ -158,7 +165,7 @@ jobs:
       - name: 'Collect Rust coverage'
         run: |
           eval "$(cargo llvm-cov show-env --export-prefix)"
-          rustup run ${{ matrix.platform.rust_toolchain }} cargo llvm-cov report --cobertura --branch --output-path coverage_rust.xml
+          rustup run stable-${{ matrix.platform.rust_target }} cargo llvm-cov report --cobertura --branch --output-path coverage_rust.xml
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Upload PyPy coverage'
         uses: codecov/codecov-action@v7
