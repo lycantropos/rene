@@ -142,6 +142,16 @@ jobs:
         env:
           CARGO_INCREMENTAL: 1
         if: ${{ !startsWith(matrix.python_version, 'pypy') }}
+      - name: 'Collect nightly Rust coverage'
+        run: |
+          eval "$(rustup run nightly-${{ matrix.platform.rust_target }} cargo llvm-cov show-env --export-prefix)"
+          rustup run nightly-${{ matrix.platform.rust_target }} cargo llvm-cov report --cobertura --branch --output-path coverage_rust_nightly.xml
+        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
+      - name: 'Cleanup nightly Rust coverage artifacts'
+        run: |
+          eval "$(rustup run nightly-${{ matrix.platform.rust_target }} cargo llvm-cov show-env --export-prefix)"
+          rustup run nightly-${{ matrix.platform.rust_target }} cargo llvm-cov clean
+        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
       - name: 'Install in editable mode'
         run: |
           ${{ !startsWith(matrix.python_version, 'pypy') && 'eval "$(cargo llvm-cov show-env --export-prefix)"' || '' }}
