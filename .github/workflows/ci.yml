@@ -176,14 +176,14 @@ jobs:
         run: |
           eval "$(cargo llvm-cov show-env --export-prefix)"
           rustup run stable-${{ matrix.platform.rust_target }} cargo llvm-cov report --cobertura --branch --output-path coverage_rust.xml
-        if: ${{ !startsWith(matrix.python_version, 'pypy') }}
+        if: ${{ !startsWith(matrix.python_version, 'pypy') && matrix.platform.rust_target != 'i686-pc-windows-msvc' }}
       - name: 'Upload PyPy coverage'
         uses: codecov/codecov-action@v7
         with:
           fail_ci_if_error: false
           files: ./coverage_python.xml
           token: ${{ secrets.CODECOV_TOKEN }}
-        if: ${{ startsWith(matrix.python_version, 'pypy') }}
+        if: ${{ startsWith(matrix.python_version, 'pypy') || matrix.platform.rust_target == 'i686-pc-windows-msvc' }}
         continue-on-error: true
       - name: 'Upload СPython coverage'
         uses: codecov/codecov-action@v7
