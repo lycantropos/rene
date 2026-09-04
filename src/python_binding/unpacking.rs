@@ -7,7 +7,7 @@ pub(super) fn try_unpack_maybe_empty_polygons<
 >(
     polygons: Vec<Polygon>,
     py: pyo3::Python<'py>,
-) -> Result<pyo3::Py<pyo3::PyAny>, Error> {
+) -> Result<pyo3::Bound<'py, pyo3::PyAny>, Error> {
     match polygons.len() {
         0 => pyo3::IntoPyObject::into_pyobject(Empty::default(), py)
             .map(pyo3::BoundObject::into_bound)
@@ -24,7 +24,6 @@ pub(super) fn try_unpack_maybe_empty_polygons<
                 .map(pyo3::Bound::into_any)
         }
     }
-    .map(pyo3::Bound::unbind)
 }
 
 pub(super) fn try_unpack_maybe_empty_segments<
@@ -36,7 +35,7 @@ pub(super) fn try_unpack_maybe_empty_segments<
 >(
     segments: Vec<Segment>,
     py: pyo3::Python<'py>,
-) -> Result<pyo3::Py<pyo3::PyAny>, Error> {
+) -> Result<pyo3::Bound<'py, pyo3::PyAny>, Error> {
     match segments.len() {
         0 => pyo3::IntoPyObject::into_pyobject(Empty::default(), py)
             .map(pyo3::BoundObject::into_bound)
@@ -53,7 +52,6 @@ pub(super) fn try_unpack_maybe_empty_segments<
                 .map(pyo3::Bound::into_any)
         }
     }
-    .map(pyo3::Bound::unbind)
 }
 
 pub(super) fn try_unpack_non_empty_polygons<
@@ -64,7 +62,7 @@ pub(super) fn try_unpack_non_empty_polygons<
 >(
     polygons: Vec<Polygon>,
     py: pyo3::Python<'py>,
-) -> Result<pyo3::Py<pyo3::PyAny>, Error> {
+) -> Result<pyo3::Bound<'py, pyo3::PyAny>, Error> {
     match polygons.len() {
         0 => unreachable!("Expected to be non-empty."),
         1 => pyo3::IntoPyObject::into_pyobject(
@@ -79,7 +77,6 @@ pub(super) fn try_unpack_non_empty_polygons<
                 .map(pyo3::Bound::into_any)
         }
     }
-    .map(pyo3::Bound::unbind)
 }
 
 pub(super) fn try_unpack_non_empty_segments<
@@ -90,7 +87,7 @@ pub(super) fn try_unpack_non_empty_segments<
 >(
     segments: Vec<Segment>,
     py: pyo3::Python<'py>,
-) -> Result<pyo3::Py<pyo3::PyAny>, Error> {
+) -> Result<pyo3::Bound<'py, pyo3::PyAny>, Error> {
     match segments.len() {
         0 => unreachable!("Expected to be non-empty."),
         1 => pyo3::IntoPyObject::into_pyobject(
@@ -105,5 +102,4 @@ pub(super) fn try_unpack_non_empty_segments<
                 .map(pyo3::Bound::into_any)
         }
     }
-    .map(pyo3::Bound::unbind)
 }

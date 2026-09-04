@@ -349,20 +349,6 @@ pub(crate) fn coordinates_iterator_to_bounds<
     (min_x, max_x, min_y, max_y)
 }
 
-/// Based on "Ranking and unranking permutations in linear time"
-/// by W. Myrvold, F. Ruskey
-///
-/// Time complexity: O(values.len())
-/// Memory complexity: O(1)
-///
-/// More at: http://webhome.cs.uvic.ca/~ruskey/Publications/RankPerm/MyrvoldRuskey.pdf
-pub(crate) fn permute<T>(values: &mut [T], mut seed: usize) {
-    for step in (1..=values.len()).rev() {
-        values.swap(step - 1, seed % step);
-        seed /= step;
-    }
-}
-
 pub(crate) fn point_vertex_line_divides_angle<'a, Point>(
     point: &'a Point,
     vertex: &'a Point,

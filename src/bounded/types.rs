@@ -63,7 +63,7 @@ impl<Scalar> Box<Scalar> {
 }
 
 impl<Scalar: Clone> Box<&Scalar> {
-    pub(crate) fn cloned(&self) -> Box<Scalar> {
+    pub fn cloned(&self) -> Box<Scalar> {
         Box::new(
             self.min_x.clone(),
             self.max_x.clone(),

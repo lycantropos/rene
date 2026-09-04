@@ -11,7 +11,9 @@ macro_rules! impl_trapezoidation_wrapper {
             ) -> Self {
                 PyTrapezoidation(Trapezoidation::from_multisegment(
                     &multisegment.0,
-                    |values| crate::operations::permute(values, seed),
+                    |values| {
+                        crate::python_binding::utils::permute(values, seed)
+                    },
                 ))
             }
 
@@ -25,7 +27,7 @@ macro_rules! impl_trapezoidation_wrapper {
                 PyTrapezoidation(Trapezoidation::from_polygon(
                     &polygon.0,
                     |values| {
-                        crate::operations::permute(values, seed);
+                        crate::python_binding::utils::permute(values, seed);
                     },
                 ))
             }

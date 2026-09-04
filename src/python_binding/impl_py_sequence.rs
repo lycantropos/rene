@@ -175,45 +175,45 @@ macro_rules! impl_py_sequence {
                 self.len()
             }
 
-            fn __richcmp__(
+            fn __richcmp__<'py>(
                 &self,
-                other: &pyo3::Bound<'_, pyo3::PyAny>,
+                other: &pyo3::Bound<'py, pyo3::PyAny>,
                 op: pyo3::basic::CompareOp,
-            ) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
+            ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::PyAny>> {
                 use pyo3::types::PyAnyMethods;
                 let py = other.py();
                 if other.is_instance(
                     &<Self as pyo3::type_object::PyTypeInfo>::type_object(py),
                 )? {
                     let other =
-                        other.extract::<pyo3::Bound<'_, Self>>()?.borrow();
+                        other.extract::<pyo3::Bound<'py, Self>>()?.borrow();
                     match op {
                         pyo3::basic::CompareOp::Eq => {
                             Ok(pyo3::BoundObject::into_bound(
                                 pyo3::IntoPyObject::into_pyobject(
                                     self.iter().eq(other.iter()),
                                     py,
-                                )
-                                .unwrap(),
+                                )?,
                             )
-                            .into_any()
-                            .unbind())
+                            .into_any())
                         }
                         pyo3::basic::CompareOp::Ne => {
                             Ok(pyo3::BoundObject::into_bound(
                                 pyo3::IntoPyObject::into_pyobject(
                                     self.iter().ne(other.iter()),
                                     py,
-                                )
-                                .unwrap(),
+                                )?,
                             )
-                            .into_any()
-                            .unbind())
+                            .into_any())
                         }
-                        _ => Ok(py.NotImplemented()),
+                        _ => Ok(pyo3::BoundObject::into_any(
+                        pyo3::types::PyNotImplemented::get(py).to_owned(),
+                    )),
                     }
                 } else {
-                    Ok(py.NotImplemented())
+                    Ok(pyo3::BoundObject::into_any(
+                        pyo3::types::PyNotImplemented::get(py).to_owned(),
+                    ))
                 }
             }
         }

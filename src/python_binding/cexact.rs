@@ -1,5 +1,4 @@
 use rithm::{big_int, fraction};
-use std::cmp::Ordering;
 use std::convert::TryFrom;
 use std::ops::{Add, Mul, Sub};
 use traiter::numbers::{Endianness, FromBytes, Sign, Signed, ToBytes, Zero};
@@ -595,41 +594,54 @@ fn big_int_to_py_long<'py>(
     }
 }
 
-fn try_py_integral_to_big_int<'py>(
-    value: pyo3::Bound<'py, pyo3::PyAny>,
+fn try_py_integral_to_big_int(
+    value: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> pyo3::PyResult<BigInt> {
+    use pyo3::types::PyAnyMethods;
+
     let ptr = value.as_ptr();
     let py = value.py();
-    unsafe {
-        let ptr = pyo3::ffi::PyNumber_Long(ptr);
+    let py_long = unsafe {
+        let ptr = pyo3::ffi::PyNumber_Index(ptr);
         if ptr.is_null() {
             return Err(pyo3::PyErr::fetch(py));
         }
-        let bits_count = pyo3::ffi::_PyLong_NumBits(ptr);
-        match bits_count.cmp(&0) {
-            Ordering::Less => Err(pyo3::PyErr::fetch(py)),
-            Ordering::Equal => Ok(BigInt::zero()),
-            Ordering::Greater => {
-                let bytes_count = bits_count / (u8::BITS as usize) + 1;
-                let mut buffer = vec![0u8; bytes_count];
-                if pyo3::ffi::_PyLong_AsByteArray(
-                    pyo3::Bound::<'py, pyo3::PyAny>::from_owned_ptr(py, ptr)
-                        .as_ptr()
-                        .cast::<pyo3::ffi::PyLongObject>(),
+        pyo3::Bound::from_owned_ptr(py, ptr)
+    };
+    let bits_count = py_long
+        .call_method0(pyo3::intern!(py, "bit_length"))
+        .and_then(|any| any.extract::<usize>())?;
+    if bits_count == 0 {
+        Ok(BigInt::zero())
+    } else {
+        let bytes_count = bits_count / (u8::BITS as usize) + 1;
+        let mut buffer = vec![0u8; bytes_count];
+        if unsafe {
+            cfg_select! {
+                any(Py_3_14, all(Py_3_13, not(Py_LIMITED_API))) => {
+                    pyo3::ffi::PyLong_AsNativeBytes(
+                        py_long.as_ptr().cast(),
+                        buffer.as_mut_ptr().cast(),
+                        bytes_count as isize,
+                        pyo3::ffi::Py_ASNATIVEBYTES_LITTLE_ENDIAN,
+                    )
+                }
+                _ => pyo3::ffi::_PyLong_AsByteArray(
+                    py_long.as_ptr().cast::<pyo3::ffi::PyLongObject>(),
                     buffer.as_mut_ptr(),
                     buffer.len(),
                     1,
                     1,
-                ) < 0
-                {
-                    Err(pyo3::PyErr::fetch(py))
-                } else {
-                    Ok(BigInt::from_bytes(
-                        buffer.as_mut_slice(),
-                        Endianness::Little,
-                    ))
-                }
+                ),
             }
+        } < 0
+        {
+            Err(pyo3::PyErr::fetch(py))
+        } else {
+            Ok(BigInt::from_bytes(
+                buffer.as_mut_slice(),
+                Endianness::Little,
+            ))
         }
     }
 }
