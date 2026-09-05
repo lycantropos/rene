@@ -16,8 +16,8 @@ if sys.implementation.name == 'cpython':
 
     parameters.update(
         rust_extensions=[
-            RustExtension('rene._cexact'),
-            RustExtension('rene._crene'),
+            RustExtension('rene._cexact', features=['python_binding']),
+            RustExtension('rene._crene', features=['python_binding']),
         ],
         zip_safe=False,
     )
