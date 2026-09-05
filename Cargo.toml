@@ -11,9 +11,6 @@ version = "0.2.0"
 name = "rene"
 crate-type = ["cdylib", "rlib"]
 
-[dependencies]
-rithm = "^14.9.0"
-
 [dependencies.traiter]
 version = "^4.0.0"
 features = ["numbers"]
@@ -28,11 +25,16 @@ version = "^0.29.2"
 features = ["extension-module"]
 optional = true
 
+[dependencies.rithm]
+version = "^14.9.1"
+features = ["python_binding"]
+optional = true
+
 [build-dependencies]
 pyo3-build-config = "^0.29.2"
 
 [features]
-python_binding = ["dep:pyo3", "dep:pyo3-ffi"]
+python_binding = ["dep:pyo3", "dep:pyo3-ffi", "dep:rithm"]
 
 [lints.rust]
 warnings = "deny"

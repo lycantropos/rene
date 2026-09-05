@@ -1,3 +1,5 @@
 include Cargo.toml
+include LICENSE
 include rene/py.typed
+include build.rs
 recursive-include src *.rs

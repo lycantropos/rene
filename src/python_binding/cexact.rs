@@ -584,12 +584,21 @@ fn big_int_to_py_long<'py>(
     unsafe {
         pyo3::Bound::<'py, pyo3::PyAny>::from_owned_ptr(
             py,
-            pyo3::ffi::_PyLong_FromByteArray(
-                buffer.as_ptr(),
-                buffer.len(),
-                1,
-                1,
-            ),
+            cfg_select! {
+                any(Py_3_14, all(Py_3_13, not(Py_LIMITED_API))) => {
+                    pyo3::ffi::PyLong_FromNativeBytes(
+                        buffer.as_ptr().cast(),
+                        buffer.len(),
+                        pyo3::ffi::Py_ASNATIVEBYTES_LITTLE_ENDIAN,
+                    )
+                }
+                _ => pyo3::ffi::_PyLong_FromByteArray(
+                    buffer.as_ptr(),
+                    buffer.len(),
+                    1,
+                    1,
+                ),
+            },
         )
     }
 }
