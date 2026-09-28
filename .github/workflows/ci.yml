@@ -101,8 +101,6 @@ jobs:
             }
         include:
           - python_version: 'pypy-3.11'
-            platform: { os: 'macos-latest', python_architecture: 'x64' }
-          - python_version: 'pypy-3.11'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.11'
             platform: { os: 'windows-latest', python_architecture: 'x64' }
@@ -370,8 +368,6 @@ jobs:
           - python_version: '3.10'
             platform: { os: 'macos-latest', python_architecture: 'x64' }
         include:
-          - python_version: 'pypy-3.11'
-            platform: { os: 'macos-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.11'
             platform: { os: 'ubuntu-latest', python_architecture: 'x64' }
           - python_version: 'pypy-3.11'
