@@ -1,12 +1,10 @@
-version: '3'
-
 services:
   rene-pypy:
     build:
       context: .
       args:
-        - IMAGE_NAME=${PYPY_IMAGE_NAME}
-        - IMAGE_VERSION=${PYPY_IMAGE_VERSION}
+        - IMAGE_NAME=${PYPY_IMAGE_NAME:-pypy}
+        - IMAGE_VERSION=${PYPY_IMAGE_VERSION:-3.10}
     image: lycantropos/rene-pypy:0.3.0
     volumes:
       - ./pyproject.toml:/opt/rene/pyproject.toml

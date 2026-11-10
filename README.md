@@ -138,13 +138,13 @@ Run
 - with `CPython`
 
   ```bash
-  docker-compose --file docker-compose.cpython.yml up
+  docker compose --file docker-compose.cpython.yml up
   ```
 
 - with `PyPy`
 
   ```bash
-  docker-compose --file docker-compose.pypy.yml up
+  docker compose --file docker-compose.pypy.yml up
   ```
 
 #### `Bash` script

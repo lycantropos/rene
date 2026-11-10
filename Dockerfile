@@ -14,9 +14,10 @@ COPY Cargo.toml .
 COPY pyproject.toml .
 COPY rust-toolchain.toml .
 COPY README.md .
+COPY build.rs .
 COPY setup.py .
 COPY rene rene
 COPY src src
 COPY tests tests
 
-RUN pip install -e .[tests]
+RUN pip install -e '.[tests]'
