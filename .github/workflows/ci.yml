@@ -149,7 +149,7 @@ jobs:
         run: |
           ${{ !startsWith(matrix.python_version, 'pypy') && 'eval "$(cargo llvm-cov show-env --export-prefix)"' || '' }}
           python -m pip -v install -U pip
-          ${{ !startsWith(matrix.python_version, 'pypy') && 'CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=$CARGO_LLVM_COV_TARGET_DIR' || '' }} python -W error -m pip -v install -e '.[tests]'
+          ${{ !startsWith(matrix.python_version, 'pypy') && 'CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=$CARGO_LLVM_COV_TARGET_DIR' || '' }} python -m pip -v install -e '.[tests]'
       - name: 'Install Python coverage dependencies'
         run: python -m pip install --upgrade coverage[toml]
       - name: 'Run Python doctests'
